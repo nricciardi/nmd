@@ -7,16 +7,19 @@ NMD is full compatible with CommonMark standard.
 
 ## Syntax overview
 
-There are two types of modifiers to manipulate your NMD files. In particular, there are the _text modifiers_ and _paragraph modifiers_.
+There are two types of modifiers to manipulate your NMD files. In particular, there are the _inline modifiers_ and _paragraph modifiers_.
 
-You can read below the list of all text and paragraph modifiers. 
+You can read below the list of all inline and paragraph modifiers. 
 
-### Text modifiers
+### Inline modifiers
 
 #### Bold
 
 ```markdown
 **Bold**
+
+or
+
 __Bold__
 ```
 
@@ -24,7 +27,40 @@ __Bold__
 
 ```markdown
 _Italic_
+
+or
+
 *Italic*
+```
+
+#### Link
+
+```markdown
+[Link](http://a.com)
+
+or
+
+[Link][1]
+⋮
+[1]: http://b.org
+```
+
+#### Image
+
+```markdown
+![Image](http://url/a.png)
+
+or
+
+![Image][1]
+⋮
+[1]: http://url/b.jpg
+```
+
+#### Inline code
+
+```markdown
+`inline code`
 ```
 
 
@@ -43,4 +79,15 @@ Create headings using '#' (up to 6 levels).
 ## Heading 2
 ...
 ###### Heading 6
+```
+
+#### Code block
+
+It's possible to specify the language used in code block, as in Commonmark, writing language name after the ```.
+
+```markdown
+```python
+# code block
+print("Write all documents in NMD!!")
+```
 ```
