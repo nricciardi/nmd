@@ -1,4 +1,4 @@
-# New Markdown (NMD)
+# New Markdown (NMD) [BETA]
 New Markdown, a new way to write in markdown.
 
 With NMD, you can effortlessly create beautifully formatted text for your projects while enjoying some unique features tailored to modern needs.
@@ -31,6 +31,62 @@ _Italic_
 or
 
 *Italic*
+```
+
+#### Highlighted Text
+
+```
+==(color)Highlighted text==
+```
+
+Color can be written in hexadecimal if you use `#rrggbb` convention.
+
+If you don't want specify the highlight color, you can omit `(color)` to use the default color.
+
+```
+==highlighted text==
+```
+
+#### Strikethrough text
+
+```
+--Strikethrough text--
+```
+
+#### Underlined text
+
+```
+~~Underlined text~~
+```
+
+#### Custom text style and Color
+
+```
+:[Custom text style](style)
+```
+
+There are some standard style such as the color names (to color text) and others.
+
+To insert a specific hexadecimal color:
+
+```
+:[Custom colored text](#rrggbb)
+```
+
+##### Color
+
+There are standard style used o
+
+#### Superscript
+
+```
+1^^st^^
+```
+
+#### Subscript
+
+```
+H__2
 ```
 
 #### Link
@@ -74,11 +130,15 @@ $E=mc^2$
 
 The _paragraph modifier_ modifies the style of the paragraph in which are applied.
 
-> Each paragraph **must** be separated by a blank line. 
+We define **paragraph** the set composed by a title and text, i.e. a paragraph is between its title and the title of the following paragraph.
 
-#### Heading
+Paragraph text **must** be separated from its title using a blank line.
 
-Create headings using '#' (up to 6 levels).
+You can press two times `enter`, i.e. `\n\n`, to separate text of the same paragraph **and** different paragraph modifiers. Single `\n` is ignored (you can write the same line in more than one line). 
+
+#### Heading (Title of a paragraph)
+
+Create headings using `#` (up to 6 levels). `#` must be separated from text using a blank space ` `.
 
 ```markdown
 # Heading 1
@@ -98,7 +158,7 @@ Different types of list are supported in NMD, below the list with modifier
 - `-` common list
 - `*` second style list
 - `-[] or -[ ]` todo list
-- `1. or 1)` ordered list
+- `1. or 1) or a. or a) or I. or I)` ordered list (numerical, alphabetical, romans numbers)
 
 Using `tabs` you can create different list levels.
 
@@ -129,3 +189,35 @@ The list with supported languages (tag in parentesis):
 Math block is a particular paragraph used to print mathematical formulas and more.
 
 The paragraph modifier for math block is double $, i.e. `$$` to open and close blocks.
+
+#### 
+
+#### Paragraph styler
+
+In NMD is possible to indicate a paragraph style. There is a set of standard styles which each indicates a particular style that should be implemented from the NDM editors. These are guide lines, each editor could implement different styles.
+
+In addiction, there is the possibility to add a custom style reference.
+
+Styles could be implemented using any languages, commonly it is used CSS (or SCSS/SASS).
+
+To indicate the style of the paragraph you must use `.` modifier. If it isn't presente, editors use default paragraph style.
+
+A *style* is a set of style rules to modified a paragraph.
+
+Styles are introducted using `.`, e.g. `.styleName`, below the title of paragraph **without** blank lines.
+
+Each class can be written in different lines:
+
+```css
+.styleName1
+.styleName2
+...
+.styleNameN
+```
+
+##### Standard styles
+
+- `.default` default style (it can be omitted)
+- `.todo` paragraph which must be written in future
+- `.note` paragraph which contains a note
+- `.warning` paragraph which contains a warning
