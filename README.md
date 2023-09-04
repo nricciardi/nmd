@@ -87,7 +87,20 @@ Create headings using '#' (up to 6 levels).
 ###### Heading 6
 ```
 
-#### 
+#### Line separator
+
+To apply a line separator use --- or *** in a new blank line.
+
+#### List
+
+Different types of list are supported in NMD, below the list with modifier
+
+- `-` common list
+- `*` second style list
+- `-[] or -[ ]` todo list
+- `1. or 1)` ordered list
+
+Using `tabs` you can create different list levels.
 
 #### Code block
 
@@ -109,6 +122,7 @@ The list with supported languages (tag in parentesis):
 - CSS (css)
 - Typescript (typescript)
 - Kotlin (kotlin)
+- ...
 
 #### Math block (LaTeX)
 
