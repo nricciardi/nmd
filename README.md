@@ -63,6 +63,12 @@ or
 `inline code`
 ```
 
+##### Inline math (LaTeX)
+
+```markdown
+$E=mc^2$
+```
+
 
 ### Paragraph modifiers
 
@@ -81,13 +87,31 @@ Create headings using '#' (up to 6 levels).
 ###### Heading 6
 ```
 
+#### 
+
 #### Code block
 
-It's possible to specify the language used in code block, as in Commonmark, writing language name after the ```.
+Code blocks use ``` as paragraph modifier.
+
+It's possible to specify the language used in code block, as in Commonmark, writing language name after first quotes.
 
 ```markdown
-```python
 # code block
 print("Write all documents in NMD!!")
 ```
-```
+
+The list with supported languages (tag in parentesis):
+- Python (python)
+- Java (java)
+- Javascript (javascript)
+- PHP (php)
+- HTML (html)
+- CSS (css)
+- Typescript (typescript)
+- Kotlin (kotlin)
+
+#### Math block (LaTeX)
+
+Math block is a particular paragraph used to print mathematical formulas and more.
+
+The paragraph modifier for math block is double $, i.e. `$$` to open and close blocks.
