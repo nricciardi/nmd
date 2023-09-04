@@ -33,49 +33,51 @@ or
 *Italic*
 ```
 
-#### Highlighted Text
-
-```
-==(color)Highlighted text==
-```
-
-Color can be written in hexadecimal if you use `#rrggbb` convention.
-
-If you don't want specify the highlight color, you can omit `(color)` to use the default color.
-
-```
-==highlighted text==
-```
+={ciao}(red)
 
 #### Strikethrough text
 
 ```
---Strikethrough text--
+~~Strikethrough text~~
 ```
 
 #### Underlined text
 
 ```
-~~Underlined text~~
+++Underlined text++
 ```
 
-#### Custom text style and Color
+##### Colors and Highlighted Text
+
+Color can be written in hexadecimal if you use `#rrggbb` convention or you can use their names.
+
+You can modify text color, text background and its font using this modifier:
 
 ```
-:[Custom text style](style)
+{Custom colored text}(textColor;backgroundColor;fontName)
+```
+
+You can omit font and background color if you want only modify text color.
+
+```
+{Only text color}(#rrggbb)
+```
+
+You can insert only background color or only text font using this convention:
+
+```
+{Only background}(;#rrggbb)
+{Only font}(;;fontName)
+```
+
+#### Custom text style
+
+```
+{Custom text style}(style)
 ```
 
 There are some standard style such as the color names (to color text) and others.
 
-To insert a specific hexadecimal color:
-
-```
-:[Custom colored text](#rrggbb)
-```
-
-##### Color
-
-There are standard style used o
 
 #### Superscript
 
@@ -83,11 +85,19 @@ There are standard style used o
 1^^st^^
 ```
 
+> This modifier can be placed attached on other text.
+
 #### Subscript
 
+For example, if you want to write "water" in a more scientific way:
+
 ```
-H__2
+H''2''O
 ```
+
+Pay attention, those are two single quote
+
+> This modifier can be placed attached on other text.
 
 #### Link
 
