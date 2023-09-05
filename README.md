@@ -11,17 +11,21 @@ There are a set of addons which we would add to NMD and many others that we will
 
 The list of addons that we would support in future:
 
+- document metadata (author, date, number of pages and so on)
 - footnotes
 - page header
 - database diagram
 - uml diagram
 - custom simplifier LaTeX
+- bibliographies
+- note of text, i.e. comments
+- image description and reference
 
 ## Syntax overview
 
 There are two types of modifiers to manipulate your NMD files. In particular, there are the _inline modifiers_ and _paragraph modifiers_.
 
-You can read below the list of all inline and paragraph modifiers. 
+You can read below the list of all inline and paragraph modifiers.
 
 ### Inline modifiers
 
@@ -167,6 +171,51 @@ Paragraph text **must** be separated from its title using a blank line.
 
 You can press two times `enter`, i.e. `\n\n`, to separate text of the same paragraph **and** different paragraph modifiers. Single `\n` is ignored (you can write the same line in more than one line). 
 
+#### Paragraph metadata
+
+```
+@ + metadata label + single space + metadata content
+```
+
+Supported metadata:
+
+- `author`
+- `description`
+- `datetime`
+- `comment`
+- `todo`
+
+##### Paragraph styler
+
+In NMD is possible to indicate a paragraph style. There is a set of standard styles which each indicates a particular style that should be implemented from the NDM editors. These are guide lines, each editor could implement different styles.
+
+In addiction, there is the possibility to add a custom style reference.
+
+Styles could be implemented using any languages, commonly it is used CSS (or SCSS/SASS).
+
+To indicate the style of the paragraph you must use `.` modifier. If it isn't presente, editors use default paragraph style.
+
+A *style* is a set of style rules to modified a paragraph.
+
+Styles are introducted using `.`, e.g. `.styleName`, below the title of paragraph **without** blank lines.
+
+Each class can be written in different lines:
+
+```css
+.styleName1
+.styleName2
+...
+.styleNameN
+```
+
+###### Standard styles
+
+- `.default` default style (it can be omitted)
+- `.todo` paragraph which must be written in future
+- `.note` paragraph which contains a note
+- `.warning` paragraph which contains a warning
+
+
 #### Heading (Title of a paragraph)
 
 Create headings using `#` (up to 6 levels). `#` must be separated from text using a blank space ` `.
@@ -221,43 +270,13 @@ Math block is a particular paragraph used to print mathematical formulas and mor
 
 The paragraph modifier for math block is double $, i.e. `$$` to open and close blocks.
 
-#### Paragraph styler
-
-In NMD is possible to indicate a paragraph style. There is a set of standard styles which each indicates a particular style that should be implemented from the NDM editors. These are guide lines, each editor could implement different styles.
-
-In addiction, there is the possibility to add a custom style reference.
-
-Styles could be implemented using any languages, commonly it is used CSS (or SCSS/SASS).
-
-To indicate the style of the paragraph you must use `.` modifier. If it isn't presente, editors use default paragraph style.
-
-A *style* is a set of style rules to modified a paragraph.
-
-Styles are introducted using `.`, e.g. `.styleName`, below the title of paragraph **without** blank lines.
-
-Each class can be written in different lines:
-
-```css
-.styleName1
-.styleName2
-...
-.styleNameN
-```
-
-##### Standard styles
-
-- `.default` default style (it can be omitted)
-- `.todo` paragraph which must be written in future
-- `.note` paragraph which contains a note
-- `.warning` paragraph which contains a warning
-
-### Special components
+#### Special components
 
 In addition to inline and paragraph modifiers, there are _special components_ which are a set of useful graphic components such as tables, diagram and others.
 
-Each special component has a particular text construct.
+Each special component has a particular text construct, but is can be definited as stand-alone paragraph.
 
-#### Tables
+##### Tables
 
 Each table has an table head, body and footer (like HTML tables). A table can have only head or only footer, but it must always have body.
 
@@ -265,7 +284,7 @@ Each table has an table head, body and footer (like HTML tables). A table can ha
 
 The pattern for table head is: 
 
-| + single space + cell text + one or more spaces |
+| + single space + head text + one or more spaces |
 | + single space + alignment modifier + one or more spaces + |
 
 Alignment modifiers:
@@ -276,7 +295,7 @@ Alignment modifiers:
 - `.---:` head on left, body on right
 - `:---.` head on right, body on left
 
-##### Table Body
+###### Table Body
 
 The pattern for a generic table record is: | + single space + cell text + one or more spaces |
 
@@ -284,6 +303,6 @@ The pattern for a generic table record is: | + single space + cell text + one or
 | cell text | cell text | cell text |
 ```
 
-#### Table Footer
+##### Table Footer
 
 > WIP
