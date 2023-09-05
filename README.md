@@ -180,10 +180,22 @@ You can press two times `enter`, i.e. `\n\n`, to separate text of the same parag
 Supported metadata:
 
 - `author`
-- `description`
+- `content` description of paragraph content
 - `datetime`
 - `comment`
 - `todo`
+
+##### Paragraph metadata block
+
+```
+/* to open
+
+metadata list
+
+styles list
+
+*/ to close
+```
 
 ##### Paragraph styler
 
@@ -274,7 +286,7 @@ The paragraph modifier for math block is double $, i.e. `$$` to open and close b
 
 In addition to inline and paragraph modifiers, there are _special components_ which are a set of useful graphic components such as tables, diagram and others.
 
-Each special component has a particular text construct, but is can be definited as stand-alone paragraph.
+Each special component has a particular text construct, but is can be definited as stand-alone paragraph, so is possible to add metadata and styles using _paragraph metadata addon_.
 
 ##### Tables
 
@@ -282,18 +294,11 @@ Each table has an table head, body and footer (like HTML tables). A table can ha
 
 ##### Table Head
 
-The pattern for table head is: 
+The pattern for a cell table head is: 
 
-| + single space + head text + one or more spaces |
-| + single space + alignment modifier + one or more spaces + |
-
-Alignment modifiers:
-
-- `:---` all column on left
-- `---:` all column on right
-- `:---:` all column on center
-- `.---:` head on left, body on right
-- `:---.` head on right, body on left
+```
+|| + single space + cell head text + one or more spaces ||
+```
 
 ###### Table Body
 
