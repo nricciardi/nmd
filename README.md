@@ -5,6 +5,18 @@ With NMD, you can effortlessly create beautifully formatted text for your projec
 
 NMD is full compatible with CommonMark standard.
 
+## Work In Progress Addons
+
+There are a set of addons which we would add to NMD and many others that we will forgot to add, so you can propose to add a new addon through a new issue.
+
+The list of addons that we would support in future:
+
+- footnotes
+- page header
+- database diagram
+- uml diagram
+- custom simplifier LaTeX
+
 ## Syntax overview
 
 There are two types of modifiers to manipulate your NMD files. In particular, there are the _inline modifiers_ and _paragraph modifiers_.
@@ -32,8 +44,6 @@ or
 
 *Italic*
 ```
-
-={ciao}(red)
 
 #### Strikethrough text
 
@@ -70,6 +80,10 @@ You can insert only background color or only text font using this convention:
 {Only font}(;;fontName)
 ```
 
+##### Compatible highlight text
+
+You can use also `==Highlight text==`.
+
 #### Custom text style
 
 ```
@@ -78,11 +92,18 @@ You can insert only background color or only text font using this convention:
 
 There are some standard style such as the color names (to color text) and others.
 
+#### Emoji
+
+Two ways to add emoji:
+
+- Copy and paste an emoji
+- Using `:emojiCode:`, for example 🐫
+
 
 #### Superscript
 
 ```
-1^^st^^
+1^st^
 ```
 
 > This modifier can be placed attached on other text.
@@ -92,7 +113,7 @@ There are some standard style such as the color names (to color text) and others
 For example, if you want to write "water" in a more scientific way:
 
 ```
-H''2''O
+H~2~O
 ```
 
 Pay attention, those are two single quote
@@ -200,8 +221,6 @@ Math block is a particular paragraph used to print mathematical formulas and mor
 
 The paragraph modifier for math block is double $, i.e. `$$` to open and close blocks.
 
-#### 
-
 #### Paragraph styler
 
 In NMD is possible to indicate a paragraph style. There is a set of standard styles which each indicates a particular style that should be implemented from the NDM editors. These are guide lines, each editor could implement different styles.
@@ -231,3 +250,40 @@ Each class can be written in different lines:
 - `.todo` paragraph which must be written in future
 - `.note` paragraph which contains a note
 - `.warning` paragraph which contains a warning
+
+### Special components
+
+In addition to inline and paragraph modifiers, there are _special components_ which are a set of useful graphic components such as tables, diagram and others.
+
+Each special component has a particular text construct.
+
+#### Tables
+
+Each table has an table head, body and footer (like HTML tables). A table can have only head or only footer, but it must always have body.
+
+##### Table Head
+
+The pattern for table head is: 
+
+| + single space + cell text + one or more spaces |
+| + single space + alignment modifier + one or more spaces + |
+
+Alignment modifiers:
+
+- `:---` all column on left
+- `---:` all column on right
+- `:---:` all column on center
+- `.---:` head on left, body on right
+- `:---.` head on right, body on left
+
+##### Table Body
+
+The pattern for a generic table record is: | + single space + cell text + one or more spaces |
+
+```
+| cell text | cell text | cell text |
+```
+
+#### Table Footer
+
+> WIP
