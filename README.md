@@ -20,6 +20,7 @@ The list of addons that we would support in future:
 - bibliographies
 - note of text, i.e. comments
 - image description and reference
+- more than one comment and its author for each paragraph
 
 ## Syntax overview
 
@@ -174,7 +175,7 @@ You can press two times `enter`, i.e. `\n\n`, to separate text of the same parag
 #### Paragraph metadata
 
 ```
-@ + metadata label + single space + metadata content
+@ + metadata tag + single space + metadata content
 ```
 
 Supported metadata:
