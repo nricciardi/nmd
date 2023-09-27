@@ -135,6 +135,12 @@ or
 $E=mc^2$
 ```
 
+#### Inline comments
+
+```
+// this is a comment
+```
+
 
 ### Paragraph modifiers
 
@@ -157,6 +163,15 @@ Create headings using `#` (up to 6 levels). `#` must be separated from text usin
 ###### Heading 6
 ```
 
+It's possible to use this alternative format:
+
+```
+#1 Heading 1
+#2 Heading 2
+...
+#6 Heading 6
+```
+
 #### Line separator
 
 To apply a line separator use --- or *** in a new blank line.
@@ -176,14 +191,14 @@ Using `tabs` you can create different list levels.
 
 Code blocks use ``` as paragraph modifier.
 
-It's possible to specify the language used in code block, as in Commonmark, writing language name after first quotes.
+It's possible to specify the language used in code block, as in CommonMark, writing language name after first quotes.
 
 ```markdown
 # code block
 print("Write all documents in NMD!!")
 ```
 
-The list with supported languages (tag in parentesis):
+The list with supported languages (tag in parenthesis):
 - Python (python)
 - Java (java)
 - Javascript (javascript)
@@ -200,7 +215,15 @@ Math block is a particular paragraph used to print mathematical formulas and mor
 
 The paragraph modifier for math block is double $, i.e. `$$` to open and close blocks.
 
-#### 
+#### Multiline comments
+
+```
+/*
+multi
+line
+comment
+*/
+```
 
 #### Paragraph styler
 
@@ -214,7 +237,7 @@ To indicate the style of the paragraph you must use `.` modifier. If it isn't pr
 
 A *style* is a set of style rules to modified a paragraph.
 
-Styles are introducted using `.`, e.g. `.styleName`, below the title of paragraph **without** blank lines.
+Styles are introduced using `.`, e.g. `.styleName`, below the title of paragraph **without** blank lines.
 
 Each class can be written in different lines:
 
