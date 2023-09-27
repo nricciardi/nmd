@@ -5,11 +5,28 @@ With NMD, you can effortlessly create beautifully formatted text for your projec
 
 NMD is full compatible with CommonMark standard.
 
+## Work In Progress Addons
+
+There are a set of addons which we would add to NMD and many others that we will forgot to add, so you can propose to add a new addon through a new issue.
+
+The list of addons that we would support in future:
+
+- document metadata (author, date, number of pages and so on)
+- footnotes
+- page header
+- database diagram
+- uml diagram
+- custom simplifier LaTeX
+- bibliographies
+- note of text, i.e. comments
+- image description and reference
+- more than one comment and its author for each paragraph
+
 ## Syntax overview
 
 There are two types of modifiers to manipulate your NMD files. In particular, there are the _inline modifiers_ and _paragraph modifiers_.
 
-You can read below the list of all inline and paragraph modifiers. 
+You can read below the list of all inline and paragraph modifiers.
 
 ### Inline modifiers
 
@@ -32,8 +49,6 @@ or
 
 *Italic*
 ```
-
-={ciao}(red)
 
 #### Strikethrough text
 
@@ -70,6 +85,10 @@ You can insert only background color or only text font using this convention:
 {Only font}(;;fontName)
 ```
 
+##### Compatible highlight text
+
+You can use also `==Highlight text==`.
+
 #### Custom text style
 
 ```
@@ -78,11 +97,18 @@ You can insert only background color or only text font using this convention:
 
 There are some standard style such as the color names (to color text) and others.
 
+#### Emoji
+
+Two ways to add emoji:
+
+- Copy and paste an emoji
+- Using `:emojiCode:`, for example 🐫
+
 
 #### Superscript
 
 ```
-1^^st^^
+1^st^
 ```
 
 > This modifier can be placed attached on other text.
@@ -92,7 +118,7 @@ There are some standard style such as the color names (to color text) and others
 For example, if you want to write "water" in a more scientific way:
 
 ```
-H''2''O
+H~2~O
 ```
 
 Pay attention, those are two single quote
@@ -152,6 +178,63 @@ Paragraph text **must** be separated from its title using a blank line.
 
 You can press two times `enter`, i.e. `\n\n`, to separate text of the same paragraph **and** different paragraph modifiers. Single `\n` is ignored (you can write the same line in more than one line). 
 
+#### Paragraph metadata
+
+```
+@ + metadata tag + single space + metadata content
+```
+
+Supported metadata:
+
+- `author`
+- `content` description of paragraph content
+- `datetime`
+- `comment`
+- `todo`
+
+##### Paragraph metadata block
+
+```
+/* to open
+
+metadata list
+
+styles list
+
+*/ to close
+```
+
+##### Paragraph styler
+
+In NMD is possible to indicate a paragraph style. There is a set of standard styles which each indicates a particular style that should be implemented from the NDM editors. These are guide lines, each editor could implement different styles.
+
+In addiction, there is the possibility to add a custom style reference.
+
+Styles could be implemented using any languages, commonly it is used CSS (or SCSS/SASS).
+
+To indicate the style of the paragraph you must use `.` modifier. If it isn't presente, editors use default paragraph style.
+
+A *style* is a set of style rules to modified a paragraph.
+
+Styles are introducted using `.`, e.g. `.styleName`, below the title of paragraph **without** blank lines.
+
+Each class can be written in different lines:
+
+```css
+.styleName1
+.styleName2
+...
+.styleNameN
+```
+
+###### Standard styles
+
+- `.default` default style (it can be omitted)
+- `.todo` paragraph which must be written in future
+- `.note` paragraph which contains a note
+- `.warning` paragraph which contains a warning
+
+
 #### Heading (Title of a paragraph)
 
 Create headings using `#` (up to 6 levels). `#` must be separated from text using a blank space ` `.
@@ -209,12 +292,6 @@ The list with supported languages (tag in parenthesis):
 - Kotlin (kotlin)
 - ...
 
-#### Math block (LaTeX)
-
-Math block is a particular paragraph used to print mathematical formulas and more.
-
-The paragraph modifier for math block is double $, i.e. `$$` to open and close blocks.
-
 #### Multiline comments
 
 ```
@@ -224,6 +301,43 @@ line
 comment
 */
 ```
+
+#### Math block (LaTeX)
+
+Math block is a particular paragraph used to print mathematical formulas and more.
+
+The paragraph modifier for math block is double $, i.e. `$$` to open and close blocks.
+
+#### Special components
+
+In addition to inline and paragraph modifiers, there are _special components_ which are a set of useful graphic components such as tables, diagram and others.
+
+Each special component has a particular text construct, but is can be definited as stand-alone paragraph, so is possible to add metadata and styles using _paragraph metadata addon_.
+
+##### Tables
+
+Each table has an table head, body and footer (like HTML tables). A table can have only head or only footer, but it must always have body.
+
+##### Table Head
+
+The pattern for a cell table head is: 
+
+```
+|| + single space + cell head text + one or more spaces ||
+```
+
+###### Table Body
+
+The pattern for a generic table record is: | + single space + cell text + one or more spaces |
+
+```
+| cell text | cell text | cell text |
+```
+
+##### Table Footer
+
+> WIP
+
 
 #### Paragraph styler
 

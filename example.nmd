@@ -1,0 +1,13 @@
+This is an example of NMD.
+
+# Main Title
+@author YourName
+@datetime 1970/11/25 11:25:00
+@class styleClass1
+@class styleClass2
+@style background-color #ede5ce
+
+This is the text of the paragraph.
+This new line will be rendered on the same line of line above.
+
+This line is separated from others above.
