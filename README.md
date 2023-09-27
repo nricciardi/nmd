@@ -167,6 +167,12 @@ $E=mc^2$
 // this is a comment
 ```
 
+#### Todo
+
+If you would insert a *todo* reminder you can use:
+
+> WIP
+
 
 ### Paragraph modifiers
 
@@ -192,47 +198,41 @@ Supported metadata:
 - `comment`
 - `todo`
 
-##### Paragraph metadata block
 
-```
-/* to open
+#### Paragraph styles and metadata
 
-metadata list
+In NMD is possible to indicate paragraph styles and metadata *S&M*.
 
-styles list
+There is a set of standard and custom styles which each indicates a particular style. These are guide lines, each editor could implement a standard style in different ways.
 
-*/ to close
-```
+Styles use CSS (or SCSS/SASS based on editor) key-value modifiers. So, there are **single style attributes** and **style classes** (a set of style attributes).
 
-##### Paragraph styler
+Style classes are introduced using `.`, e.g. `.styleClass1`. There are a set of standard style classes which are always implemented:
 
-In NMD is possible to indicate a paragraph style. There is a set of standard styles which each indicates a particular style that should be implemented from the NDM editors. These are guide lines, each editor could implement different styles.
-
-In addiction, there is the possibility to add a custom style reference.
-
-Styles could be implemented using any languages, commonly it is used CSS (or SCSS/SASS).
-
-To indicate the style of the paragraph you must use `.` modifier. If it isn't presente, editors use default paragraph style.
-
-A *style* is a set of style rules to modified a paragraph.
-
-Styles are introducted using `.`, e.g. `.styleName`, below the title of paragraph **without** blank lines.
+- `.default` default style (it can be omitted)
+  
+> WIP standard style classes
 
 Each class can be written in different lines:
 
-```css
-.styleName1
-.styleName2
-...
-.styleNameN
+
+
+S&M must be indicated using this format:
+
+```
+{
+    
+}
 ```
 
-###### Standard styles
+> WIP
 
-- `.default` default style (it can be omitted)
-- `.todo` paragraph which must be written in future
-- `.note` paragraph which contains a note
-- `.warning` paragraph which contains a warning
+There are 2 possible ways to insert S&M:
+
+- **In-site**
+- **Out-site**
+
+
 
 
 #### Heading (Title of a paragraph)
@@ -338,33 +338,3 @@ The pattern for a generic table record is: | + single space + cell text + one or
 
 > WIP
 
-
-#### Paragraph styler
-
-In NMD is possible to indicate a paragraph style. There is a set of standard styles which each indicates a particular style that should be implemented from the NDM editors. These are guide lines, each editor could implement different styles.
-
-In addiction, there is the possibility to add a custom style reference.
-
-Styles could be implemented using any languages, commonly it is used CSS (or SCSS/SASS).
-
-To indicate the style of the paragraph you must use `.` modifier. If it isn't presente, editors use default paragraph style.
-
-A *style* is a set of style rules to modified a paragraph.
-
-Styles are introduced using `.`, e.g. `.styleName`, below the title of paragraph **without** blank lines.
-
-Each class can be written in different lines:
-
-```css
-.styleName1
-.styleName2
-...
-.styleNameN
-```
-
-##### Standard styles
-
-- `.default` default style (it can be omitted)
-- `.todo` paragraph which must be written in future
-- `.note` paragraph which contains a note
-- `.warning` paragraph which contains a warning
