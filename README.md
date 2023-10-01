@@ -186,6 +186,17 @@ You can press two times `enter`, i.e. `\n\n`, to separate text of the same parag
 
 #### Paragraph metadata
 
+
+
+
+#### Paragraph styles and metadata
+
+In NMD each paragraph can be decorated with a set of **paragraph decorators**, i.e. **metadata**, **in-line styles** and **style classes**. 
+
+There is a set of standard and custom styles which each indicates a particular style. These are guide lines, each editor could implement a standard style in different ways.
+
+Metadata are introduced using `@`:
+
 ```
 @ + metadata tag + single space + metadata content
 ```
@@ -195,17 +206,6 @@ Supported metadata:
 - `author`
 - `content` description of paragraph content
 - `datetime`
-- `comment`
-- `todo`
-
-
-#### Paragraph styles and metadata
-
-In NMD is possible to indicate paragraph styles and metadata *S&M*.
-
-There is a set of standard and custom styles which each indicates a particular style. These are guide lines, each editor could implement a standard style in different ways.
-
-Styles use CSS (or SCSS/SASS based on editor) key-value modifiers. So, there are **single style attributes** and **style classes** (a set of style attributes).
 
 Style classes are introduced using `.`, e.g. `.styleClass1`. There are a set of standard style classes which are always implemented:
 
@@ -213,27 +213,19 @@ Style classes are introduced using `.`, e.g. `.styleClass1`. There are a set of 
   
 > WIP standard style classes
 
-Each class can be written in different lines:
+In-line styles use CSS (or SCSS/SASS based on editor) key-value modifiers, they .
 
+To add decorators to a paragraph you must insert `{}` in the line below title, in parenthesis each type of decorator has a particular symbol which introduces it. You can use `;` to separate decorator in the same line or a `\n` to insert decorator in multiple lines.
 
-
-S&M must be indicated using this format:
+There is an example below.
 
 ```
+## Foo title
 {
-    
+    @author you
+    .styleClass1
 }
 ```
-
-> WIP
-
-There are 2 possible ways to insert S&M:
-
-- **In-site**
-- **Out-site**
-
-
-
 
 #### Heading (Title of a paragraph)
 
