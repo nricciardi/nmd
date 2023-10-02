@@ -69,20 +69,20 @@ Color can be written in hexadecimal if you use `#rrggbb` convention or you can u
 You can modify text color, text background and its font using this modifier:
 
 ```
-{Custom colored text}(textColor;backgroundColor;fontName)
+[Custom colored text]{{textColor;backgroundColor;fontName}}
 ```
 
 You can omit font and background color if you want only modify text color.
 
 ```
-{Only text color}(#rrggbb)
+[Only text color]{{#rrggbb}}
 ```
 
 You can insert only background color or only text font using this convention:
 
 ```
-{Only background}(;#rrggbb)
-{Only font}(;;fontName)
+[Only background]{{;#rrggbb}}
+[Only font]{{;;fontName}}
 ```
 
 ##### Compatible highlight text
@@ -129,24 +129,12 @@ Pay attention, those are two single quote
 
 ```markdown
 [Link](http://a.com)
-
-or
-
-[Link][1]
-⋮
-[1]: http://b.org
 ```
 
 #### Image
 
 ```markdown
 ![Image](http://url/a.png)
-
-or
-
-![Image][1]
-⋮
-[1]: http://url/b.jpg
 ```
 
 #### Inline code
@@ -184,10 +172,6 @@ Paragraph text **must** be separated from its title using a blank line.
 
 You can press two times `enter`, i.e. `\n\n`, to separate text of the same paragraph **and** different paragraph modifiers. Single `\n` is ignored (you can write the same line in more than one line). 
 
-#### Paragraph metadata
-
-
-
 
 #### Paragraph styles and metadata
 
@@ -205,15 +189,21 @@ Supported metadata:
 
 - `author`
 - `content` description of paragraph content
-- `datetime`
+- `createdAt`
+- `updatedAt`
 
-Style classes are introduced using `.`, e.g. `.styleClass1`. There are a set of standard style classes which are always implemented:
+A special metadata is the **id** which can be written in two alternatives ways:
 
-- `.default` default style (it can be omitted)
-  
-> WIP standard style classes
+```
+#the-id
+@id the-id
+```
 
-In-line styles use CSS (or SCSS/SASS based on editor) key-value modifiers, they .
+> the identifiers should be all in lowercase and each word should be separated using `-`.
+
+Style classes are introduced using `.`, e.g. `.styleClass1`.
+
+In-line styles use CSS (or SCSS/SASS based on editor) key-value modifiers, they haven't a symbol.
 
 To add decorators to a paragraph you must insert `{}` in the line below title, in parenthesis each type of decorator has a particular symbol which introduces it. You can use `;` to separate decorator in the same line or a `\n` to insert decorator in multiple lines.
 
@@ -222,9 +212,17 @@ There is an example below.
 ```
 ## Foo title
 {
+    #the-id
     @author you
     .styleClass1
+    background-color: red
 }
+```
+
+You can add decorators also to a single word using this syntax:
+
+```
+This [word]{#the-word; color: red} is red.
 ```
 
 #### Heading (Title of a paragraph)
@@ -294,6 +292,24 @@ comment
 */
 ```
 
+#### Focus block
+
+Focus blocks allow to insert text in particular paragraph in which the text is highlighted.
+
+There are many types of focus block:
+
+- **info**
+- **warning**
+- **danger**
+
+The syntax is below.
+
+```
+::: warning
+Watch out!!!
+:::
+```
+
 #### Math block (LaTeX)
 
 Math block is a particular paragraph used to print mathematical formulas and more.
@@ -304,7 +320,7 @@ The paragraph modifier for math block is double $, i.e. `$$` to open and close b
 
 In addition to inline and paragraph modifiers, there are _special components_ which are a set of useful graphic components such as tables, diagram and others.
 
-Each special component has a particular text construct, but is can be definited as stand-alone paragraph, so is possible to add metadata and styles using _paragraph metadata addon_.
+Each special component has a particular text construct, but is can be defined as stand-alone paragraph, so is possible to add metadata and styles using _paragraph metadata addon_.
 
 ##### Tables
 
