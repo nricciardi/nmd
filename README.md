@@ -29,13 +29,22 @@ NMD can be used to create single files or structured projects.
 Each project has a directory whit this folders and files hierarchy: 
 
 - **asset**
-  - **images**
-  - **styles**
-  - **documents**
+  - **images**: contains the images
+  - **styles**: contains the styles
+  - **documents**: contains other documents which are typically linked in NDM files
+
+Each directory can contains other subdirectories.
 
 ### Single file mode
 
 If you use single file mode, project has a canonical Markdown file where all content is in that.
+
+This file can be called as you want with `nmd` extension.
+
+### Structured project mode
+
+A structured projects contain multiples files. In particular, each file should contain an argument.
+
 
 ## Syntax overview
 
