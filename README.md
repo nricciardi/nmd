@@ -26,9 +26,16 @@ The list of addons that we would support in future:
 
 NMD can be used to create single files or structured projects.
 
-Each project has a directory whit:
+Each project has a directory whit this folders and files hierarchy: 
 
-Single files are canonical Markdown files where all content is in one file.
+- **asset**
+  - **images**
+  - **styles**
+  - **documents**
+
+### Single file mode
+
+If you use single file mode, project has a canonical Markdown file where all content is in that.
 
 ## Syntax overview
 
