@@ -11,16 +11,16 @@ There are a set of addons which we would add to NMD and many others that we will
 
 The list of addons that we would support in future:
 
-- document metadata (author, date, number of pages and so on)
-- footnotes
-- page header
-- database diagram
-- uml diagram
-- custom simplifier LaTeX
-- bibliographies
-- note of text, i.e. comments
-- image description and reference
-- more than one comment and its author for each paragraph
+- [ ] document metadata (author, date, number of pages and so on)
+- [ ] footnotes
+- [ ] page header
+- [ ] database diagram
+- [ ] uml diagram
+- [ ] custom simplifier LaTeX
+- [ ] bibliographies
+- [x] note of text, i.e. comments
+- [ ] image description and reference
+- [x] more than one comment and its author for each paragraph
 
 ## Syntax overview
 
@@ -216,6 +216,7 @@ There is an example below.
 {
     #the-id
     @author you
+    @author yourFriend
     .styleClass1
     background-color: red
 }
