@@ -22,6 +22,14 @@ The list of addons that we would support in future:
 - [ ] image description and reference
 - [x] more than one comment and its author for each paragraph
 
+## Project structure
+
+NMD can be used to create single files or structured projects.
+
+Each project has a directory whit:
+
+Single files are canonical Markdown files where all content is in one file.
+
 ## Syntax overview
 
 There are two types of modifiers to manipulate your NMD files. In particular, there are the _inline modifiers_ and _paragraph modifiers_.
