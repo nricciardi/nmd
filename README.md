@@ -159,7 +159,9 @@ $E=mc^2$
 
 If you would insert a *todo* reminder you can use:
 
-> WIP
+```
+[TODO]:
+```
 
 
 ### Paragraph modifiers
