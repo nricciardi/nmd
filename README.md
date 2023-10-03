@@ -24,7 +24,7 @@ The list of addons that we would support in future:
 
 ## Project structure
 
-NMD can be used to create single files or structured projects.
+NMD can be used to create single files or structured projects, called **collections**.
 
 Each project has a directory whit this folders and files hierarchy: 
 
@@ -41,9 +41,13 @@ If you use single file mode, project has a canonical Markdown file where all con
 
 This file can be called as you want with `nmd` extension.
 
-### Structured project mode
+### Collections
 
-A structured projects contain multiples files. In particular, each file should contain an argument.
+A structured projects contain multiples files, called **document**. In particular, each file contains an argument, i.e. the argument name is infered by headind 1 of the document.
+
+Documents can be orchestred using the `nmd.js` file. In particular, there is a set of attributes can be inserted in the configuration:
+
+
 
 
 ## Syntax overview
