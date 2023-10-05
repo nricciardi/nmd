@@ -36,7 +36,7 @@ It is possible to associate a set of classes to each type of element using the s
 ```json
 {
   "style": {
-    "h1": ["h1", "red-text"],
+    "heading-1": ["h1", "red-text"],
     "bold": ["bold", "big-text"],
     "link": []
   }
@@ -45,9 +45,17 @@ It is possible to associate a set of classes to each type of element using the s
 
 The list of possible element is below.
 
-- **h1, h2, ..., hN**: heading
-
-TODO
+- **heading-1, heading-2, ..., heading-N**: heading
+- **bold**
+- **italic**
+- **strikethrough**
+- **underlined**
+- **link**
+- **image**
+- **line-break**
+- **info-focus-block**
+- **warning-focus-block**
+- **danger-focus-block**
 
 ## Project structure
 
