@@ -22,6 +22,19 @@ The list of addons that we would support in future:
 - [ ] image description and reference
 - [x] more than one comment and its author for each paragraph
 
+## Configuration file
+
+NMD projects should have `nmd configuration file`, i.e. `nmd.json`, which contains a set of properties to manage NMD projects:
+
+- `collection`: to manage collection mode projects, explained [here](TODO)
+- `style`: a key-value map to manage style of project
+
+### Style in configuration
+
+It is possible to associate a set of classes to each type of element using the syntax below:
+
+TODO
+
 ## Project structure
 
 NMD can be used to create single files or structured projects, called **collections**.
@@ -183,12 +196,26 @@ $E=mc^2$
 // this is a comment
 ```
 
-#### Todo
+#### Bookmark
 
-If you would insert a *todo* reminder you can use:
+**Bookmarks** are label which can be inserted in text body to mark a paragraph or a piece of paragraph.
 
 ```
-[TODO]:
+@[bookmark](description)
+```
+
+Description can be omitted:
+
+```
+@[bookmark]
+```
+
+##### Todo
+
+Todo is a special tag to insert... TODO
+
+```
+@[TODO]
 ```
 
 
