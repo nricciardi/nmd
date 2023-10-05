@@ -33,6 +33,20 @@ NMD projects should have `nmd configuration file`, i.e. `nmd.json`, which contai
 
 It is possible to associate a set of classes to each type of element using the syntax below:
 
+```json
+{
+  "style": {
+    "h1": ["h1", "red-text"],
+    "bold": ["bold", "big-text"],
+    "link": []
+  }
+}
+```
+
+The list of possible element is below.
+
+- **h1, h2, ..., hN**: heading
+
 TODO
 
 ## Project structure
