@@ -12,7 +12,7 @@ There are a set of addons which we would add to NMD and many others that we will
 The list of addons that we would support in future:
 
 - [x] document metadata (author, date, number of pages and so on)
-- [ ] footnotes
+- [x] footnotes
 - [ ] page header
 - [ ] database diagram
 - [ ] uml diagram
@@ -28,6 +28,8 @@ NMD projects should have `nmd configuration file`, i.e. `nmd.json`, which contai
 
 - `collection`: to manage collection mode projects, explained [here](#collections)
 - `style`: a key-value map to manage style of project
+- `metadata`
+- 
 
 ### Style in configuration
 
@@ -45,7 +47,7 @@ It is possible to associate a set of classes to each type of element using the s
 
 The list of possible element is below.
 
-- **heading-1, heading-2, ..., heading-N**: heading
+- **heading-1, heading-2, ..., heading-6**: heading
 - **bold**
 - **italic**
 - **strikethrough**
@@ -56,6 +58,30 @@ The list of possible element is below.
 - **info-focus-block**
 - **warning-focus-block**
 - **danger-focus-block**
+
+### Metadata in configuration
+
+There are these metadata:
+
+- **headnotes** (can be `null`): NMD full features string which will be inserted as headnotes 
+- **footnotes** (can be `null`): NMD full features string which will be inserted as footnotes 
+- **authors**: list of authors
+- **references**: NMD full features list of strings which represents the value used to substitute references in NDM text body
+
+An example below.
+
+```json
+{
+  "metadata": {
+    "headnotes": "...",
+    "footnotes": "...",
+    "authors": ["author1", "author2", "authorN"],
+    "references": ["...", "..."]
+  }
+}
+```
+
+
 
 ## Project structure
 
@@ -85,7 +111,7 @@ Documents can be managed using the `nmd.js` file. In particular, there is a set 
 ```json
 {
   "collection": {
-    "cover": "cover-file.png",
+    "cover": "cover-file.nmd",
     "order": [
       "file1.nmd",
       "file2.nmd",
@@ -95,6 +121,8 @@ Documents can be managed using the `nmd.js` file. In particular, there is a set 
   }
 }
 ```
+
+> Files can be NMD or MD files.
 
 - **cover** (can be `null`) is the name of the collection cover 
 - **order** is the ordered list of file names which form the collection
@@ -107,7 +135,48 @@ There are two types of modifiers to manipulate your NMD files. In particular, th
 
 You can read below the list of all inline and paragraph modifiers.
 
+### Escape
+
+You can prevent text modification using **escape**, i.e. `\`:
+
+```
+\*
+\_
+...
+```
+
 ### Inline modifiers
+
+#### Metadata
+
+**Metadata** are a set of data which gives information about document, project and so on.
+
+The syntax is:
+
+```
+%metadata%
+```
+
+There are these metadata:
+
+- **pageN**: page number
+- **date**: current date
+- **datetime**: current datetime
+- **authors**: authors (`nmd.json` corresponding metadata must be set)
+
+####
+
+**Reference** is a... reference! You can use a fictitious name as a classic variable in the programming languages.
+
+References must be set in `nmd.json`.
+
+The syntax is below.
+
+```
+&reference
+```
+
+If reference is not found, it will be shown as actual reference name.
 
 #### Bold
 
@@ -242,7 +311,7 @@ $E=mc^2$
 @[bookmark](description)
 ```
 
-Description can be omitted:
+Description can be multi-lines or can be omitted:
 
 ```
 @[bookmark]
@@ -250,7 +319,7 @@ Description can be omitted:
 
 ##### Todo
 
-Todo is a special tag to insert... TODO
+Todo is a special tag to insert... TODOs
 
 ```
 @[TODO]
