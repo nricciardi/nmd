@@ -11,7 +11,7 @@ There are a set of addons which we would add to NMD and many others that we will
 
 The list of addons that we would support in future:
 
-- [ ] document metadata (author, date, number of pages and so on)
+- [x] document metadata (author, date, number of pages and so on)
 - [ ] footnotes
 - [ ] page header
 - [ ] database diagram
@@ -26,7 +26,7 @@ The list of addons that we would support in future:
 
 NMD projects should have `nmd configuration file`, i.e. `nmd.json`, which contains a set of properties to manage NMD projects:
 
-- `collection`: to manage collection mode projects, explained [here](TODO)
+- `collection`: to manage collection mode projects, explained [here](#collections)
 - `style`: a key-value map to manage style of project
 
 ### Style in configuration
@@ -78,10 +78,26 @@ This file can be called as you want with `nmd` extension.
 
 ### Collections
 
-A structured projects contain multiples files, called **document**. In particular, each file contains an argument, i.e. the argument name is infered by headind 1 of the document.
+A structured projects contain multiples files, called **document**. In particular, each file contains an argument, i.e. the argument name is inferred by heading 1 of the document.
 
-Documents can be orchestred using the `nmd.js` file. In particular, there is a set of attributes can be inserted in the configuration:
+Documents can be managed using the `nmd.js` file. In particular, there is a set of attributes can be inserted in the configuration:
 
+```json
+{
+  "collection": {
+    "cover": "cover-file.png",
+    "order": [
+      "file1.nmd",
+      "file2.nmd",
+      "file3.md",
+      "fileN.nmd"
+    ]
+  }
+}
+```
+
+- **cover** (can be `null`) is the name of the collection cover 
+- **order** is the ordered list of file names which form the collection
 
 
 
