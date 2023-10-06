@@ -29,7 +29,7 @@ NMD projects should have `nmd configuration file`, i.e. `nmd.json`, which contai
 - `collection`: to manage collection mode projects, explained [here](#collections)
 - `style`: a key-value map to manage style of project
 - `metadata`
-- 
+- `files`
 
 ### Style in configuration
 
@@ -66,7 +66,7 @@ There are these metadata:
 - **headnotes** (can be `null`): NMD full features string which will be inserted as headnotes 
 - **footnotes** (can be `null`): NMD full features string which will be inserted as footnotes 
 - **authors**: list of authors
-- **references**: NMD full features list of strings which represents the value used to substitute references in NDM text body
+- **references**: NMD full features map of strings which represents the value used to substitute references in NDM text body
 
 An example below.
 
@@ -76,11 +76,16 @@ An example below.
     "headnotes": "...",
     "footnotes": "...",
     "authors": ["author1", "author2", "authorN"],
-    "references": ["...", "..."]
+    "references": {
+        "ref1": "val1"
+     }
   }
 }
 ```
 
+### For file metadata and style
+
+Metadata and style information with the same syntax can be inserted in `files` property. In particular, each key must match with a file name, so that file will override style and metadata.
 
 
 ## Project structure
