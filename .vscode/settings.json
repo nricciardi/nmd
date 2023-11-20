@@ -1,0 +1,5 @@
+{
+    "rust-analyzer.linkedProjects": [
+        "./nmd-compiler/Cargo.toml"
+    ]
+}
