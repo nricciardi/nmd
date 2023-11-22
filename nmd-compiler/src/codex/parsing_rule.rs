@@ -1,4 +1,6 @@
-pub use super::parsing_result::ParsingResult;
+mod parsing_result;
+
+pub use parsing_result::ParsingResult;
 
 
 
@@ -8,7 +10,7 @@ pub struct ParsingRule {
 }
 
 impl ParsingRule {
-    pub fn new(matching_rule: String) {
+    pub fn new(matching_rule: String) -> Self {
         ParsingRule {
             matching_rule
         }
