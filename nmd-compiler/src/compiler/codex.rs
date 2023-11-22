@@ -9,18 +9,8 @@ pub struct Codex {
     rules: Vec<ParsingRule>
 }
 
-
-/// return a Codex
-pub trait CodexFactory {
-    fn create() -> Codex;
-}
-
-pub struct HtmlCodexFactory {
-
-}
-
-impl CodexFactory for HtmlCodexFactory {
-    fn create() -> Codex {
+impl Codex {
+    fn of_html() -> Codex {
         Codex {
             rules: vec![
 
@@ -28,3 +18,4 @@ impl CodexFactory for HtmlCodexFactory {
         }
     }
 }
+

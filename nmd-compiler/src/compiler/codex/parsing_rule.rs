@@ -1,6 +1,8 @@
-mod parsing_result;
+use log::info;
 
 pub use parsing_result::ParsingResult;
+
+use super::parsing_result;
 
 
 
@@ -17,6 +19,7 @@ impl ParsingRule {
     }
 
     pub fn parse(content: &str) -> ParsingResult {
-        todo!(format!("will be parsed {content}"))
+        info!("will be parsed {}", content);
+        todo!()
     }
 }

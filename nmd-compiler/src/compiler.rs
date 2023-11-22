@@ -1,8 +1,17 @@
 mod compiler_configuration;
 mod supported_format;
+mod codex;
 
+
+use thiserror::Error;
 pub use self::compiler_configuration::CompilerConfiguration;
 
+
+#[derive(Error, Debug)]
+pub enum CompilerError {
+    #[error("unknown error")]
+    Unknown
+}
 
 pub struct Compiler {
     version: &'static str,
@@ -18,7 +27,7 @@ impl Compiler {
         }
     }
 
-    pub fn compile(&self) {
+    pub fn compile(&self) -> Result<(), CompilerError> {
         todo!("compile...")
     }
 }

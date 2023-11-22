@@ -1,11 +1,15 @@
+use env_logger;
+use anyhow::Result;
 use nmd_compiler::Compiler;
 use nmd_compiler::compiler::CompilerConfiguration;
 
-fn main() {
+fn main() -> Result<()> {
 
-    let compiler_configuration = CompilerConfiguration::new("html");
+    env_logger::init();
+
+    let compiler_configuration = CompilerConfiguration::new("html")?;
 
     let compiler = Compiler::new(compiler_configuration);
 
-    compiler.compile()
+    Ok(compiler.compile()?)
 }
