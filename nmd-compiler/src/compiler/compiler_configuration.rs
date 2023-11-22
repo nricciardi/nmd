@@ -1,9 +1,13 @@
+use std::error;
 use std::str::FromStr;
+use thiserror::Error;
 use super::supported_format::SupportedFormat;
 use super::supported_format::SupportedFormatError;
 
 
+#[derive(Error, Debug)]
 pub enum CompilerConfigurationError {
+    #[error("configuration error: {0}")]
     SupportedFormatError(SupportedFormatError)
 }
 

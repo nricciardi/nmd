@@ -4,10 +4,11 @@ use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum SupportedFormatError {
-    #[error("Unsupported format: {0}")]
+    #[error("unsupported format: {0}")]
     UnsupportedFormat(String)
 }
 
+/// Set of supported formats
 #[derive(PartialEq, Debug)]
 pub enum SupportedFormat {
     Html
