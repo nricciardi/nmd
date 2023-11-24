@@ -31,7 +31,7 @@ pub struct CompilerConfiguration {
 impl CompilerConfiguration {
     pub fn new(location: &str, format: &str) -> Result<Self, CompilerConfigurationError> {
 
-        let location = match RepositoryLocation::from_str(location) {
+        let location = match RepositoryLocation::from_str(location) {           // TODO: dynamic location, not only repository, but also only one dossier or document
             Ok(l) => l,
             Err(e) => return Err(CompilerConfigurationError::ParseError(e.to_string()))
         };
