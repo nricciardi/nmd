@@ -7,7 +7,7 @@ fn main() -> Result<()> {
 
     env_logger::init();
 
-    let compiler_configuration = CompilerConfiguration::new("html")?;
+    let compiler_configuration = CompilerConfiguration::new( ".", "html")?;
 
     let compiler = Compiler::new(compiler_configuration);
 
