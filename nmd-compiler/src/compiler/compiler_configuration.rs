@@ -1,11 +1,10 @@
 use std::str::FromStr;
-use std::string::ParseError;
 use thiserror::Error;
-use super::location;
-use super::location::Locatable;
+use super::compilable::Compilable;
+use super::location::Location;
+use super::location::LocationError;
 use super::supported_format::SupportedFormat;
 use super::supported_format::SupportedFormatError;
-use super::repository::RepositoryLocation;
 
 
 #[derive(Error, Debug)]
@@ -14,7 +13,10 @@ pub enum CompilerConfigurationError {
     SupportedFormatError(SupportedFormatError),
 
     #[error("parse error: {0}")]
-    ParseError(String)
+    ParseError(String),
+
+    #[error("location error: {0}")]
+    LocationError(LocationError)
 }
 
 impl From<SupportedFormatError> for CompilerConfigurationError {
@@ -24,21 +26,27 @@ impl From<SupportedFormatError> for CompilerConfigurationError {
 }
 
 pub struct CompilerConfiguration {
-    location: Box<dyn Locatable>,
+    location: Location,
     format: SupportedFormat
 }
 
 impl CompilerConfiguration {
     pub fn new(location: &str, format: &str) -> Result<Self, CompilerConfigurationError> {
 
-        let location = match RepositoryLocation::from_str(location) {           // TODO: dynamic location, not only repository, but also only one dossier or document
+
+        // TODO: improve error handling with ? 
+        let location = match Location::from_str(location) {           // TODO: dynamic location, not only repository, but also only one dossier or document
             Ok(l) => l,
-            Err(e) => return Err(CompilerConfigurationError::ParseError(e.to_string()))
+            Err(e) => return Err(CompilerConfigurationError::LocationError(e))
         };
 
         Ok(CompilerConfiguration {
-            location: Box::new(location),
+            location,
             format: SupportedFormat::from_str(format)?
         })
+    }
+
+    pub fn location(&self) -> &Location {
+        &self.location
     }
 }

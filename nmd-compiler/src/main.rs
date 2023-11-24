@@ -9,7 +9,7 @@ fn main() -> Result<()> {
 
     let compiler_configuration = CompilerConfiguration::new( ".", "html")?;
 
-    let compiler = Compiler::new(compiler_configuration);
+    let compiler = Compiler::new(compiler_configuration)?;
 
     Ok(compiler.compile()?)
 }
