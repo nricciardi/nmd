@@ -27,7 +27,7 @@ impl ParsingRule {
 
         let regex = match Regex::new(&self.search_pattern) {
           Ok(r) => r,
-          Err(e) => return Err(ParsingError::InvalidPattern(self.search_pattern))  
+          Err(_) => return Err(ParsingError::InvalidPattern(self.search_pattern))  
         };
 
         let parsed_content = regex.replace_all(content, self.replacement_pattern).to_string();
