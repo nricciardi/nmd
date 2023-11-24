@@ -8,6 +8,6 @@ pub use self::dossier::Dossier;
 
 pub struct Repository {
     name: String,
-    dossiers: Vec<Dossier>
+    dossiers: Option<Vec<Dossier>>
 }
 

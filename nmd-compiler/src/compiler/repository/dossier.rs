@@ -6,5 +6,5 @@ pub use dossier_location::DossierLocation;
 
 pub struct Dossier {
     name: String,
-    documents: Vec<Document>
+    documents: Option<Vec<Document>>
 }

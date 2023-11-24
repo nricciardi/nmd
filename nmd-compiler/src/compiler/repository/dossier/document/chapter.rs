@@ -4,7 +4,7 @@ pub use self::paragraph::Paragraph;
 
 pub struct Chapter {
     title: String,
-    paragraphs: Vec<Paragraph>,
-    subchapters: Vec<Box<Chapter>>
+    paragraphs: Option<Vec<Paragraph>>,
+    subchapters: Option<Vec<Box<Chapter>>>
 }
 
