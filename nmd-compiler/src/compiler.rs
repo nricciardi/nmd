@@ -8,13 +8,13 @@ mod compilable;
 
 use thiserror::Error;
 pub use self::compiler_configuration::CompilerConfiguration;
-use self::compilable::Compilable;
+use self::{compilable::Compilable, location::LocationError};
 
 
 #[derive(Error, Debug)]
 pub enum CompilerError {
-    #[error("invalid target")]
-    InvalidTarget(String),
+    #[error(transparent)]
+    InvalidTarget(#[from] LocationError),
 
     #[error("unknown error")]
     Unknown(String)
@@ -30,11 +30,7 @@ impl Compiler {
 
     pub fn new(configuration: CompilerConfiguration) -> Result<Self, CompilerError> {
 
-        // TODO: improve with ?
-        let target = match configuration.location().load() {
-            Ok(target) => target,
-            Err(err) => return Err(CompilerError::InvalidTarget(err.to_string()))
-        };
+        let target = configuration.location().load()?;
 
         Ok(Compiler {
             version: "0.0.1",

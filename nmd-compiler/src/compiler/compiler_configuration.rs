@@ -15,8 +15,8 @@ pub enum CompilerConfigurationError {
     #[error("parse error: {0}")]
     ParseError(String),
 
-    #[error("location error: {0}")]
-    LocationError(LocationError)
+    #[error(transparent)]
+    LocationError(#[from] LocationError)
 }
 
 impl From<SupportedFormatError> for CompilerConfigurationError {
@@ -33,15 +33,8 @@ pub struct CompilerConfiguration {
 impl CompilerConfiguration {
     pub fn new(location: &str, format: &str) -> Result<Self, CompilerConfigurationError> {
 
-
-        // TODO: improve error handling with ? 
-        let location = match Location::from_str(location) {           // TODO: dynamic location, not only repository, but also only one dossier or document
-            Ok(l) => l,
-            Err(e) => return Err(CompilerConfigurationError::LocationError(e))
-        };
-
         Ok(CompilerConfiguration {
-            location,
+            location: Location::from_str(location)?,
             format: SupportedFormat::from_str(format)?
         })
     }

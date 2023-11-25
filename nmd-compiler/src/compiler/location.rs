@@ -2,7 +2,7 @@ pub mod locatable;
 
 use std::str::FromStr;
 use thiserror::Error;
-use super::{parsable::Parsable, repository::Repository, compilable::Compilable};
+use super::{parsable::Parsable, repository::{Repository, RepositoryError}, compilable::Compilable};
 pub use locatable::Locatable;
 
 
@@ -14,8 +14,8 @@ pub enum Location {
 
 #[derive(Error, Debug)]
 pub enum LocationError {
-    #[error("loading failed: {0}")]
-    Load(String),
+    #[error(transparent)]
+    Load(#[from] RepositoryError),
 
     #[error("location cannot be created: {0}")]
     Creation(String)
@@ -34,10 +34,7 @@ impl Location {
 impl Location {
     pub fn load(&self) -> Result<Box<dyn Compilable>, LocationError> {
 
-        match Repository::load(self) {
-            Ok(repository) => Ok(Box::new(repository)),
-            Err(e) => Err(LocationError::Load(e.to_string()))
-        }
+        Ok(Box::new(Repository::load(self)?))
     }
 }
 

@@ -31,7 +31,9 @@ impl Locatable for Repository {
 }
 
 impl Compilable for Repository {
-    
+    fn compile(&self) -> anyhow::Result<()> {
+        todo!()
+    }
 }
 
 impl Repository {
