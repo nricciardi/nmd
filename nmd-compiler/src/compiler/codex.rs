@@ -1,6 +1,6 @@
 pub mod parsing_rule;
 pub mod parsing_result;
-
+pub mod parsable;
 
 pub use parsing_rule::{ParsingRule, PatternType};
 pub use parsing_result::{ParsingResult, ParsingResultBody};
@@ -11,6 +11,10 @@ pub struct Codex {
 }
 
 impl Codex {
+
+    pub fn rules(&self) -> &Vec<ParsingRule> {
+        &self.rules
+    }
 
     fn new(rules: Vec<ParsingRule>) -> Codex {
 
@@ -80,3 +84,39 @@ impl Codex {
     }
 }
 
+
+#[cfg(test)]
+mod test {
+
+    use super::*;
+
+    #[test]
+    fn multiple_uses() {
+        let codex: &Codex = &Codex::of_html();
+
+        let nmd_text = "This is a simple **nmd** text for test";
+        let expected_result = "This is a simple <strong>nmd</strong> text for test";
+        let mut parsing_result = String::from(nmd_text);
+
+        for rule in codex.rules() {
+            let result = rule.parse(parsing_result.as_str()).unwrap();
+
+            parsing_result = result.parsed_content()
+        }
+
+        assert_eq!(parsing_result, expected_result);
+
+        let nmd_text = "This is a simple *nmd* text for test";
+        let expected_result = "This is a simple <em>nmd</em> text for test";
+        let mut parsing_result = String::from(nmd_text);
+
+        for rule in codex.rules() {
+            let result = rule.parse(parsing_result.as_str()).unwrap();
+
+            parsing_result = result.parsed_content()
+        }
+
+        assert_eq!(parsing_result, expected_result);
+    }
+
+}

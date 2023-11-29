@@ -21,8 +21,8 @@ impl ParsingResultBody {
         }
     }
 
-    pub fn parsed_content(self: &Self) -> String {
-        self.parsed_content.clone()        // TODO: remove clone
+    pub fn parsed_content(self: Self) -> String {
+        self.parsed_content
     }
 }
 

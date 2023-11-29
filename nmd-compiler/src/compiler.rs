@@ -3,7 +3,6 @@ mod supported_format;
 mod codex;
 mod repository;
 mod location;
-mod parsable;
 mod compilable;
 
 use thiserror::Error;

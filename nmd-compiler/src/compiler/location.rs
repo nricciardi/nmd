@@ -2,7 +2,7 @@ pub mod locatable;
 
 use std::str::FromStr;
 use thiserror::Error;
-use super::{parsable::Parsable, repository::{Repository, RepositoryError}, compilable::Compilable};
+use super::{repository::{Repository, RepositoryError}, compilable::Compilable};
 pub use locatable::Locatable;
 
 

@@ -4,7 +4,7 @@ use thiserror::Error;
 
 pub use self::dossier::Dossier;
 
-use super::{parsable::{Parsable, ParsingConfiguration}, location::{Locatable, Location}, compilable::{Compilable, CompilationConfiguration}};
+use super::{codex::{parsable::{Parsable, ParsingConfiguration}, ParsingResult}, location::{Locatable, Location}, compilable::{Compilable, CompilationConfiguration}};
 
 #[derive(Error, Debug)]
 pub enum RepositoryError {
@@ -25,8 +25,8 @@ impl Locatable for Repository {
 }
 
 impl Parsable for Repository {
-    fn parse(&self, parsing_configuration: ParsingConfiguration) {
-        
+    fn parse(&self, parsing_configuration: ParsingConfiguration) -> ParsingResult {
+        todo!()
     }
 }
 

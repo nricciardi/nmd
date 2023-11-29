@@ -2,7 +2,7 @@ pub mod chapter;
 
 pub use chapter::Chapter;
 
-use crate::compiler::{location::{Locatable, Location}, parsable::Parsable, compilable::Compilable};
+use crate::compiler::{location::{Locatable, Location}, codex::parsable::Parsable, compilable::Compilable};
 
 pub struct Document {
     location: Location,
