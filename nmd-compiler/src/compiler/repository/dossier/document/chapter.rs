@@ -10,8 +10,8 @@ pub struct Chapter {
     subchapters: Option<Vec<Box<Chapter>>>
 }
 
-impl Parsable for Chapter {
+/* impl Parsable for Chapter {
     fn parse(&self) {
         todo!()
     }
-}
+} */

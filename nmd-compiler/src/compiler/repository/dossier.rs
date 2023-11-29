@@ -16,7 +16,7 @@ impl Locatable for Dossier {
     }
 }
 
-impl Parsable for Dossier {
+/* impl Parsable for Dossier {
     fn parse(&self) {
         todo!()
     }
@@ -26,4 +26,4 @@ impl Compilable for Dossier {
     fn compile(&self) -> anyhow::Result<()> {
         todo!()
     }
-}
+} */

@@ -16,7 +16,7 @@ impl Locatable for Document {
     }
 }
 
-impl Parsable for Document {
+/* impl Parsable for Document {
     fn parse(&self) {
         todo!()
     }
@@ -26,4 +26,4 @@ impl Compilable for Document {
     fn compile(&self) -> anyhow::Result<()> {
         todo!()
     }
-}
+} */

@@ -4,7 +4,7 @@ use thiserror::Error;
 
 pub use self::dossier::Dossier;
 
-use super::{parsable::Parsable, location::{Locatable, Location}, compilable::Compilable};
+use super::{parsable::{Parsable, ParsingConfiguration}, location::{Locatable, Location}, compilable::{Compilable, CompilationConfiguration}};
 
 #[derive(Error, Debug)]
 pub enum RepositoryError {
@@ -18,20 +18,20 @@ pub struct Repository {
     dossiers: Option<Vec<Dossier>>
 }
 
-impl Parsable for Repository {
-    fn parse(&self) {
-        
-    }
-}
-
 impl Locatable for Repository {
     fn location(&self) -> &Location {
         &self.location
     }
 }
 
+impl Parsable for Repository {
+    fn parse(&self, parsing_configuration: ParsingConfiguration) {
+        
+    }
+}
+
 impl Compilable for Repository {
-    fn compile(&self) -> anyhow::Result<()> {
+    fn compile(&self, compilation_configuration: CompilationConfiguration) -> anyhow::Result<()> {
         todo!()
     }
 }
