@@ -1,9 +1,9 @@
 mod compiler_configuration;
 mod supported_format;
-mod codex;
 mod repository;
 mod location;
 mod compilable;
+mod parsable;
 
 use thiserror::Error;
 pub use self::compiler_configuration::CompilerConfiguration;

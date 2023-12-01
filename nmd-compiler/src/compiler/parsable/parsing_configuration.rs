@@ -1,10 +1,4 @@
-use super::{Codex, ParsingResult};
-
-
-pub trait Parsable {
-    fn parse(&self, parsing_configuration: ParsingConfiguration) -> ParsingResult;
-}
-
+pub use super::codex::Codex;
 
 pub struct ParsingConfiguration {
     codex: Codex,
@@ -18,5 +12,11 @@ impl ParsingConfiguration {
 
     pub fn all_in_one(&self) -> &bool {
         &self.all_in_one
+    }
+}
+
+impl Default for ParsingConfiguration {
+    fn default() -> Self {
+        ParsingConfiguration { codex: Codex::of_html(), all_in_one: true }
     }
 }

@@ -2,7 +2,7 @@ mod document;
 
 pub use document::Document;
 
-use crate::compiler::{location::{Location, Locatable}, codex::parsable::Parsable, compilable::Compilable};
+use crate::compiler::{location::{Location, Locatable}, parsable::Parsable, compilable::Compilable};
 
 pub struct Dossier {
     location: Location,

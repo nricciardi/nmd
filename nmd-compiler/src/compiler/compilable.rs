@@ -1,4 +1,4 @@
-use super::codex::parsable::{Parsable, ParsingConfiguration};
+use super::parsable::{Parsable, ParsingConfiguration};
 use super::location::Locatable;
 use anyhow::Result;
 
