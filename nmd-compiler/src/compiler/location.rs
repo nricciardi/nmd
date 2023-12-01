@@ -4,12 +4,14 @@ use std::str::FromStr;
 use thiserror::Error;
 use super::{repository::{Repository, RepositoryError}, compilable::Compilable};
 pub use locatable::Locatable;
+use url::Url;
+use std::path::PathBuf;
 
 
 #[derive(Debug)]
 pub enum Location {
-    Url(String),
-    Path(String)
+    Url(Url),
+    LocalPath(PathBuf)
 }
 
 #[derive(Error, Debug)]
@@ -22,11 +24,11 @@ pub enum LocationError {
 }
 
 impl Location {
-    pub fn to_string(&self) -> &String {
 
+    pub fn to_string(&self) -> String {
         match self {
-            Self::Url(url) => url,
-            Self::Path(path) => path
+            Self::Url(url) => url.to_string(),
+            Self::LocalPath(path) => path.clone().to_string_lossy().to_string()
         }
     }
 }
@@ -34,7 +36,9 @@ impl Location {
 impl Location {
     pub fn load(&self) -> Result<Box<dyn Compilable>, LocationError> {
 
-        Ok(Box::new(Repository::load(self)?))
+        todo!();
+
+        // Ok(Box::new(Repository::load(self)?))
     }
 }
 
@@ -47,8 +51,13 @@ impl FromStr for Location {
             return Err(LocationError::Creation("location cannot be an empty string".to_string()));
         }
 
-        // TODO: improve with match url/path + validation
-        Ok(Location::Path(s.to_string()))
+        if let Ok(url) = Url::parse(s) {
+            
+            return Ok(Location::Url(url));
+
+        } else {
+            return Ok(Location::LocalPath(PathBuf::from(s)));
+        }
     }
 }
 

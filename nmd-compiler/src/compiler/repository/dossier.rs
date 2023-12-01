@@ -16,14 +16,21 @@ impl Locatable for Dossier {
     }
 }
 
-/* impl Parsable for Dossier {
-    fn parse(&self) {
+impl Parsable for Dossier {
+    fn parse(&self, parsing_configuration: &document::chapter::ParsingConfiguration) -> document::chapter::ParsingResult {
         todo!()
     }
 }
 
 impl Compilable for Dossier {
-    fn compile(&self) -> anyhow::Result<()> {
+    fn compile(&self, compilation_configuration: crate::compiler::compilable::CompilationConfiguration) -> anyhow::Result<()> {
         todo!()
     }
-} */
+}
+
+impl Dossier {
+    fn new(location: Location) -> Self {
+        todo!()
+        // Dossier { location: location, name: (), documents: () }
+    }
+}
