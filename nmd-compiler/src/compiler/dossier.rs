@@ -38,8 +38,8 @@ impl Compilable for Dossier {
 
 impl Dossier {
 
-    pub fn name(&self) -> &String {
-        self.location.resource_name()
+    pub fn name(&self) -> String {
+        self.location.resource_name().to_string_lossy().to_string()
     }
 
     pub fn load(location: &Location) -> Result<Self, DossierError> {

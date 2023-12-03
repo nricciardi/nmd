@@ -1,6 +1,6 @@
 pub mod locatable;
 
-use std::str::FromStr;
+use std::{str::FromStr, ffi::OsStr, fs};
 use thiserror::Error;
 use super::{dossier::{Dossier, DossierError, Document, DocumentError}, compilable::Compilable};
 pub use locatable::Locatable;
@@ -29,6 +29,9 @@ pub enum LocationError {
     #[error(transparent)]
     DocumentLoadFailed(#[from] DocumentError),
 
+    #[error("resource '{0}' is invalid")]
+    InvalidResource(String),
+
     #[error("location cannot be created: {0}")]
     Creation(String)
 }
@@ -55,21 +58,44 @@ impl Location {
                 Err(LocationError::ResourceUnexpected(path.to_string_lossy().to_string()))
                 
             },
-            Self::Url(_url) => todo!("unsupported")
+            Self::Url(_url) => todo!()
         }
     }
 
-    pub fn resource_name(&self) -> &String {
+    pub fn resource_name(&self) -> &OsStr {
         match self {
             Self::LocalPath(path) => {
-                todo!()
+                path.file_name().expect("invalid resource")
             },
-            Self::Url(_url) => todo!("unsupported")
+
+            Self::Url(_url) => todo!()
         }
     }
 
-    pub fn subresources() -> Option<Vec<Location>> {
-        todo!()
+    pub fn subresources(&self) -> Option<Vec<Location>> {
+        match self {
+            Self::LocalPath(path) => {
+                if !path.is_dir() {
+                    return None
+                }
+
+                let entries = fs::read_dir(path).expect("invalid resource");
+
+                let mut subresource: Vec<Location> = Vec::new();
+
+                for entry in entries {
+                    if let Ok(entry) = entry {
+                        let file_path = entry.path();
+
+                        subresource.push(Location::LocalPath(file_path));
+                    }
+                }
+
+                Some(subresource)
+            },
+
+            Self::Url(_url) => todo!()
+        }
     }
 }
 
@@ -92,6 +118,12 @@ impl FromStr for Location {
     }
 }
 
+impl From<PathBuf> for Location {
+    fn from(value: PathBuf) -> Self {
+        Location::LocalPath(value)
+    }
+}
+
 impl Location {
 
     pub fn to_string(&self) -> String {
@@ -105,6 +137,8 @@ impl Location {
 
 #[cfg(test)]
 mod test {
+    use std::env;
+
     use super::*;
 
     #[test]
@@ -117,6 +151,31 @@ mod test {
         match repository_location {
             Ok(location) => assert_eq!(location.to_string(), path),
             Err(e) => panic!("'{}' during location generation from str of path: '{}'", e, path)
+        }
+    }
+
+    #[test]
+    fn load() {
+
+        let project_directory = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        let dossier_name = "nmd-test-dossier-1";
+        let project_directory = project_directory.join("test-resources").join(dossier_name);
+
+        assert!(project_directory.is_dir());
+
+        let location = Location::from(project_directory);
+
+        assert_eq!(location.resource_name().to_str().unwrap(), dossier_name);
+
+        let physical_subresources = vec!["d1.nmd", "d2.nmd"];
+        let subresources = location.subresources().unwrap();
+
+        let subresources: Vec<String> = subresources.iter().map(|sr| {
+            sr.resource_name().to_string_lossy().to_string()
+        }).collect();
+
+        for psr in physical_subresources {
+            assert!(subresources.contains(&psr.to_string()))
         }
     }
 }
