@@ -3,7 +3,7 @@ pub mod chapter;
 pub use chapter::Chapter;
 use thiserror::Error;
 
-use crate::compiler::{location::{Locatable, Location}, parsable::Parsable, compilable::{Compilable, CompilationConfiguration, CompilationError}};
+use crate::compiler::{location::{Locatable, Location}, parsable::Parsable, compilable::{Compilable, compilable_configuration::CompilationConfiguration, CompilationError}};
 
 #[derive(Error, Debug)]
 pub enum DocumentError {

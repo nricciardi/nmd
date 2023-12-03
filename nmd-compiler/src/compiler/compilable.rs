@@ -1,4 +1,8 @@
-use super::parsable::{Parsable, ParsingConfiguration};
+pub mod compilable_configuration;
+
+use self::compilable_configuration::CompilationConfiguration;
+
+use super::parsable::Parsable;
 use super::location::Locatable;
 use anyhow::Result;
 use thiserror::Error;
@@ -15,20 +19,3 @@ pub trait Compilable: Locatable + Parsable {
     fn compile(&self, compilation_configuration: &CompilationConfiguration) -> Result<(), CompilationError>;
 }
 
-pub struct CompilationConfiguration {
-    parsing_configuration: ParsingConfiguration
-}
-
-impl Default for CompilationConfiguration {
-    fn default() -> Self {
-        Self { parsing_configuration: Default::default() }
-    }
-}
-
-impl CompilationConfiguration {
-    pub fn new() -> Self {
-        CompilationConfiguration { 
-            ..Default::default()
-        }
-    }
-}

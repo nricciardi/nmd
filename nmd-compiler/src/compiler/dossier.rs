@@ -5,7 +5,7 @@ use thiserror::Error;
 
 use crate::compiler::{location::{Location, Locatable}, parsable::Parsable, compilable::Compilable};
 
-use super::compilable::{CompilationConfiguration, CompilationError};
+use super::compilable::{compilable_configuration::CompilationConfiguration, CompilationError};
 
 #[derive(Error, Debug)]
 pub enum DossierError {

@@ -1,7 +1,6 @@
 use std::str::FromStr;
 use thiserror::Error;
-use super::compilable::Compilable;
-use super::compilable::CompilationConfiguration;
+use super::compilable::compilable_configuration::CompilationConfiguration;
 use super::location::Location;
 use super::location::LocationError;
 use super::supported_format::SupportedFormat;
@@ -25,6 +24,7 @@ pub struct CompilerConfiguration {
     location: Location,
     format: SupportedFormat,
     compilation_configuration: CompilationConfiguration
+    // TODO: parallelization level
 }
 
 impl CompilerConfiguration {
