@@ -1,12 +1,18 @@
 mod document;
 
-pub use document::Document;
+pub use document::{Document, DocumentError};
+use thiserror::Error;
 
 use crate::compiler::{location::{Location, Locatable}, parsable::Parsable, compilable::Compilable};
 
+#[derive(Error, Debug)]
+pub enum DossierError {
+    #[error("dossier loading failed: '{0}'")]
+    Load(&'static str)
+}
+
 pub struct Dossier {
     location: Location,
-    name: String,
     documents: Option<Vec<Document>>
 }
 
@@ -29,8 +35,18 @@ impl Compilable for Dossier {
 }
 
 impl Dossier {
-    fn new(location: Location) -> Self {
+
+    pub fn name(&self) -> &String {
+        self.location.resource_name()
+    }
+
+    pub fn load(location: &Location) -> Result<Self, DossierError> {
+
         todo!()
-        // Dossier { location: location, name: (), documents: () }
+
+        /* Self {
+            location,
+            documents
+        } */
     }
 }
