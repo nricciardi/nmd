@@ -5,6 +5,8 @@ use thiserror::Error;
 
 use crate::compiler::{location::{Location, Locatable}, parsable::Parsable, compilable::Compilable};
 
+use super::compilable::{CompilationConfiguration, CompilationError};
+
 #[derive(Error, Debug)]
 pub enum DossierError {
     #[error("dossier loading failed: '{0}'")]
@@ -29,7 +31,7 @@ impl Parsable for Dossier {
 }
 
 impl Compilable for Dossier {
-    fn compile(&self, compilation_configuration: crate::compiler::compilable::CompilationConfiguration) -> anyhow::Result<()> {
+    fn compile(&self, compilation_configuration: &CompilationConfiguration) -> Result<(), CompilationError> {
         todo!()
     }
 }

@@ -2,7 +2,7 @@ pub mod locatable;
 
 use std::str::FromStr;
 use thiserror::Error;
-use super::{repository::{Repository, RepositoryError}, compilable::Compilable};
+use super::{dossier::{Dossier, DossierError, Document, DocumentError}, compilable::Compilable};
 pub use locatable::Locatable;
 use url::Url;
 use std::path::PathBuf;
@@ -16,29 +16,60 @@ pub enum Location {
 
 #[derive(Error, Debug)]
 pub enum LocationError {
+
+    #[error("resource '{0}' not found")]
+    ResourceNotFound(String),
+
+    #[error("resource '{0}' unexpected")]
+    ResourceUnexpected(String),
+
     #[error(transparent)]
-    Load(#[from] RepositoryError),
+    DossierLoadFailed(#[from] DossierError),
+
+    #[error(transparent)]
+    DocumentLoadFailed(#[from] DocumentError),
 
     #[error("location cannot be created: {0}")]
     Creation(String)
 }
 
-impl Location {
-
-    pub fn to_string(&self) -> String {
-        match self {
-            Self::Url(url) => url.to_string(),
-            Self::LocalPath(path) => path.clone().to_string_lossy().to_string()
-        }
-    }
-}
 
 impl Location {
     pub fn load(&self) -> Result<Box<dyn Compilable>, LocationError> {
 
-        todo!();
+        match self {
+            Self::LocalPath(path) => {
 
-        // Ok(Box::new(Repository::load(self)?))
+                if !path.exists() {
+                    return Err(LocationError::ResourceNotFound(path.to_string_lossy().to_string()));
+                }
+
+                if path.is_file() {
+                    return Ok(Box::new(Document::load(self)?));
+                
+                } else if path.is_dir() {
+
+                    return Ok(Box::new(Dossier::load(self)?));
+                }
+                
+                Err(LocationError::ResourceUnexpected(path.to_string_lossy().to_string()))
+                
+            },
+            Self::Url(_url) => todo!("unsupported")
+        }
+    }
+
+    pub fn resource_name(&self) -> &String {
+        match self {
+            Self::LocalPath(path) => {
+                todo!()
+            },
+            Self::Url(_url) => todo!("unsupported")
+        }
+    }
+
+    pub fn subresources() -> Option<Vec<Location>> {
+        todo!()
     }
 }
 
@@ -57,6 +88,16 @@ impl FromStr for Location {
 
         } else {
             return Ok(Location::LocalPath(PathBuf::from(s)));
+        }
+    }
+}
+
+impl Location {
+
+    pub fn to_string(&self) -> String {
+        match self {
+            Self::Url(url) => url.to_string(),
+            Self::LocalPath(path) => path.clone().to_string_lossy().to_string()
         }
     }
 }
