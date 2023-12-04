@@ -12,12 +12,11 @@ pub enum DocumentError {
 }
 
 pub struct Document {
-    location: Location,
-    chapters: Option<Vec<Chapter> >
+    location: Location
 }
 
 impl Locatable for Document {
-    fn location(self: &Self) -> &Location {
+    fn location(&self) -> &Location {
         &self.location
     }
 }
@@ -36,6 +35,10 @@ impl Compilable for Document {
 
 impl Document {
     pub fn load(location: &Location) -> Result<Self, DocumentError> {
+        todo!()
+    }
+
+    pub fn chapters() -> Option<Vec<Chapter>> {
         todo!()
     }
 }

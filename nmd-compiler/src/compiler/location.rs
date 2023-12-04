@@ -7,6 +7,7 @@ pub use locatable::Locatable;
 use url::Url;
 use std::path::PathBuf;
 
+const SUPPORTED_EXTENSIONS: [&str; 2] = ["nmd", "md"];
 
 #[derive(Debug)]
 pub enum Location {
@@ -20,9 +21,6 @@ pub enum LocationError {
     #[error("resource '{0}' not found")]
     ResourceNotFound(String),
 
-    #[error("resource '{0}' unexpected")]
-    ResourceUnexpected(String),
-
     #[error(transparent)]
     DossierLoadFailed(#[from] DossierError),
 
@@ -32,30 +30,57 @@ pub enum LocationError {
     #[error("resource '{0}' is invalid")]
     InvalidResource(String),
 
+    #[error("resource '{0}' is invalid because: {1}")]
+    InvalidResourceVerbose(String, String),
+
     #[error("location cannot be created: {0}")]
     Creation(String)
 }
 
 
 impl Location {
+
+    fn load_being_file(&self) -> Result<Box<dyn Compilable>, LocationError> {
+
+        if let Self::LocalPath(path) = self {
+            if let Some(extension) = path.extension() {
+
+                let extension = extension.to_string_lossy().to_string();
+
+                if SUPPORTED_EXTENSIONS.contains(&extension.as_str()) {
+                    return Ok(Box::new(Document::load(self)?));
+
+                } else {
+                    return Err(LocationError::InvalidResourceVerbose(self.to_string(), format!("extension '{extension}'")))
+                }
+                
+            } else {
+                return Err(LocationError::InvalidResourceVerbose(self.to_string(), "file without extension are not supported yet".to_string()))
+            }
+        }
+
+        Err(LocationError::InvalidResourceVerbose(self.to_string(), "this resource had to be a file".to_string()))
+    }
+
     pub fn load(&self) -> Result<Box<dyn Compilable>, LocationError> {
 
         match self {
             Self::LocalPath(path) => {
 
                 if !path.exists() {
-                    return Err(LocationError::ResourceNotFound(path.to_string_lossy().to_string()));
+                    return Err(LocationError::ResourceNotFound(self.to_string()));
                 }
 
                 if path.is_file() {
-                    return Ok(Box::new(Document::load(self)?));
+
+                    return self.load_being_file();
                 
                 } else if path.is_dir() {
 
                     return Ok(Box::new(Dossier::load(self)?));
                 }
                 
-                Err(LocationError::ResourceUnexpected(path.to_string_lossy().to_string()))
+                Err(LocationError::InvalidResource(self.to_string()))
                 
             },
             Self::Url(_url) => todo!()

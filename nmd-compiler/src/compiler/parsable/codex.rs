@@ -1,6 +1,8 @@
 pub mod parsing_rule;
 
 pub use parsing_rule::{ParsingRule, PatternType};
+use crate::compiler::supported_format::SupportedFormat;
+
 pub use super::parsing_result::{ParsingResult, ParsingResultBody};
 
 use self::parsing_rule::replacement_rule::ReplacementRule;
@@ -25,7 +27,7 @@ impl Codex {
         }
     }
 
-    pub fn of_html() -> Codex {
+    pub fn of_html() -> Self {
         Codex::new(
             vec![
                 Box::new(ReplacementRule::new(PatternType::HeadingH6, "<h6>$1</h6>")),
@@ -59,6 +61,14 @@ impl Codex {
 
             ]
         )
+    }
+}
+
+impl From<SupportedFormat> for Codex {
+    fn from(format: SupportedFormat) -> Self {
+        match format {
+            SupportedFormat::Html => Self::of_html()
+        }
     }
 }
 

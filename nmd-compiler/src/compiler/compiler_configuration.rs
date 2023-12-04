@@ -3,7 +3,6 @@ use thiserror::Error;
 use super::compilable::compilable_configuration::CompilationConfiguration;
 use super::location::Location;
 use super::location::LocationError;
-use super::supported_format::SupportedFormat;
 use super::supported_format::SupportedFormatError;
 
 
@@ -21,10 +20,7 @@ pub enum CompilerConfigurationError {
 
 /// Configuration to build a Compiler
 pub struct CompilerConfiguration {
-    location: Location,
-    format: SupportedFormat,
     compilation_configuration: CompilationConfiguration
-    // TODO: parallelization level
 }
 
 impl CompilerConfiguration {
@@ -32,19 +28,13 @@ impl CompilerConfiguration {
     pub fn new(location: &str, format: &str) -> Result<Self, CompilerConfigurationError> {
 
         Ok(CompilerConfiguration {
-            location: Location::from_str(location)?,
-            format: SupportedFormat::from_str(format)?,
             compilation_configuration: {
                 CompilationConfiguration::default()
                 // TODO
             }         
         })
     }
-
-    pub fn location(&self) -> &Location {
-        &self.location
-    }
-
+    
     pub fn compilation_configuration(&self) -> &CompilationConfiguration {
         &self.compilation_configuration
     }

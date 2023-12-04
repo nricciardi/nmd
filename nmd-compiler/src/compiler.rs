@@ -1,9 +1,9 @@
 mod compiler_configuration;
-mod supported_format;
 mod location;
 mod compilable;
 mod parsable;
 mod dossier;
+pub mod supported_format;
 
 use thiserror::Error;
 pub use self::compiler_configuration::CompilerConfiguration;
@@ -39,9 +39,11 @@ impl Compiler {
 
     pub fn compile(&self) -> Result<(), CompilerError> {
 
-        let target: Box<dyn Compilable> = self.configuration.location().load()?;
+        todo!()
 
-        Ok(target.compile(self.configuration.compilation_configuration())?)
+        /* let target: Box<dyn Compilable> = self.configuration.location().load()?;
+
+        Ok(target.compile(self.configuration.compilation_configuration())?) */
     }
 
     pub fn version(&self) -> &str {
