@@ -4,6 +4,7 @@ mod compilable;
 mod parsable;
 mod dossier;
 pub mod supported_format;
+mod resource;
 
 use thiserror::Error;
 pub use self::compiler_configuration::CompilerConfiguration;

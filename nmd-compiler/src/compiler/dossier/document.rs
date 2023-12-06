@@ -3,7 +3,7 @@ pub mod chapter;
 pub use chapter::Chapter;
 use thiserror::Error;
 
-use crate::compiler::{location::{Locatable, Location}, parsable::Parsable, compilable::{Compilable, compilable_configuration::CompilationConfiguration, CompilationError}};
+use crate::compiler::{location::{Locatable, Location}, parsable::Parsable, compilable::{Compilable, compilable_configuration::CompilationConfiguration, CompilationError}, resource::Resource};
 
 #[derive(Error, Debug)]
 pub enum DocumentError {
@@ -12,10 +12,20 @@ pub enum DocumentError {
 }
 
 pub struct Document {
-    location: Location
+    location: Location,                 // TODO: maybe remove
+    chapters: Option<Vec<Chapter>>
 }
 
-impl Locatable for Document {
+impl From<Resource> for Document {
+    fn from(resource: Resource) -> Result<Self, DocumentError> {
+        let mut content = resource.content();
+
+
+    }
+}
+
+
+impl Locatable for Document {       // TODO: maybe remove
     fn location(&self) -> &Location {
         &self.location
     }
@@ -27,14 +37,19 @@ impl Parsable for Document {
     }
 }
 
-impl Compilable for Document {
+impl Compilable for Document {      // TODO: maybe remove
     fn compile(&self, compilation_configuration: &CompilationConfiguration) -> Result<(), CompilationError> {
         todo!()
     }
 }
 
 impl Document {
-    pub fn load(location: &Location) -> Result<Self, DocumentError> {
+
+    pub fn new(content: String) {
+        todo!()
+    }
+
+    pub fn load(location: &Location) -> Result<Self, DocumentError> {           // TODO: maybe remove
         todo!()
     }
 
