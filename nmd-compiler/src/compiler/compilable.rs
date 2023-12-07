@@ -1,6 +1,6 @@
-pub mod compilable_configuration;
+pub mod compilation_configuration;
 
-use self::compilable_configuration::CompilationConfiguration;
+use self::compilation_configuration::CompilationConfiguration;
 
 use super::parsable::Parsable;
 use super::location::Locatable;

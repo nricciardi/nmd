@@ -95,9 +95,9 @@ mod test {
 
         let path = ".";
 
-        let repository_location = Resource::from_str(path);
+        let resource = Resource::from_str(path);
     
-        match repository_location {
+        match resource {
             Ok(location) => assert_eq!(location.to_string(), path),
             Err(e) => panic!("'{}' during location generation from str of path: '{}'", e, path)
         }

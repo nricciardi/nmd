@@ -5,7 +5,9 @@ use thiserror::Error;
 
 use crate::compiler::{location::{Location, Locatable}, parsable::Parsable, compilable::Compilable};
 
-use super::compilable::{compilable_configuration::CompilationConfiguration, CompilationError};
+use self::document::chapter::ParsingError;
+
+use super::compilable::{compilation_configuration::CompilationConfiguration, CompilationError};
 
 #[derive(Error, Debug)]
 pub enum DossierError {
@@ -25,7 +27,7 @@ impl Locatable for Dossier {
 }
 
 impl Parsable for Dossier {
-    fn parse(&self, parsing_configuration: &document::chapter::ParsingConfiguration) -> document::chapter::ParsingResult {
+    fn parse(&mut self, parsing_configuration: &document::chapter::ParsingConfiguration) -> Result<(), ParsingError> {
         todo!()
     }
 }

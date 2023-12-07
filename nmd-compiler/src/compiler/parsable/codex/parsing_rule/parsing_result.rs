@@ -10,13 +10,13 @@ pub enum ParsingError {
 }
 
 
-pub struct ParsingResultBody {
+pub struct ParsingOutcome {
     parsed_content: String
 }
 
-impl ParsingResultBody {
-    pub fn new(parsed_content: String) -> ParsingResultBody {
-        ParsingResultBody{
+impl ParsingOutcome {
+    pub fn new(parsed_content: String) -> Self {
+        Self {
             parsed_content
         }
     }
@@ -25,8 +25,3 @@ impl ParsingResultBody {
         self.parsed_content
     }
 }
-
-
-
-pub type ParsingResult = Result<ParsingResultBody, ParsingError>;
-

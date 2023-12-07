@@ -3,16 +3,22 @@ pub mod chapter;
 pub use chapter::Chapter;
 use thiserror::Error;
 use log;
+use rayon::prelude::*;
 
-use crate::compiler::{parsable::{Parsable, ParsingConfiguration}, compilable::{Compilable, compilable_configuration::CompilationConfiguration, CompilationError}, resource::{Resource, ResourceError}};
+use crate::compiler::parsable::{codex::parsing_rule::{parsing_configuration::{ParsingConfiguration, ParallelizationLevel}, parsing_result::{ParsingError, ParsingOutcome}}, Parsable};
+use crate::compiler::{compilable::{Compilable, compilation_configuration::CompilationConfiguration, CompilationError}, resource::{Resource, ResourceError}};
 
 #[derive(Error, Debug)]
 pub enum DocumentError {
     #[error(transparent)]
-    Load(#[from] ResourceError)
+    Load(#[from] ResourceError),
+
+    #[error(transparent)]
+    Parsing(#[from] ParsingError)
 }
 
 pub struct Document {
+    name: String,
     chapters: Option<Vec<Chapter>>
 }
 
@@ -24,18 +30,31 @@ impl TryFrom<Resource> for Document {
     }
 }
 
-
 impl Parsable for Document {
-    fn parse(&self, parsing_configuration: &ParsingConfiguration) -> chapter::ParsingResult {
-        match self.chapters {
-            Some(chapters) => {
-                
-                todo!()         // log... log::info!("parsing")
 
-                chapters.iter().for_each(|chapter| chapter.parse(parsing_configuration))
+    fn parse(&mut self, parsing_configuration: &ParsingConfiguration) -> Result<(), ParsingError> {
+
+        if let Some(mut chapters) = self.chapters {
+            log::info!("parsing {} of document: '{}' (parallelization level: {:?})", chapters.len(), self.name, parsing_configuration.parallelization_level());
+
+            if *parsing_configuration.parallelization_level() >= ParallelizationLevel::Medium {
+
+                chapters.par_iter_mut().find_any(|chapter| {
+                    chapter.parse(parsing_configuration).is_err()
+                });
+
+            } else {
+
+                for chapter in chapters.iter() {
+                    let _ = chapter.parse(parsing_configuration)?;
+                }
             }
-            None => 
+
+        } else {
+            log::warn!("{} has not chapters", self.name)
         }
+
+        Ok(())
     }
 }
 
@@ -47,15 +66,18 @@ impl Parsable for Document {
 
 impl Document {
 
-    pub fn new(content: String) -> Self {
+    pub fn new(name: String, content: String) -> Self {
         
-        if content.is_empty() {
-            return Self {
-                        chapters: Option::None
-                    }
+        let chapters = Option::None;
+
+        if !content.is_empty() {
+            chapters = Option::Some(content) 
         }
 
-        todo!()
+        Self {
+            name,
+            chapters
+        }
     }
 
     pub fn chapters(&self) -> &Option<Vec<Chapter>> {
@@ -65,6 +87,6 @@ impl Document {
     pub fn load(resource: Resource) -> Result<Self, DocumentError> {
         let mut content = resource.content()?;
 
-        Ok(Self::new(content))
+        Ok(Self::new(resource.name().clone(), content))
     }
 }

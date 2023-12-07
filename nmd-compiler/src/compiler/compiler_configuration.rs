@@ -1,6 +1,6 @@
 use std::str::FromStr;
 use thiserror::Error;
-use super::compilable::compilable_configuration::CompilationConfiguration;
+use super::compilable::compilation_configuration::CompilationConfiguration;
 use super::location::Location;
 use super::location::LocationError;
 use super::supported_format::SupportedFormatError;

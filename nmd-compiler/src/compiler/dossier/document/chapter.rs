@@ -1,9 +1,7 @@
 pub mod paragraph;
 
-use crate::compiler::parsable::Parsable;
-
 pub use self::paragraph::Paragraph;
-pub use crate::compiler::parsable::{ParsingConfiguration, ParsingResult};
+pub use crate::compiler::parsable::{codex::parsing_rule::{parsing_configuration::ParsingConfiguration, parsing_result::{ParsingError, ParsingOutcome}}, Parsable};
 
 pub struct Chapter {
     heading: String,
@@ -12,7 +10,7 @@ pub struct Chapter {
 }
 
 impl Parsable for Chapter {
-    fn parse(&self, parsing_configuration: &ParsingConfiguration) -> ParsingResult {
+    fn parse(&mut self, parsing_configuration: &ParsingConfiguration) -> Result<(), ParsingError> {
         todo!()
     }
 }

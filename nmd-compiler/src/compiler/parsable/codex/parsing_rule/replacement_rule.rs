@@ -1,9 +1,9 @@
 use log::debug;
 use regex::Regex;
 
-use crate::compiler::parsable::{parsing_result::{ParsingResultBody, ParsingError}, ParsingConfiguration};
-
-use super::{PatternType, ParsingRule, ParsingResult};
+use super::parsing_configuration::ParsingConfiguration;
+use super::parsing_result::{ParsingError, ParsingOutcome};
+use super::{PatternType, ParsingRule};
 
 
 /// Rule to replace a NMD text based on a specific pattern matching rule
@@ -34,7 +34,7 @@ impl ReplacementRule {
 impl ParsingRule for ReplacementRule {
 
     /// Parse the content using internal search and replacement pattern
-    fn parse(&self, content: &str, parsing_configuration: &ParsingConfiguration) -> ParsingResult {
+    fn parse(&self, content: &str, parsing_configuration: &ParsingConfiguration) -> Result<ParsingOutcome, ParsingError> {
 
         let regex = match Regex::new(&self.pattern_type.search_pattern()) {
           Ok(r) => r,
@@ -45,7 +45,7 @@ impl ParsingRule for ReplacementRule {
 
         debug!("parsed '{}' using '{}'->'{}'", content, self.pattern_type.search_pattern(), self.replacement_pattern);
         
-        Ok(ParsingResultBody::new(parsed_content))
+        Ok(ParsingOutcome::new(parsed_content))
     }
 }
 

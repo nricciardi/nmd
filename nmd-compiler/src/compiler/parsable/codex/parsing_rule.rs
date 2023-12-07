@@ -1,8 +1,10 @@
 pub mod replacement_rule;
+pub mod parsing_configuration;
+pub mod parsing_result;
 
-use crate::compiler::parsable::parsing_configuration::ParsingConfiguration;
-pub use crate::compiler::parsable::parsing_result::{ParsingResult, ParsingError, ParsingResultBody};
 
+use self::parsing_result::{ParsingOutcome, ParsingError};
+pub use self::parsing_configuration::ParsingConfiguration;
 
 
 /// NMD modifiers pattern types
@@ -65,5 +67,5 @@ impl PatternType {
 
 
 pub trait ParsingRule {
-    fn parse(&self, content: &str, parsing_configuration: &ParsingConfiguration) -> ParsingResult;
+    fn parse(&self, content: &str, parsing_configuration: &ParsingConfiguration) -> Result<ParsingOutcome, ParsingError>;
 }
