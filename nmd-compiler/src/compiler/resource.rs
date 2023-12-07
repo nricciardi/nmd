@@ -83,3 +83,23 @@ impl Resource {
         &self.name        
     }
 }
+
+
+#[cfg(test)]
+mod test {
+
+    use super::*;
+
+    #[test]
+    fn from_str() {
+
+        let path = ".";
+
+        let repository_location = Resource::from_str(path);
+    
+        match repository_location {
+            Ok(location) => assert_eq!(location.to_string(), path),
+            Err(e) => panic!("'{}' during location generation from str of path: '{}'", e, path)
+        }
+    }
+}

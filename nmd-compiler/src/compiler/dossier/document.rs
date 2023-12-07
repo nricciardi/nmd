@@ -16,11 +16,13 @@ pub struct Document {
     chapters: Option<Vec<Chapter>>
 }
 
-impl From<Resource> for Document {
-    fn from(resource: Resource) -> Result<Self, DocumentError> {
+impl TryFrom<Resource> for Document {
+    type Error = DocumentError;
+
+    fn try_from(resource: Resource) -> Result<Self, Self::Error> {
         let mut content = resource.content();
 
-
+        todo!()
     }
 }
 
@@ -46,10 +48,6 @@ impl Compilable for Document {      // TODO: maybe remove
 impl Document {
 
     pub fn new(content: String) {
-        todo!()
-    }
-
-    pub fn load(location: &Location) -> Result<Self, DocumentError> {           // TODO: maybe remove
         todo!()
     }
 
