@@ -2,17 +2,17 @@ pub mod chapter;
 
 pub use chapter::Chapter;
 use thiserror::Error;
+use log;
 
-use crate::compiler::{location::{Locatable, Location}, parsable::Parsable, compilable::{Compilable, compilable_configuration::CompilationConfiguration, CompilationError}, resource::Resource};
+use crate::compiler::{parsable::{Parsable, ParsingConfiguration}, compilable::{Compilable, compilable_configuration::CompilationConfiguration, CompilationError}, resource::{Resource, ResourceError}};
 
 #[derive(Error, Debug)]
 pub enum DocumentError {
-    #[error("dossier loading failed: '{0}'")]
-    Load(&'static str)
+    #[error(transparent)]
+    Load(#[from] ResourceError)
 }
 
 pub struct Document {
-    location: Location,                 // TODO: maybe remove
     chapters: Option<Vec<Chapter>>
 }
 
@@ -20,38 +20,51 @@ impl TryFrom<Resource> for Document {
     type Error = DocumentError;
 
     fn try_from(resource: Resource) -> Result<Self, Self::Error> {
-        let mut content = resource.content();
-
-        todo!()
+        Self::load(resource)
     }
 }
 
-
-impl Locatable for Document {       // TODO: maybe remove
-    fn location(&self) -> &Location {
-        &self.location
-    }
-}
 
 impl Parsable for Document {
-    fn parse(&self, parsing_configuration: &chapter::ParsingConfiguration) -> chapter::ParsingResult {
-        todo!()
+    fn parse(&self, parsing_configuration: &ParsingConfiguration) -> chapter::ParsingResult {
+        match self.chapters {
+            Some(chapters) => {
+                
+                todo!()         // log... log::info!("parsing")
+
+                chapters.iter().for_each(|chapter| chapter.parse(parsing_configuration))
+            }
+            None => 
+        }
     }
 }
 
-impl Compilable for Document {      // TODO: maybe remove
+/* impl Compilable for Document {      // TODO: maybe remove
     fn compile(&self, compilation_configuration: &CompilationConfiguration) -> Result<(), CompilationError> {
         todo!()
     }
-}
+} */
 
 impl Document {
 
-    pub fn new(content: String) {
+    pub fn new(content: String) -> Self {
+        
+        if content.is_empty() {
+            return Self {
+                        chapters: Option::None
+                    }
+        }
+
         todo!()
     }
 
-    pub fn chapters() -> Option<Vec<Chapter>> {
-        todo!()
+    pub fn chapters(&self) -> &Option<Vec<Chapter>> {
+        &self.chapters
+    }
+
+    pub fn load(resource: Resource) -> Result<Self, DocumentError> {
+        let mut content = resource.content()?;
+
+        Ok(Self::new(content))
     }
 }

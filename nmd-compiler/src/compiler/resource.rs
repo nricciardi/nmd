@@ -20,7 +20,7 @@ pub enum ResourceError {
     #[error("resource '{0}' is invalid because: {1}")]
     InvalidResourceVerbose(String, String),
 
-    #[error("location cannot be created: {0}")]
+    #[error("resource cannot be created: {0}")]
     Creation(String),
 
     #[error("resource '{0}' cannot be read")]
@@ -38,8 +38,8 @@ impl FromStr for Resource {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
 
-        if s.trim().eq("") {
-            return Err(ResourceError::Creation("location cannot be an empty string".to_string()));
+        if s.is_empty() {
+            return Err(ResourceError::Creation("resource cannot be an empty string".to_string()));
         }
 
         Ok(Resource::new(PathBuf::from_str(s).unwrap())?)
