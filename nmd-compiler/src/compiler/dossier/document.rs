@@ -39,22 +39,28 @@ impl Parsable for Document {
 
             if *parsing_configuration.parallelization_level() >= ParallelizationLevel::Medium {
 
-                chapters.par_iter_mut().find_any(|chapter| {
-                    chapter.parse(parsing_configuration).is_err()
-                });
+                let maybe_one_failed = chapters.par_iter_mut()
+                .map(|chapter| {
+                    chapter.parse(parsing_configuration)
+                }).find_any(|result| result.is_err());
+
+                return maybe_one_failed
 
             } else {
 
                 for chapter in chapters.iter() {
                     let _ = chapter.parse(parsing_configuration)?;
                 }
+
+                return Ok(())
             }
 
         } else {
-            log::warn!("{} has not chapters", self.name)
+            log::warn!("{} has not chapters", self.name);
+
+            return Ok(())
         }
 
-        Ok(())
     }
 }
 
