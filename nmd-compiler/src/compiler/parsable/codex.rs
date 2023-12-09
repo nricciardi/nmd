@@ -74,8 +74,10 @@ impl From<SupportedFormat> for Codex {
 }
 
 
-/* #[cfg(test)]
+#[cfg(test)]
 mod test {
+
+    use std::sync::Arc;
 
     use crate::compiler::parsable::ParsingConfiguration;
 
@@ -88,10 +90,10 @@ mod test {
         let nmd_text = "This is a simple **nmd** text for test";
         let expected_result = "This is a simple <strong>nmd</strong> text for test";
         let mut parsing_result = String::from(nmd_text);
-        let parsing_configuration = ParsingConfiguration::default();
+        let parsing_configuration = Arc::new(ParsingConfiguration::default());
 
         for rule in codex.rules() {
-            let result = rule.parse(parsing_result.as_str(), &parsing_configuration).unwrap();
+            let result = rule.parse(parsing_result.as_str(), Arc::clone(&parsing_configuration)).unwrap();
 
             parsing_result = result.parsed_content()
         }
@@ -103,7 +105,7 @@ mod test {
         let mut parsing_result = String::from(nmd_text);
 
         for rule in codex.rules() {
-            let result = rule.parse(parsing_result.as_str(), &parsing_configuration).unwrap();
+            let result = rule.parse(parsing_result.as_str(), Arc::clone(&parsing_configuration)).unwrap();
 
             parsing_result = result.parsed_content()
         }
@@ -129,10 +131,10 @@ r#"
 "#.trim();
 
         let mut parsing_result = String::from(nmd_text);
-        let parsing_configuration = ParsingConfiguration::default();
+        let parsing_configuration = Arc::new(ParsingConfiguration::default());
 
         for rule in codex.rules() {
-            let result = rule.parse(parsing_result.as_str(), &parsing_configuration).unwrap();
+            let result = rule.parse(parsing_result.as_str(), Arc::clone(&parsing_configuration)).unwrap();
 
             parsing_result = result.parsed_content()
         }
@@ -140,4 +142,3 @@ r#"
         assert_eq!(parsing_result, expected_result);
     }
 }
- */

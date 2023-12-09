@@ -69,5 +69,5 @@ impl PatternType {
 
 
 pub trait ParsingRule: Send + Sync {
-    fn parse(&self, content: &str, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError>;
+    fn parse(&self, content: &str, parsing_configuration: Arc<ParsingConfiguration>) -> Result<ParsingOutcome, ParsingError>;
 }

@@ -37,7 +37,7 @@ impl ReplacementRule {
 impl ParsingRule for ReplacementRule {
 
     /// Parse the content using internal search and replacement pattern
-    fn parse(&self, content: &str, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError> {
+    fn parse(&self, content: &str, parsing_configuration: Arc<ParsingConfiguration>) -> Result<ParsingOutcome, ParsingError> {
 
         let regex = match Regex::new(&self.pattern_type.search_pattern()) {
           Ok(r) => r,
@@ -52,7 +52,7 @@ impl ParsingRule for ReplacementRule {
     }
 }
 
-/* #[cfg(test)]
+#[cfg(test)]
 mod test {
 
     use crate::compiler::parsable::ParsingConfiguration;
@@ -65,16 +65,16 @@ mod test {
         let parsing_rule = ReplacementRule::new(PatternType::BoldV1, "<strong>$1</strong>");
 
         let text_to_parse = r"A piece of **bold text**";
-        let parsing_configuration = ParsingConfiguration::default();
+        let parsing_configuration = Arc::new(ParsingConfiguration::default());
 
-        let parsed_text = parsing_rule.parse(text_to_parse, &parsing_configuration).unwrap().parsed_content();
+        let parsed_text = parsing_rule.parse(text_to_parse, Arc::clone(&parsing_configuration)).unwrap().parsed_content();
 
         assert_eq!(parsed_text, r"A piece of <strong>bold text</strong>");
 
         // without text modifier
         let text_to_parse = r"A piece of text without bold text";
 
-        let parsed_text = parsing_rule.parse(text_to_parse, &parsing_configuration).unwrap().parsed_content();
+        let parsed_text = parsing_rule.parse(text_to_parse, Arc::clone(&parsing_configuration)).unwrap().parsed_content();
 
         assert_eq!(parsed_text, r"A piece of text without bold text");
 
@@ -82,10 +82,9 @@ mod test {
         let parsing_rule = ReplacementRule::new(PatternType::HeadingH6, "<h6>$1</h6>");
 
         let text_to_parse = r"###### title 6";
-        let parsing_configuration = ParsingConfiguration::default();
 
-        let parsed_text = parsing_rule.parse(text_to_parse, &parsing_configuration).unwrap().parsed_content();
+        let parsed_text = parsing_rule.parse(text_to_parse, Arc::clone(&parsing_configuration)).unwrap().parsed_content();
 
         assert_eq!(parsed_text, r"<h6>title 6</h6>");
     }
-} */
+}

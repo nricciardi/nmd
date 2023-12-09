@@ -40,8 +40,6 @@ impl ParallelParsable for Document {
 
         if let Some(mut chapters) = std::mem::take(&mut self.chapters) {
 
-            let pool = rayon::ThreadPoolBuilder::new().num_threads(chapters.len()).build().unwrap();
-
              let maybe_one_failed = chapters.par_iter_mut()
             .map(|chapter| {
 
