@@ -7,7 +7,7 @@ use thiserror::Error;
 use log;
 use rayon::prelude::*;
 
-use crate::compiler::parsable::{ParsingError, Parsable};
+use crate::compiler::parsable::{ParsingError, Parsable, ParallelParsable, SerialParsable};
 use crate::compiler::parsable::parsing_configuration::{ParsingConfiguration, ParallelizationLevel};
 use crate::compiler::loadable::{Loadable, LoadError};
 use crate::compiler::{compilable::{Compilable, compilation_configuration::CompilationConfiguration, CompilationError}, resource::{Resource, ResourceError}};
@@ -34,9 +34,9 @@ impl Loadable for Document {
     }
 }
 
-impl /* Parsable for */ Document {
+impl ParallelParsable for Document {
 
-    fn parallel_parsing(&mut self, parsing_configuration: Arc<ParsingConfiguration>) -> Result<(), ParsingError> {
+    fn parallel_parse(&mut self, parsing_configuration: Arc<ParsingConfiguration>) -> Result<(), ParsingError> {
 
         if let Some(mut chapters) = std::mem::take(&mut self.chapters) {
 
@@ -56,8 +56,11 @@ impl /* Parsable for */ Document {
 
         Ok(())
     }
+}
+
+impl SerialParsable for Document {
     
-    fn serial_parsing(&mut self, parsing_configuration: Arc<ParsingConfiguration>) -> Result<(), ParsingError> {
+    fn serial_parse(&mut self, parsing_configuration: Arc<ParsingConfiguration>) -> Result<(), ParsingError> {
 
         if let Some(mut chapters) = std::mem::take(&mut self.chapters) {
             for chapter in chapters.iter_mut() {
@@ -67,6 +70,9 @@ impl /* Parsable for */ Document {
 
         Ok(())
     }
+}
+
+impl Parsable for Document {
 
     fn parse(&mut self, parsing_configuration: Arc<ParsingConfiguration>) -> Result<(), ParsingError> {
 
@@ -74,21 +80,12 @@ impl /* Parsable for */ Document {
 
         if *parsing_configuration.parallelization_level() >= ParallelizationLevel::Medium {
 
-            self.parallel_parsing(Arc::clone(&parsing_configuration))?;
+            self.parallel_parse(Arc::clone(&parsing_configuration))?;
 
         } else {
-            self.serial_parsing(Arc::clone(&parsing_configuration))?;
+            self.serial_parse(Arc::clone(&parsing_configuration))?;
             
         }
-        
-        /* if let Some(mut chapters) = self.chapters {
-            /* 
- */
-            
-
-        } else {
-            log::warn!("{} has not chapters", self.name);
-        } */
 
         Ok(())
 

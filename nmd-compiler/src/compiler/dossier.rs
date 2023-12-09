@@ -1,5 +1,7 @@
 mod document;
 
+use std::sync::Arc;
+
 pub use document::{Document, DocumentError};
 use thiserror::Error;
 
@@ -32,7 +34,7 @@ impl Loadable for Dossier {
 }
 
 impl Parsable for Dossier {
-    fn parse(&mut self, parsing_configuration: &ParsingConfiguration) -> Result<(), ParsingError> {
+    fn parse(&mut self, parsing_configuration: Arc<ParsingConfiguration>) -> Result<(), ParsingError> {
         todo!()
     }
 }
