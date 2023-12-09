@@ -1,8 +1,7 @@
 use std::str::FromStr;
 use thiserror::Error;
 use super::compilable::compilation_configuration::CompilationConfiguration;
-use super::location::Location;
-use super::location::LocationError;
+use super::loadable::LoadError;
 use super::supported_format::SupportedFormatError;
 
 
@@ -15,7 +14,7 @@ pub enum CompilerConfigurationError {
     ParseError(String),
 
     #[error(transparent)]
-    LocationError(#[from] LocationError)
+    LoadError(#[from] LoadError)
 }
 
 /// Configuration to build a Compiler

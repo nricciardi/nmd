@@ -1,7 +1,8 @@
 pub mod codex;
+pub mod parsing_configuration;
 
-
-use self::codex::parsing_rule::{ParsingConfiguration, parsing_result::ParsingError};
+pub use self::codex::parsing_rule::parsing_result::ParsingError;
+pub use parsing_configuration::ParsingConfiguration;
 
 
 pub trait Parsable {

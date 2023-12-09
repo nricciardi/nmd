@@ -1,20 +1,20 @@
 mod compiler_configuration;
-mod location;
 mod compilable;
 mod parsable;
 mod dossier;
 pub mod supported_format;
-mod resource;
+pub mod resource;
+pub mod loadable;
 
 use thiserror::Error;
 pub use self::compiler_configuration::CompilerConfiguration;
-use self::{compilable::{Compilable, CompilationError}, location::LocationError};
+use self::compilable::{Compilable, CompilationError};
 
 
 #[derive(Error, Debug)]
 pub enum CompilerError {
-    #[error(transparent)]
-    InvalidTarget(#[from] LocationError),
+    /* #[error(transparent)]
+    InvalidTarget(#[from] LocationError), */
 
     #[error(transparent)]
     CompilationError(#[from] CompilationError),

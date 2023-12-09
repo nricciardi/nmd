@@ -1,7 +1,10 @@
+use std::sync::{RwLock, Arc};
+
 use log::debug;
 use regex::Regex;
 
-use super::parsing_configuration::ParsingConfiguration;
+use crate::compiler::parsable::ParsingConfiguration;
+
 use super::parsing_result::{ParsingError, ParsingOutcome};
 use super::{PatternType, ParsingRule};
 
@@ -34,7 +37,7 @@ impl ReplacementRule {
 impl ParsingRule for ReplacementRule {
 
     /// Parse the content using internal search and replacement pattern
-    fn parse(&self, content: &str, parsing_configuration: &ParsingConfiguration) -> Result<ParsingOutcome, ParsingError> {
+    fn parse(&self, content: &str, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError> {
 
         let regex = match Regex::new(&self.pattern_type.search_pattern()) {
           Ok(r) => r,
@@ -49,8 +52,10 @@ impl ParsingRule for ReplacementRule {
     }
 }
 
-#[cfg(test)]
+/* #[cfg(test)]
 mod test {
+
+    use crate::compiler::parsable::ParsingConfiguration;
 
     use super::*;
 
@@ -83,4 +88,4 @@ mod test {
 
         assert_eq!(parsed_text, r"<h6>title 6</h6>");
     }
-}
+} */

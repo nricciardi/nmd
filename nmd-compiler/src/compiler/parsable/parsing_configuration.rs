@@ -1,6 +1,8 @@
+use std::sync::{Arc, RwLock};
+
 use crate::compiler::supported_format::SupportedFormat;
 
-pub use super::super::Codex;
+pub use super::codex::Codex;
 
 
 pub enum PortabilityLevel {
@@ -10,7 +12,7 @@ pub enum PortabilityLevel {
 
 #[repr(u32)]
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
-pub enum ParallelizationLevel {     // TODO: maybe in ParsingConfiguration
+pub enum ParallelizationLevel {
     None,
     Low,
     Medium,

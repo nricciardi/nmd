@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-use crate::compiler::{parsable::{codex::{parsing_rule::{parsing_configuration::ParsingConfiguration, parsing_result::{ParsingError, ParsingOutcome}}, Codex}, Parsable}, supported_format::SupportedFormat, resource::Resource};
+use crate::compiler::{parsable::{codex::{parsing_rule::parsing_result::{ParsingError, ParsingOutcome}, Codex}, Parsable, ParsingConfiguration}, supported_format::SupportedFormat, resource::Resource};
 
 
 

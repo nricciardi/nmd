@@ -1,7 +1,10 @@
 pub mod paragraph;
 
+use std::sync::{Arc, RwLock};
+
 pub use self::paragraph::Paragraph;
-pub use crate::compiler::parsable::{codex::parsing_rule::{parsing_configuration::ParsingConfiguration, parsing_result::{ParsingError, ParsingOutcome}}, Parsable};
+use crate::compiler::parsable::parsing_configuration::{ParsingConfiguration, ParallelizationLevel};
+use crate::compiler::parsable::{codex::parsing_rule::parsing_result::{ParsingError, ParsingOutcome}, Parsable};
 
 pub struct Chapter {
     heading: String,
@@ -9,8 +12,14 @@ pub struct Chapter {
     subchapters: Option<Vec<Box<Chapter>>>
 }
 
-impl Parsable for Chapter {
-    fn parse(&mut self, parsing_configuration: &ParsingConfiguration) -> Result<(), ParsingError> {
+impl Chapter {
+    pub fn subchapters(&self) -> &Option<Vec<Box<Chapter>>> {
+        &self.subchapters
+    }
+}
+
+impl /* Parsable for */ Chapter {
+    pub fn parse(&mut self, parsing_configuration: Arc<ParsingConfiguration>) -> Result<(), ParsingError> {
         todo!()
     }
 }

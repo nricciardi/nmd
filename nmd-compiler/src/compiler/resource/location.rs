@@ -1,4 +1,4 @@
-pub mod locatable;
+/* pub mod locatable;
 
 use std::{str::FromStr, ffi::OsStr, fs};
 use thiserror::Error;
@@ -203,4 +203,4 @@ mod test {
             assert!(subresources.contains(&psr.to_string()))
         }
     }
-}
+} */

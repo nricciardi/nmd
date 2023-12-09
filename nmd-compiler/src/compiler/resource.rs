@@ -1,3 +1,6 @@
+mod locatable;          // TODO: future use
+mod location;           // TODO: future use
+
 use std::{path::PathBuf, str::FromStr, fs::{File, self}};
 use thiserror::Error;
 

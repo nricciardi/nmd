@@ -1,11 +1,15 @@
 pub mod chapter;
 
+use std::sync::{Arc, RwLock};
+
 pub use chapter::Chapter;
 use thiserror::Error;
 use log;
 use rayon::prelude::*;
 
-use crate::compiler::parsable::{codex::parsing_rule::{parsing_configuration::{ParsingConfiguration, ParallelizationLevel}, parsing_result::{ParsingError, ParsingOutcome}}, Parsable};
+use crate::compiler::parsable::{ParsingError, Parsable};
+use crate::compiler::parsable::parsing_configuration::{ParsingConfiguration, ParallelizationLevel};
+use crate::compiler::loadable::{Loadable, LoadError};
 use crate::compiler::{compilable::{Compilable, compilation_configuration::CompilationConfiguration, CompilationError}, resource::{Resource, ResourceError}};
 
 #[derive(Error, Debug)]
@@ -22,44 +26,71 @@ pub struct Document {
     chapters: Option<Vec<Chapter>>
 }
 
-impl TryFrom<Resource> for Document {
-    type Error = DocumentError;
+impl Loadable for Document {
+    fn load(resource: Resource) -> Result<Box<Self>, LoadError> {
+        let mut content = resource.content()?;
 
-    fn try_from(resource: Resource) -> Result<Self, Self::Error> {
-        Self::load(resource)
+        Ok(Box::new(Self::new(resource.name().clone(), content)))
     }
 }
 
-impl Parsable for Document {
+impl /* Parsable for */ Document {
 
-    fn parse(&mut self, parsing_configuration: &ParsingConfiguration) -> Result<(), ParsingError> {
+    fn parallel_parsing(&mut self, parsing_configuration: Arc<ParsingConfiguration>) -> Result<(), ParsingError> {
 
-        if let Some(mut chapters) = self.chapters {
-            log::info!("parsing {} of document: '{}' (parallelization level: {:?})", chapters.len(), self.name, parsing_configuration.parallelization_level());
+        if let Some(mut chapters) = std::mem::take(&mut self.chapters) {
 
-            if *parsing_configuration.parallelization_level() >= ParallelizationLevel::Medium {
+            let pool = rayon::ThreadPoolBuilder::new().num_threads(chapters.len()).build().unwrap();
 
-                let maybe_one_failed = chapters.par_iter_mut()
-                .map(|chapter| {
-                    chapter.parse(parsing_configuration)
-                }).find_any(|result| result.is_err());
+             let maybe_one_failed = chapters.par_iter_mut()
+            .map(|chapter| {
 
-                return maybe_one_failed
-
-            } else {
-
-                for chapter in chapters.iter() {
-                    let _ = chapter.parse(parsing_configuration)?;
-                }
-
-                return Ok(())
+                chapter.parse(Arc::clone(&parsing_configuration))
+            
+            }).find_any(|result| result.is_err());
+    
+            if let Some(Err(err)) = maybe_one_failed {
+                return Err(err);
             }
+        }
+
+        Ok(())
+    }
+    
+    fn serial_parsing(&mut self, parsing_configuration: Arc<ParsingConfiguration>) -> Result<(), ParsingError> {
+
+        if let Some(mut chapters) = std::mem::take(&mut self.chapters) {
+            for chapter in chapters.iter_mut() {
+                let _ = chapter.parse(Arc::clone(&parsing_configuration))?;
+            }
+        }
+
+        Ok(())
+    }
+
+    fn parse(&mut self, parsing_configuration: Arc<ParsingConfiguration>) -> Result<(), ParsingError> {
+
+        log::info!("parsing {} chapters of document: '{}' (parallelization level: {:?})", self.n_chapters(), self.name, parsing_configuration.parallelization_level());
+
+        if *parsing_configuration.parallelization_level() >= ParallelizationLevel::Medium {
+
+            self.parallel_parsing(Arc::clone(&parsing_configuration))?;
+
+        } else {
+            self.serial_parsing(Arc::clone(&parsing_configuration))?;
+            
+        }
+        
+        /* if let Some(mut chapters) = self.chapters {
+            /* 
+ */
+            
 
         } else {
             log::warn!("{} has not chapters", self.name);
+        } */
 
-            return Ok(())
-        }
+        Ok(())
 
     }
 }
@@ -74,10 +105,10 @@ impl Document {
 
     pub fn new(name: String, content: String) -> Self {
         
-        let chapters = Option::None;
+        let chapters: Option<Vec<Chapter>> = Option::None;
 
         if !content.is_empty() {
-            chapters = Option::Some(content) 
+            todo!()
         }
 
         Self {
@@ -90,9 +121,11 @@ impl Document {
         &self.chapters
     }
 
-    pub fn load(resource: Resource) -> Result<Self, DocumentError> {
-        let mut content = resource.content()?;
+    pub fn n_chapters(&self) -> usize {
+        if let Some(chapters) = self.chapters() {
+            return chapters.len()
+        }
 
-        Ok(Self::new(resource.name().clone(), content))
+        0
     }
 }
