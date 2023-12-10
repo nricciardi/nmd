@@ -11,11 +11,11 @@ use self::parsing_result::{ParsingOutcome, ParsingError};
 
 /// NMD modifiers pattern types
 #[derive(Debug)]
-pub enum PatternType { 
-    BoldV1,
-    BoldV2,
-    ItalicV1,
-    ItalicV2,
+pub enum Modifier { 
+    BoldStarVersion,
+    BoldUnderscoreVersion,
+    ItalicStarVersion,
+    ItalicUnderscoreVersion,
     Strikethrough,
     Underlined,
     Link,
@@ -28,13 +28,14 @@ pub enum PatternType {
     InlineCode,
     Comment,
     Bookmark,
-    Heading,
-    HeadingH1,
-    HeadingH2,
-    HeadingH3,
-    HeadingH4,
-    HeadingH5,
-    HeadingH6,
+    HeadingGeneralCompactVersion(i32),
+    HeadingGeneralExtendedVersion(i32),
+    Heading1ExtendedVersion,
+    Heading2ExtendedVersion,
+    Heading3ExtendedVersion,
+    Heading4ExtendedVersion,
+    Heading5ExtendedVersion,
+    Heading6ExtendedVersion,
     CodeBlock,
     CommentBlock,
     FocusBlock,
@@ -44,25 +45,26 @@ pub enum PatternType {
     Custom
 }
 
-impl PatternType {
-    pub fn search_pattern(&self) -> &'static str {
+impl Modifier {
+    pub fn search_pattern(&self) -> String {
         match *self {
-            Self::BoldV1 => r"\*\*(.*?)\*\*",
-            Self::BoldV2 => r"__(.*?)__",
-            Self::ItalicV1 => r"\*(.*?)\*",
-            Self::ItalicV2 => r"_(.*?)_",
-            Self::Strikethrough => r"~~(.*?)~~",
-            Self::Underlined => r"\+\+(.*?)\+\+",
-            Self::Link => r"\[([^\]]+)\]\(([^)]+)\)",
-            Self::Image => r"!\[([^\]]+)\]\(([^)]+)\)",
-            Self::HeadingH6 => r"######\s+(.*)",
-            Self::HeadingH5 => r"#####\s+(.*)",
-            Self::HeadingH4 => r"####\s+(.*)",
-            Self::HeadingH3 => r"###\s+(.*)",
-            Self::HeadingH2 => r"##\s+(.*)",
-            Self::HeadingH1 => r"#\s+(.*)",
-            Self::Heading => r"#(\d+)\s+(.*)",
-            _ => r"RULE TODO"                                               // TODO
+            Self::BoldStarVersion => String::from(r"\*\*(.*?)\*\*"),
+            Self::BoldUnderscoreVersion => String::from(r"__(.*?)__"),
+            Self::ItalicStarVersion => String::from(r"\*(.*?)\*"),
+            Self::ItalicUnderscoreVersion => String::from(r"_(.*?)_"),
+            Self::Strikethrough => String::from(r"~~(.*?)~~"),
+            Self::Underlined => String::from(r"\+\+(.*?)\+\+"),
+            Self::Link => String::from(r"\[([^\]]+)\]\(([^)]+)\)"),
+            Self::Image => String::from(r"!\[([^\]]+)\]\(([^)]+)\)"),
+            Self::Heading6ExtendedVersion | Self::HeadingGeneralExtendedVersion(6) => String::from(r"######\s+(.*)"),
+            Self::Heading5ExtendedVersion | Self::HeadingGeneralExtendedVersion(5) => String::from(r"#####\s+(.*)"),
+            Self::Heading4ExtendedVersion | Self::HeadingGeneralExtendedVersion(4) => String::from(r"####\s+(.*)"),
+            Self::Heading3ExtendedVersion | Self::HeadingGeneralExtendedVersion(3) => String::from(r"###\s+(.*)"),
+            Self::Heading2ExtendedVersion | Self::HeadingGeneralExtendedVersion(2) => String::from(r"##\s+(.*)"),
+            Self::Heading1ExtendedVersion | Self::HeadingGeneralExtendedVersion(1) => String::from(r"#\s+(.*)"),
+            Self::HeadingGeneralExtendedVersion(level) => format!(r"{}\s+(.*)", "#".repeat(level as usize)),
+            Self::HeadingGeneralCompactVersion(level) => format!(r"#({})\s+(.*)", level),
+            _ => String::from(r"RULE TODO")                                               // TODO
         }
     }
 }

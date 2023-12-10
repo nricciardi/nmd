@@ -3,7 +3,7 @@ use thiserror::Error;
 #[derive(Error, Debug)]
 pub enum ParsingError {
     #[error("pattern provided '{0}' is invalid")]
-    InvalidPattern(&'static str),
+    InvalidPattern(String),
 
     #[error("unknown error occurs")]
     Unknown

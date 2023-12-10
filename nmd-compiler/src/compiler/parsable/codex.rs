@@ -1,7 +1,7 @@
 pub mod parsing_rule;
 
 
-pub use parsing_rule::{ParsingRule, PatternType};
+pub use parsing_rule::{ParsingRule, Modifier};
 use crate::compiler::supported_format::SupportedFormat;
 
 pub use self::parsing_rule::parsing_result::{ParsingError, ParsingOutcome};
@@ -29,39 +29,39 @@ impl Codex {
     }
 
     pub fn of_html() -> Self {
-        Codex::new(
-            vec![
-                Box::new(ReplacementRule::new(PatternType::HeadingH6, "<h6>$1</h6>")),
-                Box::new(ReplacementRule::new(PatternType::HeadingH5, "<h5>$1</h5>")),
-                Box::new(ReplacementRule::new(PatternType::HeadingH4, "<h4>$1</h4>")),
-                Box::new(ReplacementRule::new(PatternType::HeadingH3, "<h3>$1</h3>")),
-                Box::new(ReplacementRule::new(PatternType::HeadingH2, "<h2>$1</h2>")),
-                Box::new(ReplacementRule::new(PatternType::HeadingH1, "<h1>$1</h1>")),
-                Box::new(ReplacementRule::new(PatternType::Heading, "<h$1>$2</h$1>")),
-                Box::new(ReplacementRule::new(PatternType::BoldV1, "<strong>$1</strong>")),
-                Box::new(ReplacementRule::new(PatternType::BoldV2, "<strong>$1</strong>")),
-                Box::new(ReplacementRule::new(PatternType::ItalicV1, "<em>$1</em>")),
-                Box::new(ReplacementRule::new(PatternType::ItalicV2, "<em>$1</em>")),
-                Box::new(ReplacementRule::new(PatternType::Strikethrough, "<del>$1</del>")),
-                Box::new(ReplacementRule::new(PatternType::Underlined, "<u>$1</u>")),
-                Box::new(ReplacementRule::new(PatternType::Link, "<a href=\"$2\">$1</a>")),
-                Box::new(ReplacementRule::new(PatternType::Image, "<img src=\"$2\" alt=\"$1\">")),
-                // Box::new(ReplacementRule::new(PatternType::Highlight, r"\*\*(.*?)\*\*", "<strong>$1</strong>")),
-                // Box::new(ReplacementRule::new(PatternType::ColoredText, r"\*\*(.*?)\*\*", "<strong>$1</strong>")),
-                // Box::new(ReplacementRule::new(PatternType::Emoji, r"\*\*(.*?)\*\*", "<strong>$1</strong>")),
-                // Box::new(ReplacementRule::new(PatternType::Superscript, r"\*\*(.*?)\*\*", "<strong>$1</strong>")),
-                // Box::new(ReplacementRule::new(PatternType::Subscript, r"\*\*(.*?)\*\*", "<strong>$1</strong>")),
-                // Box::new(ReplacementRule::new(PatternType::InlineCode, r"\*\*(.*?)\*\*", "<strong>$1</strong>")),
-                Box::new(ReplacementRule::new(PatternType::Comment,"<!-- $1 -->")),
-                // Box::new(ReplacementRule::new(PatternType::Bookmark, r"\*\*(.*?)\*\*", "<strong>$1</strong>")),
-                // Box::new(ReplacementRule::new(PatternType::Heading, r"\*\*(.*?)\*\*", "<strong>$1</strong>")),
-                // Box::new(ReplacementRule::new(PatternType::CodeBlock, r"```(\w+)([\s\S]*?)```", "<pre><code>$2</code></pre>")),
-                // Box::new(ReplacementRule::new(PatternType::CommentBlock, r"\*\*(.*?)\*\*", "<strong>$1</strong>")),
-                // Box::new(ReplacementRule::new(PatternType::FocusBlock, r"\*\*(.*?)\*\*", "<strong>$1</strong>")),
-                // Box::new(ReplacementRule::new(PatternType::MathBlock, r"\*\*(.*?)\*\*", "<strong>$1</strong>")),
 
-            ]
-        )
+        let mut rules: Vec<Box<dyn ParsingRule>> = Vec::new();
+
+        for i in (1..=32).rev() {
+            rules.push(Box::new(ReplacementRule::new(Modifier::HeadingGeneralExtendedVersion(i), format!(r#"<h{} class="h{}">$1</h{}>"#, i, i, i))));
+            rules.push(Box::new(ReplacementRule::new(Modifier::HeadingGeneralCompactVersion(i), String::from(r#"<h$1 class="h$1">$2</h$1>"#))));
+        }
+
+        rules.append(&mut vec![
+            Box::new(ReplacementRule::new(Modifier::BoldStarVersion, String::from(r#"<strong>$1</strong>"#))),
+            Box::new(ReplacementRule::new(Modifier::BoldUnderscoreVersion, String::from(r#"<strong>$1</strong>"#))),
+            Box::new(ReplacementRule::new(Modifier::ItalicStarVersion, String::from(r#"<em>$1</em>"#))),
+            Box::new(ReplacementRule::new(Modifier::ItalicUnderscoreVersion, String::from(r#"<em>$1</em>"#))),
+            Box::new(ReplacementRule::new(Modifier::Strikethrough, String::from(r#"<del>$1</del>"#))),
+            Box::new(ReplacementRule::new(Modifier::Underlined, String::from(r#"<u>$1</u>"#))),
+            Box::new(ReplacementRule::new(Modifier::Link, String::from(r#"<a href=\"$2\">$1</a>"#))),
+            Box::new(ReplacementRule::new(Modifier::Image, String::from(r#"<img src=\"$2\" alt=\"$1\">"#))),
+            // Box::new(ReplacementRule::new(PatternType::Highlight, r"\*\*(.*?)\*\*", "<strong>$1</strong>")),
+            // Box::new(ReplacementRule::new(PatternType::ColoredText, r"\*\*(.*?)\*\*", "<strong>$1</strong>")),
+            // Box::new(ReplacementRule::new(PatternType::Emoji, r"\*\*(.*?)\*\*", "<strong>$1</strong>")),
+            // Box::new(ReplacementRule::new(PatternType::Superscript, r"\*\*(.*?)\*\*", "<strong>$1</strong>")),
+            // Box::new(ReplacementRule::new(PatternType::Subscript, r"\*\*(.*?)\*\*", "<strong>$1</strong>")),
+            // Box::new(ReplacementRule::new(PatternType::InlineCode, r"\*\*(.*?)\*\*", "<strong>$1</strong>")),
+            Box::new(ReplacementRule::new(Modifier::Comment, String::from(r#"<!-- $1 -->"#))),
+            // Box::new(ReplacementRule::new(PatternType::Bookmark, r"\*\*(.*?)\*\*", "<strong>$1</strong>")),
+            // Box::new(ReplacementRule::new(PatternType::Heading, r"\*\*(.*?)\*\*", "<strong>$1</strong>")),
+            // Box::new(ReplacementRule::new(PatternType::CodeBlock, r"```(\w+)([\s\S]*?)```", "<pre><code>$2</code></pre>")),
+            // Box::new(ReplacementRule::new(PatternType::CommentBlock, r"\*\*(.*?)\*\*", "<strong>$1</strong>")),
+            // Box::new(ReplacementRule::new(PatternType::FocusBlock, r"\*\*(.*?)\*\*", "<strong>$1</strong>")),
+            // Box::new(ReplacementRule::new(PatternType::MathBlock, r"\*\*(.*?)\*\*", "<strong>$1</strong>")),
+        ]);
+
+        Codex::new(rules)
     }
 }
 
@@ -125,9 +125,9 @@ r#"
 "#.trim();
         let expected_result = 
 r#"
-<h1>title 1</h1>
-<h2>title 2</h2>
-<h6>title 6</h6>
+<h1 class="h1">title 1</h1>
+<h2 class="h2">title 2</h2>
+<h6 class="h6">title 6</h6>
 "#.trim();
 
         let mut parsing_result = String::from(nmd_text);
