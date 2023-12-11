@@ -8,9 +8,9 @@ use thiserror::Error;
 use log;
 use rayon::prelude::*;
 
-use crate::compiler::parsable::codex::Modifier;
-use crate::compiler::parsable::{ParsingError, Parsable, ParallelParsable, SerialParsable};
-use crate::compiler::parsable::parsing_configuration::{ParsingConfiguration, ParallelizationLevel};
+use crate::compiler::parsable::codex::{Modifier, Codex};
+use crate::compiler::parsable::{ParsingError, Parsable};
+use crate::compiler::parsable::parsing_configuration::{ParsingConfiguration};
 use crate::compiler::loadable::{Loadable, LoadError};
 use crate::compiler::{compilable::{Compilable, compilation_configuration::CompilationConfiguration, CompilationError}, resource::{Resource, ResourceError}};
 
@@ -29,65 +29,37 @@ pub struct Document {
 }
 
 impl Loadable for Document {
-    fn load(resource: Resource) -> Result<Box<Self>, LoadError> {
-        let mut content = resource.content()?;
+
+    type Type = Resource;
+
+    fn load(resource: Self::Type) -> Result<Box<Self>, LoadError> {
+        let content = resource.content()?;
 
         Ok(Box::new(Self::new(resource.name().clone(), content)))
     }
 }
 
-impl ParallelParsable for Document {
-
-    fn parallel_parse(&mut self, parsing_configuration: Arc<ParsingConfiguration>) -> Result<(), ParsingError> {
-
-        if let Some(mut chapters) = std::mem::take(&mut self.chapters) {
-
-             let maybe_one_failed = chapters.par_iter_mut()
-            .map(|chapter| {
-
-                chapter.parse(Arc::clone(&parsing_configuration))
-            
-            }).find_any(|result| result.is_err());
-    
-            if let Some(Err(err)) = maybe_one_failed {
-                return Err(err);
-            }
-        }
-
-        Ok(())
-    }
-}
-
-impl SerialParsable for Document {
-    
-    fn serial_parse(&mut self, parsing_configuration: Arc<ParsingConfiguration>) -> Result<(), ParsingError> {
-
-        if let Some(mut chapters) = std::mem::take(&mut self.chapters) {
-            for chapter in chapters.iter_mut() {
-                let _ = chapter.parse(Arc::clone(&parsing_configuration))?;
-            }
-        }
-
-        Ok(())
-    }
-}
-
 impl Parsable for Document {
 
-    fn parse(&mut self, parsing_configuration: Arc<ParsingConfiguration>) -> Result<(), ParsingError> {
+    fn parse(&mut self, codex: Arc<Codex>, parsing_configuration: Arc<ParsingConfiguration>) -> Result<(), ParsingError> {
 
-        log::info!("parsing {} chapters of document: '{}' (parallelization level: {:?})", self.n_chapters(), self.name, parsing_configuration.parallelization_level());
+        log::info!("parsing {} chapters of document: '{}'", self.n_chapters(), self.name);
 
-        if *parsing_configuration.parallelization_level() >= ParallelizationLevel::Medium {
+        if let Some(chapters) = &mut self.chapters {
 
-            self.parallel_parse(Arc::clone(&parsing_configuration))?;
+            let maybe_one_failed = chapters.par_iter_mut()
+           .map(|chapter| {
 
-        } else {
-            self.serial_parse(Arc::clone(&parsing_configuration))?;
-            
-        }
+               chapter.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration))
+           
+           }).find_any(|result| result.is_err());
+   
+           if let Some(result) = maybe_one_failed {
+               return result;
+           }
+       }
 
-        Ok(())
+       Ok(())
 
     }
 }

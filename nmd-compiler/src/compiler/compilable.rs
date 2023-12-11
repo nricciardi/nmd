@@ -1,8 +1,10 @@
 pub mod compilation_configuration;
 
+use std::sync::Arc;
+
 use self::compilation_configuration::CompilationConfiguration;
 
-use super::{parsable::Parsable, loadable::{Loadable, LoadError}};
+use super::{parsable::Parsable, loadable::{Loadable, LoadError}, assemblable::Assemblable, dumpable::Dumpable};
 use anyhow::Result;
 use thiserror::Error;
 
@@ -17,7 +19,7 @@ pub enum CompilationError {
     Unknown(String)
 }
 
-pub trait Compilable: Loadable + Parsable {
-    fn compile(&self, compilation_configuration: &CompilationConfiguration) -> Result<(), CompilationError>;
+pub trait Compilable: Loadable + Parsable + Assemblable + Dumpable {
+    fn compile(&self, compilation_configuration: Arc<CompilationConfiguration>) -> Result<(), CompilationError>;
 }
 

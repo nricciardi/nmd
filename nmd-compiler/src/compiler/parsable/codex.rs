@@ -1,12 +1,14 @@
 pub mod parsing_rule;
 
 
+use std::sync::Arc;
+
 pub use parsing_rule::{ParsingRule, Modifier};
 use crate::compiler::supported_format::SupportedFormat;
-
-pub use self::parsing_rule::parsing_result::{ParsingError, ParsingOutcome};
-
+use self::parsing_rule::parsing_result::{ParsingError, ParsingOutcome};
 use self::parsing_rule::replacement_rule::ReplacementRule;
+use super::ParsingConfiguration;
+
 
 /// Ordered collection of rules
 pub struct Codex {
@@ -17,6 +19,17 @@ impl Codex {
 
     pub fn rules(&self) -> &Vec<Box<dyn ParsingRule>> {
         &self.rules
+    }
+
+    pub fn parse(&self, content: &str, parsing_configuration: Arc<ParsingConfiguration>) -> Result<ParsingOutcome, ParsingError> {
+
+        let mut outcome = ParsingOutcome::new(String::from(content));
+
+        for rule in self.rules() {
+            outcome = rule.parse(&outcome.parsed_content(), Arc::clone(&parsing_configuration))?;
+        }
+
+        Ok(outcome)
     }
 
     fn new(rules: Vec<Box<dyn ParsingRule>>) -> Codex {

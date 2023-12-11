@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use crate::compiler::parsable::{codex::parsing_rule::parsing_result::{ParsingError, ParsingOutcome}, Parsable};
+use crate::compiler::parsable::{codex::{parsing_rule::parsing_result::ParsingError, Codex}, Parsable};
 use crate::compiler::parsable::parsing_configuration::ParsingConfiguration;
 
 
@@ -9,13 +9,10 @@ pub struct Paragraph {
 }
 
 impl Parsable for Paragraph {
-    fn parse(&mut self, parsing_configuration: Arc<ParsingConfiguration>) -> Result<(), ParsingError> {
+    fn parse(&mut self, codex: Arc<Codex>, parsing_configuration: Arc<ParsingConfiguration>) -> Result<(), ParsingError> {
 
-        todo!()
-        /* for rule in parsing_configuration.codex().rules() {
-            self.content = rule.parse(&self.content, parsing_configuration)?.parsed_content();
-        }
+        self.content = codex.parse(&self.content, Arc::clone(&parsing_configuration))?.parsed_content();
 
-        Ok(()) */
+        Ok(())
     }
 }

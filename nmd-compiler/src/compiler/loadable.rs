@@ -11,5 +11,7 @@ pub enum LoadError {
 
 pub trait Loadable {
 
-    fn load(resource: Resource) -> Result<Box<Self>, LoadError>;
+    type Type;
+
+    fn load(resource: Self::Type) -> Result<Box<Self>, LoadError>;
 }

@@ -1,7 +1,6 @@
 # NMD (New MarkDown) Compiler
 
 [![License](https://img.shields.io/badge/license-GPL3-green.svg)](LICENSE)
-![Visitors](https://visitor-badge.glitch.me/badge?page_id=nricciardi.nmd-compiler)
 [![Version](https://img.shields.io/badge/version-v0.0.1-blue.svg)](CHANGELOG.md)
 
 ## Overview

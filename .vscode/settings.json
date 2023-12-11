@@ -16,6 +16,8 @@
         "./nmd-compiler/Cargo.toml"
     ],
     "cSpell.words": [
+        "Assemblable",
+        "Dumpable",
         "subresource",
         "subresources",
         "thiserror"

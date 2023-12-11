@@ -5,6 +5,8 @@ mod dossier;
 pub mod supported_format;
 pub mod resource;
 pub mod loadable;
+pub mod assemblable;
+pub mod dumpable;
 
 use thiserror::Error;
 pub use self::compiler_configuration::CompilerConfiguration;

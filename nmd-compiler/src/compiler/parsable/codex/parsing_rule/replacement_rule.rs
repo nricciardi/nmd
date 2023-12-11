@@ -81,7 +81,7 @@ mod test {
         assert_eq!(parsed_text, r"A piece of text without bold text");
 
         // headings
-        let parsing_rule = ReplacementRule::new(Modifier::Heading6ExtendedVersion, String::from("<h6>$1</h6>"));
+        let parsing_rule = ReplacementRule::new(Modifier::HeadingGeneralExtendedVersion(6), String::from("<h6>$1</h6>"));
 
         let text_to_parse = r"###### title 6";
 
