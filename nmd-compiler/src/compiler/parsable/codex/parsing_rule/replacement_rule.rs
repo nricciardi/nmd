@@ -52,6 +52,10 @@ impl ParsingRule for ReplacementRule {
         
         Ok(ParsingOutcome::new(parsed_content))
     }
+
+    fn modifier(&self) -> &Modifier {
+        &self.modifier
+    }
 }
 
 #[cfg(test)]

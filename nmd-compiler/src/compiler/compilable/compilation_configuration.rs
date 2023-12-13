@@ -7,7 +7,8 @@ pub struct CompilationConfiguration {
     format: SupportedFormat,
     codex: Codex,
     output: Resource,
-    parsing_configuration: ParsingConfiguration
+    parsing_configuration: ParsingConfiguration,
+    strict: bool
 }
 
 impl Default for CompilationConfiguration {
@@ -16,7 +17,8 @@ impl Default for CompilationConfiguration {
             format: SupportedFormat::Html,
             codex: Codex::of_html(),
             output: Resource::from_str(".").unwrap(),        // TODO
-            parsing_configuration: ParsingConfiguration::default()
+            parsing_configuration: ParsingConfiguration::default(),
+            strict: false
         }
     }
 }

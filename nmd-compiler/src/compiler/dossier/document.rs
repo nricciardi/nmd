@@ -25,6 +25,7 @@ pub enum DocumentError {
 
 pub struct Document {
     name: String,
+    preamble: String,
     chapters: Option<Vec<Chapter>>
 }
 
@@ -35,7 +36,8 @@ impl Loadable for Document {
     fn load(resource: Self::Type) -> Result<Box<Self>, LoadError> {
         let content = resource.content()?;
 
-        Ok(Box::new(Self::new(resource.name().clone(), content)))
+        todo!()
+        /* Ok(Box::new(Self::new(resource.name().clone(), content))) */
     }
 }
 
@@ -44,6 +46,8 @@ impl Parsable for Document {
     fn parse(&mut self, codex: Arc<Codex>, parsing_configuration: Arc<ParsingConfiguration>) -> Result<(), ParsingError> {
 
         log::info!("parsing {} chapters of document: '{}'", self.n_chapters(), self.name);
+
+        self.preamble = codex.parse(&self.preamble, Arc::clone(&parsing_configuration))?.parsed_content();
 
         if let Some(chapters) = &mut self.chapters {
 
@@ -72,13 +76,13 @@ impl Parsable for Document {
 
 impl Document {
 
-    fn get_chapters_from_content(content: String) -> Option<Vec<String>> {
+    fn split_document(content: String) -> Option<Vec<String>> {
 
         if content.is_empty() {
             return Option::None;
         } 
 
-        let heading_pattern = Modifier::HeadingGeneralCompactVersion;
+        let heading_pattern = Modifier::heading_rules();
 
         /* let regex = Regex::new(format!("({})", heading_pattern.search_pattern()).as_str()).unwrap();
 
@@ -91,13 +95,13 @@ impl Document {
         todo!()
     }
 
-    pub fn new(name: String, content: String) -> Self {
+    pub fn new(name: String, preamble: String, chapters: Option<Vec<Chapter>>) -> Self {
         
-        todo!()
-        /* Self {
+        Self {
             name,
-            chapters: Document::get_chapters_from_content(content)
-        } */
+            preamble,
+            chapters
+        }
     }
 
     pub fn chapters(&self) -> &Option<Vec<Chapter>> {
@@ -137,7 +141,7 @@ paragraph 2a
 paragraph 1b
 "#.trim().to_string();
 
-        let chapters = Document::get_chapters_from_content(content);
+        let chapters = Document::split_document(content);
 
         assert!(chapters.is_some());
 

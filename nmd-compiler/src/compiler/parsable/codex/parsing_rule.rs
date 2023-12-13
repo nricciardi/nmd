@@ -2,12 +2,13 @@ pub mod replacement_rule;
 pub mod parsing_result;
 
 
-use std::sync::{Arc, RwLock};
+use std::sync::Arc;
 
 use crate::compiler::parsable::ParsingConfiguration;
 
 use self::parsing_result::{ParsingOutcome, ParsingError};
 
+pub const MAX_HEADING_LEVEL: u32 = 32; 
 
 /// NMD modifiers pattern types
 #[derive(Debug)]
@@ -46,6 +47,18 @@ pub enum Modifier {
 }
 
 impl Modifier {
+
+    pub fn heading_rules() -> Vec<Self> {
+        let mut heading_rules: Vec<Self> = Vec::new();
+
+        for i in (1..=MAX_HEADING_LEVEL).rev() {
+            heading_rules.push(Modifier::HeadingGeneralExtendedVersion(i));
+            heading_rules.push(Modifier::HeadingGeneralCompactVersion(i));
+        }
+
+        heading_rules
+    }
+
     pub fn search_pattern(&self) -> String {
         match *self {
             Self::BoldStarVersion => String::from(r"\*\*(.*?)\*\*"),
@@ -56,8 +69,22 @@ impl Modifier {
             Self::Underlined => String::from(r"\+\+(.*?)\+\+"),
             Self::Link => String::from(r"\[([^\]]+)\]\(([^)]+)\)"),
             Self::Image => String::from(r"!\[([^\]]+)\]\(([^)]+)\)"),
-            Self::HeadingGeneralExtendedVersion(level) => format!(r"{}\s+(.*)", "#".repeat(level as usize)),
-            Self::HeadingGeneralCompactVersion(level) => format!(r"#({})\s+(.*)", level),
+            Self::HeadingGeneralExtendedVersion(level) => {
+
+                if level == 0 || level > MAX_HEADING_LEVEL {
+                    panic!("{level} is an invalid heading level.")
+                }
+
+                format!(r"{}\s+(.*)", "#".repeat(level as usize))
+            },
+            Self::HeadingGeneralCompactVersion(level) => {
+
+                if level == 0 || level > MAX_HEADING_LEVEL {
+                    panic!("{level} is an invalid heading level.")
+                }
+
+                format!(r"#({})\s+(.*)", level)
+            },
             _ => String::from(r"RULE TODO")                                               // TODO
         }
     }
@@ -65,5 +92,8 @@ impl Modifier {
 
 
 pub trait ParsingRule: Send + Sync {
+
+    fn modifier(&self) -> &Modifier;
+
     fn parse(&self, content: &str, parsing_configuration: Arc<ParsingConfiguration>) -> Result<ParsingOutcome, ParsingError>;
 }

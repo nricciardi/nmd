@@ -1,10 +1,12 @@
 pub mod parsing_rule;
 
 
+use std::slice::Iter;
 use std::sync::Arc;
 
 pub use parsing_rule::{ParsingRule, Modifier};
 use crate::compiler::supported_format::SupportedFormat;
+use self::parsing_rule::MAX_HEADING_LEVEL;
 use self::parsing_rule::parsing_result::{ParsingError, ParsingOutcome};
 use self::parsing_rule::replacement_rule::ReplacementRule;
 use super::ParsingConfiguration;
@@ -45,7 +47,7 @@ impl Codex {
 
         let mut rules: Vec<Box<dyn ParsingRule>> = Vec::new();
 
-        for i in (1..=32).rev() {
+        for i in (1..=MAX_HEADING_LEVEL).rev() {
             rules.push(Box::new(ReplacementRule::new(Modifier::HeadingGeneralExtendedVersion(i), format!(r#"<h{} class="h{}">$1</h{}>"#, i, i, i))));
             rules.push(Box::new(ReplacementRule::new(Modifier::HeadingGeneralCompactVersion(i), String::from(r#"<h$1 class="h$1">$2</h$1>"#))));
         }
@@ -75,6 +77,16 @@ impl Codex {
         ]);
 
         Codex::new(rules)
+    }
+
+    pub fn heading_rules(&self) -> Vec<&Box<dyn ParsingRule>> {
+        
+        self.rules.iter().filter(|&rules| {
+            match rules.modifier() {
+                Modifier::HeadingGeneralCompactVersion(level) | Modifier::HeadingGeneralExtendedVersion(level) => true,
+                _ => false
+            }
+        }).collect()
     }
 }
 

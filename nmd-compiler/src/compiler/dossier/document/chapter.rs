@@ -51,27 +51,23 @@ impl Parsable for Chapter {
     fn parse(&mut self, codex: Arc<Codex>, parsing_configuration: Arc<ParsingConfiguration>) -> Result<(), ParsingError> {
         self.heading = codex.parse(&self.heading, Arc::clone(&parsing_configuration))?.parsed_content();
 
-        if self.n_paragraphs() > 0 {
-            if let Some(paragraphs) = &mut self.paragraphs {
-                let maybe_failed = paragraphs.par_iter_mut().map(|paragraph| {
-                    paragraph.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration))
-                }).find_any(|result| result.is_err());
+        if let Some(paragraphs) = &mut self.paragraphs {
+            let maybe_failed = paragraphs.par_iter_mut().map(|paragraph| {
+                paragraph.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration))
+            }).find_any(|result| result.is_err());
 
-                if let Some(result) = maybe_failed {
-                    return result
-                }
+            if let Some(result) = maybe_failed {
+                return result
             }
         }
 
-        if self.n_subchapters() > 0 {
-            if let Some(mut subchapters) = std::mem::take(&mut self.subchapters) {
-                let maybe_failed = subchapters.par_iter_mut().map(|subchapter| {
-                    subchapter.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration))
-                }).find_any(|result| result.is_err());
+        if let Some(mut subchapters) = std::mem::take(&mut self.subchapters) {
+            let maybe_failed = subchapters.par_iter_mut().map(|subchapter| {
+                subchapter.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration))
+            }).find_any(|result| result.is_err());
 
-                if let Some(result) = maybe_failed {
-                    return result
-                }
+            if let Some(result) = maybe_failed {
+                return result
             }
         }
 
