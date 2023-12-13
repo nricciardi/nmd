@@ -82,15 +82,22 @@ impl Document {
             return Option::None;
         } 
 
-        let heading_pattern = Modifier::heading_rules();
+        let heading_modifiers = Modifier::heading_modifiers();
+        let mut splitted_content: Vec<String> = vec![content];
 
-        /* let regex = Regex::new(format!("({})", heading_pattern.search_pattern()).as_str()).unwrap();
+        todo!();
 
-        let chapters: Vec<String> = regex.split(content.as_str()).into_iter().map(|chapter_content| {
-            chapter_content.to_string()
-        }).collect(); 
-        
-        Option::Some(chapters)*/
+        for heading_modifier in heading_modifiers {
+            let regex = Regex::new(format!("({})", heading_modifier.search_pattern()).as_str()).unwrap();
+
+            for splitted_content_part in splitted_content {
+                let result = regex.split(content.as_str()).into_iter().map(|chapter_content| {
+                    chapter_content.to_string()
+                }).collect();
+            }
+
+            splitted_content.push(value) = 
+        }
 
         todo!()
     }

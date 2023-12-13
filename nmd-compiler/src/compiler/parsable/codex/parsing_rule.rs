@@ -48,15 +48,15 @@ pub enum Modifier {
 
 impl Modifier {
 
-    pub fn heading_rules() -> Vec<Self> {
-        let mut heading_rules: Vec<Self> = Vec::new();
+    pub fn heading_modifiers() -> Vec<Self> {
+        let mut heading_modifiers: Vec<Self> = Vec::new();
 
         for i in (1..=MAX_HEADING_LEVEL).rev() {
-            heading_rules.push(Modifier::HeadingGeneralExtendedVersion(i));
-            heading_rules.push(Modifier::HeadingGeneralCompactVersion(i));
+            heading_modifiers.push(Modifier::HeadingGeneralExtendedVersion(i));
+            heading_modifiers.push(Modifier::HeadingGeneralCompactVersion(i));
         }
 
-        heading_rules
+        heading_modifiers
     }
 
     pub fn search_pattern(&self) -> String {
