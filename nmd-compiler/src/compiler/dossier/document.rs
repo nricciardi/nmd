@@ -12,6 +12,7 @@ use crate::compiler::parsable::codex::{Modifier, Codex};
 use crate::compiler::parsable::{ParsingError, Parsable};
 use crate::compiler::parsable::parsing_configuration::{ParsingConfiguration};
 use crate::compiler::loadable::{Loadable, LoadError};
+use crate::compiler::utility;
 use crate::compiler::{compilable::{Compilable, compilation_configuration::CompilationConfiguration, CompilationError}, resource::{Resource, ResourceError}};
 
 #[derive(Error, Debug)]
@@ -82,24 +83,25 @@ impl Document {
             return Option::None;
         } 
 
-        let heading_modifiers = Modifier::heading_modifiers();
+        let heading_modifiers = Modifier::heading_modifiers_rev();
         let mut splitted_content: Vec<String> = vec![content];
 
-        todo!();
-
         for heading_modifier in heading_modifiers {
+            // TODO
             let regex = Regex::new(format!("({})", heading_modifier.search_pattern()).as_str()).unwrap();
 
+            let mut subsplitted_content: Vec<String> = Vec::new();
+
             for splitted_content_part in splitted_content {
-                let result = regex.split(content.as_str()).into_iter().map(|chapter_content| {
-                    chapter_content.to_string()
-                }).collect();
+                let mut result: Vec<String> = utility::split_keeping_separator(&regex, &splitted_content_part.as_str());
+
+                subsplitted_content.append(&mut result)
             }
 
-            splitted_content.push(value) = 
+            splitted_content = subsplitted_content;
         }
 
-        todo!()
+        Some(splitted_content)
     }
 
     pub fn new(name: String, preamble: String, chapters: Option<Vec<Chapter>>) -> Self {
@@ -135,7 +137,7 @@ mod test {
 
         let content: String = 
 r#"
-#1 title 1a
+# title 1a
 
 paragraph 1a
 

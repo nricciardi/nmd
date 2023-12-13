@@ -48,7 +48,7 @@ pub enum Modifier {
 
 impl Modifier {
 
-    pub fn heading_modifiers() -> Vec<Self> {
+    pub fn heading_modifiers_rev() -> Vec<Self> {
         let mut heading_modifiers: Vec<Self> = Vec::new();
 
         for i in (1..=MAX_HEADING_LEVEL).rev() {
@@ -75,7 +75,7 @@ impl Modifier {
                     panic!("{level} is an invalid heading level.")
                 }
 
-                format!(r"{}\s+(.*)", "#".repeat(level as usize))
+                format!(r"{}\s+(.*)\n\n", "#".repeat(level as usize))
             },
             Self::HeadingGeneralCompactVersion(level) => {
 
@@ -83,7 +83,7 @@ impl Modifier {
                     panic!("{level} is an invalid heading level.")
                 }
 
-                format!(r"#({})\s+(.*)", level)
+                format!(r"#({})\s+(.*)\n\n", level)
             },
             _ => String::from(r"RULE TODO")                                               // TODO
         }

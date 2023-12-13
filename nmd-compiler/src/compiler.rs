@@ -7,6 +7,7 @@ pub mod resource;
 pub mod loadable;
 pub mod assemblable;
 pub mod dumpable;
+pub mod utility;
 
 use thiserror::Error;
 pub use self::compiler_configuration::CompilerConfiguration;
