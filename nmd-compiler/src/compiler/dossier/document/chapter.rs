@@ -13,13 +13,30 @@ pub struct Chapter {
     heading: String,
     paragraphs: Option<Vec<Paragraph>>,
     subchapters: Option<Vec<Box<Chapter>>>,
-    superchapter: Box<Chapter>
+    superchapter: Option<Arc<Chapter>>
 }
 
 impl Chapter {
 
+    pub fn new(heading: String, paragraphs: Option<Vec<Paragraph>>, subchapters: Option<Vec<Box<Chapter>>>, superchapter: Option<Arc<Chapter>>) -> Self {
+        Self {
+            heading,
+            paragraphs,
+            subchapters,
+            superchapter
+        }
+    }
+
+    pub fn new_empty() -> Self {
+        Self { heading: String::new(), paragraphs: Option::None, subchapters: Option::None, superchapter: Option::None }
+    }
+
     pub fn heading(&self) -> &String {
         &self.heading
+    }
+
+    pub fn set_heading(&mut self, heading: &String) -> () {
+        self.heading = heading.clone()
     }
 
     pub fn paragraphs(&self) -> &Option<Vec<Paragraph>> {
@@ -44,6 +61,16 @@ impl Chapter {
         }
 
         0
+    }
+
+    pub fn superchapter(&self) -> &Option<Arc<Chapter>> {
+        &self.superchapter
+    }
+}
+
+impl Clone for Chapter {
+    fn clone(&self) -> Self {
+        Self { heading: self.heading.clone(), paragraphs: self.paragraphs.clone(), subchapters: self.subchapters.clone(), superchapter: self.superchapter.clone() }
     }
 }
 

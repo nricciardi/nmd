@@ -8,6 +8,12 @@ pub struct Paragraph {
     content: String
 }
 
+impl Clone for Paragraph {
+    fn clone(&self) -> Self {
+        Self { content: self.content.clone() }
+    }
+}
+
 impl Parsable for Paragraph {
     fn parse(&mut self, codex: Arc<Codex>, parsing_configuration: Arc<ParsingConfiguration>) -> Result<(), ParsingError> {
 

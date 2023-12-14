@@ -47,18 +47,36 @@ impl Document {
             }
         }
 
-        if end_preamble.is_none() {
+        if end_preamble.is_none() {     // => there is no chapters
             return (Option::Some(preamble), Option::None);
         }
 
         let end_preamble = end_preamble.unwrap();
 
-        // TODO
-        let mut chapters: Vec<Chapter> = Vec::new();
-        let mut current_chapter: Option<Chapter> = Option::None;
+        let mut document_chapters: Vec<Chapter> = Vec::new();
 
-        for line in content.lines().enumerate().filter(|(index, line)| *index >= end_preamble) {
-            todo!()
+        let mut current_chapter: Option<Chapter> = Option::None;
+        for (index, line) in content.lines().enumerate().filter(|(index, _)| *index >= end_preamble) {
+            
+            if Modifier::is_heading(line) {
+                if let Some(ref current_chapter) = current_chapter {
+
+                    if let Some(superchapter) = current_chapter.superchapter() {
+                        // TODO: add to superchapter
+                    }
+
+                } else {
+    
+                    let mut new_chapter = Chapter::new_empty();
+                    new_chapter.set_heading(&line.to_string());
+    
+                    current_chapter = Option::Some(new_chapter);
+    
+                }
+            }
+
+            
+
         }
         
         let mut result: (Option<String>, Option<Vec<Chapter>>) = (Option::None, Option::None);
@@ -67,8 +85,8 @@ impl Document {
             result.0 = Option::Some(preamble);
         }
 
-        if !chapters.is_empty() {
-            result.1 = Option::Some(chapters)
+        if !document_chapters.is_empty() {
+            result.1 = Option::Some(document_chapters)
         }
 
         result
