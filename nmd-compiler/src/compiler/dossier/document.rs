@@ -1,5 +1,6 @@
 pub mod chapter;
 
+use std::str::FromStr;
 use std::sync::{Arc, RwLock};
 
 pub use chapter::Chapter;
@@ -13,7 +14,6 @@ use crate::compiler::parsable::codex::{Modifier, Codex};
 use crate::compiler::parsable::{ParsingError, Parsable};
 use crate::compiler::parsable::parsing_configuration::{ParsingConfiguration};
 use crate::compiler::loadable::{Loadable, LoadError};
-use crate::compiler::utility;
 use crate::compiler::{compilable::{Compilable, compilation_configuration::CompilationConfiguration, CompilationError}, resource::{Resource, ResourceError}};
 
 #[derive(Error, Debug)]
@@ -31,6 +31,50 @@ pub struct Document {
     chapters: Option<Vec<Chapter>>
 }
 
+
+impl Document {
+    fn get_document_body_from_str(content: &str) -> (Option<String>, Option<Vec<Chapter>>) {
+        let mut preamble: String = String::new();
+        
+        let mut end_preamble: Option<usize> = Option::None;
+        for (index, line) in content.lines().enumerate() {
+
+            if !Modifier::is_heading(line) {
+                preamble.push_str(line);
+            } else {
+                end_preamble = Some(index);
+                break;
+            }
+        }
+
+        if end_preamble.is_none() {
+            return (Option::Some(preamble), Option::None);
+        }
+
+        let end_preamble = end_preamble.unwrap();
+
+        // TODO
+        let mut chapters: Vec<Chapter> = Vec::new();
+        let mut current_chapter: Option<Chapter> = Option::None;
+
+        for line in content.lines().enumerate().filter(|(index, line)| *index >= end_preamble) {
+            todo!()
+        }
+        
+        let mut result: (Option<String>, Option<Vec<Chapter>>) = (Option::None, Option::None);
+
+        if !preamble.is_empty() {
+            result.0 = Option::Some(preamble);
+        }
+
+        if !chapters.is_empty() {
+            result.1 = Option::Some(chapters)
+        }
+
+        result
+    }
+}
+
 impl Loadable for Document {
 
     type Type = Resource;
@@ -46,26 +90,18 @@ impl Loadable for Document {
                 preamble: Option::None,
                 chapters: Option::None
             }));
-        } 
-
-        todo!();
-
-        let heading_modifiers = Modifier::heading_modifiers_rev();
-        
-        let end_preamble = false;
-        for line in content.lines() {
-
-            if !end_preamble && !Modifier::is_heading(line) {
-                
-            }
-
         }
 
+        let (preamble, chapters) = Self::get_document_body_from_str(&content);
 
-        todo!()
-        /* Ok(Box::new(Self::new(resource.name().clone(), content))) */
+        Ok(Box::new(Self {
+            name: document_name.clone(),
+            preamble,
+            chapters
+        }))
     }
 }
+
 
 impl Parsable for Document {
 
@@ -73,7 +109,9 @@ impl Parsable for Document {
 
         log::info!("parsing {} chapters of document: '{}'", self.n_chapters(), self.name);
 
-        self.preamble = codex.parse(&self.preamble, Arc::clone(&parsing_configuration))?.parsed_content();
+        if let Some(p) = &self.preamble {
+            self.preamble = Option::Some(codex.parse(p, Arc::clone(&parsing_configuration))?.parsed_content());
+        }
 
         if let Some(chapters) = &mut self.chapters {
 
@@ -102,7 +140,7 @@ impl Parsable for Document {
 
 impl Document {
 
-    pub fn new(name: String, preamble: String, chapters: Option<Vec<Chapter>>) -> Self {
+    pub fn new(name: String, preamble: Option<String>, chapters: Option<Vec<Chapter>>) -> Self {
         
         Self {
             name,
@@ -148,10 +186,15 @@ paragraph 2a
 paragraph 1b
 "#.trim().to_string();
 
-        let chapters = Document::split_document(content);
+        let (preamble, chapters) = Document::get_document_body_from_str(&content);
 
-        assert!(chapters.is_some());
+        assert!(preamble.is_none());
 
-        assert_eq!(chapters.unwrap().len(), 3);
+        let chapters = chapters.unwrap();
+
+        assert_eq!(chapters.len(), 3);
+
+
+        
     }
 }
