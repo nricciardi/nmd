@@ -12,7 +12,8 @@ use crate::compiler::parsable::{codex::parsing_rule::parsing_result::{ParsingErr
 pub struct Chapter {
     heading: String,
     paragraphs: Option<Vec<Paragraph>>,
-    subchapters: Option<Vec<Box<Chapter>>>
+    subchapters: Option<Vec<Box<Chapter>>>,
+    superchapter: Box<Chapter>
 }
 
 impl Chapter {

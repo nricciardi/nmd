@@ -8,6 +8,7 @@ use thiserror::Error;
 use log;
 use rayon::prelude::*;
 
+use crate::compiler::dossier::document;
 use crate::compiler::parsable::codex::{Modifier, Codex};
 use crate::compiler::parsable::{ParsingError, Parsable};
 use crate::compiler::parsable::parsing_configuration::{ParsingConfiguration};
@@ -26,7 +27,7 @@ pub enum DocumentError {
 
 pub struct Document {
     name: String,
-    preamble: String,
+    preamble: Option<String>,
     chapters: Option<Vec<Chapter>>
 }
 
@@ -36,6 +37,30 @@ impl Loadable for Document {
 
     fn load(resource: Self::Type) -> Result<Box<Self>, LoadError> {
         let content = resource.content()?;
+
+        let document_name = resource.name();
+
+        if content.is_empty() {
+            return Ok(Box::new(Self {
+                name: document_name.clone(),
+                preamble: Option::None,
+                chapters: Option::None
+            }));
+        } 
+
+        todo!();
+
+        let heading_modifiers = Modifier::heading_modifiers_rev();
+        
+        let end_preamble = false;
+        for line in content.lines() {
+
+            if !end_preamble && !Modifier::is_heading(line) {
+                
+            }
+
+        }
+
 
         todo!()
         /* Ok(Box::new(Self::new(resource.name().clone(), content))) */
@@ -76,33 +101,6 @@ impl Parsable for Document {
 } */
 
 impl Document {
-
-    fn split_document(content: String) -> Option<Vec<String>> {
-
-        if content.is_empty() {
-            return Option::None;
-        } 
-
-        let heading_modifiers = Modifier::heading_modifiers_rev();
-        let mut splitted_content: Vec<String> = vec![content];
-
-        for heading_modifier in heading_modifiers {
-            // TODO
-            let regex = Regex::new(format!("({})", heading_modifier.search_pattern()).as_str()).unwrap();
-
-            let mut subsplitted_content: Vec<String> = Vec::new();
-
-            for splitted_content_part in splitted_content {
-                let mut result: Vec<String> = utility::split_keeping_separator(&regex, &splitted_content_part.as_str());
-
-                subsplitted_content.append(&mut result)
-            }
-
-            splitted_content = subsplitted_content;
-        }
-
-        Some(splitted_content)
-    }
 
     pub fn new(name: String, preamble: String, chapters: Option<Vec<Chapter>>) -> Self {
         
