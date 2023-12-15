@@ -16,6 +16,8 @@ use crate::compiler::parsable::parsing_configuration::{ParsingConfiguration};
 use crate::compiler::loadable::{Loadable, LoadError};
 use crate::compiler::{compilable::{Compilable, compilation_configuration::CompilationConfiguration, CompilationError}, resource::{Resource, ResourceError}};
 
+use self::chapter::ChapterHeading;
+
 #[derive(Error, Debug)]
 pub enum DocumentError {
     #[error(transparent)]
@@ -28,18 +30,18 @@ pub enum DocumentError {
 pub struct Document {
     name: String,
     preamble: Option<String>,
-    chapters: Option<Vec<Chapter>>
+    chapters: Option<Vec<Arc<Chapter>>>
 }
 
 
 impl Document {
-    fn get_document_body_from_str(content: &str) -> (Option<String>, Option<Vec<Chapter>>) {
+    fn get_document_body_from_str(content: &str) -> (Option<String>, Option<Vec<Arc<Chapter>>>) {
         let mut preamble: String = String::new();
         
         let mut end_preamble: Option<usize> = Option::None;
         for (index, line) in content.lines().enumerate() {
 
-            if !Modifier::is_heading(line) {
+            if Modifier::is_heading(line).is_none() {
                 preamble.push_str(line);
             } else {
                 end_preamble = Some(index);
@@ -53,25 +55,29 @@ impl Document {
 
         let end_preamble = end_preamble.unwrap();
 
-        let mut document_chapters: Vec<Chapter> = Vec::new();
+        let mut document_chapters: Vec<Arc<Chapter>> = Vec::new();
 
-        let mut current_chapter: Option<Chapter> = Option::None;
+        // let mut current_chapter: Option<Chapter> = Option::None;
+        let mut current_raw_chapter: Option<String> = Option::None;
         for (index, line) in content.lines().enumerate().filter(|(index, _)| *index >= end_preamble) {
             
-            if Modifier::is_heading(line) {
-                if let Some(ref current_chapter) = current_chapter {
+            let is_heading = Modifier::is_heading(line);
 
-                    if let Some(superchapter) = current_chapter.superchapter() {
-                        // TODO: add to superchapter
-                    }
+            if is_heading.is_some() {
+                
+                if current_raw_chapter.is_some() {
+                    // TODO: store chapter
+                }
 
-                } else {
+                current_raw_chapter = Option::Some(String::from(line))
     
-                    let mut new_chapter = Chapter::new_empty();
-                    new_chapter.set_heading(&line.to_string());
+                /* let mut new_chapter = Chapter::new_empty(ChapterHeading::unrestricted_new(line.to_string(), is_heading.unwrap()));
+
+                current_chapter = Option::Some(new_chapter); */
     
-                    current_chapter = Option::Some(new_chapter);
-    
+            } else {
+                if let Some(ref mut current_raw_chapter) = current_raw_chapter {
+                    current_raw_chapter.push_str(line);
                 }
             }
 
@@ -79,7 +85,7 @@ impl Document {
 
         }
         
-        let mut result: (Option<String>, Option<Vec<Chapter>>) = (Option::None, Option::None);
+        let mut result: (Option<String>, Option<Vec<Arc<Chapter>>>) = (Option::None, Option::None);
 
         if !preamble.is_empty() {
             result.0 = Option::Some(preamble);
@@ -158,7 +164,7 @@ impl Parsable for Document {
 
 impl Document {
 
-    pub fn new(name: String, preamble: Option<String>, chapters: Option<Vec<Chapter>>) -> Self {
+    pub fn new(name: String, preamble: Option<String>, chapters: Option<Vec<Arc<Chapter>>>) -> Self {
         
         Self {
             name,
@@ -167,7 +173,7 @@ impl Document {
         }
     }
 
-    pub fn chapters(&self) -> &Option<Vec<Chapter>> {
+    pub fn chapters(&self) -> &Option<Vec<Arc<Chapter>>> {
         &self.chapters
     }
 

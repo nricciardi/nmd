@@ -54,25 +54,29 @@ impl Modifier {
         let mut heading_modifiers: Vec<Self> = Vec::new();
 
         for i in (1..=MAX_HEADING_LEVEL).rev() {
-            heading_modifiers.push(Modifier::HeadingGeneralExtendedVersion(i));
-            heading_modifiers.push(Modifier::HeadingGeneralCompactVersion(i));
+            heading_modifiers.push(Self::HeadingGeneralExtendedVersion(i));
+            heading_modifiers.push(Self::HeadingGeneralCompactVersion(i));
         }
 
         heading_modifiers
     }
 
-    pub fn is_heading(content: &str) -> bool {
+    pub fn is_heading(content: &str) -> Option<u32> {
         let heading_modifiers = Self::heading_modifiers_rev();
 
         for heading_modifier in heading_modifiers {
             let regex = Regex::new(&heading_modifier.search_pattern()).unwrap();
 
             if regex.is_match(content) {
-                return true;
+                match heading_modifier {
+                    Self::HeadingGeneralExtendedVersion(level) => return Option::Some(level),
+                    Self::HeadingGeneralCompactVersion(level) => return Option::Some(level),
+                    _ => panic!("unexpected modifier: {:?}", heading_modifier)
+                }
             }
         }
 
-        false
+        Option::None
     }
 
     pub fn search_pattern(&self) -> String {

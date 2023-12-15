@@ -1,4 +1,5 @@
 pub mod paragraph;
+pub mod chapter_heading;
 
 use std::sync::Arc;
 
@@ -8,17 +9,19 @@ pub use self::paragraph::Paragraph;
 use crate::compiler::parsable::codex::Codex;
 use crate::compiler::parsable::parsing_configuration::ParsingConfiguration;
 use crate::compiler::parsable::{codex::parsing_rule::parsing_result::{ParsingError, ParsingOutcome}, Parsable};
+pub use chapter_heading::ChapterHeading;
+
 
 pub struct Chapter {
-    heading: String,
+    heading: ChapterHeading,
     paragraphs: Option<Vec<Paragraph>>,
-    subchapters: Option<Vec<Box<Chapter>>>,
+    subchapters: Option<Vec<Arc<Chapter>>>,
     superchapter: Option<Arc<Chapter>>
 }
 
 impl Chapter {
 
-    pub fn new(heading: String, paragraphs: Option<Vec<Paragraph>>, subchapters: Option<Vec<Box<Chapter>>>, superchapter: Option<Arc<Chapter>>) -> Self {
+    pub fn new(heading: ChapterHeading, paragraphs: Option<Vec<Paragraph>>, subchapters: Option<Vec<Arc<Chapter>>>, superchapter: Option<Arc<Chapter>>) -> Self {
         Self {
             heading,
             paragraphs,
@@ -27,15 +30,15 @@ impl Chapter {
         }
     }
 
-    pub fn new_empty() -> Self {
-        Self { heading: String::new(), paragraphs: Option::None, subchapters: Option::None, superchapter: Option::None }
+    pub fn new_empty(heading: ChapterHeading) -> Self {
+        Self { heading, paragraphs: Option::None, subchapters: Option::None, superchapter: Option::None }
     }
 
-    pub fn heading(&self) -> &String {
+    pub fn heading(&self) -> &ChapterHeading {
         &self.heading
     }
 
-    pub fn set_heading(&mut self, heading: &String) -> () {
+    pub fn set_heading(&mut self, heading: &ChapterHeading) -> () {
         self.heading = heading.clone()
     }
 
@@ -51,7 +54,7 @@ impl Chapter {
         0
     }
 
-    pub fn subchapters(&self) -> &Option<Vec<Box<Chapter>>> {
+    pub fn subchapters(&self) -> &Option<Vec<Arc<Chapter>>> {
         &self.subchapters
     }
 
