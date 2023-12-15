@@ -46,7 +46,7 @@ impl Document {
         let mut end_preamble: Option<usize> = Option::None;
         for (index, line) in content.lines().enumerate() {
 
-            if Modifier::is_heading(line).is_none() {
+            if Modifier::heading_level(line).is_none() {
                 preamble.push_str(line);
             } else {
                 end_preamble = Some(index);
@@ -63,24 +63,27 @@ impl Document {
         let mut document_chapters: Vec<Chapter> = Vec::new();
 
         let mut chapter_builder: Option<ChapterBuilder> = Option::None;
-        for (index, line) in content.lines().enumerate().filter(|(index, _)| *index >= end_preamble) {
+        for (_, line) in content.lines().enumerate().filter(|(index, _)| *index >= end_preamble) {
             
-            let is_heading = Modifier::is_heading(line);
-
-            if is_heading.is_some() {
+            if Modifier::is_heading(line) {
                 
                 if let Some(chapter_builder) = chapter_builder {
                     document_chapters.push(chapter_builder.build()?)
                 }
 
                 chapter_builder = Option::Some(ChapterBuilder::new_with_heading(line.to_string()));
-    
+
             } else {
                 if let Some(ref mut chapter_builder) = chapter_builder {
                     chapter_builder.append_content(line.to_string());
                 }
             }
         }
+
+        if let Some(chapter_builder) = chapter_builder {
+            document_chapters.push(chapter_builder.build()?)
+        }
+        
         
         let mut result: (Option<String>, Option<Vec<Chapter>>) = (Option::None, Option::None);
 

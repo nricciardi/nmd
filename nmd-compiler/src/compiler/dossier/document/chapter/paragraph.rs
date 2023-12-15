@@ -1,5 +1,6 @@
 use std::sync::Arc;
 
+use regex::Regex;
 use thiserror::Error;
 
 use crate::compiler::parsable::{codex::{parsing_rule::parsing_result::ParsingError, Codex}, Parsable};
@@ -32,6 +33,40 @@ impl Parsable for Paragraph {
 
 impl Paragraph {
     pub fn from_str(content: &str) -> Option<Vec<Self>> {
-        todo!()
+
+        if content.is_empty() {
+            return Option::None;
+        }
+
+        let regex = Regex::new("\n\n").unwrap();
+
+        Option::Some(regex.split(content).map(|splitted_content| {
+            Self {
+                content: splitted_content.to_string()
+            }
+        }).collect())
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use crate::compiler::dossier::document::chapter::paragraph;
+
+    use super::*;
+
+    #[test]
+    fn from_str() {
+        let content = r#"
+this is the first paragraph.
+Paragraph 1 continued.
+
+Paragraph 2.
+
+Paragraph 3.        
+"#.trim();
+
+        let paragraphs = Paragraph::from_str(content).unwrap();
+
+        assert_eq!(paragraphs.len(), 3)
     }
 }

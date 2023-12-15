@@ -61,7 +61,7 @@ impl Modifier {
         heading_modifiers
     }
 
-    pub fn is_heading(content: &str) -> Option<u32> {
+    pub fn heading_level(content: &str) -> Option<u32> {
         let heading_modifiers = Self::heading_modifiers_rev();
 
         for heading_modifier in heading_modifiers {
@@ -77,6 +77,10 @@ impl Modifier {
         }
 
         Option::None
+    }
+
+    pub fn is_heading(content: &str) -> bool {
+        Self::heading_level(content).is_some()
     }
 
     pub fn search_pattern(&self) -> String {
@@ -124,16 +128,16 @@ mod test {
 
     #[test]
     fn is_heading() {
-        let content = "#6 title 1";
+        let content = "#6 title 6";
 
-        assert!(Modifier::is_heading(content).is_some());
+        assert!(Modifier::heading_level(content).is_some());
 
         let content = "### title 3";
 
-        assert!(Modifier::is_heading(content).is_some());
+        assert!(Modifier::heading_level(content).is_some());
 
         let content = "text";
 
-        assert!(Modifier::is_heading(content).is_none())
+        assert!(Modifier::heading_level(content).is_none())
     }
 }
