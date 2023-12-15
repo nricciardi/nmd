@@ -26,6 +26,14 @@ impl FromStr for SupportedFormat {
     }
 }
 
+impl Clone for SupportedFormat {
+    fn clone(&self) -> Self {
+        match self {
+            Self::Html => Self::Html,
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
 

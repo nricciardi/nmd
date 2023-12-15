@@ -1,9 +1,11 @@
 
+#[derive(Clone)]
 pub enum PortabilityLevel {
     AllInOne,
     // TODO
 }
 
+#[derive(Clone)]
 pub struct Metadata {}
 
 pub struct ParsingConfiguration {
@@ -35,5 +37,11 @@ impl Default for ParsingConfiguration {
             metadata: Metadata {  },
             portability_level: PortabilityLevel::AllInOne
         }
+    }
+}
+
+impl Clone for ParsingConfiguration {
+    fn clone(&self) -> Self {
+        Self { metadata: self.metadata.clone(), portability_level: self.portability_level.clone() }
     }
 }

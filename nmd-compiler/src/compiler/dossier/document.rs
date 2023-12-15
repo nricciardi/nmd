@@ -1,20 +1,17 @@
 pub mod chapter;
 
-use std::str::FromStr;
-use std::sync::{Arc, RwLock};
+use std::sync::Arc;
 
 pub use chapter::Chapter;
-use regex::Regex;
 use thiserror::Error;
 use log;
 use rayon::prelude::*;
 
-use crate::compiler::dossier::document;
 use crate::compiler::parsable::codex::{Modifier, Codex};
 use crate::compiler::parsable::{ParsingError, Parsable};
-use crate::compiler::parsable::parsing_configuration::{ParsingConfiguration};
+use crate::compiler::parsable::parsing_configuration::ParsingConfiguration;
 use crate::compiler::loadable::{Loadable, LoadError};
-use crate::compiler::{compilable::{Compilable, compilation_configuration::CompilationConfiguration, CompilationError}, resource::{Resource, ResourceError}};
+use crate::compiler::resource::{Resource, ResourceError};
 
 use self::chapter::chapter_builder::{ChapterBuilder, ChapterBuilderError};
 
@@ -103,7 +100,7 @@ impl Loadable for Document {
 
     type Type = Resource;
 
-    fn load(resource: Self::Type) -> Result<Box<Self>, LoadError> {
+    fn load(resource: &Self::Type) -> Result<Box<Self>, LoadError> {
         let content = resource.content()?;
 
         let document_name = resource.name();

@@ -16,5 +16,5 @@ pub trait Loadable {
 
     type Type;
 
-    fn load(resource: Self::Type) -> Result<Box<Self>, LoadError>;
+    fn load(resource: &Self::Type) -> Result<Box<Self>, LoadError>;
 }

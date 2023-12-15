@@ -98,7 +98,6 @@ impl From<SupportedFormat> for Codex {
     }
 }
 
-
 #[cfg(test)]
 mod test {
 

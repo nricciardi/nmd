@@ -1,5 +1,5 @@
 mod document;
-mod dossier_configuration;
+pub mod dossier_configuration;
 
 use std::sync::Arc;
 
@@ -12,7 +12,7 @@ use crate::compiler::{parsable::Parsable, compilable::Compilable};
 
 use self::dossier_configuration::DossierConfiguration;
 
-use super::{compilable::{compilation_configuration::CompilationConfiguration, CompilationError}, loadable::{Loadable, LoadError}, parsable::{ParsingConfiguration, ParsingError, codex::Codex}, resource::Resource, assemblable::Assemblable, dumpable::Dumpable};
+use super::{compilable::{compilation_configuration::CompilationConfiguration, CompilationError}, loadable::{Loadable, LoadError}, parsable::{ParsingConfiguration, ParsingError, codex::Codex}, resource::Resource};
 
 #[derive(Error, Debug)]
 pub enum DossierError {
@@ -29,7 +29,7 @@ impl Loadable for Dossier {
 
     type Type = DossierConfiguration;
 
-    fn load(resource: Self::Type) -> Result<Box<Self>, LoadError> {
+    fn load(resource: &Self::Type) -> Result<Box<Self>, LoadError> {
         todo!()
     }
 
@@ -48,20 +48,6 @@ impl Parsable for Dossier {
         }
 
         Ok(())
-    }
-}
-
-impl Assemblable for Dossier {
-    
-}
-
-impl Dumpable for Dossier {
-    
-}
-
-impl Compilable for Dossier {
-    fn compile(&self, compilation_configuration: Arc<CompilationConfiguration>) -> Result<(), CompilationError> {
-        todo!()
     }
 }
 

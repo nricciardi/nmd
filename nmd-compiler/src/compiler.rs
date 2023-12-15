@@ -5,12 +5,16 @@ mod dossier;
 pub mod supported_format;
 pub mod resource;
 pub mod loadable;
-pub mod assemblable;
+pub mod assembler;
 pub mod dumpable;
 
+use std::sync::Arc;
+
 use thiserror::Error;
+use crate::compiler::{dossier::Dossier, loadable::Loadable};
+
 pub use self::compiler_configuration::CompilerConfiguration;
-use self::compilable::{Compilable, CompilationError};
+use self::{compilable::{Compilable, CompilationError, compilation_configuration::{CompilationConfiguration, self}}, loadable::LoadError, parsable::{Parsable, ParsingError}, assembler::AssemblerError};
 
 
 #[derive(Error, Debug)]
@@ -22,7 +26,17 @@ pub enum CompilerError {
     CompilationError(#[from] CompilationError),
 
     #[error("unknown error")]
-    Unknown(String)
+    Unknown(String),
+
+    #[error(transparent)]
+    LoadError(#[from] LoadError),
+
+    #[error(transparent)]
+    ParsingError(#[from] ParsingError),
+
+    #[error(transparent)]
+    AssemblerError(#[from] AssemblerError)
+
 }
 
 pub struct Compiler {
@@ -40,13 +54,17 @@ impl Compiler {
         })
     }
 
-    pub fn compile(&self) -> Result<(), CompilerError> {
+    pub fn compile(&self, compilation_configuration: CompilationConfiguration) -> Result<(), CompilerError> {
+
+        let mut dossier = Dossier::load(compilation_configuration.dossier_configuration().as_ref())?;
+        
+        dossier.parse(compilation_configuration.codex(), compilation_configuration.parsing_configuration())?;
+
+        compilation_configuration.assembler().assemble(*dossier)?;      // TODO
+
+        // TODO: dump
 
         todo!()
-
-        /* let target: Box<dyn Compilable> = self.configuration.location().load()?;
-
-        Ok(target.compile(self.configuration.compilation_configuration())?) */
     }
 
     pub fn version(&self) -> &str {
