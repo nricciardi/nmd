@@ -1,5 +1,5 @@
 pub mod paragraph;
-pub mod chapter_heading;
+pub mod chapter_builder;
 
 use std::sync::Arc;
 
@@ -9,36 +9,31 @@ pub use self::paragraph::Paragraph;
 use crate::compiler::parsable::codex::Codex;
 use crate::compiler::parsable::parsing_configuration::ParsingConfiguration;
 use crate::compiler::parsable::{codex::parsing_rule::parsing_result::{ParsingError, ParsingOutcome}, Parsable};
-pub use chapter_heading::ChapterHeading;
 
 
 pub struct Chapter {
-    heading: ChapterHeading,
-    paragraphs: Option<Vec<Paragraph>>,
-    subchapters: Option<Vec<Arc<Chapter>>>,
-    superchapter: Option<Arc<Chapter>>
+    heading: String,
+    paragraphs: Option<Vec<Paragraph>>
+
+    // TODO: maybe in another version
+    /* subchapters: Option<Vec<Arc<Chapter>>>,
+    superchapter: Option<Arc<Chapter>> */
 }
 
 impl Chapter {
 
-    pub fn new(heading: ChapterHeading, paragraphs: Option<Vec<Paragraph>>, subchapters: Option<Vec<Arc<Chapter>>>, superchapter: Option<Arc<Chapter>>) -> Self {
+    pub fn new(heading: String, paragraphs: Option<Vec<Paragraph>>) -> Self {
         Self {
             heading,
-            paragraphs,
-            subchapters,
-            superchapter
+            paragraphs
         }
     }
 
-    pub fn new_empty(heading: ChapterHeading) -> Self {
-        Self { heading, paragraphs: Option::None, subchapters: Option::None, superchapter: Option::None }
-    }
-
-    pub fn heading(&self) -> &ChapterHeading {
+    pub fn heading(&self) -> &String {
         &self.heading
     }
 
-    pub fn set_heading(&mut self, heading: &ChapterHeading) -> () {
+    pub fn set_heading(&mut self, heading: &String) -> () {
         self.heading = heading.clone()
     }
 
@@ -53,27 +48,11 @@ impl Chapter {
 
         0
     }
-
-    pub fn subchapters(&self) -> &Option<Vec<Arc<Chapter>>> {
-        &self.subchapters
-    }
-
-    pub fn n_subchapters(&self) -> usize {
-        if let Some(subchapters) = &self.subchapters {
-            return subchapters.len()
-        }
-
-        0
-    }
-
-    pub fn superchapter(&self) -> &Option<Arc<Chapter>> {
-        &self.superchapter
-    }
 }
 
 impl Clone for Chapter {
     fn clone(&self) -> Self {
-        Self { heading: self.heading.clone(), paragraphs: self.paragraphs.clone(), subchapters: self.subchapters.clone(), superchapter: self.superchapter.clone() }
+        Self { heading: self.heading.clone(), paragraphs: self.paragraphs.clone() }
     }
 }
 
@@ -85,16 +64,6 @@ impl Parsable for Chapter {
         if let Some(paragraphs) = &mut self.paragraphs {
             let maybe_failed = paragraphs.par_iter_mut().map(|paragraph| {
                 paragraph.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration))
-            }).find_any(|result| result.is_err());
-
-            if let Some(result) = maybe_failed {
-                return result
-            }
-        }
-
-        if let Some(mut subchapters) = std::mem::take(&mut self.subchapters) {
-            let maybe_failed = subchapters.par_iter_mut().map(|subchapter| {
-                subchapter.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration))
             }).find_any(|result| result.is_err());
 
             if let Some(result) = maybe_failed {

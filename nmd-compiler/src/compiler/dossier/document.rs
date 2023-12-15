@@ -16,7 +16,8 @@ use crate::compiler::parsable::parsing_configuration::{ParsingConfiguration};
 use crate::compiler::loadable::{Loadable, LoadError};
 use crate::compiler::{compilable::{Compilable, compilation_configuration::CompilationConfiguration, CompilationError}, resource::{Resource, ResourceError}};
 
-use self::chapter::ChapterHeading;
+use self::chapter::chapter_builder::{ChapterBuilder, ChapterBuilderError};
+
 
 #[derive(Error, Debug)]
 pub enum DocumentError {
@@ -24,18 +25,22 @@ pub enum DocumentError {
     Load(#[from] ResourceError),
 
     #[error(transparent)]
-    Parsing(#[from] ParsingError)
+    Parsing(#[from] ParsingError),
+
+    #[error(transparent)]
+    ChapterBuilderError(#[from] ChapterBuilderError)
 }
 
 pub struct Document {
     name: String,
     preamble: Option<String>,
-    chapters: Option<Vec<Arc<Chapter>>>
+    chapters: Option<Vec<Chapter>>
 }
 
 
 impl Document {
-    fn get_document_body_from_str(content: &str) -> (Option<String>, Option<Vec<Arc<Chapter>>>) {
+    // TODO: change method signature
+    fn get_document_body_from_str(content: &str) -> Result<(Option<String>, Option<Vec<Chapter>>), DocumentError> {
         let mut preamble: String = String::new();
         
         let mut end_preamble: Option<usize> = Option::None;
@@ -50,42 +55,34 @@ impl Document {
         }
 
         if end_preamble.is_none() {     // => there is no chapters
-            return (Option::Some(preamble), Option::None);
+            return Ok((Option::Some(preamble), Option::None));
         }
 
         let end_preamble = end_preamble.unwrap();
 
-        let mut document_chapters: Vec<Arc<Chapter>> = Vec::new();
+        let mut document_chapters: Vec<Chapter> = Vec::new();
 
-        // let mut current_chapter: Option<Chapter> = Option::None;
-        let mut current_raw_chapter: Option<String> = Option::None;
+        let mut chapter_builder: Option<ChapterBuilder> = Option::None;
         for (index, line) in content.lines().enumerate().filter(|(index, _)| *index >= end_preamble) {
             
             let is_heading = Modifier::is_heading(line);
 
             if is_heading.is_some() {
                 
-                if current_raw_chapter.is_some() {
-                    // TODO: store chapter
+                if let Some(chapter_builder) = chapter_builder {
+                    document_chapters.push(chapter_builder.build()?)
                 }
 
-                current_raw_chapter = Option::Some(String::from(line))
-    
-                /* let mut new_chapter = Chapter::new_empty(ChapterHeading::unrestricted_new(line.to_string(), is_heading.unwrap()));
-
-                current_chapter = Option::Some(new_chapter); */
+                chapter_builder = Option::Some(ChapterBuilder::new_with_heading(line.to_string()));
     
             } else {
-                if let Some(ref mut current_raw_chapter) = current_raw_chapter {
-                    current_raw_chapter.push_str(line);
+                if let Some(ref mut chapter_builder) = chapter_builder {
+                    chapter_builder.append_content(line.to_string());
                 }
             }
-
-            
-
         }
         
-        let mut result: (Option<String>, Option<Vec<Arc<Chapter>>>) = (Option::None, Option::None);
+        let mut result: (Option<String>, Option<Vec<Chapter>>) = (Option::None, Option::None);
 
         if !preamble.is_empty() {
             result.0 = Option::Some(preamble);
@@ -95,7 +92,7 @@ impl Document {
             result.1 = Option::Some(document_chapters)
         }
 
-        result
+        Ok(result)
     }
 }
 
@@ -116,13 +113,18 @@ impl Loadable for Document {
             }));
         }
 
-        let (preamble, chapters) = Self::get_document_body_from_str(&content);
+        let result = Self::get_document_body_from_str(&content);
 
-        Ok(Box::new(Self {
-            name: document_name.clone(),
-            preamble,
-            chapters
-        }))
+        match result {
+            Ok((preamble, chapters)) => {
+                return Ok(Box::new(Self {
+                    name: document_name.clone(),
+                    preamble,
+                    chapters
+                }));
+            },
+            Err(err) => return Err(LoadError::ElaborationError(err.to_string()))
+        }
     }
 }
 
@@ -164,7 +166,7 @@ impl Parsable for Document {
 
 impl Document {
 
-    pub fn new(name: String, preamble: Option<String>, chapters: Option<Vec<Arc<Chapter>>>) -> Self {
+    pub fn new(name: String, preamble: Option<String>, chapters: Option<Vec<Chapter>>) -> Self {
         
         Self {
             name,
@@ -173,7 +175,7 @@ impl Document {
         }
     }
 
-    pub fn chapters(&self) -> &Option<Vec<Arc<Chapter>>> {
+    pub fn chapters(&self) -> &Option<Vec<Chapter>> {
         &self.chapters
     }
 
@@ -210,7 +212,7 @@ paragraph 2a
 paragraph 1b
 "#.trim().to_string();
 
-        let (preamble, chapters) = Document::get_document_body_from_str(&content);
+        let (preamble, chapters) = Document::get_document_body_from_str(&content).unwrap();
 
         assert!(preamble.is_none());
 

@@ -10,7 +10,7 @@ use crate::compiler::parsable::ParsingConfiguration;
 
 use self::parsing_result::{ParsingOutcome, ParsingError};
 
-pub const MAX_HEADING_LEVEL: u32 = 32; 
+pub const MAX_HEADING_LEVEL: u32 = 6; 
 
 /// NMD modifiers pattern types
 #[derive(Debug)]
@@ -95,7 +95,7 @@ impl Modifier {
                     panic!("{level} is an invalid heading level.")
                 }
 
-                format!(r"{}\s+(.*)\n\n", "#".repeat(level as usize))
+                format!(r"{}\s+(.*)", "#".repeat(level as usize))
             },
             Self::HeadingGeneralCompactVersion(level) => {
 
@@ -103,7 +103,7 @@ impl Modifier {
                     panic!("{level} is an invalid heading level.")
                 }
 
-                format!(r"#({})\s+(.*)\n\n", level)
+                format!(r"#({})\s+(.*)", level)
             },
             _ => String::from(r"RULE TODO")                                               // TODO
         }
@@ -116,4 +116,24 @@ pub trait ParsingRule: Send + Sync {
     fn modifier(&self) -> &Modifier;
 
     fn parse(&self, content: &str, parsing_configuration: Arc<ParsingConfiguration>) -> Result<ParsingOutcome, ParsingError>;
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn is_heading() {
+        let content = "#6 title 1";
+
+        assert!(Modifier::is_heading(content).is_some());
+
+        let content = "### title 3";
+
+        assert!(Modifier::is_heading(content).is_some());
+
+        let content = "text";
+
+        assert!(Modifier::is_heading(content).is_none())
+    }
 }
