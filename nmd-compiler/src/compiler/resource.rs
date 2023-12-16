@@ -11,17 +11,11 @@ pub enum ResourceError {
     #[error("resource '{0}' not found")]
     ResourceNotFound(String),
 
-/*    #[error(transparent)]
-     DossierLoadFailed(#[from] DossierError),
-
-    #[error(transparent)]
-    DocumentLoadFailed(#[from] DocumentError),
- */
     #[error("resource is invalid")]
     InvalidResource,
 
-    #[error("resource '{0}' is invalid because: {1}")]
-    InvalidResourceVerbose(String, String),
+    #[error("resource is invalid because: {0}")]
+    InvalidResourceVerbose(String),
 
     #[error("resource cannot be created: {0}")]
     Creation(String),
@@ -30,7 +24,7 @@ pub enum ResourceError {
     ReadError(String),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Resource {
     name: String, 
     location: PathBuf       // TODO: migrate to structured type to handle URL

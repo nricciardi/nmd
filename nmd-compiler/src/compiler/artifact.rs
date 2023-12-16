@@ -1,8 +1,7 @@
-use super::dumpable::Dumpable;
+use super::{dumpable::Dumpable, resource::Resource};
 
 
 pub struct Artifact {
-
 }
 
 impl Dumpable for Artifact {

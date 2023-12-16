@@ -16,7 +16,7 @@ use thiserror::Error;
 use crate::compiler::{dossier::Dossier, loadable::Loadable};
 
 pub use self::compiler_configuration::CompilerConfiguration;
-use self::{compilable::{Compilable, CompilationError, compilation_configuration::{CompilationConfiguration, self}}, loadable::LoadError, parsable::{Parsable, ParsingError}, assembler::AssemblerError};
+use self::{compilable::{CompilationError, compilation_configuration::CompilationConfiguration}, loadable::LoadError, parsable::{Parsable, ParsingError}, assembler::AssemblerError};
 
 
 #[derive(Error, Debug)]
@@ -58,7 +58,7 @@ impl Compiler {
 
     pub fn compile(&self, compilation_configuration: CompilationConfiguration) -> Result<(), CompilerError> {
 
-        let mut dossier = Dossier::load(compilation_configuration.dossier_configuration().as_ref())?;
+        let mut dossier = Dossier::load(compilation_configuration.dossier_configuration())?;
         
         dossier.parse(Arc::new(compilation_configuration.codex()), Arc::new(compilation_configuration.parsing_configuration()))?;
 

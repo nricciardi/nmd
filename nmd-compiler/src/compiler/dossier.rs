@@ -12,7 +12,7 @@ use crate::compiler::{parsable::Parsable, compilable::Compilable};
 
 use self::dossier_configuration::DossierConfiguration;
 
-use super::{compilable::{compilation_configuration::CompilationConfiguration, CompilationError}, loadable::{Loadable, LoadError}, parsable::{ParsingConfiguration, ParsingError, codex::Codex}, resource::Resource};
+use super::{loadable::{Loadable, LoadError}, parsable::{ParsingConfiguration, ParsingError, codex::Codex}, resource::{Resource, ResourceError}};
 
 #[derive(Error, Debug)]
 pub enum DossierError {
@@ -21,7 +21,7 @@ pub enum DossierError {
 }
 
 pub struct Dossier {
-    name: String,
+    configuration: DossierConfiguration,
     documents: Option<Vec<Document>>
 }
 
@@ -29,8 +29,29 @@ impl Loadable for Dossier {
 
     type Type = DossierConfiguration;
 
-    fn load(resource: &Self::Type) -> Result<Box<Self>, LoadError> {
-        todo!()
+    fn load(dossier_configuration: &Self::Type) -> Result<Box<Self>, LoadError> {
+
+        if dossier_configuration.documents().is_empty() {
+            return Err(LoadError::ResourceError(ResourceError::InvalidResourceVerbose("there are no documents".to_string())))
+        }
+
+        if dossier_configuration.name().is_empty() {
+            return Err(LoadError::ResourceError(ResourceError::InvalidResourceVerbose("there is no name".to_string())))
+        }
+
+        let mut documents: Vec<Document> = Vec::new();
+
+        for document in dossier_configuration.documents() {
+
+            let document = Document::load(document)?;
+
+            documents.push(*document)
+        }
+
+        Ok(Box::new(Self {
+            configuration: dossier_configuration.clone(),
+            documents: Option::Some(documents)
+        }))
     }
 
 }
@@ -53,14 +74,7 @@ impl Parsable for Dossier {
 
 impl Dossier {
 
-    pub fn new(name: String, documents: Option<Vec<Document>>) -> Self {
-        Self {
-            name,
-            documents
-        }
-    }
-
     pub fn name(&self) -> &String {
-        &self.name
+        self.configuration.name()
     }
 }

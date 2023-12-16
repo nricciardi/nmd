@@ -6,7 +6,7 @@ pub struct CompilationConfiguration {
     format: SupportedFormat,
     output: Resource,
     portability_level: PortabilityLevel,
-    dossier_configuration: Arc<DossierConfiguration>
+    dossier_configuration: DossierConfiguration
 }
 
 impl Default for CompilationConfiguration {
@@ -15,7 +15,7 @@ impl Default for CompilationConfiguration {
             format: SupportedFormat::Html,
             output: Resource::from_str(".").unwrap(),        // TODO
             portability_level: PortabilityLevel::AllInOne,
-            dossier_configuration: Arc::new(DossierConfiguration::default())
+            dossier_configuration: DossierConfiguration::default()
         }
     }
 }
@@ -35,8 +35,8 @@ impl CompilationConfiguration {
         ParsingConfiguration::from(self.portability_level.clone())
     }
 
-    pub fn dossier_configuration(&self) -> Arc<DossierConfiguration> {
-        Arc::clone(&self.dossier_configuration)
+    pub fn dossier_configuration(&self) -> &DossierConfiguration {
+        &self.dossier_configuration
     }
 
     pub fn assembler(&self) -> Box<dyn Assembler> {

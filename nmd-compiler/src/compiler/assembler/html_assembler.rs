@@ -1,4 +1,6 @@
-use crate::compiler::{dossier::Dossier, artifact::Artifact};
+use build_html::{HtmlPage, HtmlContainer, Html};
+
+use crate::compiler::{dossier::Dossier, artifact::Artifact, portability_level::PortabilityLevel};
 
 use super::{Assembler, AssemblerError, assembler_configuration::AssemblerConfiguration};
 
@@ -12,6 +14,15 @@ impl HtmlAssembler {
             configuration    
         }
     }
+
+    fn assemble_all_in_one(&self, dossier: Dossier) -> Result<Artifact, AssemblerError> {
+        let page: String = HtmlPage::new()
+                            .with_title(dossier.name())
+                            .to_html_string();
+
+        todo!()
+                            
+    }
 }
 
 impl Assembler for HtmlAssembler {
@@ -21,6 +32,8 @@ impl Assembler for HtmlAssembler {
     }
 
     fn assemble(&self, dossier: Dossier) -> Result<Artifact, AssemblerError> {
-        todo!()
+        match self.configuration.portability_level() {
+            PortabilityLevel::AllInOne => self.assemble_all_in_one(dossier)
+        }
     }
 }
