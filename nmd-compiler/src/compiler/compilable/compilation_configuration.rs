@@ -1,28 +1,20 @@
 use std::{str::FromStr, sync::Arc};
 
-use crate::compiler::{parsable::{codex::{parsing_rule::parsing_result::{ParsingError, ParsingOutcome}, Codex}, Parsable, ParsingConfiguration}, supported_format::SupportedFormat, resource::Resource, assembler::{Assembler, self}, dossier::dossier_configuration::DossierConfiguration};
-
+use crate::compiler::{parsable::{codex::{parsing_rule::parsing_result::{ParsingError, ParsingOutcome}, Codex}, Parsable, ParsingConfiguration}, supported_format::SupportedFormat, resource::Resource, assembler::{Assembler, self, assembler_configuration::AssemblerConfiguration}, dossier::dossier_configuration::DossierConfiguration, portability_level::PortabilityLevel};
 
 pub struct CompilationConfiguration {
-    format: SupportedFormat,        // TODO: maybe remove
-    codex: Arc<Codex>,
-    assembler: Box<dyn Assembler>,
+    format: SupportedFormat,
     output: Resource,
-    parsing_configuration: Arc<ParsingConfiguration>,
+    portability_level: PortabilityLevel,
     dossier_configuration: Arc<DossierConfiguration>
 }
 
 impl Default for CompilationConfiguration {
     fn default() -> Self {
-
-        let format: SupportedFormat = SupportedFormat::Html;
-
         Self {
-            format: format.clone(),
-            codex: Arc::new(Codex::from(format.clone())),
-            assembler: assembler::from(format.clone()),
+            format: SupportedFormat::Html,
             output: Resource::from_str(".").unwrap(),        // TODO
-            parsing_configuration: Arc::new(ParsingConfiguration::default()),
+            portability_level: PortabilityLevel::AllInOne,
             dossier_configuration: Arc::new(DossierConfiguration::default())
         }
     }
@@ -35,19 +27,19 @@ impl CompilationConfiguration {
         }
     }
 
-    pub fn codex(&self) -> Arc<Codex> {
-        Arc::clone(&self.codex)
+    pub fn codex(&self) -> Codex {
+        Codex::from(self.format.clone())
     }
 
-    pub fn parsing_configuration(&self) -> Arc<ParsingConfiguration> {
-        Arc::clone(&self.parsing_configuration)
+    pub fn parsing_configuration(&self) -> ParsingConfiguration {
+        ParsingConfiguration::from(self.portability_level.clone())
     }
 
     pub fn dossier_configuration(&self) -> Arc<DossierConfiguration> {
         Arc::clone(&self.dossier_configuration)
     }
 
-    pub fn assembler(&self) -> &Box<dyn Assembler> {
-        &self.assembler
+    pub fn assembler(&self) -> Box<dyn Assembler> {
+        assembler::from(self.format.clone(), AssemblerConfiguration::from(self.portability_level.clone()))
     }
 }

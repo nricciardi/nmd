@@ -1,21 +1,19 @@
+use crate::compiler::portability_level::PortabilityLevel;
 
-#[derive(Clone)]
-pub enum PortabilityLevel {
-    AllInOne,
-    // TODO
-}
 
-#[derive(Clone)]
-pub struct Metadata {}
+
+
+#[derive(Clone, Default)]
+pub struct ParsingConfigurationMetadata {}
 
 pub struct ParsingConfiguration {
-    metadata: Metadata,
+    metadata: ParsingConfigurationMetadata,
     portability_level: PortabilityLevel
 }
 
 impl ParsingConfiguration {
 
-    pub fn metadata(&self) -> &Metadata {
+    pub fn metadata(&self) -> &ParsingConfigurationMetadata {
         &self.metadata
     }
 
@@ -23,7 +21,7 @@ impl ParsingConfiguration {
         &self.portability_level
     }
 
-    pub fn new(metadata: Metadata, portability_level: PortabilityLevel) -> Self {
+    pub fn new(metadata: ParsingConfigurationMetadata, portability_level: PortabilityLevel) -> Self {
         Self {
             metadata,
             portability_level
@@ -34,7 +32,7 @@ impl ParsingConfiguration {
 impl Default for ParsingConfiguration {
     fn default() -> Self {
         ParsingConfiguration {
-            metadata: Metadata {  },
+            metadata: ParsingConfigurationMetadata {  },
             portability_level: PortabilityLevel::AllInOne
         }
     }
@@ -43,5 +41,14 @@ impl Default for ParsingConfiguration {
 impl Clone for ParsingConfiguration {
     fn clone(&self) -> Self {
         Self { metadata: self.metadata.clone(), portability_level: self.portability_level.clone() }
+    }
+}
+
+impl From<PortabilityLevel> for ParsingConfiguration {
+    fn from(value: PortabilityLevel) -> Self {
+        Self {
+            portability_level: value,
+            metadata: ParsingConfigurationMetadata::default()
+        }
     }
 }

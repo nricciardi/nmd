@@ -4,9 +4,11 @@ mod parsable;
 mod dossier;
 pub mod supported_format;
 pub mod resource;
-pub mod loadable;
-pub mod assembler;
-pub mod dumpable;
+mod loadable;
+mod assembler;
+mod dumpable;
+pub mod artifact;
+pub mod portability_level;
 
 use std::sync::Arc;
 
@@ -58,9 +60,9 @@ impl Compiler {
 
         let mut dossier = Dossier::load(compilation_configuration.dossier_configuration().as_ref())?;
         
-        dossier.parse(compilation_configuration.codex(), compilation_configuration.parsing_configuration())?;
+        dossier.parse(Arc::new(compilation_configuration.codex()), Arc::new(compilation_configuration.parsing_configuration()))?;
 
-        compilation_configuration.assembler().assemble(*dossier)?;      // TODO
+        let artifact = compilation_configuration.assembler().assemble(*dossier)?;
 
         // TODO: dump
 

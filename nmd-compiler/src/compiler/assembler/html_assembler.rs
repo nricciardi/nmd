@@ -1,19 +1,26 @@
-use crate::compiler::dossier::Dossier;
+use crate::compiler::{dossier::Dossier, artifact::Artifact};
 
-use super::Assembler;
+use super::{Assembler, AssemblerError, assembler_configuration::AssemblerConfiguration};
 
 pub struct HtmlAssembler {
+    configuration: AssemblerConfiguration
 }
 
 impl HtmlAssembler {
-    pub fn new() -> Self {
-        Self {     
+    pub fn new(configuration: AssemblerConfiguration) -> Self {
+        Self {
+            configuration    
         }
     }
 }
 
 impl Assembler for HtmlAssembler {
-    fn assemble(&self, dossier: Dossier) -> Result<(), super::AssemblerError> {
+
+    fn set_configuration(&mut self, configuration: AssemblerConfiguration) {
+        self.configuration = configuration
+    }
+
+    fn assemble(&self, dossier: Dossier) -> Result<Artifact, AssemblerError> {
         todo!()
     }
 }
