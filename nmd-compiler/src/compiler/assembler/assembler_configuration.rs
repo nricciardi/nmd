@@ -16,3 +16,11 @@ impl From<PortabilityLevel> for AssemblerConfiguration {
         Self { portability_level: value }
     }
 }
+
+impl Default for AssemblerConfiguration {
+    fn default() -> Self {
+        Self {
+            portability_level: Default::default()
+        }
+    }
+}

@@ -1,7 +1,7 @@
 mod locatable;          // TODO: future use
 mod location;           // TODO: future use
 
-use std::{path::PathBuf, str::FromStr, fs::{File, self}};
+use std::{path::PathBuf, str::FromStr, fs::{File, self, OpenOptions}, io::{self, Write}};
 use thiserror::Error;
 
 
@@ -22,6 +22,9 @@ pub enum ResourceError {
 
     #[error("resource '{0}' cannot be read")]
     ReadError(String),
+
+    #[error(transparent)]
+    IoError(#[from] io::Error)
 }
 
 #[derive(Debug, Clone)]
@@ -72,12 +75,39 @@ impl Resource {
 
         match fs::read_to_string(self.location.clone()) {           // TODO: remove clone
             Ok(content) => Ok(content),
-            Err(_) => Err(ResourceError::ReadError(self.to_string()))
+            Err(err) => Err(ResourceError::ReadError(format!("error during read content of {}: {}", self.to_string(), err.to_string())))
         }
     } 
 
     pub fn name(&self) -> &String {
         &self.name        
+    }
+
+    pub fn write(&self, content: &str) -> Result<(), ResourceError> {
+        let file_path = &self.location;
+
+        let mut file = OpenOptions::new()
+            .write(true)
+            .create(true)
+            .open(file_path)?;
+
+        file.write_all(content.as_bytes())?;
+
+        Ok(())
+    }
+
+    pub fn append(&self, content: &str) -> Result<(), ResourceError> {
+        let file_path = &self.location;
+
+        let mut file = OpenOptions::new()
+            .write(true)
+            .create(true)
+            .append(true)
+            .open(file_path)?;
+
+        file.write_all(content.as_bytes())?;
+
+        Ok(())
     }
 }
 

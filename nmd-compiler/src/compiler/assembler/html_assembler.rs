@@ -50,3 +50,36 @@ impl Assembler for HtmlAssembler {
         }
     }
 }
+
+#[cfg(test)]
+mod test {
+
+    use std::{error, path::PathBuf};
+
+    use crate::compiler::{loadable::Loadable, resource::Resource, dossier::dossier_configuration::{self, DossierConfiguration}, artifact};
+
+    use super::*;
+
+    #[test]
+    fn assemble() {
+
+        let project_directory = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        let dossier_dir = "nmd-test-dossier-1";
+        let project_directory = project_directory.join("test-resources").join(dossier_dir).join("d1.nmd");
+
+        assert!(project_directory.is_file());
+
+        let resource = Resource::new(project_directory).unwrap();
+
+        let mut dossier_configuration = DossierConfiguration::default();
+        dossier_configuration.set_documents(vec![resource]);
+
+        let dossier = Dossier::load(&dossier_configuration).unwrap();
+
+        let assembler = HtmlAssembler::new(AssemblerConfiguration::default());
+
+        let artifact = assembler.assemble(*dossier).unwrap();
+
+        todo!()
+    }
+}

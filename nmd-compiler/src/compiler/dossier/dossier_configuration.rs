@@ -19,6 +19,10 @@ impl DossierConfiguration {
         &self.documents
     }
 
+    pub fn set_documents(&mut self, documents: Vec<Resource>) -> () {
+        self.documents = documents
+    }
+
     pub fn name(&self) -> &String {
         &self.name
     }
