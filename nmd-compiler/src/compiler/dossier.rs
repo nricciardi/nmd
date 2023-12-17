@@ -77,4 +77,8 @@ impl Dossier {
     pub fn name(&self) -> &String {
         self.configuration.name()
     }
+
+    pub fn documents(&self) -> &Option<Vec<Document>> {
+        &self.documents
+    }
 }

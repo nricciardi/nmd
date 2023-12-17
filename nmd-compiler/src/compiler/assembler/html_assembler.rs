@@ -1,4 +1,4 @@
-use build_html::{HtmlPage, HtmlContainer, Html};
+use build_html::{HtmlPage, HtmlContainer, Html, Container};
 
 use crate::compiler::{dossier::Dossier, artifact::Artifact, portability_level::PortabilityLevel};
 
@@ -16,9 +16,22 @@ impl HtmlAssembler {
     }
 
     fn assemble_all_in_one(&self, dossier: Dossier) -> Result<Artifact, AssemblerError> {
-        let page: String = HtmlPage::new()
-                            .with_title(dossier.name())
-                            .to_html_string();
+        let mut page = HtmlPage::new()
+                                .with_title(dossier.name())
+                                .with_meta(vec![("charset", "utf-8")]);
+
+        if let Some(documents) = dossier.documents() {
+
+            for document in documents {
+                let section = Container::new(build_html::ContainerType::Section)
+                                                .with_raw(document);
+
+                page.add_container(section);
+            }
+
+        } else {
+            return Err(AssemblerError::TooFewElements)
+        }
 
         todo!()
                             

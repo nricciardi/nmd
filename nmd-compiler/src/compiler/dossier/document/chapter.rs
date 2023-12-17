@@ -1,6 +1,7 @@
 pub mod paragraph;
 pub mod chapter_builder;
 
+use std::fmt::Display;
 use std::sync::Arc;
 
 use rayon::iter::{IntoParallelRefMutIterator, ParallelIterator};
@@ -74,3 +75,25 @@ impl Parsable for Chapter {
         Ok(())
     }
 }
+
+
+impl Display for Chapter {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+
+        let mut s: String = String::from(&self.heading);
+
+        if let Some(paragraphs) = &self.paragraphs {
+            for paragraph in paragraphs {
+                s.push_str(paragraph.to_string().as_str());
+            }
+        }
+
+        write!(f, "{}", s)
+    }
+}
+
+/* impl ToString for Chapter {
+    fn to_string(&self) -> String {
+        format!("{}", self)
+    }
+} */

@@ -1,5 +1,6 @@
 pub mod chapter;
 
+use std::fmt::Display;
 use std::sync::Arc;
 
 pub use chapter::Chapter;
@@ -32,6 +33,34 @@ pub struct Document {
     name: String,
     preamble: Option<String>,
     chapters: Option<Vec<Chapter>>
+}
+
+impl Document {
+
+    pub fn new(name: String, preamble: Option<String>, chapters: Option<Vec<Chapter>>) -> Self {
+        
+        Self {
+            name,
+            preamble,
+            chapters
+        }
+    }
+
+    pub fn chapters(&self) -> &Option<Vec<Chapter>> {
+        &self.chapters
+    }
+
+    pub fn n_chapters(&self) -> usize {
+        if let Some(chapters) = self.chapters() {
+            return chapters.len()
+        }
+
+        0
+    }
+
+    pub fn preamble(&self) -> &Option<String> {
+        &self.preamble
+    }
 }
 
 
@@ -158,36 +187,24 @@ impl Parsable for Document {
     }
 }
 
-/* impl Compilable for Document {      // TODO: maybe remove
-    fn compile(&self, compilation_configuration: &CompilationConfiguration) -> Result<(), CompilationError> {
-        todo!()
-    }
-} */
+impl Display for Document {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
 
-impl Document {
+        let mut s = String::new();
 
-    pub fn new(name: String, preamble: Option<String>, chapters: Option<Vec<Chapter>>) -> Self {
-        
-        Self {
-            name,
-            preamble,
-            chapters
+        if let Some(preamble) = self.preamble() {
+            s.push_str(preamble);
         }
-    }
 
-    pub fn chapters(&self) -> &Option<Vec<Chapter>> {
-        &self.chapters
-    }
-
-    pub fn n_chapters(&self) -> usize {
         if let Some(chapters) = self.chapters() {
-            return chapters.len()
+            for chapter in chapters {
+                s.push_str(chapter.to_string().as_str());
+            }
         }
 
-        0
+        write!(f, "{}", s)
     }
 }
-
 
 
 #[cfg(test)]

@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{sync::Arc, fmt::Display};
 
 use regex::Regex;
 use thiserror::Error;
@@ -50,7 +50,6 @@ impl Paragraph {
 
 #[cfg(test)]
 mod test {
-    use crate::compiler::dossier::document::chapter::paragraph;
 
     use super::*;
 
@@ -68,5 +67,11 @@ Paragraph 3.
         let paragraphs = Paragraph::from_str(content).unwrap();
 
         assert_eq!(paragraphs.len(), 3)
+    }
+}
+
+impl Display for Paragraph {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.content)
     }
 }

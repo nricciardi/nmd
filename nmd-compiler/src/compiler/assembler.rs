@@ -10,6 +10,8 @@ pub mod assembler_configuration;
 
 #[derive(Error, Debug)]
 pub enum AssemblerError {
+    #[error("too few elements to asseble")]
+    TooFewElements
 }
 
 pub trait Assembler {
