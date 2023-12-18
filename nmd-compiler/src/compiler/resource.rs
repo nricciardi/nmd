@@ -53,6 +53,25 @@ impl ToString for Resource {
     }
 }
 
+impl TryFrom<PathBuf> for Resource {
+    type Error = ResourceError;
+
+    fn try_from(location: PathBuf) -> Result<Self, Self::Error> {
+        if location.is_dir() {
+            return Err(ResourceError::InvalidResourceVerbose(format!("{} is a directory", location.to_string_lossy())))
+        }
+
+        if let Some(name) = location.file_name() {
+            Ok(Self {
+                name: name.to_string_lossy().to_string(),
+                location
+            })
+        } else {
+            Err(ResourceError::InvalidResource)
+        }
+    }
+}
+
 impl Resource {
 
     pub fn location(&self) -> &PathBuf {
@@ -60,23 +79,13 @@ impl Resource {
     } 
 
     pub fn new(location: PathBuf) -> Result<Self, ResourceError> {
-        match location.file_name() {
-            Some(name) => Ok(Self {
-                name: name.to_string_lossy().to_string(),
-                location
-            }),
-            None => Err(ResourceError::InvalidResource)
-        }
 
+        Self::try_from(location)
         
     }
 
     pub fn content(&self) -> Result<String, ResourceError> {
-
-        match fs::read_to_string(self.location.clone()) {           // TODO: remove clone
-            Ok(content) => Ok(content),
-            Err(err) => Err(ResourceError::ReadError(format!("error during read content of {}: {}", self.to_string(), err.to_string())))
-        }
+        self.read()        
     } 
 
     pub fn name(&self) -> &String {
@@ -109,6 +118,13 @@ impl Resource {
 
         Ok(())
     }
+
+    pub fn read(&self) -> Result<String, ResourceError> {
+        match fs::read_to_string(self.location.clone()) {           // TODO: remove clone
+            Ok(content) => Ok(content),
+            Err(err) => Err(ResourceError::ReadError(format!("error during read content of {}: {}", self.to_string(), err.to_string())))
+        }
+    }
 }
 
 
@@ -128,5 +144,35 @@ mod test {
             Ok(location) => assert_eq!(location.to_string(), path),
             Err(e) => panic!("'{}' during location generation from str of path: '{}'", e, path)
         }
+    }
+
+    #[test]
+    #[should_panic]
+    fn dir() {
+        let project_directory = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        let dossier_dir = "nmd-test-dossier-1";
+        let nmd_file = project_directory.join("test-resources").join(dossier_dir);
+
+        let resource = Resource::new(nmd_file).unwrap();
+    }
+
+    #[test]
+    fn write() {
+        let project_directory = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        let dossier_dir = "nmd-test-dossier-1";
+        let nmd_file = project_directory.join("test-resources").join(dossier_dir).join("document-to-write.nmd");
+
+        let nmd_text = 
+r#"
+#1 title 1
+## title 2
+###### title 6
+"#.trim();
+
+        let resource = Resource::try_from(nmd_file).unwrap();
+
+        resource.write(nmd_text).unwrap();
+
+        assert_eq!(nmd_text, resource.content().unwrap())
     }
 }

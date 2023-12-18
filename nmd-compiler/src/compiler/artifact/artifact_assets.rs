@@ -1,10 +1,16 @@
 use std::path::PathBuf;
 
+use crate::compiler::resource::Resource;
+
 
 #[derive(Debug)]
 pub struct ArtifactAssets {
     // TODO
-    /* images_dir: PathBuf,     // TODO: maybe Resource
-    documents_dir: PathBuf,
-    styles_dir: PathBuf */
+    images: Vec<Resource>,
+    documents: Vec<Resource>,
+    styles: Vec<Resource>
+}
+
+impl ArtifactAssets {
+    
 }

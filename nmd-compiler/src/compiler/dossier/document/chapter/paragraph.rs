@@ -25,6 +25,8 @@ impl Clone for Paragraph {
 impl Parsable for Paragraph {
     fn parse(&mut self, codex: Arc<Codex>, parsing_configuration: Arc<ParsingConfiguration>) -> Result<(), ParsingError> {
 
+        // TODO: add paragraph parsing, e.g. in html add <p></p>
+
         self.content = codex.parse(&self.content, Arc::clone(&parsing_configuration))?.parsed_content();
 
         Ok(())
