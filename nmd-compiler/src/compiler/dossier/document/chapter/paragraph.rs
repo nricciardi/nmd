@@ -40,7 +40,7 @@ impl Paragraph {
             return Option::None;
         }
 
-        let regex = Regex::new("\n\n").unwrap();
+        let regex = Regex::new(r"\n{2,}").unwrap();
 
         Option::Some(regex.split(content).map(|splitted_content| {
             Self {
