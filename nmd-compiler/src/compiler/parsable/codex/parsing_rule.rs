@@ -1,5 +1,6 @@
 pub mod replacement_rule;
 pub mod parsing_result;
+pub mod image_rule;
 
 
 use std::sync::Arc;
@@ -33,12 +34,6 @@ pub enum Modifier {
     Bookmark,
     HeadingGeneralCompactVersion(u32),
     HeadingGeneralExtendedVersion(u32),
-    /* DEPRECATED: Heading1ExtendedVersion,
-    Heading2ExtendedVersion,
-    Heading3ExtendedVersion,
-    Heading4ExtendedVersion,
-    Heading5ExtendedVersion,
-    Heading6ExtendedVersion, */
     CodeBlock,
     CommentBlock,
     FocusBlock,

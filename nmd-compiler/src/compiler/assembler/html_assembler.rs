@@ -65,7 +65,7 @@ mod test {
 
     use std::{path::PathBuf, sync::Arc};
 
-    use crate::compiler::{loadable::Loadable, resource::Resource, dossier::dossier_configuration::{self, DossierConfiguration}, artifact, parsable::{Parsable, codex::Codex, ParsingConfiguration}};
+    use crate::compiler::{loadable::Loadable, resource::Resource, dossier::dossier_configuration::{self, DossierConfiguration}, artifact, parsable::{Parsable, codex::{Codex, codex_configuration::CodexConfiguration}, ParsingConfiguration}};
 
     use super::*;
 
@@ -85,7 +85,7 @@ mod test {
 
         let mut dossier = Dossier::load(&dossier_configuration).unwrap();
 
-        dossier.parse(Arc::new(Codex::of_html()), Arc::new(ParsingConfiguration::default())).unwrap();
+        dossier.parse(Arc::new(Codex::of_html(CodexConfiguration::default())), Arc::new(ParsingConfiguration::default())).unwrap();
 
         let assembler = HtmlAssembler::new(AssemblerConfiguration::default());
 

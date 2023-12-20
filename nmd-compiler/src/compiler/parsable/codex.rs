@@ -1,12 +1,13 @@
 pub mod parsing_rule;
+pub mod codex_configuration;
 
-
-use std::slice::Iter;
 use std::sync::Arc;
 
 pub use parsing_rule::{ParsingRule, Modifier};
 use crate::compiler::supported_format::SupportedFormat;
+use self::codex_configuration::CodexConfiguration;
 use self::parsing_rule::MAX_HEADING_LEVEL;
+use self::parsing_rule::image_rule::ImageRule;
 use self::parsing_rule::parsing_result::{ParsingError, ParsingOutcome};
 use self::parsing_rule::replacement_rule::ReplacementRule;
 use super::ParsingConfiguration;
@@ -14,10 +15,17 @@ use super::ParsingConfiguration;
 
 /// Ordered collection of rules
 pub struct Codex {
+    configuration: CodexConfiguration,
     rules: Vec<Box<dyn ParsingRule>>
 }
 
 impl Codex {
+
+    pub fn from(format: &SupportedFormat, configuration: CodexConfiguration) -> Self {
+        match format {
+            SupportedFormat::Html => Self::of_html(configuration)
+        }
+    }
 
     pub fn rules(&self) -> &Vec<Box<dyn ParsingRule>> {
         &self.rules
@@ -34,16 +42,17 @@ impl Codex {
         Ok(outcome)
     }
 
-    fn new(rules: Vec<Box<dyn ParsingRule>>) -> Codex {
+    fn new(configuration: CodexConfiguration, rules: Vec<Box<dyn ParsingRule>>) -> Codex {
 
         // TODO: check if there are all necessary rules based on theirs type
 
         Codex {
+            configuration,
             rules
         }
     }
 
-    pub fn of_html() -> Self {
+    pub fn of_html(configuration: CodexConfiguration) -> Self {
 
         let mut rules: Vec<Box<dyn ParsingRule>> = Vec::new();
 
@@ -60,7 +69,7 @@ impl Codex {
             Box::new(ReplacementRule::new(Modifier::Strikethrough, String::from(r#"<del>$1</del>"#))),
             Box::new(ReplacementRule::new(Modifier::Underlined, String::from(r#"<u>$1</u>"#))),
             Box::new(ReplacementRule::new(Modifier::Link, String::from(r#"<a href=\"$2\">$1</a>"#))),
-            Box::new(ReplacementRule::new(Modifier::Image, String::from(r#"<img src=\"$2\" alt=\"$1\">"#))),
+            Box::new(ImageRule::new(String::from(r#"<img src="$2" alt="$1">"#))),
             // Box::new(ReplacementRule::new(PatternType::Highlight, r"\*\*(.*?)\*\*", "<strong>$1</strong>")),
             // Box::new(ReplacementRule::new(PatternType::ColoredText, r"\*\*(.*?)\*\*", "<strong>$1</strong>")),
             // Box::new(ReplacementRule::new(PatternType::Emoji, r"\*\*(.*?)\*\*", "<strong>$1</strong>")),
@@ -76,7 +85,7 @@ impl Codex {
             // Box::new(ReplacementRule::new(PatternType::MathBlock, r"\*\*(.*?)\*\*", "<strong>$1</strong>")),
         ]);
 
-        Codex::new(rules)
+        Self::new(configuration, rules)
     }
 
     pub fn heading_rules(&self) -> Vec<&Box<dyn ParsingRule>> {
@@ -90,14 +99,6 @@ impl Codex {
     }
 }
 
-impl From<SupportedFormat> for Codex {
-    fn from(format: SupportedFormat) -> Self {
-        match format {
-            SupportedFormat::Html => Self::of_html()
-        }
-    }
-}
-
 #[cfg(test)]
 mod test {
 
@@ -108,8 +109,8 @@ mod test {
     use super::*;
 
     #[test]
-    fn multiple_uses() {
-        let codex: &Codex = &Codex::of_html();
+    fn html_multiple_uses() {
+        let codex: &Codex = &Codex::of_html(CodexConfiguration::default());
 
         let nmd_text = "This is a simple **nmd** text for test";
         let expected_result = "This is a simple <strong>nmd</strong> text for test";
@@ -139,7 +140,7 @@ mod test {
 
     #[test]
     fn headings () {
-        let codex: &Codex = &Codex::of_html();
+        let codex: &Codex = &Codex::of_html(CodexConfiguration::default());
 
         let nmd_text = 
 r#"

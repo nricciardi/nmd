@@ -29,7 +29,7 @@ impl ReplacementRule {
 
         debug!("created new parsing rule with search_pattern: '{}' and replacement_pattern: '{}'", pattern_type.search_pattern(), replacement_pattern);
 
-        ReplacementRule {
+        Self {
             modifier: pattern_type,
             replacement_pattern
         }
@@ -41,14 +41,14 @@ impl ParsingRule for ReplacementRule {
     /// Parse the content using internal search and replacement pattern
     fn parse(&self, content: &str, parsing_configuration: Arc<ParsingConfiguration>) -> Result<ParsingOutcome, ParsingError> {
 
-        let regex = match Regex::new(&self.modifier.search_pattern()) {
+        let regex = match Regex::new(&self.modifier().search_pattern()) {
           Ok(r) => r,
-          Err(_) => return Err(ParsingError::InvalidPattern(self.modifier.search_pattern()))  
+          Err(_) => return Err(ParsingError::InvalidPattern(self.modifier().search_pattern()))  
         };
 
         let parsed_content = regex.replace_all(content, self.replacement_pattern.as_str()).to_string();
 
-        debug!("parsed '{}' using '{}'->'{}'", content, self.modifier.search_pattern(), self.replacement_pattern);
+        debug!("parsed '{}' using '{}'->'{}'", content, self.modifier().search_pattern(), self.replacement_pattern);
         
         Ok(ParsingOutcome::new(parsed_content))
     }

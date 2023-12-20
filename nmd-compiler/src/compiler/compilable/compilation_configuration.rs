@@ -1,6 +1,6 @@
 use std::{str::FromStr, sync::Arc, path::PathBuf};
 
-use crate::compiler::{parsable::{codex::{parsing_rule::parsing_result::{ParsingError, ParsingOutcome}, Codex}, Parsable, ParsingConfiguration}, supported_format::SupportedFormat, resource::Resource, assembler::{Assembler, self, assembler_configuration::AssemblerConfiguration}, dossier::dossier_configuration::DossierConfiguration, portability_level::PortabilityLevel};
+use crate::compiler::{parsable::{codex::{parsing_rule::parsing_result::{ParsingError, ParsingOutcome}, Codex, codex_configuration::CodexConfiguration}, Parsable, ParsingConfiguration}, supported_format::SupportedFormat, resource::Resource, assembler::{Assembler, self, assembler_configuration::AssemblerConfiguration}, dossier::dossier_configuration::DossierConfiguration, portability_level::PortabilityLevel};
 
 pub struct CompilationConfiguration {
     format: SupportedFormat,
@@ -28,7 +28,7 @@ impl CompilationConfiguration {
     }
 
     pub fn codex(&self) -> Codex {
-        Codex::from(self.format.clone())
+        Codex::from(&self.format, CodexConfiguration::default())
     }
 
     pub fn parsing_configuration(&self) -> ParsingConfiguration {
