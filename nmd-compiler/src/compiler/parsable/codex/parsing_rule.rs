@@ -1,6 +1,6 @@
 pub mod replacement_rule;
 pub mod parsing_result;
-pub mod image_rule;
+pub mod html_image_rule;
 
 
 use std::sync::Arc;

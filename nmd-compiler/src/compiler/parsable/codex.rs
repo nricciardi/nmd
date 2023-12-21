@@ -7,7 +7,7 @@ pub use parsing_rule::{ParsingRule, Modifier};
 use crate::compiler::supported_format::SupportedFormat;
 use self::codex_configuration::CodexConfiguration;
 use self::parsing_rule::MAX_HEADING_LEVEL;
-use self::parsing_rule::image_rule::ImageRule;
+use self::parsing_rule::html_image_rule::HtmlImageRule;
 use self::parsing_rule::parsing_result::{ParsingError, ParsingOutcome};
 use self::parsing_rule::replacement_rule::ReplacementRule;
 use super::ParsingConfiguration;
@@ -69,7 +69,7 @@ impl Codex {
             Box::new(ReplacementRule::new(Modifier::Strikethrough, String::from(r#"<del>$1</del>"#))),
             Box::new(ReplacementRule::new(Modifier::Underlined, String::from(r#"<u>$1</u>"#))),
             Box::new(ReplacementRule::new(Modifier::Link, String::from(r#"<a href=\"$2\">$1</a>"#))),
-            Box::new(ImageRule::new(String::from(r#"<img src="$2" alt="$1">"#))),
+            Box::new(HtmlImageRule::new(String::from(r#"<img src="$2" alt="$1">"#))),
             // Box::new(ReplacementRule::new(PatternType::Highlight, r"\*\*(.*?)\*\*", "<strong>$1</strong>")),
             // Box::new(ReplacementRule::new(PatternType::ColoredText, r"\*\*(.*?)\*\*", "<strong>$1</strong>")),
             // Box::new(ReplacementRule::new(PatternType::Emoji, r"\*\*(.*?)\*\*", "<strong>$1</strong>")),
