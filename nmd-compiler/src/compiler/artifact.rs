@@ -6,7 +6,7 @@ use thiserror::Error;
 
 use self::artifact_assets::ArtifactAssets;
 
-use super::{dumpable::Dumpable, resource::{Resource, ResourceError}};
+use super::{dumpable::{Dumpable, DumpError}, resource::{ResourceError, cached_disk_resource::CachedDiskResource}};
 
 
 #[derive(Error, Debug)]
@@ -17,8 +17,8 @@ pub enum ArtifactError {
 
 pub struct Artifact {
     assets: Option<ArtifactAssets>,
-    documents: Vec<Resource>,
-    root_location: PathBuf
+    documents: Vec<CachedDiskResource>,
+    root_location: PathBuf      // TODO: maybe remove... use relative path from .
 }
 
 impl Artifact {
@@ -35,11 +35,11 @@ impl Artifact {
         &self.assets
     }
 
-    pub fn documents(&self) -> &Vec<Resource> {
+    pub fn documents(&self) -> &Vec<CachedDiskResource> {
         &self.documents
     }
 
-    fn set_documents(&mut self, documents: Vec<Resource>) -> () {
+    fn set_documents(&mut self, documents: Vec<CachedDiskResource>) -> () {
         self.documents = documents
     }
 
@@ -47,9 +47,9 @@ impl Artifact {
 
         let final_location = self.root_location.join(document_name);
 
-        let document = Resource::new(final_location)?;
+        let mut document = CachedDiskResource::try_from(final_location)?;
 
-        document.write(document_content)?;
+        document.set_cached_content(document_content);
 
         self.documents.push(document);
 
@@ -57,6 +57,8 @@ impl Artifact {
     }
 }
 
-impl Dumpable for Artifact {
-    
+impl Dumpable<PathBuf> for Artifact {
+    fn dump(output_path: PathBuf) -> Result<(), DumpError> {
+        todo!()
+    }
 }

@@ -1,31 +1,26 @@
-mod compiler_configuration;
-mod compilable;
+mod compilation_configuration;
 mod parsable;
 mod dossier;
-pub mod supported_format;
+pub mod output_format;
 pub mod resource;
 mod loadable;
 mod assembler;
 mod dumpable;
 pub mod artifact;
-pub mod portability_level;
+mod utility; 
 
 use std::sync::Arc;
 
 use thiserror::Error;
 use crate::compiler::{dossier::Dossier, loadable::Loadable};
 
-pub use self::compiler_configuration::CompilerConfiguration;
-use self::{compilable::{CompilationError, compilation_configuration::CompilationConfiguration}, loadable::LoadError, parsable::{Parsable, ParsingError}, assembler::AssemblerError};
+use self::{compilation_configuration::CompilationConfiguration, loadable::LoadError, parsable::{Parsable, ParsingError}, assembler::AssemblerError};
 
 
 #[derive(Error, Debug)]
-pub enum CompilerError {
+pub enum CompilationError {
     /* #[error(transparent)]
     InvalidTarget(#[from] LocationError), */
-
-    #[error(transparent)]
-    CompilationError(#[from] CompilationError),
 
     #[error("unknown error")]
     Unknown(String),
@@ -42,23 +37,13 @@ pub enum CompilerError {
 }
 
 pub struct Compiler {
-    version: &'static str,
-    configuration: CompilerConfiguration
 }
 
 impl Compiler {
 
-    pub fn new(configuration: CompilerConfiguration) -> Result<Self, CompilerError> {
+    pub fn compile(&self, compilation_configuration: CompilationConfiguration) -> Result<(), CompilationError> {
 
-        Ok(Compiler {
-            version: "0.0.1",
-            configuration
-        })
-    }
-
-    pub fn compile(&self, compilation_configuration: CompilationConfiguration) -> Result<(), CompilerError> {
-
-        let mut dossier = Dossier::load(compilation_configuration.dossier_configuration())?;
+        let mut dossier = Dossier::load(compilation_configuration.input_location())?;
         
         dossier.parse(Arc::new(compilation_configuration.codex()), Arc::new(compilation_configuration.parsing_configuration()))?;
 
@@ -70,6 +55,6 @@ impl Compiler {
     }
 
     pub fn version(&self) -> &str {
-        self.version
+        "0.0.1"
     }
 }

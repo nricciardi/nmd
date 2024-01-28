@@ -1,6 +1,6 @@
 use build_html::{HtmlPage, HtmlContainer, Html, Container};
 
-use crate::compiler::{dossier::Dossier, artifact::{Artifact, self}, portability_level::PortabilityLevel};
+use crate::compiler::{dossier::Dossier, artifact::Artifact};
 
 use super::{Assembler, AssemblerError, assembler_configuration::AssemblerConfiguration};
 
@@ -14,18 +14,26 @@ impl HtmlAssembler {
             configuration,
         }
     }
+}
 
-    fn assemble_all_in_one(&self, dossier: Dossier) -> Result<Artifact, AssemblerError> {
+impl Assembler for HtmlAssembler {
 
+    fn set_configuration(&mut self, configuration: AssemblerConfiguration) {
+        self.configuration = configuration
+    }
+
+    fn assemble(&self, dossier: Dossier) -> Result<Artifact, AssemblerError> {
         let mut artifact = Artifact::new(self.configuration.output_location().clone());
 
         let mut page = HtmlPage::new()
                                 .with_title(dossier.name())
                                 .with_meta(vec![("charset", "utf-8")]);
 
-        if let Some(documents) = dossier.documents() {
+            if dossier.documents().is_empty() {
+                return Err(AssemblerError::TooFewElements("there are no documents".to_string()))
+            }
 
-            for document in documents {
+            for document in dossier.documents() {
                 let section = Container::new(build_html::ContainerType::Section)
                                                 .with_raw(document);
 
@@ -38,25 +46,8 @@ impl HtmlAssembler {
 
             artifact.add_document(&format!("{}.html", dossier.name()).replace(" ", "-").to_ascii_lowercase(), &page.to_html_string())?;
 
-        } else {
-            return Err(AssemblerError::TooFewElements)
-        }
 
         Ok(artifact)
-                            
-    }
-}
-
-impl Assembler for HtmlAssembler {
-
-    fn set_configuration(&mut self, configuration: AssemblerConfiguration) {
-        self.configuration = configuration
-    }
-
-    fn assemble(&self, dossier: Dossier) -> Result<Artifact, AssemblerError> {
-        match self.configuration.portability_level() {
-            PortabilityLevel::AllInOne => self.assemble_all_in_one(dossier)
-        }
     }
 }
 
@@ -65,7 +56,7 @@ mod test {
 
     use std::{path::PathBuf, sync::Arc};
 
-    use crate::compiler::{loadable::Loadable, resource::Resource, dossier::dossier_configuration::{self, DossierConfiguration}, artifact, parsable::{Parsable, codex::{Codex, codex_configuration::CodexConfiguration}, ParsingConfiguration}};
+    use crate::compiler::{loadable::Loadable, resource::{Resource, disk_resource::DiskResource}, dossier::dossier_configuration::{self, DossierConfiguration}, artifact, parsable::{Parsable, codex::{Codex, codex_configuration::CodexConfiguration}, ParsingConfiguration}};
 
     use super::*;
 
@@ -78,10 +69,8 @@ mod test {
 
         assert!(nmd_file.is_file());
 
-        let resource = Resource::try_from(nmd_file).unwrap();
-
         let mut dossier_configuration = DossierConfiguration::default();
-        dossier_configuration.set_documents(vec![resource]);
+        dossier_configuration.set_documents(vec![nmd_file.to_string_lossy().to_string()]);
 
         let mut dossier = Dossier::load(&dossier_configuration).unwrap();
 

@@ -1,6 +1,8 @@
 pub mod chapter;
 
 use std::fmt::Display;
+use std::path::PathBuf;
+use std::str::FromStr;
 use std::sync::Arc;
 
 pub use chapter::Chapter;
@@ -12,6 +14,7 @@ use crate::compiler::parsable::codex::{Modifier, Codex};
 use crate::compiler::parsable::{ParsingError, Parsable};
 use crate::compiler::parsable::parsing_configuration::ParsingConfiguration;
 use crate::compiler::loadable::{Loadable, LoadError};
+use crate::compiler::resource::disk_resource::DiskResource;
 use crate::compiler::resource::{Resource, ResourceError};
 
 use self::chapter::chapter_builder::{ChapterBuilder, ChapterBuilderError};
@@ -32,12 +35,12 @@ pub enum DocumentError {
 pub struct Document {
     name: String,
     preamble: Option<String>,
-    chapters: Option<Vec<Chapter>>
+    chapters: Vec<Chapter>
 }
 
 impl Document {
 
-    pub fn new(name: String, preamble: Option<String>, chapters: Option<Vec<Chapter>>) -> Self {
+    pub fn new(name: String, preamble: Option<String>, chapters: Vec<Chapter>) -> Self {
         
         Self {
             name,
@@ -46,16 +49,8 @@ impl Document {
         }
     }
 
-    pub fn chapters(&self) -> &Option<Vec<Chapter>> {
+    pub fn chapters(&self) -> &Vec<Chapter> {
         &self.chapters
-    }
-
-    pub fn n_chapters(&self) -> usize {
-        if let Some(chapters) = self.chapters() {
-            return chapters.len()
-        }
-
-        0
     }
 
     pub fn preamble(&self) -> &Option<String> {
@@ -66,7 +61,7 @@ impl Document {
 
 impl Document {
     // TODO: change method signature
-    fn get_document_body_from_str(content: &str) -> Result<(Option<String>, Option<Vec<Chapter>>), DocumentError> {
+    fn get_document_body_from_str(content: &str) -> Result<(Option<String>, Vec<Chapter>), DocumentError> {
         let mut preamble: String = String::new();
         
         let mut end_preamble: Option<usize> = Option::None;
@@ -81,7 +76,7 @@ impl Document {
         }
 
         if end_preamble.is_none() {     // => there is no chapters
-            return Ok((Option::Some(preamble), Option::None));
+            return Ok((Option::Some(preamble), Vec::new()));
         }
 
         let end_preamble = end_preamble.unwrap();
@@ -111,25 +106,31 @@ impl Document {
         }
         
         
-        let mut result: (Option<String>, Option<Vec<Chapter>>) = (Option::None, Option::None);
+        let mut result: (Option<String>, Vec<Chapter>) = (Option::None, document_chapters);
 
         if !preamble.is_empty() {
             result.0 = Option::Some(preamble);
-        }
-
-        if !document_chapters.is_empty() {
-            result.1 = Option::Some(document_chapters)
         }
 
         Ok(result)
     }
 }
 
-impl Loadable for Document {
+impl Loadable<String> for Document {
 
-    type Type = Resource;
+    fn load(location: &String) -> Result<Box<Self>, LoadError> {
 
-    fn load(resource: &Self::Type) -> Result<Box<Self>, LoadError> {
+        let path_buf = PathBuf::from_str(&location).unwrap();
+
+        let resource = DiskResource::try_from(path_buf)?;
+
+        Self::load(&resource)
+    }
+}
+
+impl Loadable<DiskResource> for Document {
+
+    fn load(resource: &DiskResource) -> Result<Box<Self>, LoadError> {
         let content = resource.content()?;
 
         let document_name = resource.name();
@@ -138,7 +139,7 @@ impl Loadable for Document {
             return Ok(Box::new(Self {
                 name: document_name.clone(),
                 preamble: Option::None,
-                chapters: Option::None
+                chapters: Vec::new()
             }));
         }
 
@@ -162,25 +163,23 @@ impl Parsable for Document {
 
     fn parse(&mut self, codex: Arc<Codex>, parsing_configuration: Arc<ParsingConfiguration>) -> Result<(), ParsingError> {
 
-        log::info!("parsing {} chapters of document: '{}'", self.n_chapters(), self.name);
+        log::info!("parsing {} chapters of document: '{}'", self.chapters().len(), self.name);
 
         if let Some(p) = &self.preamble {
             self.preamble = Option::Some(codex.parse(p, Arc::clone(&parsing_configuration))?.parsed_content());
         }
 
-        if let Some(chapters) = &mut self.chapters {
 
-            let maybe_one_failed = chapters.par_iter_mut()
-           .map(|chapter| {
+        let maybe_one_failed = self.chapters.par_iter_mut()
+            .map(|chapter| {
 
-               chapter.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration))
-           
-           }).find_any(|result| result.is_err());
-   
-           if let Some(result) = maybe_one_failed {
-               return result;
-           }
-       }
+                chapter.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration))
+            
+            }).find_any(|result| result.is_err());
+
+        if let Some(result) = maybe_one_failed {
+            return result;
+        }
 
        Ok(())
 
@@ -196,10 +195,8 @@ impl Display for Document {
             s.push_str(preamble);
         }
 
-        if let Some(chapters) = self.chapters() {
-            for chapter in chapters {
-                s.push_str(chapter.to_string().as_str());
-            }
+        for chapter in &self.chapters {
+            s.push_str(chapter.to_string().as_str());
         }
 
         write!(f, "{}", s)
@@ -233,7 +230,7 @@ paragraph 1b
 
         assert!(preamble.is_none());
 
-        let chapters = chapters.unwrap();
+        let chapters = chapters;
 
         assert_eq!(chapters.len(), 3);
 

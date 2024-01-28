@@ -2,12 +2,15 @@ use std::{error, str::FromStr};
 
 use thiserror::Error;
 
-use super::{Chapter, Paragraph, paragraph};
+use super::{Chapter, Paragraph, paragraph::{self, ParagraphError}};
 
 #[derive(Error, Debug)]
 pub enum ChapterBuilderError {
     #[error("impossible to build")]
-    ImpossibleToBuild
+    ImpossibleToBuild,
+
+    #[error(transparent)]
+    ParagraphError(#[from] ParagraphError)
 }
 
 
@@ -49,10 +52,10 @@ impl ChapterBuilder {
             return Err(ChapterBuilderError::ImpossibleToBuild);
         }
 
-        let mut paragraphs: Option<Vec<Paragraph>> = Option::None;
+        let mut paragraphs: Vec<Paragraph> = Vec::new();
 
         if let Some(content) = &self.content {
-            paragraphs = Paragraph::from_str(content)
+            paragraphs = Paragraph::str_to_paragraphs(content)?
         }
 
         Ok(Chapter {

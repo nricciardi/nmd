@@ -1,14 +1,10 @@
-use crate::compiler::portability_level::PortabilityLevel;
-
-
 
 
 #[derive(Clone, Default)]
 pub struct ParsingConfigurationMetadata {}
 
 pub struct ParsingConfiguration {
-    metadata: ParsingConfigurationMetadata,
-    portability_level: PortabilityLevel
+    metadata: ParsingConfigurationMetadata
 }
 
 impl ParsingConfiguration {
@@ -17,14 +13,9 @@ impl ParsingConfiguration {
         &self.metadata
     }
 
-    pub fn portability_level(&self) -> &PortabilityLevel {
-        &self.portability_level
-    }
-
-    pub fn new(metadata: ParsingConfigurationMetadata, portability_level: PortabilityLevel) -> Self {
+    pub fn new(metadata: ParsingConfigurationMetadata) -> Self {
         Self {
-            metadata,
-            portability_level
+            metadata
         }
     }
 }
@@ -32,23 +23,13 @@ impl ParsingConfiguration {
 impl Default for ParsingConfiguration {
     fn default() -> Self {
         ParsingConfiguration {
-            metadata: ParsingConfigurationMetadata {  },
-            portability_level: PortabilityLevel::AllInOne
+            metadata: ParsingConfigurationMetadata {  }
         }
     }
 }
 
 impl Clone for ParsingConfiguration {
     fn clone(&self) -> Self {
-        Self { metadata: self.metadata.clone(), portability_level: self.portability_level.clone() }
-    }
-}
-
-impl From<PortabilityLevel> for ParsingConfiguration {
-    fn from(value: PortabilityLevel) -> Self {
-        Self {
-            portability_level: value,
-            metadata: ParsingConfigurationMetadata::default()
-        }
+        Self { metadata: self.metadata.clone() }
     }
 }

@@ -1,18 +1,18 @@
 mod document;
 pub mod dossier_configuration;
 
-use std::sync::Arc;
+use std::{sync::Arc, path::PathBuf, io, str::FromStr};
 
 pub use document::{Document, DocumentError};
 use rayon::iter::{IntoParallelRefMutIterator, ParallelIterator};
+use serde_json::error;
 use thiserror::Error;
 
-use crate::compiler::{parsable::Parsable, compilable::Compilable};
-
-
+use crate::compiler::parsable::Parsable;
 use self::dossier_configuration::DossierConfiguration;
 
-use super::{loadable::{Loadable, LoadError}, parsable::{ParsingConfiguration, ParsingError, codex::Codex}, resource::{Resource, ResourceError}};
+use super::{loadable::{Loadable, LoadError}, parsable::{ParsingConfiguration, ParsingError, codex::Codex}, resource::{Resource, ResourceError}, utility::file_utility};
+use crate::compiler::utility::file_utility::read_file_content;
 
 #[derive(Error, Debug)]
 pub enum DossierError {
@@ -22,19 +22,33 @@ pub enum DossierError {
 
 pub struct Dossier {
     configuration: DossierConfiguration,
-    documents: Option<Vec<Document>>
+    documents: Vec<Document>
 }
 
-impl Loadable for Dossier {
+impl Loadable<PathBuf> for Dossier {
 
-    type Type = DossierConfiguration;
+    fn load(location: &PathBuf) -> Result<Box<Self>, LoadError> {
 
-    fn load(dossier_configuration: &Self::Type) -> Result<Box<Self>, LoadError> {
+        let dossier_configuration_content = read_file_content(location)?;
 
+        let dossier_configuration = match DossierConfiguration::from_str(&dossier_configuration_content) {
+            Ok(dc) => dc,
+            Err(e) => return Err(LoadError::ResourceError(ResourceError::InvalidResourceVerbose(String::from("invalid dossier configuration"))))
+        };
+
+        Self::load(&dossier_configuration)
+    }
+
+}
+
+impl Loadable<DossierConfiguration> for Dossier {
+    fn load(dossier_configuration: &DossierConfiguration) -> Result<Box<Self>, LoadError> {
+        // TODO: are really mandatory?
         if dossier_configuration.documents().is_empty() {
             return Err(LoadError::ResourceError(ResourceError::InvalidResourceVerbose("there are no documents".to_string())))
         }
 
+        // TODO: is really mandatory?
         if dossier_configuration.name().is_empty() {
             return Err(LoadError::ResourceError(ResourceError::InvalidResourceVerbose("there is no name".to_string())))
         }
@@ -50,22 +64,20 @@ impl Loadable for Dossier {
 
         Ok(Box::new(Self {
             configuration: dossier_configuration.clone(),
-            documents: Option::Some(documents)
+            documents: documents
         }))
     }
-
 }
+
 
 impl Parsable for Dossier {
     fn parse(&mut self,codex: Arc<Codex>, parsing_configuration: Arc<ParsingConfiguration>) -> Result<(), ParsingError> {
-        if let Some(documents) = &mut self.documents {
-            let maybe_fails = documents.par_iter_mut().map(|document| {
-                document.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration))  
-            }).find_any(|result| result.is_err());
+        let maybe_fails = self.documents.par_iter_mut().map(|document| {
+            document.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration))  
+        }).find_any(|result| result.is_err());
 
-            if let Some(Err(fail)) = maybe_fails {
-                return Err(fail)
-            }
+        if let Some(Err(fail)) = maybe_fails {
+            return Err(fail)
         }
 
         Ok(())
@@ -78,7 +90,7 @@ impl Dossier {
         self.configuration.name()
     }
 
-    pub fn documents(&self) -> &Option<Vec<Document>> {
+    pub fn documents(&self) -> &Vec<Document> {
         &self.documents
     }
 }

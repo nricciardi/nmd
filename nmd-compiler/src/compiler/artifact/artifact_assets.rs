@@ -1,14 +1,12 @@
-use std::path::PathBuf;
-
-use crate::compiler::resource::Resource;
+use crate::compiler::resource::disk_resource::DiskResource;
 
 
 #[derive(Debug)]
 pub struct ArtifactAssets {
     // TODO
-    images: Vec<Resource>,
-    documents: Vec<Resource>,
-    styles: Vec<Resource>
+    images: Vec<DiskResource>,
+    documents: Vec<DiskResource>,
+    styles: Vec<DiskResource>
 }
 
 impl ArtifactAssets {

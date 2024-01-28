@@ -1,4 +1,4 @@
-use std::{sync::Arc, fmt::Display};
+use std::{sync::Arc, fmt::Display, str::FromStr};
 
 use regex::Regex;
 use thiserror::Error;
@@ -9,7 +9,10 @@ use crate::compiler::parsable::parsing_configuration::ParsingConfiguration;
 #[derive(Error, Debug)]
 pub enum ParagraphError {
     #[error("creation error")]
-    Creation
+    Creation,
+
+    #[error("empty content")]
+    Empty
 }
 
 pub struct Paragraph {
@@ -34,15 +37,15 @@ impl Parsable for Paragraph {
 }
 
 impl Paragraph {
-    pub fn from_str(content: &str) -> Option<Vec<Self>> {
 
-        if content.is_empty() {
-            return Option::None;
+    pub fn str_to_paragraphs(s: &str) -> Result<Vec<Self>, ParagraphError> {
+        if s.is_empty() {
+            return Err(ParagraphError::Empty);
         }
 
         let regex = Regex::new(r"\n{2,}").unwrap();
 
-        Option::Some(regex.split(content).map(|splitted_content| {
+        Ok(regex.split(s).map(|splitted_content| {
             Self {
                 content: splitted_content.to_string()
             }
@@ -66,7 +69,7 @@ Paragraph 2.
 Paragraph 3.        
 "#.trim();
 
-        let paragraphs = Paragraph::from_str(content).unwrap();
+        let paragraphs = Paragraph::str_to_paragraphs(content).unwrap();
 
         assert_eq!(paragraphs.len(), 3)
     }

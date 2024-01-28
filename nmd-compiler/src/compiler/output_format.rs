@@ -10,23 +10,23 @@ pub enum SupportedFormatError {
 
 /// Set of supported formats
 #[derive(PartialEq, Debug)]
-pub enum SupportedFormat {
+pub enum OutputFormat {
     Html
 }
 
-impl FromStr for SupportedFormat {
+impl FromStr for OutputFormat {
 
     type Err = SupportedFormatError;
 
     fn from_str(format: &str) -> Result<Self, Self::Err> {
         match format.to_lowercase().as_str() {
-            "html" => Ok(SupportedFormat::Html),
+            "html" => Ok(OutputFormat::Html),
             _ => Err(SupportedFormatError::UnsupportedFormat(String::from(format))),
         }
     }
 }
 
-impl Clone for SupportedFormat {
+impl Clone for OutputFormat {
     fn clone(&self) -> Self {
         match self {
             Self::Html => Self::Html,
@@ -42,14 +42,14 @@ mod tests {
     #[test]
     fn html_support() {
 
-        match SupportedFormat::from_str("html") {
-            Ok(format) => assert_eq!(format, SupportedFormat::Html),
+        match OutputFormat::from_str("html") {
+            Ok(format) => assert_eq!(format, OutputFormat::Html),
             Err(err) => panic!("{}", err)
         }
     }
 
     #[test]
     fn unsupported_format() {
-        assert!(SupportedFormat::from_str("htm").is_err())
+        assert!(OutputFormat::from_str("htm").is_err())
     }
 }

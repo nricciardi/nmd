@@ -14,7 +14,7 @@ use crate::compiler::parsable::{codex::parsing_rule::parsing_result::{ParsingErr
 
 pub struct Chapter {
     heading: String,
-    paragraphs: Option<Vec<Paragraph>>
+    paragraphs: Vec<Paragraph>
 
     // TODO: maybe in another version
     /* subchapters: Option<Vec<Arc<Chapter>>>,
@@ -23,7 +23,7 @@ pub struct Chapter {
 
 impl Chapter {
 
-    pub fn new(heading: String, paragraphs: Option<Vec<Paragraph>>) -> Self {
+    pub fn new(heading: String, paragraphs: Vec<Paragraph>) -> Self {
         Self {
             heading,
             paragraphs
@@ -38,16 +38,8 @@ impl Chapter {
         self.heading = heading.clone()
     }
 
-    pub fn paragraphs(&self) -> &Option<Vec<Paragraph>> {
+    pub fn paragraphs(&self) -> &Vec<Paragraph> {
         &self.paragraphs
-    }
-
-    pub fn n_paragraphs(&self) -> usize {
-        if let Some(paragraphs) = &self.paragraphs {
-            return paragraphs.len()
-        }
-
-        0
     }
 }
 
@@ -62,14 +54,12 @@ impl Parsable for Chapter {
     fn parse(&mut self, codex: Arc<Codex>, parsing_configuration: Arc<ParsingConfiguration>) -> Result<(), ParsingError> {
         self.heading = codex.parse(&self.heading, Arc::clone(&parsing_configuration))?.parsed_content();
 
-        if let Some(paragraphs) = &mut self.paragraphs {
-            let maybe_failed = paragraphs.par_iter_mut().map(|paragraph| {
-                paragraph.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration))
-            }).find_any(|result| result.is_err());
+        let maybe_failed = self.paragraphs.par_iter_mut().map(|paragraph| {
+            paragraph.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration))
+        }).find_any(|result| result.is_err());
 
-            if let Some(result) = maybe_failed {
-                return result
-            }
+        if let Some(result) = maybe_failed {
+            return result
         }
 
         Ok(())
@@ -82,10 +72,8 @@ impl Display for Chapter {
 
         let mut s: String = String::from(&self.heading);
 
-        if let Some(paragraphs) = &self.paragraphs {
-            for paragraph in paragraphs {
-                s.push_str(paragraph.to_string().as_str());
-            }
+        for paragraph in &self.paragraphs {
+            s.push_str(paragraph.to_string().as_str());
         }
 
         write!(f, "{}", s)

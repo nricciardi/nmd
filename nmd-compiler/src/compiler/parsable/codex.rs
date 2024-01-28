@@ -4,7 +4,7 @@ pub mod codex_configuration;
 use std::sync::Arc;
 
 pub use parsing_rule::{ParsingRule, Modifier};
-use crate::compiler::supported_format::SupportedFormat;
+use crate::compiler::output_format::OutputFormat;
 use self::codex_configuration::CodexConfiguration;
 use self::parsing_rule::MAX_HEADING_LEVEL;
 use self::parsing_rule::html_image_rule::HtmlImageRule;
@@ -21,9 +21,9 @@ pub struct Codex {
 
 impl Codex {
 
-    pub fn from(format: &SupportedFormat, configuration: CodexConfiguration) -> Self {
+    pub fn from(format: &OutputFormat, configuration: CodexConfiguration) -> Self {
         match format {
-            SupportedFormat::Html => Self::of_html(configuration)
+            OutputFormat::Html => Self::of_html(configuration)
         }
     }
 

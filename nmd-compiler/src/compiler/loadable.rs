@@ -1,6 +1,8 @@
+use std::io;
+
 use thiserror::Error;
 
-use super::resource::{Resource, ResourceError};
+use super::resource::ResourceError;
 
 
 #[derive(Error, Debug)]
@@ -9,12 +11,13 @@ pub enum LoadError {
     ResourceError(#[from] ResourceError),
 
     #[error("elaboration error: {0}")]
-    ElaborationError(String)
+    ElaborationError(String),
+    
+    #[error(transparent)]
+    IoError(#[from] io::Error)
 }
 
-pub trait Loadable {
+pub trait Loadable<T> {
 
-    type Type;
-
-    fn load(resource: &Self::Type) -> Result<Box<Self>, LoadError>;
+    fn load(resource: &T) -> Result<Box<Self>, LoadError>;
 }
