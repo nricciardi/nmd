@@ -7,7 +7,7 @@ use regex::Regex;
 
 use crate::compiler::parsable::ParsingConfiguration;
 
-use super::parsing_result::{ParsingError, ParsingOutcome};
+use super::parsing_outcome::{ParsingError, ParsingOutcome};
 use super::{Modifier, ParsingRule};
 
 

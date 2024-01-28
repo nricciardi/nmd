@@ -4,7 +4,7 @@ pub mod parsing_configuration;
 use std::sync::Arc;
 
 use self::codex::Codex;
-pub use self::codex::parsing_rule::parsing_result::ParsingError;
+pub use self::codex::parsing_rule::parsing_outcome::ParsingError;
 pub use parsing_configuration::ParsingConfiguration;
 
 

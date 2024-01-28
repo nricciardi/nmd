@@ -72,9 +72,11 @@ impl Loadable<DossierConfiguration> for Dossier {
 
 impl Parsable for Dossier {
     fn parse(&mut self,codex: Arc<Codex>, parsing_configuration: Arc<ParsingConfiguration>) -> Result<(), ParsingError> {
-        let maybe_fails = self.documents.par_iter_mut().map(|document| {
+        let maybe_fails = self.documents.par_iter_mut()
+        .map(|document| {
             document.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration))  
-        }).find_any(|result| result.is_err());
+        })
+        .find_any(|result| result.is_err());
 
         if let Some(Err(fail)) = maybe_fails {
             return Err(fail)

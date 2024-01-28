@@ -8,7 +8,7 @@ use crate::compiler::output_format::OutputFormat;
 use self::codex_configuration::CodexConfiguration;
 use self::parsing_rule::MAX_HEADING_LEVEL;
 use self::parsing_rule::html_image_rule::HtmlImageRule;
-use self::parsing_rule::parsing_result::{ParsingError, ParsingOutcome};
+use self::parsing_rule::parsing_outcome::{ParsingError, ParsingOutcome};
 use self::parsing_rule::replacement_rule::ReplacementRule;
 use super::ParsingConfiguration;
 

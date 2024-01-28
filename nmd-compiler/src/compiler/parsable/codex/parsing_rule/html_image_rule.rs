@@ -5,7 +5,7 @@ use regex::{Regex, Captures};
 
 use crate::compiler::parsable::ParsingConfiguration;
 
-use super::{Modifier, ParsingRule, parsing_result::{ParsingOutcome, ParsingError}};
+use super::{Modifier, ParsingRule, parsing_outcome::{ParsingOutcome, ParsingError}};
 
 
 /// Rule to replace a NMD text based on a specific pattern matching rule

@@ -1,5 +1,5 @@
 pub mod replacement_rule;
-pub mod parsing_result;
+pub mod parsing_outcome;
 pub mod html_image_rule;
 
 
@@ -9,7 +9,7 @@ use regex::Regex;
 
 use crate::compiler::parsable::ParsingConfiguration;
 
-use self::parsing_result::{ParsingOutcome, ParsingError};
+use self::parsing_outcome::{ParsingOutcome, ParsingError};
 
 pub const MAX_HEADING_LEVEL: u32 = 6; 
 

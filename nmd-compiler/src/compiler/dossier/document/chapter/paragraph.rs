@@ -3,7 +3,7 @@ use std::{sync::Arc, fmt::Display, str::FromStr};
 use regex::Regex;
 use thiserror::Error;
 
-use crate::compiler::parsable::{codex::{parsing_rule::parsing_result::ParsingError, Codex}, Parsable};
+use crate::compiler::parsable::{codex::{parsing_rule::parsing_outcome::ParsingError, Codex}, Parsable};
 use crate::compiler::parsable::parsing_configuration::ParsingConfiguration;
 
 #[derive(Error, Debug)]

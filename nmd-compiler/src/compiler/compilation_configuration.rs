@@ -1,6 +1,6 @@
 use std::{str::FromStr, sync::Arc, path::PathBuf};
 
-use crate::compiler::{parsable::{codex::{parsing_rule::parsing_result::{ParsingError, ParsingOutcome}, Codex, codex_configuration::CodexConfiguration}, Parsable, ParsingConfiguration}, output_format::OutputFormat, resource::Resource, assembler::{Assembler, self, assembler_configuration::AssemblerConfiguration}, dossier::dossier_configuration::{DossierConfiguration, self}};
+use crate::compiler::{parsable::{codex::{parsing_rule::parsing_outcome::{ParsingError, ParsingOutcome}, Codex, codex_configuration::CodexConfiguration}, Parsable, ParsingConfiguration}, output_format::OutputFormat, resource::Resource, assembler::{Assembler, self, assembler_configuration::AssemblerConfiguration}, dossier::dossier_configuration::{DossierConfiguration, self}};
 
 pub struct CompilationConfiguration {
     format: OutputFormat,
