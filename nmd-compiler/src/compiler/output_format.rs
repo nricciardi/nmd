@@ -1,4 +1,4 @@
-use std::str::FromStr;
+use std::{default, str::FromStr};
 use thiserror::Error;
 
 
@@ -9,8 +9,9 @@ pub enum SupportedFormatError {
 }
 
 /// Set of supported formats
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Default)]
 pub enum OutputFormat {
+    #[default]
     Html
 }
 

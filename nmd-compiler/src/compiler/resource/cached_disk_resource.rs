@@ -15,13 +15,13 @@ pub struct CachedDiskResource {
 impl FromStr for CachedDiskResource {
     type Err = ResourceError;
 
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
+    fn from_str(path: &str) -> Result<Self, Self::Err> {
 
-        if s.is_empty() {
+        if path.is_empty() {
             return Err(ResourceError::Creation("resource cannot be an empty string".to_string()));
         }
 
-        Self::try_from(PathBuf::from_str(s).unwrap())
+        Self::try_from(PathBuf::from_str(path).unwrap())
     }
 }
 

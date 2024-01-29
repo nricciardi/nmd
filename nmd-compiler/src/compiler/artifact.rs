@@ -2,6 +2,7 @@ pub mod artifact_assets;
 
 use std::path::PathBuf;
 
+use rayon::iter::{IntoParallelRefIterator, IntoParallelRefMutIterator, ParallelIterator};
 use thiserror::Error;
 
 use self::artifact_assets::ArtifactAssets;
@@ -18,16 +19,16 @@ pub enum ArtifactError {
 pub struct Artifact {
     assets: Option<ArtifactAssets>,
     documents: Vec<CachedDiskResource>,
-    root_location: PathBuf      // TODO: maybe remove... use relative path from .
+    output_path: PathBuf
 }
 
 impl Artifact {
 
-    pub fn new(root_location: PathBuf) -> Self {
+    pub fn new(output_path: PathBuf) -> Self {
         Self {
             assets: Option::None,
             documents: Vec::new(),
-            root_location
+            output_path
         }
     }
 
@@ -45,7 +46,7 @@ impl Artifact {
 
     pub fn add_document(&mut self, document_name: &String, document_content: &String) -> Result<(), ArtifactError> {
 
-        let final_location = self.root_location.join(document_name);
+        let final_location = self.output_path.join(document_name);
 
         let mut document = CachedDiskResource::try_from(final_location)?;
 
@@ -57,8 +58,10 @@ impl Artifact {
     }
 }
 
-impl Dumpable<PathBuf> for Artifact {
-    fn dump(output_path: PathBuf) -> Result<(), DumpError> {
-        todo!()
+impl Dumpable for Artifact {
+    fn dump(&self) -> Result<(), DumpError> {
+        Ok(self.documents.par_iter_mut().for_each(|document| {
+            document.dump_cached_content().unwrap()         // TODO: handle errors
+        }))
     }
 }

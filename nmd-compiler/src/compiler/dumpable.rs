@@ -1,10 +1,13 @@
+use thiserror::Error;
 
+
+#[derive(Debug, Error)]
 pub enum DumpError {
 
 }
 
 
-pub trait Dumpable<T> {
+pub trait Dumpable {
 
-    fn dump(output_path: T) -> Result<(), DumpError>;
+    fn dump(&self) -> Result<(), DumpError>;
 } 

@@ -17,6 +17,10 @@ impl CompilationConfiguration {
         }
     }
 
+    pub fn format(&self) -> &OutputFormat {
+        &self.format
+    }
+
     pub fn codex(&self) -> Codex {
         Codex::from(&self.format, CodexConfiguration::default())
     }
@@ -31,9 +35,5 @@ impl CompilationConfiguration {
 
     pub fn output_location(&self) -> &PathBuf {
         &self.output_location
-    }
-
-    pub fn assembler(&self) -> Box<dyn Assembler> {
-        assembler::from(self.format.clone(), AssemblerConfiguration::new(self.output_location.clone()))
     }
 }

@@ -56,7 +56,7 @@ mod test {
 
     use std::{path::PathBuf, sync::Arc};
 
-    use crate::compiler::{loadable::Loadable, resource::{Resource, disk_resource::DiskResource}, dossier::dossier_configuration::{self, DossierConfiguration}, artifact, parsable::{Parsable, codex::{Codex, codex_configuration::CodexConfiguration}, ParsingConfiguration}};
+    use crate::compiler::{loadable::Loadable, dossier::dossier_configuration::DossierConfiguration, artifact, parsable::{Parsable, codex::{Codex, codex_configuration::CodexConfiguration}, ParsingConfiguration}};
 
     use super::*;
 
