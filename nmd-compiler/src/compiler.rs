@@ -52,7 +52,7 @@ impl Compiler {
 
         let assembler = assembler::from(compilation_configuration.format().clone(), AssemblerConfiguration::new(compilation_configuration.output_location().clone()));
 
-        let artifact = assembler.assemble(*dossier)?;
+        let mut artifact = assembler.assemble(*dossier)?;
 
         Ok(artifact.dump()?)
     }

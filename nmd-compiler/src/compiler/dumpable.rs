@@ -9,5 +9,5 @@ pub enum DumpError {
 
 pub trait Dumpable {
 
-    fn dump(&self) -> Result<(), DumpError>;
+    fn dump(&mut self) -> Result<(), DumpError>;
 } 

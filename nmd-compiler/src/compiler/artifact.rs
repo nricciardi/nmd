@@ -59,7 +59,7 @@ impl Artifact {
 }
 
 impl Dumpable for Artifact {
-    fn dump(&self) -> Result<(), DumpError> {
+    fn dump(&mut self) -> Result<(), DumpError> {
         Ok(self.documents.par_iter_mut().for_each(|document| {
             document.dump_cached_content().unwrap()         // TODO: handle errors
         }))
