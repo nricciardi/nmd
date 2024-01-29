@@ -29,9 +29,7 @@ impl Loadable<PathBuf> for Dossier {
 
     fn load(location: &PathBuf) -> Result<Box<Self>, LoadError> {
 
-        let dossier_configuration_content = read_file_content(location)?;
-
-        let dossier_configuration = match DossierConfiguration::from_str(&dossier_configuration_content) {
+        let dossier_configuration = match DossierConfiguration::try_from(location) {
             Ok(dc) => dc,
             Err(e) => return Err(LoadError::ResourceError(ResourceError::InvalidResourceVerbose(String::from("invalid dossier configuration"))))
         };

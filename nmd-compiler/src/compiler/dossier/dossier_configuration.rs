@@ -1,4 +1,6 @@
-use std::str::FromStr;
+use std::{path::PathBuf, str::FromStr};
+
+use thiserror::Error;
 
 
 #[derive(Debug, Clone)]
@@ -49,10 +51,18 @@ impl Default for DossierConfiguration {
     }
 }
 
-impl FromStr for DossierConfiguration {
-    type Err = serde_json::Error;
+#[derive(Debug, Error)]
+pub enum DossierConfigurationLoadError {
 
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
+}
+
+impl TryFrom<&PathBuf> for DossierConfiguration {
+    type Error = DossierConfigurationLoadError;
+
+    fn try_from(path_buf: &PathBuf) -> Result<Self, Self::Error> {
+
+        // TODO: check if path_buf is a dir -> search nmd.json, or check if is path_buf is nmd.json
+
         todo!()
     }
 }
