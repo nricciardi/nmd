@@ -1,6 +1,7 @@
 use std::{fs::File, io::Read, path::PathBuf};
 
 use base64::{engine::general_purpose::STANDARD, Engine};
+use image::io::Reader;
 
 use super::ResourceError;
 
@@ -13,6 +14,17 @@ pub struct Image {
 impl Image {
     pub fn to_base64(&self) -> String {
         STANDARD.encode(&self.data)
+    }
+
+    pub fn is_image(file_path: &PathBuf) -> bool {
+
+        if let Ok(img) = Reader::open(file_path) {
+            if let Ok(_) = img.with_guessed_format() {
+                return true;
+            }
+        }
+
+        false
     }
 }
 

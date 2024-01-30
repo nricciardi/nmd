@@ -5,7 +5,6 @@ use std::{sync::Arc, path::PathBuf, io, str::FromStr};
 
 pub use document::{Document, DocumentError};
 use rayon::iter::{IntoParallelRefMutIterator, ParallelIterator};
-use serde_json::error;
 use thiserror::Error;
 
 use crate::compiler::parsable::Parsable;
@@ -31,7 +30,7 @@ impl Loadable<PathBuf> for Dossier {
 
         let dossier_configuration = match DossierConfiguration::try_from(location) {
             Ok(dc) => dc,
-            Err(e) => return Err(LoadError::ResourceError(ResourceError::InvalidResourceVerbose(String::from("invalid dossier configuration"))))
+            Err(e) => return Err(LoadError::ResourceError(ResourceError::InvalidResourceVerbose(String::from(format!("invalid dossier configuration: {}", e.to_string())))))
         };
 
         Self::load(&dossier_configuration)

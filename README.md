@@ -25,6 +25,18 @@ TODO
 
 TODO
 
+## Features
+
+### Planned Features
+
+- [ ] Use file name instead of absolute path in dossier configuration
+- [ ] Possibility to use a different dossier configuration name
+
+### Features in Progress
+
+TODO
+
+
 ## Contributing
 
 If you would like to contribute to the development of the NMD compiler, please follow our [contribution guidelines](CONTRIBUTING.md).
