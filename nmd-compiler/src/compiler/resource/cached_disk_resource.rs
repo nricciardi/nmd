@@ -46,8 +46,8 @@ impl TryFrom<PathBuf> for CachedDiskResource {
 
             Ok(Self {
                 name: name.to_string_lossy().to_string(),
-                location: l,
-                shadow_resource: DiskResource::from_str(name.to_string_lossy().to_string().as_str())?,
+                location: l.clone(),
+                shadow_resource: DiskResource::try_from(l)?,
                 cached_content: Option::None
             })
         } else {

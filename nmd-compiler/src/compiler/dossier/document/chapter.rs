@@ -52,7 +52,7 @@ impl Clone for Chapter {
 
 impl Parsable for Chapter {
     fn parse(&mut self, codex: Arc<Codex>, parsing_configuration: Arc<ParsingConfiguration>) -> Result<(), ParsingError> {
-        self.heading = codex.parse(&self.heading, Arc::clone(&parsing_configuration))?.parsed_content();
+        self.heading = String::from(codex.parse_content(&self.heading, Arc::clone(&parsing_configuration))?.parsed_content());
 
         let maybe_failed = self.paragraphs.par_iter_mut().map(|paragraph| {
             paragraph.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration))

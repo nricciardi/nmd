@@ -1,4 +1,4 @@
-use std::{sync::Arc, fmt::Display, str::FromStr};
+use std::{sync::Arc, fmt::Display};
 
 use regex::Regex;
 use thiserror::Error;
@@ -19,6 +19,12 @@ pub struct Paragraph {
     content: String
 }
 
+impl Paragraph {
+    pub fn content(&self) -> &String {
+        &self.content
+    }
+}
+
 impl Clone for Paragraph {
     fn clone(&self) -> Self {
         Self { content: self.content.clone() }
@@ -28,9 +34,9 @@ impl Clone for Paragraph {
 impl Parsable for Paragraph {
     fn parse(&mut self, codex: Arc<Codex>, parsing_configuration: Arc<ParsingConfiguration>) -> Result<(), ParsingError> {
 
-        // TODO: add paragraph parsing, e.g. in html add <p></p>
+        let parsing_outcome = codex.parse_paragraph(self, Arc::clone(&parsing_configuration))?;
 
-        self.content = codex.parse(&self.content, Arc::clone(&parsing_configuration))?.parsed_content();
+        self.content = String::from(parsing_outcome.parsed_content());
 
         Ok(())
     }

@@ -21,7 +21,7 @@ impl ParsingOutcome {
         }
     }
 
-    pub fn parsed_content(self: Self) -> String {
-        self.parsed_content
+    pub fn parsed_content(&self) -> &String {
+        &self.parsed_content
     }
 }

@@ -1,8 +1,6 @@
-use std::{error, str::FromStr};
-
 use thiserror::Error;
 
-use super::{Chapter, Paragraph, paragraph::{self, ParagraphError}};
+use super::{Chapter, Paragraph, paragraph::ParagraphError};
 
 #[derive(Error, Debug)]
 pub enum ChapterBuilderError {

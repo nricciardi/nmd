@@ -78,7 +78,7 @@ mod test {
 
         assert!(nmd_dossier_path.is_dir());
 
-        let compilation_configuration = CompilationConfiguration::new(output_format::OutputFormat::Html, nmd_dossier_path.clone(), nmd_dossier_path);
+        let compilation_configuration = CompilationConfiguration::new(output_format::OutputFormat::Html, nmd_dossier_path.clone(), nmd_dossier_path.clone());
 
         Compiler::compile(compilation_configuration).unwrap()
     }

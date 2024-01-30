@@ -1,4 +1,4 @@
-mod document;
+pub mod document;
 pub mod dossier_configuration;
 
 use std::{sync::Arc, path::PathBuf, io, str::FromStr};

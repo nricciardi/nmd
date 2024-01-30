@@ -44,7 +44,9 @@ impl Assembler for HtmlAssembler {
             // - a file name parse utility
             // - prevent to save content in add_document 
 
-            artifact.add_document(&format!("{}.html", dossier.name()).replace(" ", "-").to_ascii_lowercase(), &page.to_html_string())?;
+            let document_name = &format!("{}.html", dossier.name()).replace(" ", "-").to_ascii_lowercase();
+
+            artifact.add_document(document_name, &page.to_html_string())?;
 
 
         Ok(artifact)

@@ -66,31 +66,50 @@ mod test {
     use super::*;
 
     #[test]
-    fn parsing() {
+    fn bold_parsing() {
         // valid pattern with a valid text modifier
         let parsing_rule = ReplacementRule::new(Modifier::BoldStarVersion, String::from("<strong>$1</strong>"));
 
         let text_to_parse = r"A piece of **bold text**";
         let parsing_configuration = Arc::new(ParsingConfiguration::default());
 
-        let parsed_text = parsing_rule.parse(text_to_parse, Arc::clone(&parsing_configuration)).unwrap().parsed_content();
+        let parsed_text = parsing_rule.parse(text_to_parse, Arc::clone(&parsing_configuration)).unwrap();
 
-        assert_eq!(parsed_text, r"A piece of <strong>bold text</strong>");
+        assert_eq!(parsed_text.parsed_content(), r"A piece of <strong>bold text</strong>");
 
         // without text modifier
         let text_to_parse = r"A piece of text without bold text";
 
-        let parsed_text = parsing_rule.parse(text_to_parse, Arc::clone(&parsing_configuration)).unwrap().parsed_content();
+        let parsed_text = parsing_rule.parse(text_to_parse, Arc::clone(&parsing_configuration)).unwrap();
 
-        assert_eq!(parsed_text, r"A piece of text without bold text");
+        assert_eq!(parsed_text.parsed_content(), r"A piece of text without bold text");
 
-        // headings
+
+    }
+
+    #[test]
+    fn heading_parsing() {
+        let parsing_configuration = Arc::new(ParsingConfiguration::default());
+
         let parsing_rule = ReplacementRule::new(Modifier::HeadingGeneralExtendedVersion(6), String::from("<h6>$1</h6>"));
 
         let text_to_parse = r"###### title 6";
 
-        let parsed_text = parsing_rule.parse(text_to_parse, Arc::clone(&parsing_configuration)).unwrap().parsed_content();
+        let parsed_text = parsing_rule.parse(text_to_parse, Arc::clone(&parsing_configuration)).unwrap();
 
-        assert_eq!(parsed_text, r"<h6>title 6</h6>");
+        assert_eq!(parsed_text.parsed_content(), r"<h6>title 6</h6>");
+    }
+
+    #[test]
+    fn paragraph_parsing() {
+        let parsing_configuration = Arc::new(ParsingConfiguration::default());
+
+        let parsing_rule = ReplacementRule::new(Modifier::CommonParagraph, String::from("<p>$1</p>"));
+
+        let text_to_parse = r"paragraph";
+
+        let parsed_text = parsing_rule.parse(text_to_parse, Arc::clone(&parsing_configuration)).unwrap();
+
+        assert_eq!(parsed_text.parsed_content(), r"<p>paragraph</p>");
     }
 }

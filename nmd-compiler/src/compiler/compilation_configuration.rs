@@ -26,7 +26,7 @@ impl CompilationConfiguration {
     }
 
     pub fn parsing_configuration(&self) -> ParsingConfiguration {
-        todo!()
+        ParsingConfiguration::default()     // TODO
     }
 
     pub fn input_location(&self) -> &PathBuf {

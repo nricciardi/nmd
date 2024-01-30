@@ -17,7 +17,7 @@ use crate::compiler::loadable::{Loadable, LoadError};
 use crate::compiler::resource::disk_resource::DiskResource;
 use crate::compiler::resource::{Resource, ResourceError};
 
-use self::chapter::Paragraph;
+pub use self::chapter::Paragraph;
 use self::chapter::chapter_builder::{ChapterBuilder, ChapterBuilderError};
 
 
@@ -61,7 +61,7 @@ impl Document {
 
 
 impl Document {
-    // TODO: change method signature
+    
     fn load_content_from_str(&mut self, content: &str) -> Result<(), DocumentError> {
 
         let mut preamble: String = String::new();
@@ -100,8 +100,12 @@ impl Document {
                 chapter_builder = Option::Some(ChapterBuilder::new_with_heading(line.to_string()));
 
             } else {
+
+                let mut line = line.to_string();
+                line.push_str("\n");        // because .lines() remove \n
+
                 if let Some(ref mut chapter_builder) = chapter_builder {
-                    chapter_builder.append_content(line.to_string());
+                    chapter_builder.append_content(line);
                 }
             }
         }
