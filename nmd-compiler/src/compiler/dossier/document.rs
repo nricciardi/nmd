@@ -62,59 +62,61 @@ impl Document {
 
 impl Document {
     // TODO: change method signature
-    fn get_document_body_from_str(content: &str) -> Result<(Option<Paragraph>, Vec<Chapter>), DocumentError> {
-        todo!()
-        // let mut preamble: String = String::new();
+    fn load_content_from_str(&mut self, content: &str) -> Result<(), DocumentError> {
+
+        let mut preamble: String = String::new();
         
-        // let mut end_preamble: Option<usize> = Option::None;
-        // for (index, line) in content.lines().enumerate() {
+        let mut end_preamble: Option<usize> = Option::None;
+        for (index, line) in content.lines().enumerate() {
 
-        //     if Modifier::heading_level(line).is_none() {
-        //         preamble.push_str(line);
-        //     } else {
-        //         end_preamble = Some(index);
-        //         break;
-        //     }
-        // }
+            if Modifier::heading_level(line).is_none() {
+                preamble.push_str(line);
+            } else {
+                end_preamble = Some(index);
+                break;
+            }
+        }
 
-        // if end_preamble.is_none() {     // => there is no chapters
-        //     return Ok((Option::Some(preamble), Vec::new()));
-        // }
+        if end_preamble.is_none() {     // => there is no chapters
 
-        // let end_preamble = end_preamble.unwrap();
+            self.preamble = Option::Some(Paragraph::from(preamble));
 
-        // let mut document_chapters: Vec<Chapter> = Vec::new();
+            return Ok(())
+        }
 
-        // let mut chapter_builder: Option<ChapterBuilder> = Option::None;
-        // for (_, line) in content.lines().enumerate().filter(|(index, _)| *index >= end_preamble) {
+        let end_preamble = end_preamble.unwrap();
+
+        let mut document_chapters: Vec<Chapter> = Vec::new();
+
+        let mut chapter_builder: Option<ChapterBuilder> = Option::None;
+        for (_, line) in content.lines().enumerate().filter(|(index, _)| *index >= end_preamble) {
             
-        //     if Modifier::is_heading(line) {
+            if Modifier::is_heading(line) {
                 
-        //         if let Some(chapter_builder) = chapter_builder {
-        //             document_chapters.push(chapter_builder.build()?)
-        //         }
+                if let Some(chapter_builder) = chapter_builder {
+                    document_chapters.push(chapter_builder.build()?)
+                }
 
-        //         chapter_builder = Option::Some(ChapterBuilder::new_with_heading(line.to_string()));
+                chapter_builder = Option::Some(ChapterBuilder::new_with_heading(line.to_string()));
 
-        //     } else {
-        //         if let Some(ref mut chapter_builder) = chapter_builder {
-        //             chapter_builder.append_content(line.to_string());
-        //         }
-        //     }
-        // }
+            } else {
+                if let Some(ref mut chapter_builder) = chapter_builder {
+                    chapter_builder.append_content(line.to_string());
+                }
+            }
+        }
 
-        // if let Some(chapter_builder) = chapter_builder {
-        //     document_chapters.push(chapter_builder.build()?)
-        // }
-        
-        
-        // let mut result: (Option<String>, Vec<Chapter>) = (Option::None, document_chapters);
+        if let Some(chapter_builder) = chapter_builder {
+            document_chapters.push(chapter_builder.build()?)
+        }
 
-        // if !preamble.is_empty() {
-        //     result.0 = Option::Some(preamble);
-        // }
+        if !preamble.is_empty() {
+            self.preamble = Option::Some(Paragraph::from(preamble));
+        }
 
-        // Ok(result)
+        self.chapters = document_chapters;
+
+        Ok(())
     }
 }
 
@@ -137,23 +139,19 @@ impl Loadable<DiskResource> for Document {
 
         let document_name = resource.name();
 
+        let mut document = Box::new(Self {
+            name: document_name.clone(),
+            preamble: Option::None,
+            chapters: Vec::new()
+        });
+
         if content.is_empty() {
-            return Ok(Box::new(Self {
-                name: document_name.clone(),
-                preamble: Option::None,
-                chapters: Vec::new()
-            }));
+            return Ok(document);
         }
 
-        let result = Self::get_document_body_from_str(&content);
-
-        match result {
-            Ok((preamble, chapters)) => {
-                return Ok(Box::new(Self {
-                    name: document_name.clone(),
-                    preamble,
-                    chapters
-                }));
+        match document.load_content_from_str(&content) {
+            Ok(_) => {
+                return Ok(document);
             },
             Err(err) => return Err(LoadError::ElaborationError(err.to_string()))
         }
@@ -228,13 +226,17 @@ paragraph 2a
 paragraph 1b
 "#.trim().to_string();
 
-        let (preamble, chapters) = Document::get_document_body_from_str(&content).unwrap();
+        let mut document = Box::new(Document {
+            name: "test document".to_string(),
+            preamble: Option::None,
+            chapters: Vec::new()
+        });
 
-        assert!(preamble.is_none());
+        document.load_content_from_str(&content).unwrap();
 
-        let chapters = chapters;
+        assert!(document.preamble().is_none());
 
-        assert_eq!(chapters.len(), 3);
+        assert_eq!(document.chapters().len(), 3);
 
 
         

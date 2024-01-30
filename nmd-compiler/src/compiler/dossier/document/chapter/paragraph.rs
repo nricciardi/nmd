@@ -36,6 +36,14 @@ impl Parsable for Paragraph {
     }
 }
 
+impl From<String> for Paragraph {
+    fn from(content: String) -> Self {
+        Self {
+            content
+        }
+    }
+}
+
 impl Paragraph {
 
     pub fn str_to_paragraphs(s: &str) -> Result<Vec<Self>, ParagraphError> {
@@ -46,9 +54,7 @@ impl Paragraph {
         let regex = Regex::new(r"\n{2,}").unwrap();
 
         Ok(regex.split(s).map(|splitted_content| {
-            Self {
-                content: splitted_content.to_string()
-            }
+            Self::from(splitted_content.to_string())
         }).collect())
     }
 }
