@@ -1,9 +1,9 @@
-use std::{default, str::FromStr};
+use std::str::FromStr;
 use thiserror::Error;
 
 
 #[derive(Error, Debug)]
-pub enum SupportedFormatError {
+pub enum OutputFormatError {
     #[error("unsupported format: {0}")]
     UnsupportedFormat(String)
 }
@@ -17,12 +17,12 @@ pub enum OutputFormat {
 
 impl FromStr for OutputFormat {
 
-    type Err = SupportedFormatError;
+    type Err = OutputFormatError;
 
     fn from_str(format: &str) -> Result<Self, Self::Err> {
         match format.to_lowercase().as_str() {
             "html" => Ok(OutputFormat::Html),
-            _ => Err(SupportedFormatError::UnsupportedFormat(String::from(format))),
+            _ => Err(OutputFormatError::UnsupportedFormat(String::from(format))),
         }
     }
 }

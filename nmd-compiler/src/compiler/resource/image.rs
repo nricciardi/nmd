@@ -26,6 +26,11 @@ impl Image {
 
         false
     }
+
+    pub fn compress(&mut self) -> Result<(), ResourceError> {
+        todo!("image compress method not yet implemented")
+    
+    }
 }
 
 impl TryFrom<PathBuf> for Image {

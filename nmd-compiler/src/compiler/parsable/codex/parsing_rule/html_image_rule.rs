@@ -1,9 +1,9 @@
 use std::{path::PathBuf, sync::Arc};
 
-use log::debug;
+use log;
 use regex::{Regex, Captures};
 
-use crate::compiler::{parsable::ParsingConfiguration, resource::image::Image};
+use crate::compiler::{parsable::ParsingConfiguration, resource::{image::Image, remote_resource::RemoteResource}, utility::file_utility::is_file_path};
 
 use super::{Modifier, ParsingRule, parsing_outcome::{ParsingOutcome, ParsingError}};
 
@@ -16,6 +16,10 @@ impl HtmlImageRule {
     
     pub fn new() -> Self {
         Self {}
+    }
+
+    fn get_standard_img_tag(src: &str, label: &str) -> String {
+        format!(r#"<img src="{}" alt="{}" class="img" />"#, src, label)
     }
 }
 
@@ -34,16 +38,49 @@ impl ParsingRule for HtmlImageRule {
             if let Some(label) = captueres.get(1) {
                 if let Some(src) = captueres.get(2) {
 
-                    let path_buf = PathBuf::from(src.as_str());
+                    let src = src.as_str();
 
-                    if path_buf.exists() {
-                        
-                        let image = Image::try_from(path_buf).unwrap();
+                    if RemoteResource::is_valid_remote_resource(src) {
 
-                        return format!(r#"<img src="data:image/png;base64,{}" alt="{}" class="img" />"#, image.to_base64(), label.as_str()) 
+                        if parsing_configuration.embed_remote_image() {
+
+                            todo!()
+
+                        } else {
+                            return Self::get_standard_img_tag(src, label.as_str())
+                        }
+
                     } else {
-                        return format!(r#"<img src="{}" alt="{}" class="img" />"#, src.as_str(), label.as_str()) 
+
+                        let mut src_path_buf = PathBuf::from(src);
+
+                        if src_path_buf.is_relative() {
+                            src_path_buf = parsing_configuration.input_location().clone().join(src_path_buf);
+                        }
+
+                        if src_path_buf.exists() {
+                        
+                            let mut image = Image::try_from(src_path_buf).unwrap();
+
+                            if parsing_configuration.compress_embed_image() {
+                                image.compress().unwrap();
+                            }
+    
+                            return format!(r#"<img src="data:image/png;base64,{}" alt="{}" class="img" />"#, image.to_base64(), label.as_str())
+
+                        } else if parsing_configuration.strict_image_src_check() {
+
+                            log::error!("{}", ParsingError::InvalidSource(String::from(src)));
+
+                            panic!("invalid src")
+
+                        } else {
+                            return Self::get_standard_img_tag(src, label.as_str())
+                        }
+
                     }
+
+                    return Self::get_standard_img_tag(src, label.as_str())
                 }
             }
 

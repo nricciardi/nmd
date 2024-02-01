@@ -26,7 +26,13 @@ impl CompilationConfiguration {
     }
 
     pub fn parsing_configuration(&self) -> ParsingConfiguration {
-        ParsingConfiguration::default()     // TODO
+
+        let mut parsing_configuration = ParsingConfiguration::default();
+
+        parsing_configuration.set_input_location(self.input_location.clone());
+        parsing_configuration.set_output_location(self.output_location.clone());
+
+        parsing_configuration
     }
 
     pub fn input_location(&self) -> &PathBuf {

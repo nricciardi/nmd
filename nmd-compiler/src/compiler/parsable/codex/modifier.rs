@@ -1,10 +1,54 @@
+use std::ops::Add;
+
 use regex::Regex;
 
 
 pub const MAX_HEADING_LEVEL: u32 = 6; 
 
+
+
+#[derive(Debug, PartialEq, Clone)]
+pub enum Modifiers {
+    All,
+    List(Vec<Modifier>),
+    None
+}
+
+impl Modifiers {
+    pub fn contains(&self, searched_modifier: &Modifier) -> bool {
+        match self {
+            Modifiers::All => true,
+            Modifiers::List(modifiers_list) => modifiers_list.contains(searched_modifier),
+            Modifiers::None => false,
+        }
+    }
+}
+
+impl Add for Modifiers {
+    type Output = Modifiers;
+
+    fn add(self, new_modifiers_excluded: Self) -> Self::Output {
+        match new_modifiers_excluded.clone() {
+            Modifiers::All => Self::All,
+            Modifiers::List(mut modifiers_to_add) => {
+                match self {
+                    Modifiers::All => return Self::All,
+                    Modifiers::List(mut modifiers_already_excluded) => {
+                        modifiers_already_excluded.append(&mut modifiers_to_add);
+
+                        return Modifiers::List(modifiers_already_excluded)
+                    },
+                    Modifiers::None => return new_modifiers_excluded.clone(),
+                }
+            },
+            Modifiers::None => return self
+        }
+    }
+}
+
+
 /// NMD modifiers pattern types
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum Modifier {
 
     // CONTENT MODIFIERs

@@ -11,9 +11,8 @@ mod utility;
 
 use std::sync::Arc;
 
-use serde_json::error;
 use thiserror::Error;
-use crate::compiler::{artifact::Artifact, dossier::Dossier, loadable::Loadable, dumpable::{Dumpable, DumpError}};
+use crate::compiler::{dossier::Dossier, loadable::Loadable, dumpable::{Dumpable, DumpError}};
 
 use self::{compilation_configuration::CompilationConfiguration, loadable::LoadError, parsable::{Parsable, ParsingError}, assembler::{assembler_configuration::AssemblerConfiguration, AssemblerError}};
 

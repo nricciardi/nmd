@@ -1,6 +1,7 @@
 pub mod disk_resource;
 pub mod cached_disk_resource;
 pub mod image;
+pub mod remote_resource;
 
 use std::{path::PathBuf, str::FromStr, fs::{File, self, OpenOptions}, io::{self, Write}};
 use thiserror::Error;

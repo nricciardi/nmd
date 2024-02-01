@@ -5,6 +5,7 @@ pub mod modifier;
 use std::sync::Arc;
 
 pub use parsing_rule::ParsingRule;
+use self::modifier::Modifiers;
 pub use self::modifier::{MAX_HEADING_LEVEL, Modifier};
 use crate::compiler::dossier::document::chapter::paragraph;
 use crate::compiler::dossier::document::Paragraph;
@@ -43,27 +44,49 @@ impl Codex {
 
     pub fn parse_content(&self, content: &str, parsing_configuration: Arc<ParsingConfiguration>) -> Result<ParsingOutcome, ParsingError> {
 
+        let excluded_modifiers = parsing_configuration.modifiers_excluded().clone();
+
+        self.parse_content_excluding_modifiers(content, Arc::clone(&parsing_configuration), excluded_modifiers)
+    }
+
+    pub fn parse_content_excluding_modifiers(&self, content: &str, parsing_configuration: Arc<ParsingConfiguration>, mut excluded_modifiers: Modifiers) -> Result<ParsingOutcome, ParsingError> {
+
         let mut outcome = ParsingOutcome::new(String::from(content));
 
         for content_rule in self.content_rules() {
+
+            if excluded_modifiers.contains(content_rule.modifier()) {
+                continue;
+            }
+
             outcome = content_rule.parse(outcome.parsed_content(), Arc::clone(&parsing_configuration))?;
+
+            excluded_modifiers = excluded_modifiers + content_rule.incompatible_modifiers().clone();
         }
 
         Ok(outcome)
     }
 
     pub fn parse_paragraph(&self, paragraph: &Paragraph, parsing_configuration: Arc<ParsingConfiguration>) -> Result<ParsingOutcome, ParsingError> {
+        self.parse_paragraph_excluding_modifiers(paragraph, parsing_configuration, Modifiers::None)
+    }
+
+
+    pub fn parse_paragraph_excluding_modifiers(&self, paragraph: &Paragraph, parsing_configuration: Arc<ParsingConfiguration>, mut excluded_modifiers: Modifiers) -> Result<ParsingOutcome, ParsingError> {
 
         let mut outcome = ParsingOutcome::new(String::from(paragraph.content()));
 
         for paragraph_rule in self.paragraph_rules() {
             if paragraph_rule.is_match(outcome.parsed_content()) {
                 outcome = paragraph_rule.parse(outcome.parsed_content(), Arc::clone(&parsing_configuration))?;
-                break;
+
+                excluded_modifiers = excluded_modifiers + paragraph_rule.incompatible_modifiers().clone();
+
+                break;      // ONLY ONE paragraph modifier
             }
         }
 
-        outcome = self.parse_content(outcome.parsed_content(), Arc::clone(&parsing_configuration))?;
+        outcome = self.parse_content_excluding_modifiers(outcome.parsed_content(), Arc::clone(&parsing_configuration), excluded_modifiers)?;
 
         Ok(outcome)
     }
