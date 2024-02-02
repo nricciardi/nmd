@@ -77,7 +77,13 @@ impl Codex {
         let mut outcome = ParsingOutcome::new(String::from(paragraph.content()));
 
         for paragraph_rule in self.paragraph_rules() {
+
+            let search_pattern = paragraph_rule.modifier().search_pattern();
+            log::debug!("search pattern that is about to be tested: {}", search_pattern);
+
             if paragraph_rule.is_match(outcome.parsed_content()) {
+
+
                 outcome = paragraph_rule.parse(outcome.parsed_content(), Arc::clone(&parsing_configuration))?;
 
                 excluded_modifiers = excluded_modifiers + paragraph_rule.incompatible_modifiers().clone();
@@ -114,14 +120,14 @@ impl Codex {
         }
 
         content_rules.append(&mut vec![
-            Box::new(ReplacementRule::new(Modifier::BoldStarVersion, String::from(r#"<strong>$1</strong>"#))),
-            Box::new(ReplacementRule::new(Modifier::BoldUnderscoreVersion, String::from(r#"<strong>$1</strong>"#))),
-            Box::new(ReplacementRule::new(Modifier::ItalicStarVersion, String::from(r#"<em>$1</em>"#))),
-            Box::new(ReplacementRule::new(Modifier::ItalicUnderscoreVersion, String::from(r#"<em>$1</em>"#))),
-            Box::new(ReplacementRule::new(Modifier::Strikethrough, String::from(r#"<del>$1</del>"#))),
-            Box::new(ReplacementRule::new(Modifier::Underlined, String::from(r#"<u>$1</u>"#))),
-            Box::new(HtmlImageRule::new()),
-            Box::new(ReplacementRule::new(Modifier::Link, String::from(r#"<a href=\"$2\">$1</a>"#))),
+            Box::new(ReplacementRule::new(Modifier::InlineCode, String::from(r#"<code class="inline-code">$2</code>"#))),
+            Box::new(ReplacementRule::new(Modifier::BoldStarVersion, String::from(r#"<strong class="bold">$1</strong>"#))),
+            Box::new(ReplacementRule::new(Modifier::BoldUnderscoreVersion, String::from(r#"<strong class="bold">$1</strong>"#))),
+            Box::new(ReplacementRule::new(Modifier::ItalicStarVersion, String::from(r#"<em class="italic">$1</em>"#))),
+            Box::new(ReplacementRule::new(Modifier::ItalicUnderscoreVersion, String::from(r#"<em class="italic">$1</em>"#))),
+            Box::new(ReplacementRule::new(Modifier::Strikethrough, String::from(r#"<del class="strikethrough">$1</del>"#))),
+            Box::new(ReplacementRule::new(Modifier::Underlined, String::from(r#"<u class="underlined">$1</u>"#))),
+            Box::new(ReplacementRule::new(Modifier::Link, String::from(r#"<a href=\"$2\" class="link">$1</a>"#))),
             // Box::new(ReplacementRule::new(PatternType::Highlight, r"\*\*(.*?)\*\*", "<strong>$1</strong>")),
             // Box::new(ReplacementRule::new(PatternType::ColoredText, r"\*\*(.*?)\*\*", "<strong>$1</strong>")),
             // Box::new(ReplacementRule::new(PatternType::Emoji, r"\*\*(.*?)\*\*", "<strong>$1</strong>")),
@@ -139,7 +145,9 @@ impl Codex {
         ]);
 
         let paragraph_rules: Vec<Box<dyn ParsingRule>> = vec![
-            Box::new(ReplacementRule::new(Modifier::CommonParagraph, String::from(r#"<p class="p">$1<p>"#)))
+            Box::new(HtmlImageRule::new()),
+            Box::new(ReplacementRule::new(Modifier::CodeBlock, String::from(r#"<pre><code class="language-$1 codeblock">$2</code></pre>"#))),
+            Box::new(ReplacementRule::new(Modifier::CommonParagraph, String::from(r#"<p class="p">$1<p>"#))),
         ];
 
         Self::new(configuration, content_rules, paragraph_rules, vec![], vec![])

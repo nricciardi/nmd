@@ -1,4 +1,4 @@
-use std::ops::Add;
+use std::{fmt::Display, ops::Add};
 
 use regex::Regex;
 
@@ -59,7 +59,6 @@ pub enum Modifier {
     Strikethrough,
     Underlined,
     Link,
-    Image,
     Highlight,
     ColoredText,
     Emoji,
@@ -72,6 +71,7 @@ pub enum Modifier {
     HeadingGeneralExtendedVersion(u32),
 
     // PARAGRAPH MODIFIERs
+    Image,
     CodeBlock,
     CommentBlock,
     FocusBlock,
@@ -144,8 +144,19 @@ impl Modifier {
             },
 
             Self::CommonParagraph => String::from(r#"(?s)(.*)"#),
+            Self::InlineCode => String::from(r"`(.*?)\n`"),
+            Self::CodeBlock => String::from(r"```([a-zA-Z]+)\n+(.*?)\n+```"),
             
             _ => String::from(r"RULE TODO")                                               // TODO
+        }
+    }
+
+    pub fn incompatible_modifiers(&self) -> Modifiers {
+        match self {
+
+            Self::Image => Modifiers::All,
+            Self::InlineCode => Modifiers::All,
+            _ => Modifiers::None
         }
     }
 }

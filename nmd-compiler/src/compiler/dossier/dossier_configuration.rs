@@ -1,3 +1,6 @@
+mod dossier_configuration_style;
+mod dossier_configuration_metadata;
+
 use std::{io, path::{PathBuf, MAIN_SEPARATOR, MAIN_SEPARATOR_STR}};
 
 use serde::Deserialize;
@@ -7,11 +10,10 @@ use log;
 
 use crate::compiler::{resource::ResourceError, utility::file_utility};
 
+use self::{dossier_configuration_metadata::DossierConfigurationMetadata, dossier_configuration_style::DossierConfigurationStyle};
 
-#[derive(Debug, Clone, Deserialize)]
-pub enum DossierMetadata {
 
-}
+
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct DossierConfiguration {
@@ -20,32 +22,32 @@ pub struct DossierConfiguration {
 
     documents: Vec<String>,
 
-    #[serde(default = "default_styles")]
-    styles: Vec<String>,
+    #[serde(default = "default_style")]
+    style: DossierConfigurationStyle,
 
     #[serde(default = "default_metadata")]
-    metadata: Vec<DossierMetadata>,
+    metadata: DossierConfigurationMetadata,
 }
 
 fn default_name() -> String {
     "new-dossier".to_string()
 }
 
-fn default_styles() -> Vec<String> {
-    vec![]      // TODO
+fn default_style() -> DossierConfigurationStyle {
+    DossierConfigurationStyle::default()
 }
 
-fn default_metadata() -> Vec<DossierMetadata> {
-    vec![]
+fn default_metadata() -> DossierConfigurationMetadata {
+    DossierConfigurationMetadata::default()
 }
 
 impl DossierConfiguration {
 
-    pub fn new(name: String, documents: Vec<String>, styles: Vec<String>, metadata: Vec<DossierMetadata>) -> Self {
+    pub fn new(name: String, documents: Vec<String>, style: DossierConfigurationStyle, metadata: DossierConfigurationMetadata) -> Self {
         Self {
             name,
             documents,
-            styles,
+            style,
             metadata
         }
     }
@@ -60,6 +62,10 @@ impl DossierConfiguration {
 
     pub fn name(&self) -> &String {
         &self.name
+    }
+
+    pub fn style(&self) -> &DossierConfigurationStyle {
+        &self.style
     }
 
     pub fn apply_root_path(&mut self, root_path: &PathBuf) -> () {
@@ -90,8 +96,8 @@ impl Default for DossierConfiguration {
         Self {
             name: String::from("New Dossier"),
             documents: vec![],          // TODO: all .nmd file in running directory
-            styles: vec![],              // TODO: default style
-            metadata: vec![],
+            style: DossierConfigurationStyle::default(),              // TODO: default style
+            metadata: DossierConfigurationMetadata::default(),
         }
     }
 }

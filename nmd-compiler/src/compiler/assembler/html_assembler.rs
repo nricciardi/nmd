@@ -29,24 +29,34 @@ impl Assembler for HtmlAssembler {
                                 .with_title(dossier.name())
                                 .with_meta(vec![("charset", "utf-8")]);
 
-            if dossier.documents().is_empty() {
-                return Err(AssemblerError::TooFewElements("there are no documents".to_string()))
-            }
+        match self.configuration.theme() {
+            crate::compiler::theme::Theme::Light => {
+                page.add_style(include_str!("html_assembler/code_block/light_theme/code_block.css"));
+                page.add_script_literal(include_str!("html_assembler/code_block/light_theme/code_block.js"));
+            },
+            crate::compiler::theme::Theme::Dark => {
+                page.add_style(include_str!("html_assembler/code_block/dark_theme/code_block.css"));
+                page.add_script_literal(include_str!("html_assembler/code_block/dark_theme/code_block.js"));
+            },
+        }
 
-            for document in dossier.documents() {
-                let section = Container::new(build_html::ContainerType::Section)
-                                                .with_raw(document);
+        if dossier.documents().is_empty() {
+            return Err(AssemblerError::TooFewElements("there are no documents".to_string()))
+        }
 
-                page.add_container(section);
-            }
+        for document in dossier.documents() {
+            let section = Container::new(build_html::ContainerType::Section)
+                                            .with_raw(document);
 
-            // TODO:
-            // - a file name parse utility
-            // - prevent to save content in add_document 
+            page.add_container(section);
+        }
 
-            let document_name = &format!("{}.html", dossier.name()).replace(" ", "-").to_ascii_lowercase();
+        // TODO:
+        // - a file name parse utility
 
-            artifact.add_document(document_name, &page.to_html_string())?;
+        let document_name = &format!("{}.html", dossier.name()).replace(" ", "-").to_ascii_lowercase();
+
+        artifact.add_document(document_name, &page.to_html_string())?;
 
 
         Ok(artifact)

@@ -24,6 +24,21 @@ pub struct Dossier {
     documents: Vec<Document>
 }
 
+impl Dossier {
+
+    pub fn name(&self) -> &String {
+        self.configuration.name()
+    }
+
+    pub fn documents(&self) -> &Vec<Document> {
+        &self.documents
+    }
+
+    pub fn configuration(&self) -> &DossierConfiguration {
+        &self.configuration
+    }
+}
+
 impl Loadable<PathBuf> for Dossier {
 
     fn load(location: &PathBuf) -> Result<Box<Self>, LoadError> {
@@ -80,16 +95,5 @@ impl Parsable for Dossier {
         }
 
         Ok(())
-    }
-}
-
-impl Dossier {
-
-    pub fn name(&self) -> &String {
-        self.configuration.name()
-    }
-
-    pub fn documents(&self) -> &Vec<Document> {
-        &self.documents
     }
 }

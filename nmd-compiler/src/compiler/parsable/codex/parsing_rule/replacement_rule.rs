@@ -5,6 +5,7 @@ use std::sync::{RwLock, Arc};
 use log::debug;
 use regex::Regex;
 
+use crate::compiler::parsable::codex::modifier;
 use crate::compiler::parsable::ParsingConfiguration;
 
 use super::parsing_outcome::{ParsingError, ParsingOutcome};
@@ -25,12 +26,12 @@ impl ReplacementRule {
     /// * `pattern_type` - PatternType which represent the pattern used to search in text 
     /// * `replacement_pattern` - A string slice which represent the pattern used to replace the text
     ///
-    pub fn new(pattern_type: Modifier, replacement_pattern: String) -> Self {
+    pub fn new(modifier: Modifier, replacement_pattern: String) -> Self {
 
-        debug!("created new parsing rule with search_pattern: '{}' and replacement_pattern: '{}'", pattern_type.search_pattern(), replacement_pattern);
+        debug!("created new parsing rule with search_pattern: '{}' and replacement_pattern: '{}'", modifier.search_pattern(), replacement_pattern);
 
         Self {
-            modifier: pattern_type,
+            modifier,
             replacement_pattern
         }
     }
@@ -111,5 +112,24 @@ mod test {
         let parsed_text = parsing_rule.parse(text_to_parse, Arc::clone(&parsing_configuration)).unwrap();
 
         assert_eq!(parsed_text.parsed_content(), r"<p>paragraph</p>");
+    }
+
+    #[test]
+    fn code_block() {
+        let parsing_configuration = Arc::new(ParsingConfiguration::default());
+
+        let parsing_rule = ReplacementRule::new(Modifier::CodeBlock, String::from(r#"<pre><code class="language-$1 codeblock">$2</code></pre>"#));
+
+        let text_to_parse = r#"
+```python
+
+print("hello world")
+
+```
+"#;
+
+        let parsed_text = parsing_rule.parse(text_to_parse, Arc::clone(&parsing_configuration)).unwrap();
+
+        assert_eq!(parsed_text.parsed_content(), "\n<pre><code class=\"language-python codeblock\">print(\"hello world\")</code></pre>\n");
     }
 }

@@ -25,8 +25,8 @@ pub trait ParsingRule: Send + Sync {
 
     fn parse(&self, content: &str, parsing_configuration: Arc<ParsingConfiguration>) -> Result<ParsingOutcome, ParsingError>;
 
-    fn incompatible_modifiers(&self) -> &Modifiers {
-        &Modifiers::None
+    fn incompatible_modifiers(&self) -> Modifiers {
+        self.modifier().incompatible_modifiers()
     }
 }
 

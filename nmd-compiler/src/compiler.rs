@@ -8,13 +8,14 @@ mod assembler;
 pub mod dumpable;
 pub mod artifact;
 mod utility;
+pub mod theme;
 
 use std::sync::Arc;
 
 use thiserror::Error;
 use crate::compiler::{dossier::Dossier, loadable::Loadable, dumpable::{Dumpable, DumpError}};
 
-use self::{compilation_configuration::CompilationConfiguration, loadable::LoadError, parsable::{Parsable, ParsingError}, assembler::{assembler_configuration::AssemblerConfiguration, AssemblerError}};
+use self::{assembler::{assembler_configuration::AssemblerConfiguration, AssemblerError}, compilation_configuration::CompilationConfiguration, dossier::dossier_configuration, loadable::LoadError, parsable::{Parsable, ParsingError}};
 
 
 #[derive(Error, Debug)]
@@ -46,10 +47,16 @@ impl Compiler {
     pub fn compile(compilation_configuration: CompilationConfiguration) -> Result<(), CompilationError> {
 
         let mut dossier = Dossier::load(compilation_configuration.input_location())?;
+
+        let dossier_configuration = dossier.configuration();
+
+        let dossier_theme = dossier_configuration.style().theme().clone();
         
         dossier.parse(Arc::new(compilation_configuration.codex()), Arc::new(compilation_configuration.parsing_configuration()))?;
 
-        let assembler = assembler::from(compilation_configuration.format().clone(), AssemblerConfiguration::new(compilation_configuration.output_location().clone()));
+        let assembler_configuration = AssemblerConfiguration::new(compilation_configuration.output_location().clone(), dossier_theme);
+
+        let assembler = assembler::from(compilation_configuration.format().clone(), assembler_configuration);
 
         let mut artifact = assembler.assemble(*dossier)?;
 
