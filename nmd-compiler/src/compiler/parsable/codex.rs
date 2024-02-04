@@ -150,10 +150,11 @@ impl Codex {
         }
 
         content_rules.append(&mut vec![
+            Box::new(ReplacementRule::new(Modifier::MathBlock, String::from(r#"<p class="inline-math">$1</p>"#))),
             Box::new(ReplacementRule::new(Modifier::InlineCode, String::from(r#"<code class="language-markup inline-code">$1</code>"#))),
             Box::new(ReplacementRule::new(Modifier::BoldStarVersion, String::from(r#"<strong class="bold">$1</strong>"#))),
             Box::new(ReplacementRule::new(Modifier::BoldUnderscoreVersion, String::from(r#"<strong class="bold">$1</strong>"#))),
-            Box::new(ReplacementRule::new(Modifier::ItalicStarVersion, String::from(r#"<em class="italic">$1</em>"#))),
+            Box::new(ReplacementRule::new(Modifier::ItalicStarVersion, String::from(r#"<em class="italic">$$1$</em>"#))),
             Box::new(ReplacementRule::new(Modifier::ItalicUnderscoreVersion, String::from(r#"<em class="italic">$1</em>"#))),
             Box::new(ReplacementRule::new(Modifier::Strikethrough, String::from(r#"<del class="strikethrough">$1</del>"#))),
             Box::new(ReplacementRule::new(Modifier::Underlined, String::from(r#"<u class="underlined">$1</u>"#))),
@@ -175,8 +176,9 @@ impl Codex {
         ]);
 
         let paragraph_rules: Vec<Box<dyn ParsingRule>> = vec![
+            Box::new(ReplacementRule::new(Modifier::MathBlock, String::from(r#"<p class="math-block">$$$1$$</p>"#))),
             Box::new(HtmlImageRule::new()),
-            Box::new(ReplacementRule::new(Modifier::CodeBlock, String::from(r#"<pre><code class="language-$1 codeblock">$2</code></pre>"#))),
+            Box::new(ReplacementRule::new(Modifier::CodeBlock, String::from(r#"<pre><code class="language-$1 code-block">$2</code></pre>"#))),
             Box::new(ReplacementRule::new(Modifier::CommonParagraph, String::from(r#"<p class="p">$1<p>"#))),
         ];
 

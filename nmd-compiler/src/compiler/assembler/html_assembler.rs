@@ -29,6 +29,7 @@ impl Assembler for HtmlAssembler {
                                 .with_title(dossier.name())
                                 .with_meta(vec![("charset", "utf-8")]);
 
+        // add code block js/css                        
         match self.configuration.theme() {
             crate::compiler::theme::Theme::Light => {
                 page.add_style(include_str!("html_assembler/code_block/light_theme/code_block.css"));
@@ -39,6 +40,10 @@ impl Assembler for HtmlAssembler {
                 page.add_script_literal(include_str!("html_assembler/code_block/dark_theme/code_block.js"));
             },
         }
+
+        // add math block js/css
+        page.add_script_literal(include_str!("html_assembler/math_block/mathjax.min.js"));
+
 
         if dossier.documents().is_empty() {
             return Err(AssemblerError::TooFewElements("there are no documents".to_string()))
