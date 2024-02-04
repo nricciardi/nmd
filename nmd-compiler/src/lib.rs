@@ -5,7 +5,7 @@ use std::{path::PathBuf, str::FromStr};
 use clap::{error, Arg, ArgAction, Command};
 use compiler::{output_format::OutputFormatError, CompilationError};
 pub use compiler::Compiler;
-use log::LevelFilter;
+use log::{LevelFilter, ParseLevelError};
 use thiserror::Error;
 use simple_logger::SimpleLogger;
 
@@ -22,6 +22,9 @@ pub enum CompilerCliError {
 
     #[error(transparent)]
     OutputFormatError(#[from] OutputFormatError),
+
+    #[error(transparent)]
+    VerboseLevelError(#[from] ParseLevelError),
 }
 
 
@@ -32,12 +35,6 @@ pub struct CompilerCli {
 impl CompilerCli {
 
     pub fn new() -> Self {
-
-        SimpleLogger::new()
-            .with_level(LevelFilter::Debug)
-            .init()
-            .unwrap();
-
 
         let cli: Command = Command::new("nmd-compiler")
                 .about("Official compiler to parse NMD")
@@ -81,6 +78,13 @@ impl CompilerCli {
                                             .num_args(1)
                                             .default_value(".")
                                         )
+                                        .arg(
+                                            Arg::new("verbose")
+                                                .short('v')
+                                                .long("verbose")
+                                                .action(ArgAction::Set)
+                                                .default_value("info")
+                                        )
 
                                 )
                                 
@@ -99,6 +103,18 @@ impl CompilerCli {
             Some(("compile", compile_matches)) => {
                 match compile_matches.subcommand() {
                     Some(("dossier", compile_dossier_matches)) => {
+
+                        if let Some(mut format) = compile_dossier_matches.get_many::<String>("verbose") {
+                            
+                            if format.len() != 1 {
+                                return Err(CompilerCliError::MoreThanOneValue("verbose".to_string()));
+                            }
+                            
+                            
+                            let log_level = LevelFilter::from_str(format.nth(0).unwrap())?;
+
+                            Self::set_logger(log_level);
+                        }
 
                         let mut compilation_configuration = CompilationConfiguration::default();
                         
@@ -149,6 +165,14 @@ impl CompilerCli {
 
             _ => unreachable!()
         }
+    }
+
+    fn set_logger(log_level: LevelFilter) {
+
+        SimpleLogger::new()
+            .with_level(log_level)
+            .init()
+            .unwrap();
     }
 
 }
