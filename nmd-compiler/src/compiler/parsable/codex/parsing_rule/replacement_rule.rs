@@ -111,11 +111,13 @@ paragraph 2b.
 
 paragraph
 2c
-."#.trim();
+.
+
+"#.trim_start();
 
         let parsed_text = parsing_rule.parse(text_to_parse, Arc::clone(&parsing_configuration)).unwrap();
 
-        assert_eq!(parsed_text.parsed_content(), r"<p>paragraph</p>");
+        assert_eq!(parsed_text.parsed_content(), r"<p>paragraph 2a.</p><p>paragraph 2b.</p><p>paragraph\n2c\n.</p>");
     }
 
     #[test]

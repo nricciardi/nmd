@@ -158,7 +158,7 @@ impl Modifier {
             },
             Self::InlineCode => String::from(r"`(.*?)`"),
 
-            Self::CommonParagraph => String::from(r#"(?s)(.*)\n{2,}"#),
+            Self::CommonParagraph => String::from(r#"(?s:(?m:^(.+?)(?:\n\n|\n$)))"#),
             Self::CodeBlock => String::from(r"```([a-zA-Z]+)\n+(.*?)\n+```\n{2,}"),
             
             _ => String::from(r"RULE TODO")                                               // TODO
