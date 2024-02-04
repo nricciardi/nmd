@@ -23,19 +23,46 @@ TODO
 
 ### Examples
 
-TODO
+#### Dossier files example
+
+Each dossier must have a *dossier configuration file*. It can be named `nmd.yml` or `nmd.json`.
+
+An example of `nmd.yml` file to create a dossier with 3 documents:
+
+```yaml
+name: "new dossier"
+documents:
+  - "./d1.nmd"
+  - "./d2.nmd"
+  - "./d3.nmd"
+```
+
+Each document path can me absolute or relative (from `nmd.yml`).
+
+
+#### Compile a dossier
+
+Build a dossier in `html`:
+
+```shell
+nmd-compiler compile dossier -f html -i dossier/input/path -o dossier/output/path
+```
 
 ## Features
 
 ### Planned Features
 
-- [ ] Use file name instead of absolute path in dossier configuration
+- [x] Use file name instead of absolute path in dossier configuration
 - [ ] Possibility to use a different dossier configuration name
 
 ### Features in Progress
 
 TODO
 
+
+## Author
+
+Nicola Ricciardi
 
 ## Contributing
 
