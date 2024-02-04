@@ -3,6 +3,7 @@ use serde::Deserialize;
 use crate::compiler::theme::Theme;
 
 
+#[allow(dead_code)]
 #[derive(Debug, Clone, Deserialize, Default)]
 pub struct DossierConfigurationStyle {
     theme: Theme,

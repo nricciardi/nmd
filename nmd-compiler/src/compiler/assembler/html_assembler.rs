@@ -68,12 +68,14 @@ mod test {
 
     use std::{path::PathBuf, sync::Arc};
 
-    use crate::compiler::{loadable::Loadable, dossier::dossier_configuration::DossierConfiguration, artifact, parsable::{Parsable, codex::{Codex, codex_configuration::CodexConfiguration}, ParsingConfiguration}};
+    use crate::compiler::{loadable::Loadable, dossier::dossier_configuration::DossierConfiguration, parsable::{Parsable, codex::{Codex, codex_configuration::CodexConfiguration}, ParsingConfiguration}};
 
     use super::*;
 
     #[test]
     fn assemble() {
+
+        let codex = Arc::new(Codex::of_html(CodexConfiguration::default()));
 
         let project_directory = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
         let dossier_dir = "nmd-test-dossier-1";
@@ -84,12 +86,12 @@ mod test {
         let mut dossier_configuration = DossierConfiguration::default();
         dossier_configuration.set_documents(vec![nmd_file.to_string_lossy().to_string()]);
 
-        let mut dossier = Dossier::load(&dossier_configuration).unwrap();
+        let mut dossier = Dossier::load(Arc::clone(&codex), &dossier_configuration).unwrap();
 
-        dossier.parse(Arc::new(Codex::of_html(CodexConfiguration::default())), Arc::new(ParsingConfiguration::default())).unwrap();
+        dossier.parse(Arc::clone(&codex), Arc::new(ParsingConfiguration::default())).unwrap();
 
         let assembler = HtmlAssembler::new(AssemblerConfiguration::default());
 
-        let artifact = assembler.assemble(*dossier).unwrap();
+        let _ = assembler.assemble(*dossier).unwrap();
     }
 }

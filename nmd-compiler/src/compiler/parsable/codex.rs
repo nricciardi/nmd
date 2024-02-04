@@ -5,9 +5,10 @@ pub mod modifier;
 use std::sync::Arc;
 
 pub use parsing_rule::ParsingRule;
+use regex::Regex;
 use self::modifier::Modifiers;
 pub use self::modifier::{MAX_HEADING_LEVEL, Modifier};
-use crate::compiler::dossier::document::chapter::paragraph;
+use crate::compiler::dossier::document::chapter::paragraph::ParagraphError;
 use crate::compiler::dossier::document::Paragraph;
 use crate::compiler::output_format::OutputFormat;
 use self::codex_configuration::CodexConfiguration;
@@ -97,6 +98,35 @@ impl Codex {
         Ok(outcome)
     }
 
+    pub fn split_str_in_paragraphs(&self, content: &str) -> Result<Vec<Paragraph>, ParagraphError> {
+
+        let mut paragraphs: Vec<Paragraph> = Vec::new();
+        let mut remaining_content = String::from(content);
+
+        // work-around to fix paragraph matching end line
+        while !remaining_content.ends_with("\n\n") {
+            remaining_content.push_str("\n");
+        }
+
+        for modifier in Modifier::paragraph_modifiers() {
+            let regex = Regex::new(&modifier.search_pattern()).unwrap();
+
+            let mut matches: Vec<Paragraph> = regex.find_iter(remaining_content.clone().as_str()).map(|m| {
+
+                let matched_str = m.as_str().to_string();
+
+                remaining_content = remaining_content.replace(&matched_str, "");
+
+                Paragraph::from(matched_str)
+
+            }).collect();
+
+            paragraphs.append(&mut matches);
+        }
+
+        Ok(paragraphs)
+    }
+
     fn new(configuration: CodexConfiguration, content_rules: Vec<Box<dyn ParsingRule>>, paragraph_rules: Vec<Box<dyn ParsingRule>>, chapter_rules: Vec<Box<dyn ParsingRule>>, document_rules: Vec<Box<dyn ParsingRule>>) -> Codex {
 
         // TODO: check if there are all necessary rules based on theirs type
@@ -120,7 +150,7 @@ impl Codex {
         }
 
         content_rules.append(&mut vec![
-            Box::new(ReplacementRule::new(Modifier::InlineCode, String::from(r#"<code class="inline-code">$2</code>"#))),
+            Box::new(ReplacementRule::new(Modifier::InlineCode, String::from(r#"<code class="language-markup inline-code">$1</code>"#))),
             Box::new(ReplacementRule::new(Modifier::BoldStarVersion, String::from(r#"<strong class="bold">$1</strong>"#))),
             Box::new(ReplacementRule::new(Modifier::BoldUnderscoreVersion, String::from(r#"<strong class="bold">$1</strong>"#))),
             Box::new(ReplacementRule::new(Modifier::ItalicStarVersion, String::from(r#"<em class="italic">$1</em>"#))),
@@ -230,5 +260,26 @@ r#"
         }
 
         assert_eq!(parsing_result, expected_result);
+    }
+
+
+    #[test]
+    fn split_str_in_paragraphs() {
+        let codex: Codex = Codex::of_html(CodexConfiguration::default());
+
+        let nmd_text = 
+r#"
+```python
+
+print("hello world")
+
+```
+
+`print("hello world)`
+"#.trim();
+
+        let paragraphs = codex.split_str_in_paragraphs(nmd_text).unwrap();
+
+        assert_eq!(paragraphs.len(), 2)
     }
 }

@@ -13,6 +13,8 @@ pub fn read_file_content(file_pathbuf: &PathBuf) -> Result<String, io::Error> {
     Ok(content)
 }
 
+
+#[allow(dead_code)]
 pub fn is_file_path(s: &str) -> bool {
     
     Path::new(s).is_absolute() || Path::new(s).is_relative()

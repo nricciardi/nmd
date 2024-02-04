@@ -1,4 +1,4 @@
-use std::{path::PathBuf, str::FromStr, fs::{File, self, OpenOptions}, io::{self, Write}};
+use std::{path::PathBuf, str::FromStr, fs::{self, OpenOptions}, io::Write};
 
 use super::{ResourceError, Resource};
 
@@ -49,6 +49,8 @@ impl TryFrom<PathBuf> for DiskResource {
     }
 }
 
+
+#[allow(dead_code)]
 impl DiskResource {
     fn new(location: PathBuf) -> Result<Self, ResourceError> {
 
@@ -73,10 +75,14 @@ impl Resource for DiskResource {
 
         let mut file = OpenOptions::new()
             .write(true)
+            .truncate(true)
             .create(true)
             .open(file_path)?;
 
         file.write_all(content.as_bytes())?;
+
+        file.flush()?;
+        file.sync_all()?;
 
         Ok(())
     }
@@ -85,12 +91,14 @@ impl Resource for DiskResource {
         let file_path = &self.location;
 
         let mut file = OpenOptions::new()
-            .write(true)
             .create(true)
             .append(true)
             .open(file_path)?;
 
         file.write_all(content.as_bytes())?;
+
+        file.flush()?;
+        file.sync_all()?;
 
         Ok(())
     }
@@ -129,7 +137,7 @@ mod test {
         let dossier_dir = "nmd-test-dossier-1";
         let nmd_file = project_directory.join("test-resources").join(dossier_dir);
 
-        let resource = DiskResource::new(nmd_file).unwrap();
+        let _ = DiskResource::new(nmd_file).unwrap();
     }
 
     #[test]

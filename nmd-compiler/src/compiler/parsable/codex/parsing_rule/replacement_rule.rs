@@ -1,11 +1,8 @@
-use std::convert::Infallible;
-use std::str::FromStr;
-use std::sync::{RwLock, Arc};
+use std::sync::Arc;
 
 use log::debug;
 use regex::Regex;
 
-use crate::compiler::parsable::codex::modifier;
 use crate::compiler::parsable::ParsingConfiguration;
 
 use super::parsing_outcome::{ParsingError, ParsingOutcome};
@@ -107,7 +104,14 @@ mod test {
 
         let parsing_rule = ReplacementRule::new(Modifier::CommonParagraph, String::from("<p>$1</p>"));
 
-        let text_to_parse = r"paragraph";
+        let text_to_parse = r#"
+paragraph 2a.
+
+paragraph 2b.
+
+paragraph
+2c
+."#.trim();
 
         let parsed_text = parsing_rule.parse(text_to_parse, Arc::clone(&parsing_configuration)).unwrap();
 

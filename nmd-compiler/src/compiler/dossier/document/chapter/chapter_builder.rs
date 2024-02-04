@@ -1,4 +1,8 @@
+use std::sync::Arc;
+
 use thiserror::Error;
+
+use crate::compiler::parsable::codex::Codex;
 
 use super::{Chapter, Paragraph, paragraph::ParagraphError};
 
@@ -13,20 +17,25 @@ pub enum ChapterBuilderError {
 
 
 pub struct ChapterBuilder {
+    codex: Arc<Codex>,
     heading: Option<String>,
-    content: Option<String>
+    content: Option<String>,
 }
 
+#[allow(dead_code)]
 impl ChapterBuilder {
-    pub fn new() -> Self {
+
+    pub fn new(codex: Arc<Codex>) -> Self {
         Self {
+            codex,
             heading: Option::None,
             content: Option::None
         }
     }
 
-    pub fn new_with_heading(heading: String) -> Self {
+    pub fn new_with_heading(codex: Arc<Codex>, heading: String) -> Self {
         Self {
+            codex,
             heading: Option::Some(heading),
             content: Option::None
         }
@@ -53,7 +62,8 @@ impl ChapterBuilder {
         let mut paragraphs: Vec<Paragraph> = Vec::new();
 
         if let Some(content) = &self.content {
-            paragraphs = Paragraph::str_to_paragraphs(content)?
+
+            paragraphs = self.codex.split_str_in_paragraphs(content)?;
         }
 
         Ok(Chapter {

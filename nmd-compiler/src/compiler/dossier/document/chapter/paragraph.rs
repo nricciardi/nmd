@@ -57,7 +57,7 @@ impl Paragraph {
             return Err(ParagraphError::Empty);
         }
 
-        let regex = Regex::new(r"\n{2,}").unwrap();
+        let regex = Regex::new(r#"\n{2,}(?!```)"#).unwrap();
 
         Ok(regex.split(s).map(|splitted_content| {
             Self::from(splitted_content.to_string())

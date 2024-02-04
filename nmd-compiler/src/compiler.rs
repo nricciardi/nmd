@@ -1,4 +1,4 @@
-mod compilation_configuration;
+pub mod compilation_configuration;
 mod parsable;
 mod dossier;
 pub mod output_format;
@@ -46,13 +46,15 @@ impl Compiler {
 
     pub fn compile(compilation_configuration: CompilationConfiguration) -> Result<(), CompilationError> {
 
-        let mut dossier = Dossier::load(compilation_configuration.input_location())?;
+        let codex = Arc::new(compilation_configuration.codex());
+
+        let mut dossier = Dossier::load(Arc::clone(&codex), compilation_configuration.input_location())?;
 
         let dossier_configuration = dossier.configuration();
 
         let dossier_theme = dossier_configuration.style().theme().clone();
         
-        dossier.parse(Arc::new(compilation_configuration.codex()), Arc::new(compilation_configuration.parsing_configuration()))?;
+        dossier.parse(Arc::clone(&codex), Arc::new(compilation_configuration.parsing_configuration()))?;
 
         let assembler_configuration = AssemblerConfiguration::new(compilation_configuration.output_location().clone(), dossier_theme);
 

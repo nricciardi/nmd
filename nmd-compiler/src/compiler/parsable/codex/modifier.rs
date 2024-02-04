@@ -83,6 +83,20 @@ pub enum Modifier {
 
 impl Modifier {
 
+    pub fn paragraph_modifiers() -> Vec<Self> {
+
+
+        // they must have the compatibility order
+        vec![
+            Self::Image,
+            Self::CodeBlock,
+            Self::CommentBlock,
+            Self::FocusBlock,
+            Self::MathBlock,
+            Self::CommonParagraph,
+        ]
+    }
+
     pub fn heading_modifiers_rev() -> Vec<Self> {
         let mut heading_modifiers: Vec<Self> = Vec::new();
 
@@ -142,10 +156,10 @@ impl Modifier {
 
                 format!(r"#({})\s+(.*)", level)
             },
+            Self::InlineCode => String::from(r"`(.*?)`"),
 
-            Self::CommonParagraph => String::from(r#"(?s)(.*)"#),
-            Self::InlineCode => String::from(r"`(.*?)\n`"),
-            Self::CodeBlock => String::from(r"```([a-zA-Z]+)\n+(.*?)\n+```"),
+            Self::CommonParagraph => String::from(r#"(?s)(.*)\n{2,}"#),
+            Self::CodeBlock => String::from(r"```([a-zA-Z]+)\n+(.*?)\n+```\n{2,}"),
             
             _ => String::from(r"RULE TODO")                                               // TODO
         }

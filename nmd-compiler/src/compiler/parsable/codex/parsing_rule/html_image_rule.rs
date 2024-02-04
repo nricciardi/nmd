@@ -80,7 +80,7 @@ impl ParsingRule for HtmlImageRule {
 
                     }
 
-                    return Self::get_standard_img_tag(src, label.as_str())
+                    // return Self::get_standard_img_tag(src, label.as_str())
                 }
             }
 

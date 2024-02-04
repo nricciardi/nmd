@@ -1,4 +1,4 @@
-use std::{path::PathBuf, str::FromStr, ops::Add};
+use std::{path::PathBuf, str::FromStr};
 
 use super::{disk_resource::DiskResource, ResourceError, Resource};
 
@@ -56,6 +56,8 @@ impl TryFrom<PathBuf> for CachedDiskResource {
     }
 }
 
+
+#[allow(dead_code)]
 impl CachedDiskResource {
     fn new(location: PathBuf) -> Result<Self, ResourceError> {
 

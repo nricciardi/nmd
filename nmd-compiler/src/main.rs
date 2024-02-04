@@ -1,6 +1,9 @@
-use anyhow::Result;
-use nmd_compiler::Compiler;
+use nmd_compiler::{CompilerCli, CompilerCliError};
 
-fn main() -> Result<()> {
-    Ok(())
+
+fn main() -> Result<(), CompilerCliError> {
+
+    let cli = CompilerCli::new();
+
+    cli.parse()
 }

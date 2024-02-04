@@ -1,8 +1,8 @@
-use std::io;
+use std::{io, sync::Arc};
 
 use thiserror::Error;
 
-use super::resource::ResourceError;
+use super::{parsable::codex::Codex, resource::ResourceError};
 
 
 #[derive(Error, Debug)]
@@ -19,5 +19,5 @@ pub enum LoadError {
 
 pub trait Loadable<T> {
 
-    fn load(resource: &T) -> Result<Box<Self>, LoadError>;
+    fn load(codex: Arc<Codex>, resource: &T) -> Result<Box<Self>, LoadError>;
 }

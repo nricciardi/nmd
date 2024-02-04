@@ -9,7 +9,7 @@ use rayon::iter::{IntoParallelRefMutIterator, ParallelIterator};
 pub use self::paragraph::Paragraph;
 use crate::compiler::parsable::codex::Codex;
 use crate::compiler::parsable::parsing_configuration::ParsingConfiguration;
-use crate::compiler::parsable::{codex::parsing_rule::parsing_outcome::{ParsingError, ParsingOutcome}, Parsable};
+use crate::compiler::parsable::{codex::parsing_rule::parsing_outcome::ParsingError, Parsable};
 
 
 pub struct Chapter {
@@ -21,6 +21,7 @@ pub struct Chapter {
     superchapter: Option<Arc<Chapter>> */
 }
 
+#[allow(dead_code)]
 impl Chapter {
 
     pub fn new(heading: String, paragraphs: Vec<Paragraph>) -> Self {

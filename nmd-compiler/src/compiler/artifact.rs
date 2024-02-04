@@ -2,7 +2,7 @@ pub mod artifact_assets;
 
 use std::path::PathBuf;
 
-use rayon::iter::{IntoParallelRefIterator, IntoParallelRefMutIterator, ParallelIterator};
+use rayon::iter::{IntoParallelRefMutIterator, ParallelIterator};
 use thiserror::Error;
 
 use self::artifact_assets::ArtifactAssets;
@@ -22,6 +22,8 @@ pub struct Artifact {
     output_path: PathBuf
 }
 
+
+#[allow(dead_code)]
 impl Artifact {
 
     pub fn new(output_path: PathBuf) -> Self {

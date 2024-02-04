@@ -1,7 +1,7 @@
 pub mod document;
 pub mod dossier_configuration;
 
-use std::{sync::Arc, path::PathBuf, io, str::FromStr};
+use std::{sync::Arc, path::PathBuf};
 
 pub use document::{Document, DocumentError};
 use rayon::iter::{IntoParallelRefMutIterator, ParallelIterator};
@@ -10,8 +10,8 @@ use thiserror::Error;
 use crate::compiler::parsable::Parsable;
 use self::dossier_configuration::DossierConfiguration;
 
-use super::{loadable::{Loadable, LoadError}, parsable::{ParsingConfiguration, ParsingError, codex::Codex}, resource::{Resource, ResourceError}, utility::file_utility};
-use crate::compiler::utility::file_utility::read_file_content;
+use super::{loadable::{Loadable, LoadError}, parsable::{ParsingConfiguration, ParsingError, codex::Codex}, resource::ResourceError};
+
 
 #[derive(Error, Debug)]
 pub enum DossierError {
@@ -41,20 +41,20 @@ impl Dossier {
 
 impl Loadable<PathBuf> for Dossier {
 
-    fn load(location: &PathBuf) -> Result<Box<Self>, LoadError> {
+    fn load(codex: Arc<Codex>, location: &PathBuf) -> Result<Box<Self>, LoadError> {
 
         let dossier_configuration = match DossierConfiguration::try_from(location) {
             Ok(dc) => dc,
             Err(e) => return Err(LoadError::ResourceError(ResourceError::InvalidResourceVerbose(String::from(format!("invalid dossier configuration: {}", e.to_string())))))
         };
 
-        Self::load(&dossier_configuration)
+        Self::load(Arc::clone(&codex), &dossier_configuration)
     }
 
 }
 
 impl Loadable<DossierConfiguration> for Dossier {
-    fn load(dossier_configuration: &DossierConfiguration) -> Result<Box<Self>, LoadError> {
+    fn load(codex: Arc<Codex>, dossier_configuration: &DossierConfiguration) -> Result<Box<Self>, LoadError> {
         // TODO: are really mandatory?
         if dossier_configuration.documents().is_empty() {
             return Err(LoadError::ResourceError(ResourceError::InvalidResourceVerbose("there are no documents".to_string())))
@@ -69,7 +69,7 @@ impl Loadable<DossierConfiguration> for Dossier {
 
         for document in dossier_configuration.documents() {
 
-            let document = Document::load(document)?;
+            let document = Document::load(Arc::clone(&codex), document)?;
 
             documents.push(*document)
         }
@@ -83,7 +83,8 @@ impl Loadable<DossierConfiguration> for Dossier {
 
 
 impl Parsable for Dossier {
-    fn parse(&mut self,codex: Arc<Codex>, parsing_configuration: Arc<ParsingConfiguration>) -> Result<(), ParsingError> {
+    fn parse(&mut self, codex: Arc<Codex>, parsing_configuration: Arc<ParsingConfiguration>) -> Result<(), ParsingError> {
+
         let maybe_fails = self.documents.par_iter_mut()
         .map(|document| {
             document.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration))  

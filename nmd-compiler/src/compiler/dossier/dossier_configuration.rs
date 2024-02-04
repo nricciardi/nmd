@@ -1,11 +1,9 @@
 mod dossier_configuration_style;
 mod dossier_configuration_metadata;
 
-use std::{io, path::{PathBuf, MAIN_SEPARATOR, MAIN_SEPARATOR_STR}};
+use std::path::{PathBuf, MAIN_SEPARATOR_STR};
 
 use serde::Deserialize;
-use serde_json::error;
-use thiserror::Error;
 use log;
 
 use crate::compiler::{resource::ResourceError, utility::file_utility};
@@ -15,6 +13,7 @@ use self::{dossier_configuration_metadata::DossierConfigurationMetadata, dossier
 
 
 
+#[allow(dead_code)]
 #[derive(Debug, Clone, Deserialize)]
 pub struct DossierConfiguration {
     #[serde(default = "default_name")]
@@ -41,6 +40,9 @@ fn default_metadata() -> DossierConfigurationMetadata {
     DossierConfigurationMetadata::default()
 }
 
+
+
+#[allow(dead_code)]
 impl DossierConfiguration {
 
     pub fn new(name: String, documents: Vec<String>, style: DossierConfigurationStyle, metadata: DossierConfigurationMetadata) -> Self {

@@ -1,4 +1,4 @@
-use std::{str::FromStr, thread};
+use std::str::FromStr;
 
 use url::Url;
 
