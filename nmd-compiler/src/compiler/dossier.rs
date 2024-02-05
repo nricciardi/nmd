@@ -4,7 +4,7 @@ pub mod dossier_configuration;
 use std::{sync::Arc, path::PathBuf};
 
 pub use document::{Document, DocumentError};
-use rayon::iter::{IntoParallelRefMutIterator, ParallelIterator};
+use rayon::{iter::{IntoParallelRefMutIterator, ParallelIterator}, slice::IterMut};
 use thiserror::Error;
 
 use crate::compiler::parsable::Parsable;
@@ -85,14 +85,28 @@ impl Loadable<DossierConfiguration> for Dossier {
 impl Parsable for Dossier {
     fn parse(&mut self, codex: Arc<Codex>, parsing_configuration: Arc<ParsingConfiguration>) -> Result<(), ParsingError> {
 
-        let maybe_fails = self.documents.par_iter_mut()
-        .map(|document| {
-            document.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration))  
-        })
-        .find_any(|result| result.is_err());
+        if parsing_configuration.parallelization() {
 
-        if let Some(Err(fail)) = maybe_fails {
-            return Err(fail)
+            let maybe_fails = self.documents.par_iter_mut()
+                .map(|document| {
+                    document.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration))  
+                })
+                .find_any(|result| result.is_err());
+
+                if let Some(Err(fail)) = maybe_fails {
+                    return Err(fail)
+                }
+            
+        } else {
+            let maybe_fails = self.documents.iter_mut()
+                .map(|document| {
+                    document.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration))
+                })
+                .find(|result| result.is_err());
+
+                if let Some(Err(fail)) = maybe_fails {
+                    return Err(fail)
+                }
         }
 
         Ok(())

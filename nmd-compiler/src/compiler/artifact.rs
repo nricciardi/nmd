@@ -62,6 +62,9 @@ impl Artifact {
 
 impl Dumpable for Artifact {
     fn dump(&mut self) -> Result<(), DumpError> {
+
+        log::info!("dump artifact...");
+
         Ok(self.documents.par_iter_mut().for_each(|document| {
             document.dump_cached_content().unwrap()         // TODO: handle errors
         }))

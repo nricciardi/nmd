@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use log::debug;
+use log;
 use regex::Regex;
 
 use crate::compiler::parsable::ParsingConfiguration;
@@ -25,7 +25,7 @@ impl ReplacementRule {
     ///
     pub fn new(modifier: Modifier, replacement_pattern: String) -> Self {
 
-        debug!("created new parsing rule with search_pattern: '{}' and replacement_pattern: '{}'", modifier.search_pattern(), replacement_pattern);
+        log::debug!("created new parsing rule with search_pattern: '{}' and replacement_pattern: '{}'", modifier.search_pattern(), replacement_pattern);
 
         Self {
             modifier,
@@ -44,9 +44,11 @@ impl ParsingRule for ReplacementRule {
           Err(_) => return Err(ParsingError::InvalidPattern(self.modifier().search_pattern()))  
         };
 
+        log::debug!("parsing:\n{}\nusing '{}'->'{}'", content, self.modifier().search_pattern(), self.replacement_pattern);
+
         let parsed_content = regex.replace_all(content, self.replacement_pattern.as_str()).to_string();
 
-        debug!("parsed '{}' using '{}'->'{}'", content, self.modifier().search_pattern(), self.replacement_pattern);
+        log::debug!("result:\n{}", content);
         
         Ok(ParsingOutcome::new(parsed_content))
     }

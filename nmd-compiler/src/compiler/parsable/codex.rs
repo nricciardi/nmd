@@ -57,12 +57,22 @@ impl Codex {
         for content_rule in self.content_rules() {
 
             if excluded_modifiers.contains(content_rule.modifier()) {
+
+                log::debug!("{:?}: '{}' content search pattern is skipped", content_rule.modifier(), content_rule.modifier().search_pattern());
                 continue;
             }
 
-            outcome = content_rule.parse(outcome.parsed_content(), Arc::clone(&parsing_configuration))?;
+            if content_rule.is_match(content) {
+                log::debug!("there is a match with {:?}: '{}' (content search pattern)", content_rule.modifier(), content_rule.modifier().search_pattern());
 
-            excluded_modifiers = excluded_modifiers + content_rule.incompatible_modifiers().clone();
+                outcome = content_rule.parse(outcome.parsed_content(), Arc::clone(&parsing_configuration))?;
+    
+                excluded_modifiers = excluded_modifiers + content_rule.incompatible_modifiers().clone();
+
+            } else {
+                log::debug!("no matches with {:?}: '{}' (content search pattern)", content_rule.modifier(), content_rule.modifier().search_pattern());
+            }
+            
         }
 
         Ok(outcome)
@@ -80,16 +90,21 @@ impl Codex {
         for paragraph_rule in self.paragraph_rules() {
 
             let search_pattern = paragraph_rule.modifier().search_pattern();
-            log::debug!("search pattern that is about to be tested: {}", search_pattern);
+
+            log::debug!("{:?}: '{}' paragraph search pattern that is about to be tested", paragraph_rule.modifier(), search_pattern);
 
             if paragraph_rule.is_match(outcome.parsed_content()) {
 
+                log::debug!("there is a match with '{}'", search_pattern);
 
                 outcome = paragraph_rule.parse(outcome.parsed_content(), Arc::clone(&parsing_configuration))?;
 
                 excluded_modifiers = excluded_modifiers + paragraph_rule.incompatible_modifiers().clone();
 
                 break;      // ONLY ONE paragraph modifier
+            } else {
+
+                log::debug!("there is NOT a match with '{}'", search_pattern);
             }
         }
 
@@ -150,11 +165,12 @@ impl Codex {
         }
 
         content_rules.append(&mut vec![
-            Box::new(ReplacementRule::new(Modifier::MathBlock, String::from(r#"<p class="inline-math">$1</p>"#))),
+            Box::new(ReplacementRule::new(Modifier::InlineMath, String::from(r#"<span class="inline-math">$$1$</span>"#))),
+            Box::new(ReplacementRule::new(Modifier::InlineMathAlternative, String::from(r#"<span class="inline-math">\(&1\)</span>"#))),
             Box::new(ReplacementRule::new(Modifier::InlineCode, String::from(r#"<code class="language-markup inline-code">$1</code>"#))),
             Box::new(ReplacementRule::new(Modifier::BoldStarVersion, String::from(r#"<strong class="bold">$1</strong>"#))),
             Box::new(ReplacementRule::new(Modifier::BoldUnderscoreVersion, String::from(r#"<strong class="bold">$1</strong>"#))),
-            Box::new(ReplacementRule::new(Modifier::ItalicStarVersion, String::from(r#"<em class="italic">$$1$</em>"#))),
+            Box::new(ReplacementRule::new(Modifier::ItalicStarVersion, String::from(r#"<em class="italic">$1</em>"#))),
             Box::new(ReplacementRule::new(Modifier::ItalicUnderscoreVersion, String::from(r#"<em class="italic">$1</em>"#))),
             Box::new(ReplacementRule::new(Modifier::Strikethrough, String::from(r#"<del class="strikethrough">$1</del>"#))),
             Box::new(ReplacementRule::new(Modifier::Underlined, String::from(r#"<u class="underlined">$1</u>"#))),
@@ -176,10 +192,10 @@ impl Codex {
         ]);
 
         let paragraph_rules: Vec<Box<dyn ParsingRule>> = vec![
-            Box::new(ReplacementRule::new(Modifier::MathBlock, String::from(r#"<p class="math-block">$$$1$$</p>"#))),
+            Box::new(ReplacementRule::new(Modifier::MathBlock, String::from(r#"<p class="math-block">$$ $1 $$</p>"#))),
             Box::new(HtmlImageRule::new()),
             Box::new(ReplacementRule::new(Modifier::CodeBlock, String::from(r#"<pre><code class="language-$1 code-block">$2</code></pre>"#))),
-            Box::new(ReplacementRule::new(Modifier::CommonParagraph, String::from(r#"<p class="p">$1<p>"#))),
+            Box::new(ReplacementRule::new(Modifier::CommonParagraph, String::from(r#"<p class="p">$1</p>"#))),
         ];
 
         Self::new(configuration, content_rules, paragraph_rules, vec![], vec![])

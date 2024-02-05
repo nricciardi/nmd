@@ -177,15 +177,31 @@ impl Parsable for Document {
         }
 
 
-        let maybe_one_failed = self.chapters.par_iter_mut()
-            .map(|chapter| {
+        if parsing_configuration.parallelization() {
 
-                chapter.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration))
+            let maybe_one_failed = self.chapters.par_iter_mut()
+                .map(|chapter| {
+
+                    chapter.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration))
+                
+                }).find_any(|result| result.is_err());
+
+            if let Some(result) = maybe_one_failed {
+                return result;
+            }
+        
+        } else {
             
-            }).find_any(|result| result.is_err());
+            let maybe_one_failed: Option<Result<(), ParsingError>> = self.chapters.iter_mut()
+                .map(|chapter| {
 
-        if let Some(result) = maybe_one_failed {
-            return result;
+                    chapter.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration))
+                
+                }).find(|result| result.is_err());
+
+            if let Some(result) = maybe_one_failed {
+                return result;
+            }
         }
 
        Ok(())

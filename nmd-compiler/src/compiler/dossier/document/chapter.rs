@@ -55,12 +55,29 @@ impl Parsable for Chapter {
     fn parse(&mut self, codex: Arc<Codex>, parsing_configuration: Arc<ParsingConfiguration>) -> Result<(), ParsingError> {
         self.heading = String::from(codex.parse_content(&self.heading, Arc::clone(&parsing_configuration))?.parsed_content());
 
-        let maybe_failed = self.paragraphs.par_iter_mut().map(|paragraph| {
-            paragraph.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration))
-        }).find_any(|result| result.is_err());
+        if parsing_configuration.parallelization() {
 
-        if let Some(result) = maybe_failed {
-            return result
+            let maybe_failed = self.paragraphs.par_iter_mut()
+                .map(|paragraph| {
+                    paragraph.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration))
+                })
+                .find_any(|result| result.is_err());
+    
+            if let Some(result) = maybe_failed {
+                return result
+            }
+
+        } else {
+            
+            let maybe_failed = self.paragraphs.iter_mut()
+                .map(|paragraph| {
+                    paragraph.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration))
+                })
+                .find(|result| result.is_err());
+    
+            if let Some(result) = maybe_failed {
+                return result
+            }
         }
 
         Ok(())

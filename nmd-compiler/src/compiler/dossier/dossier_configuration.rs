@@ -108,7 +108,7 @@ impl Default for DossierConfiguration {
 impl DossierConfiguration {
     fn try_from_as_yaml(content: String) -> Result<Self, ResourceError> {
 
-        log::info!("try to load dossier configuration from yaml...");
+        log::debug!("try to load dossier configuration from yaml content...");
         
         match serde_yaml::from_str(&content) {
             Ok(config) => return Ok(config),
@@ -118,7 +118,7 @@ impl DossierConfiguration {
 
     fn try_from_as_json(content: String) -> Result<Self, ResourceError> {
 
-        log::info!("try to load dossier configuration from json...");
+        log::debug!("try to load dossier configuration from json content...");
 
         match serde_json::from_str(&content) {
             Ok(config) => return Ok(config),
@@ -141,6 +141,9 @@ impl TryFrom<&PathBuf> for DossierConfiguration {
                 let file_content = file_utility::read_file_content(path_buf)?;
 
                 if file_name.to_string_lossy().eq(YAML_FILE_NAME) {
+
+                    log::info!("{} found", YAML_FILE_NAME);
+
                     let mut config = Self::try_from_as_yaml(file_content)?;
 
                     config.apply_root_path(path_buf);
@@ -149,6 +152,9 @@ impl TryFrom<&PathBuf> for DossierConfiguration {
                 }
 
                 if file_name.to_string_lossy().eq(JSON_FILE_NAME) {
+
+                    log::info!("{} found", JSON_FILE_NAME);
+
                     let mut config = Self::try_from_as_json(file_content)?;
 
                     config.apply_root_path(path_buf);

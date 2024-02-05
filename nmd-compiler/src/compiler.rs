@@ -46,27 +46,39 @@ impl Compiler {
 
     pub fn compile(compilation_configuration: CompilationConfiguration) -> Result<(), CompilationError> {
 
+        log::info!("start to compile dossier");
+
         let codex = Arc::new(compilation_configuration.codex());
 
         let mut dossier = Dossier::load(Arc::clone(&codex), compilation_configuration.input_location())?;
+
+        log::info!("dossier loaded");
 
         let dossier_configuration = dossier.configuration();
 
         let dossier_theme = dossier_configuration.style().theme().clone();
         
+        log::info!("parsing...");
+
         dossier.parse(Arc::clone(&codex), Arc::new(compilation_configuration.parsing_configuration()))?;
 
         let assembler_configuration = AssemblerConfiguration::new(compilation_configuration.output_location().clone(), dossier_theme);
+
+        log::info!("assembling...");
 
         let assembler = assembler::from(compilation_configuration.format().clone(), assembler_configuration);
 
         let mut artifact = assembler.assemble(*dossier)?;
 
-        Ok(artifact.dump()?)
+        artifact.dump()?;
+
+        log::info!("end to compile dossier");
+
+        Ok(())
     }
 
     pub fn version() -> &'static str {
-        "0.1.0"
+        "0.2.0-alpha"
     }
 }
 

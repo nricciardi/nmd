@@ -19,12 +19,14 @@ pub struct ParsingConfiguration {
 
     metadata: ParsingConfigurationMetadata,
 
-    excluded_modifiers: Modifiers
+    excluded_modifiers: Modifiers,
+
+    parallelization: bool,
 }
 
 impl ParsingConfiguration {
 
-    pub fn new(input_location: PathBuf, output_location: PathBuf, embed_local_image: bool, embed_remote_image: bool, compress_embed_image: bool, strict_image_src_check: bool, metadata: ParsingConfigurationMetadata, modifiers_excluded: Modifiers) -> Self {
+    pub fn new(input_location: PathBuf, output_location: PathBuf, embed_local_image: bool, embed_remote_image: bool, compress_embed_image: bool, strict_image_src_check: bool, metadata: ParsingConfigurationMetadata, excluded_modifiers: Modifiers, parallelization: bool) -> Self {
         Self {
             input_location,
             output_location,
@@ -33,7 +35,8 @@ impl ParsingConfiguration {
             compress_embed_image,
             strict_image_src_check,
             metadata,
-            excluded_modifiers: modifiers_excluded
+            excluded_modifiers,
+            parallelization
         }
     }
 
@@ -67,6 +70,10 @@ impl ParsingConfiguration {
 
     pub fn modifiers_excluded(&self) -> &Modifiers {
         &self.excluded_modifiers
+    }
+
+    pub fn parallelization(&self) -> bool {
+        self.parallelization
     }
 
     pub fn set_input_location(&mut self, new_input_location: PathBuf) {
@@ -105,6 +112,10 @@ impl ParsingConfiguration {
         self.excluded_modifiers = self.excluded_modifiers.clone().add(modifiers_excluded)
     }
 
+    pub fn set_parallelization(&mut self, value: bool) {
+        self.parallelization = value
+    }
+
 }
 
 impl Default for ParsingConfiguration {
@@ -117,7 +128,8 @@ impl Default for ParsingConfiguration {
             compress_embed_image: false,
             strict_image_src_check: false,
             metadata: ParsingConfigurationMetadata::default(),
-            excluded_modifiers: Modifiers::None
+            excluded_modifiers: Modifiers::None,
+            parallelization: false
         }
     }
 }
