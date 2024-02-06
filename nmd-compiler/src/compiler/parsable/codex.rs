@@ -5,6 +5,8 @@ pub mod modifier;
 use std::sync::Arc;
 
 pub use parsing_rule::ParsingRule;
+use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
+use rayon::slice::ParallelSliceMut;
 use regex::Regex;
 use self::modifier::Modifiers;
 pub use self::modifier::{MAX_HEADING_LEVEL, Modifier};
@@ -135,31 +137,38 @@ impl Codex {
 
     pub fn split_str_in_paragraphs(&self, content: &str) -> Result<Vec<Paragraph>, ParagraphError> {
 
-        let mut paragraphs: Vec<Paragraph> = Vec::new();
-        let mut remaining_content = String::from(content);
+        let mut paragraphs: Vec<(usize, usize, Paragraph)> = Vec::new();
+        let mut content = String::from(content);
 
         // work-around to fix paragraph matching end line
-        while !remaining_content.ends_with("\n\n") {
-            remaining_content.push_str("\n");
+        while !content.ends_with("\n\n") {
+            content.push_str("\n");
         }
 
         for modifier in Modifier::paragraph_modifiers() {
             let regex = Regex::new(&modifier.search_pattern()).unwrap();
 
-            let mut matches: Vec<Paragraph> = regex.find_iter(remaining_content.clone().as_str()).map(|m| {
+            regex.find_iter(content.clone().as_str()).for_each(|m| {
+
+                let start = m.start();
+                let end = m.end();
+
+                if paragraphs.par_iter().find_any(|p| p.0 > start && p.1 < end).is_some() {     // => overlap
+                    return
+                }
 
                 let matched_str = m.as_str().to_string();
 
-                remaining_content = remaining_content.replace(&matched_str, "");
+                let paragraph = Paragraph::from(matched_str);
 
-                Paragraph::from(matched_str)
+                paragraphs.push((start, end, paragraph));
 
-            }).collect();
-
-            paragraphs.append(&mut matches);
+            });
         }
 
-        Ok(paragraphs)
+        paragraphs.par_sort_by(|a, b| a.0.cmp(&b.1));
+
+        Ok(paragraphs.iter().map(|p| p.2.to_owned()).collect())
     }
 
     fn new(configuration: CodexConfiguration, content_rules: Vec<Box<dyn ParsingRule>>, paragraph_rules: Vec<Box<dyn ParsingRule>>, chapter_rules: Vec<Box<dyn ParsingRule>>, document_rules: Vec<Box<dyn ParsingRule>>) -> Codex {

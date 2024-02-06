@@ -32,9 +32,9 @@ An example of `nmd.yml` file to create a dossier with 3 documents:
 ```yaml
 name: "new dossier"
 documents:
-  - "./d1.nmd"
-  - "./d2.nmd"
-  - "./d3.nmd"
+  - "./document1.nmd"
+  - "./document2.nmd"
+  - "./document3.nmd"
 ```
 
 Each document path can me absolute or relative (from `nmd.yml`).
