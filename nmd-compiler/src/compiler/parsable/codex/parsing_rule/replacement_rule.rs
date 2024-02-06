@@ -48,7 +48,7 @@ impl ParsingRule for ReplacementRule {
 
         let parsed_content = regex.replace_all(content, self.replacement_pattern.as_str()).to_string();
 
-        log::debug!("result:\n{}", content);
+        log::debug!("result:\n{}", parsed_content);
         
         Ok(ParsingOutcome::new(parsed_content))
     }
@@ -139,5 +139,25 @@ print("hello world")
         let parsed_text = parsing_rule.parse(text_to_parse, Arc::clone(&parsing_configuration)).unwrap();
 
         assert_eq!(parsed_text.parsed_content(), "\n<pre><code class=\"language-python codeblock\">print(\"hello world\")</code></pre>\n");
+    }
+
+    #[test]
+    fn math() {
+        let parsing_configuration = Arc::new(ParsingConfiguration::default());
+
+        let parsing_rule = ReplacementRule::new(Modifier::CodeBlock, String::from(r#"<pre><code class="language-$1 codeblock">$2</code></pre>"#));
+
+        let text_to_parse = r#"
+```python
+
+print("hello world")
+
+```
+"#;
+
+        let parsed_text = parsing_rule.parse(text_to_parse, Arc::clone(&parsing_configuration)).unwrap();
+
+        assert_eq!(parsed_text.parsed_content(), "\n<pre><code class=\"language-python codeblock\">print(\"hello world\")</code></pre>\n");
+     
     }
 }

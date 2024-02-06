@@ -66,7 +66,6 @@ pub enum Modifier {
     Subscript,
     InlineCode,
     InlineMath,
-    InlineMathAlternative,
     Comment,
     Bookmark,
     HeadingGeneralCompactVersion(u32),
@@ -159,12 +158,11 @@ impl Modifier {
                 format!(r"#({})\s+(.*)", level)
             },
             Self::InlineCode => String::from(r"`(.*?)`"),
-            Self::InlineMath => String::from(r#"\$(.{1,}?)\$"#),
-            Self::InlineMathAlternative => String::from(r#"\\\((.{1,}?)\\\)"#),
+            Self::InlineMath => String::from(r#"\$([^$\n]+)\$"#),
 
             Self::CommonParagraph => String::from(r#"(?s:(?m:^(.+?)(?:\n\n|\n$)))"#),
             Self::CodeBlock => String::from(r"```([a-zA-Z]+)\n+(.*?)\n+```"),
-            Self::MathBlock => String::from(r#"\${2}\n{1,}((?s:.*?))\n*\${2}"#),
+            Self::MathBlock => String::from(r#"\$\$((?s:.+?))\$\$"#),
             
             _ => String::from(r"RULE TODO")                                               // TODO
         }

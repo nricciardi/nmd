@@ -21,9 +21,9 @@ To install the NMD compiler, follow these steps:
 
 TODO
 
-### Examples
+### How to use
 
-#### Dossier files example
+#### Create a new dossier
 
 Each dossier must have a *dossier configuration file*. It can be named `nmd.yml` or `nmd.json`.
 
@@ -39,14 +39,23 @@ documents:
 
 Each document path can me absolute or relative (from `nmd.yml`).
 
+#### Generate a new empty dossier using compiler
 
-#### Compile a dossier
+TODO
+
+#### Compile dossier
+
+#### HTML
 
 Build a dossier in `html`:
 
 ```shell
-nmd-compiler compile dossier -f html -i dossier/input/path -o dossier/output/path
+nmd-compiler compile dossier -f html -i dossier/input/path -o output/path
 ```
+
+> In this moment, to render *math block* and *inline math* an Internet connection is needed. This requirement will be removed in future version.
+
+
 
 ## Features
 
@@ -54,6 +63,7 @@ nmd-compiler compile dossier -f html -i dossier/input/path -o dossier/output/pat
 
 - [x] Use file name instead of absolute path in dossier configuration
 - [ ] Possibility to use a different dossier configuration name
+- [ ] Local math (no CDN)
 
 ### Features in Progress
 
