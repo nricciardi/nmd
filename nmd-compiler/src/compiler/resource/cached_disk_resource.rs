@@ -128,4 +128,8 @@ impl Resource for CachedDiskResource {
     fn location(&self) -> &Self::LocationType {
         &self.location
     }
+
+    fn erase(&mut self) -> Result<(), ResourceError> {
+        self.shadow_resource.erase()
+    }
 }

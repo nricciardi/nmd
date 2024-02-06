@@ -109,6 +109,14 @@ impl Resource for DiskResource {
             Err(err) => Err(ResourceError::ReadError(format!("error during read content of {}: {}", self.to_string(), err.to_string())))
         }
     }
+
+    fn erase(&mut self) -> Result<(), ResourceError> {
+        if self.location.exists() {
+            return Ok(fs::remove_file(self.location.clone())?)
+        }
+
+        Ok(())
+    }
 }
 
 

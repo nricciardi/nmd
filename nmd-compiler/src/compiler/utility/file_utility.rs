@@ -1,5 +1,5 @@
-use std::fs::File;
-use std::io::{self, Read};
+use std::fs::{self, File};
+use std::io::{self, Read, Write};
 use std::path::{Path, PathBuf};
 
 
@@ -18,4 +18,15 @@ pub fn read_file_content(file_pathbuf: &PathBuf) -> Result<String, io::Error> {
 pub fn is_file_path(s: &str) -> bool {
     
     Path::new(s).is_absolute() || Path::new(s).is_relative()
+}
+
+pub fn create_directory(path: &PathBuf) -> Result<(), io::Error> {
+   fs::create_dir(path)
+}
+
+pub fn create_empty_file(file_path: &PathBuf) -> Result<(), io::Error> {
+
+    let mut file = File::create(&file_path)?;
+
+    file.write_all(b"")
 }

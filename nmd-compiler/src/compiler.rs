@@ -1,13 +1,13 @@
 pub mod compilation_configuration;
 mod parsable;
-mod dossier;
+pub mod dossier;
 pub mod output_format;
 pub mod resource;
 mod loadable;
 mod assembler;
 pub mod dumpable;
 pub mod artifact;
-mod utility;
+pub mod utility;
 pub mod theme;
 
 use std::sync::Arc;
@@ -44,7 +44,7 @@ pub struct Compiler {
 
 impl Compiler {
 
-    pub fn compile(compilation_configuration: CompilationConfiguration) -> Result<(), CompilationError> {
+    pub fn compile_dossier(compilation_configuration: CompilationConfiguration) -> Result<(), CompilationError> {
 
         log::info!("start to compile dossier");
 
@@ -90,7 +90,7 @@ mod test {
     use super::*;
 
     #[test]
-    fn compile() {
+    fn compile_dossier() {
 
         let project_directory = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
         let dossier_dir = "nmd-test-dossier-1";
@@ -100,7 +100,7 @@ mod test {
 
         let compilation_configuration = CompilationConfiguration::new(output_format::OutputFormat::Html, nmd_dossier_path.clone(), nmd_dossier_path.clone());
 
-        Compiler::compile(compilation_configuration).unwrap()
+        Compiler::compile_dossier(compilation_configuration).unwrap()
     }
 
 }

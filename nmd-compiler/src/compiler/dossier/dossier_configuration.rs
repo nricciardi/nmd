@@ -3,7 +3,7 @@ mod dossier_configuration_metadata;
 
 use std::path::{PathBuf, MAIN_SEPARATOR_STR};
 
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use log;
 
 use crate::compiler::{resource::ResourceError, utility::file_utility};
@@ -11,10 +11,12 @@ use crate::compiler::{resource::ResourceError, utility::file_utility};
 use self::{dossier_configuration_metadata::DossierConfigurationMetadata, dossier_configuration_style::DossierConfigurationStyle};
 
 
+pub const YAML_FILE_NAME: &str = "nmd.yml";
+pub const JSON_FILE_NAME: &str = "nmd.json";
 
 
 #[allow(dead_code)]
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct DossierConfiguration {
     #[serde(default = "default_name")]
     name: String,
@@ -131,9 +133,6 @@ impl TryFrom<&PathBuf> for DossierConfiguration {
     type Error = ResourceError;
 
     fn try_from(path_buf: &PathBuf) -> Result<Self, Self::Error> {
-
-        const YAML_FILE_NAME: &str = "nmd.yml";
-        const JSON_FILE_NAME: &str = "nmd.json";
 
         if path_buf.is_file() {
             if let Some(file_name) = path_buf.file_name() {

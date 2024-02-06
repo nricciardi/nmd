@@ -35,6 +35,8 @@ pub trait Resource: FromStr {
 
     fn write(&mut self, content: &str) -> Result<(), ResourceError>;
 
+    fn erase(&mut self) -> Result<(), ResourceError>;
+
     fn append(&mut self, content: &str) -> Result<(), ResourceError>;
 
     fn read(&self) -> Result<String, ResourceError>;

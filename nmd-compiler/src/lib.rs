@@ -1,10 +1,12 @@
 pub mod compiler;
+pub mod generator;
 
 use std::{path::PathBuf, str::FromStr};
 
 use clap::{error, Arg, ArgAction, Command};
-use compiler::{output_format::OutputFormatError, CompilationError};
+use compiler::{output_format::OutputFormatError, resource::ResourceError, CompilationError};
 pub use compiler::Compiler;
+use generator::{generator_configuration::{self, GeneratorConfiguration}, Generator};
 use log::{LevelFilter, ParseLevelError};
 use thiserror::Error;
 use simple_logger::SimpleLogger;
@@ -25,6 +27,9 @@ pub enum CompilerCliError {
 
     #[error(transparent)]
     VerboseLevelError(#[from] ParseLevelError),
+
+    #[error(transparent)]
+    ResourceError(#[from] ResourceError),
 }
 
 
@@ -88,6 +93,59 @@ impl CompilerCli {
 
                                 )
                                 
+                )
+                .subcommand(
+                    Command::new("generate")
+                        .about("Generate a new NMD resource")
+                        .short_flag('g')
+                        .subcommand_required(true)
+                                .subcommand(
+                                    Command::new("dossier")
+                                        .about("Generate a new NMD dossier")
+                                        .short_flag('d')
+                                        .arg(
+                                            Arg::new("input-path")
+                                            .short('i')
+                                            .long("input-path")
+                                            .help("input path")
+                                            .action(ArgAction::Set)
+                                            .num_args(1)
+                                            .required(true)
+
+                                        )
+                                        .arg(
+                                            Arg::new("force")
+                                            .short('f')
+                                            .long("force")
+                                            .help("force generation")
+                                            .action(ArgAction::SetTrue)
+
+                                        )
+                                        .arg(
+                                            Arg::new("gitkeep")
+                                            .short('k')
+                                            .long("gitkeep")
+                                            .help("add .gitkeep file")
+                                            .action(ArgAction::SetFalse)
+
+                                        )
+                                        .arg(
+                                            Arg::new("welcome")
+                                            .short('w')
+                                            .long("welcome")
+                                            .help("add welcome page")
+                                            .action(ArgAction::SetTrue)
+
+                                        )
+                                        .arg(
+                                            Arg::new("verbose")
+                                                .short('v')
+                                                .long("verbose")
+                                                .action(ArgAction::Set)
+                                                .default_value("info")
+                                        )
+
+                                )
                 );
 
         Self {
@@ -104,14 +162,14 @@ impl CompilerCli {
                 match compile_matches.subcommand() {
                     Some(("dossier", compile_dossier_matches)) => {
 
-                        if let Some(mut format) = compile_dossier_matches.get_many::<String>("verbose") {
+                        if let Some(mut verbose) = compile_dossier_matches.get_many::<String>("verbose") {
                             
-                            if format.len() != 1 {
+                            if verbose.len() != 1 {
                                 return Err(CompilerCliError::MoreThanOneValue("verbose".to_string()));
                             }
                             
                             
-                            let log_level = LevelFilter::from_str(format.nth(0).unwrap())?;
+                            let log_level = LevelFilter::from_str(verbose.nth(0).unwrap())?;
 
                             Self::set_logger(log_level);
                         }
@@ -155,10 +213,51 @@ impl CompilerCli {
                         }
 
 
-                        Ok(Compiler::compile(compilation_configuration)?)
+                        Ok(Compiler::compile_dossier(compilation_configuration)?)
 
                     },
 
+                    _ => unreachable!()
+                }
+            },
+
+            Some(("generate", generate_matches)) => {
+
+                match generate_matches.subcommand() {
+                    Some(("dossier", generate_dossier_matches)) => {
+
+                        if let Some(mut format) = generate_dossier_matches.get_many::<String>("verbose") {
+                            
+                            if format.len() != 1 {
+                                return Err(CompilerCliError::MoreThanOneValue("verbose".to_string()));
+                            }
+                            
+                            
+                            let log_level = LevelFilter::from_str(format.nth(0).unwrap())?;
+        
+                            Self::set_logger(log_level);
+                        }
+
+                        let mut generator_configuration = GeneratorConfiguration::default();
+
+                        if let Some(mut input_path) = generate_dossier_matches.get_many::<String>("input-path") {
+                            
+                            if input_path.len() != 1 {
+                                return Err(CompilerCliError::MoreThanOneValue("input-path".to_string()));
+                            }
+                            
+                            
+                            let input_path = PathBuf::from(input_path.nth(0).unwrap());
+
+                            generator_configuration.set_input_path(input_path);
+                        }
+
+                        generator_configuration.set_force_generation(generate_dossier_matches.get_flag("force"));
+                        generator_configuration.set_gitkeep(generate_dossier_matches.get_flag("gitkeep"));
+                        generator_configuration.set_welcome(generate_dossier_matches.get_flag("welcome"));
+                        
+                        Ok(Generator::generate_dossier(generator_configuration)?)
+                    },
                     _ => unreachable!()
                 }
             },
