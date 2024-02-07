@@ -1,4 +1,4 @@
-use crate::compiler::resource::disk_resource::DiskResource;
+use crate::resource::disk_resource::DiskResource;
 
 
 #[derive(Debug)]

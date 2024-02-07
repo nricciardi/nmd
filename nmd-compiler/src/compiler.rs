@@ -2,12 +2,10 @@ pub mod compilation_configuration;
 mod parsable;
 pub mod dossier;
 pub mod output_format;
-pub mod resource;
 mod loadable;
 mod assembler;
 pub mod dumpable;
 pub mod artifact;
-pub mod utility;
 pub mod theme;
 
 use std::sync::Arc;
@@ -77,9 +75,9 @@ impl Compiler {
         Ok(())
     }
 
-    pub fn version() -> &'static str {
-        "0.2.1-alpha"
-    }
+    // pub fn version() -> &'static str {
+        
+    // }
 }
 
 #[cfg(test)]

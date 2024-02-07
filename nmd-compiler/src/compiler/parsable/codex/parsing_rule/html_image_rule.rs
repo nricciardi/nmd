@@ -3,7 +3,8 @@ use std::{path::PathBuf, sync::Arc};
 use log;
 use regex::{Regex, Captures};
 
-use crate::compiler::{parsable::ParsingConfiguration, resource::{image::Image, remote_resource::RemoteResource}, utility::file_utility::is_file_path};
+use crate::resource::{image::Image, remote_resource::RemoteResource};
+use crate::compiler::parsable::ParsingConfiguration;
 
 use super::{Modifier, ParsingRule, parsing_outcome::{ParsingOutcome, ParsingError}};
 

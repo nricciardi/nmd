@@ -1,18 +1,22 @@
 pub mod compiler;
+pub mod resource;
 pub mod generator;
+mod utility;
 
 use std::{path::PathBuf, str::FromStr};
 
 use clap::{error, Arg, ArgAction, Command};
-use compiler::{output_format::OutputFormatError, resource::ResourceError, CompilationError};
+use compiler::{output_format::OutputFormatError, CompilationError};
 pub use compiler::Compiler;
 use generator::{generator_configuration::{self, GeneratorConfiguration}, Generator};
 use log::{LevelFilter, ParseLevelError};
+use resource::ResourceError;
 use thiserror::Error;
 use simple_logger::SimpleLogger;
 
 use crate::compiler::{compilation_configuration::CompilationConfiguration, output_format::OutputFormat};
 
+pub const VERSION: &str = "0.2.2-alpha";
 
 #[derive(Error, Debug)]
 pub enum CompilerCliError {
@@ -43,7 +47,7 @@ impl CompilerCli {
 
         let cli: Command = Command::new("nmd-compiler")
                 .about("Official compiler to parse NMD")
-                .version(Compiler::version())
+                .version(VERSION)
                 .subcommand_required(true)
                 .arg_required_else_help(true)
                 .subcommand(

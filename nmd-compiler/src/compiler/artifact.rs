@@ -5,11 +5,12 @@ use std::path::PathBuf;
 use rayon::iter::{IntoParallelRefMutIterator, ParallelIterator};
 use thiserror::Error;
 
-use crate::compiler::resource::Resource;
+
+use crate::resource::{cached_disk_resource::CachedDiskResource, Resource, ResourceError};
 
 use self::artifact_assets::ArtifactAssets;
 
-use super::{dumpable::{Dumpable, DumpError}, resource::{ResourceError, cached_disk_resource::CachedDiskResource}};
+use super::dumpable::{Dumpable, DumpError};
 
 
 #[derive(Error, Debug)]

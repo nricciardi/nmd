@@ -6,7 +6,8 @@ use std::path::{PathBuf, MAIN_SEPARATOR_STR};
 use serde::{Deserialize, Serialize};
 use log;
 
-use crate::compiler::{resource::ResourceError, utility::file_utility};
+use crate::resource::ResourceError;
+use crate::utility::file_utility;
 
 use self::{dossier_configuration_metadata::DossierConfigurationMetadata, dossier_configuration_style::DossierConfigurationStyle};
 

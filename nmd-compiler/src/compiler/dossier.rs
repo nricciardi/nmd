@@ -7,10 +7,10 @@ pub use document::{Document, DocumentError};
 use rayon::{iter::{IntoParallelRefMutIterator, ParallelIterator}, slice::IterMut};
 use thiserror::Error;
 
-use crate::compiler::parsable::Parsable;
+use crate::{compiler::parsable::Parsable, resource::ResourceError};
 use self::dossier_configuration::DossierConfiguration;
 
-use super::{loadable::{Loadable, LoadError}, parsable::{ParsingConfiguration, ParsingError, codex::Codex}, resource::ResourceError};
+use super::{loadable::{Loadable, LoadError}, parsable::{ParsingConfiguration, ParsingError, codex::Codex}};
 
 
 #[derive(Error, Debug)]

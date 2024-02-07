@@ -2,7 +2,9 @@ use std::{io, sync::Arc};
 
 use thiserror::Error;
 
-use super::{parsable::codex::Codex, resource::ResourceError};
+use crate::resource::ResourceError;
+
+use super::parsable::codex::Codex;
 
 
 #[derive(Error, Debug)]

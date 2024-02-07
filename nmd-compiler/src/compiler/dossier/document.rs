@@ -14,8 +14,8 @@ use crate::compiler::parsable::codex::{Modifier, Codex};
 use crate::compiler::parsable::{ParsingError, Parsable};
 use crate::compiler::parsable::parsing_configuration::ParsingConfiguration;
 use crate::compiler::loadable::{Loadable, LoadError};
-use crate::compiler::resource::disk_resource::DiskResource;
-use crate::compiler::resource::{Resource, ResourceError};
+use crate::resource::disk_resource::DiskResource;
+use crate::resource::{Resource, ResourceError};
 
 pub use self::chapter::Paragraph;
 use self::chapter::chapter_builder::{ChapterBuilder, ChapterBuilderError};

@@ -2,8 +2,9 @@ pub mod generator_configuration;
 
 use std::{fs, path::PathBuf};
 use self::generator_configuration::GeneratorConfiguration;
-use crate::compiler::{dossier::dossier_configuration::{self, DossierConfiguration}, resource::{disk_resource::{self, DiskResource}, Resource, ResourceError}, utility::file_utility};
+use crate::{compiler::dossier::dossier_configuration::{self, DossierConfiguration}, resource::{disk_resource::DiskResource, Resource, ResourceError}, utility::file_utility};
 
+pub const WELCOME_FILE_NAME: &str = "welcome.nmd";
 
 pub struct Generator {
 }
@@ -57,7 +58,18 @@ impl Generator {
             file_utility::create_empty_file(&assets_path.join("styles").join(".gitkeep"))?;
         }
 
-        let dossier_configuration = DossierConfiguration::default();
+        let mut dossier_configuration = DossierConfiguration::default();
+
+        if configuration.welcome() {
+
+            log::info!("add welcome...");
+
+            let mut welcome_document = DiskResource::try_from(configuration.input_path().join(WELCOME_FILE_NAME))?;
+
+            welcome_document.write("Welcome in NMD!")?;
+
+            dossier_configuration.set_documents(vec![WELCOME_FILE_NAME.to_string()]);
+        }
 
         let yaml_string = serde_yaml::to_string(&dossier_configuration).unwrap();
 
@@ -65,7 +77,7 @@ impl Generator {
 
         if configuration.force_generation() {
             disk_resource.erase()?;
-        }
+        }       
 
         log::info!("add {}", dossier_configuration::YAML_FILE_NAME);
         disk_resource.write(&yaml_string)?;
