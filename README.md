@@ -41,7 +41,13 @@ Each document path can me absolute or relative (from `nmd.yml`).
 
 #### Generate a new empty dossier using compiler
 
-TODO
+To generate a new NMD dossier:
+
+```shell
+nmd-compiler generate dossier -p new/dossier/path
+```
+
+You can add a `welcome.nmd` page using `-w`, add `.gitkeep` using `-k` and force directory creation using `-f`.
 
 #### Compile dossier
 
@@ -50,7 +56,7 @@ TODO
 Build a dossier in `html`:
 
 ```shell
-nmd-compiler compile dossier -f html -i dossier/input/path -o output/path
+nmd-compiler compile dossier -f html -i dossier/input/path -o artifact/output/path
 ```
 
 > In this moment, to render *math block* and *inline math* an Internet connection is needed. This requirement will be removed in future version.
@@ -61,13 +67,19 @@ nmd-compiler compile dossier -f html -i dossier/input/path -o output/path
 
 ### Planned Features
 
-- [x] Use file name instead of absolute path in dossier configuration
+- [ ] All modifiers
 - [ ] Possibility to use a different dossier configuration name
-- [ ] Local math (no CDN)
 
 ### Features in Progress
 
-TODO
+- [x] Use file name instead of absolute path in dossier configuration
+- [ ] Local math (no CDN)
+- [ ] Other sections in dossier configuration to manage all options
+- [ ] Base page style
+- [ ] Paper format support (A4, A5, ...)
+- [ ] Custom style
+- [ ] PDF compile format
+- [ ] Table
 
 
 ## Author
