@@ -16,7 +16,7 @@ use simple_logger::SimpleLogger;
 
 use crate::compiler::{compilation_configuration::CompilationConfiguration, output_format::OutputFormat};
 
-pub const VERSION: &str = "0.2.3-alpha";
+pub const VERSION: &str = "0.3.1-alpha";
 
 #[derive(Error, Debug)]
 pub enum CompilerCliError {
@@ -108,10 +108,10 @@ impl CompilerCli {
                                         .about("Generate a new NMD dossier")
                                         .short_flag('d')
                                         .arg(
-                                            Arg::new("input-path")
-                                            .short('i')
-                                            .long("input-path")
-                                            .help("input path")
+                                            Arg::new("path")
+                                            .short('p')
+                                            .long("path")
+                                            .help("destination path")
                                             .action(ArgAction::Set)
                                             .num_args(1)
                                             .required(true)
@@ -244,16 +244,16 @@ impl CompilerCli {
 
                         let mut generator_configuration = GeneratorConfiguration::default();
 
-                        if let Some(mut input_path) = generate_dossier_matches.get_many::<String>("input-path") {
+                        if let Some(mut input_path) = generate_dossier_matches.get_many::<String>("path") {
                             
                             if input_path.len() != 1 {
-                                return Err(CompilerCliError::MoreThanOneValue("input-path".to_string()));
+                                return Err(CompilerCliError::MoreThanOneValue("path".to_string()));
                             }
                             
                             
                             let input_path = PathBuf::from(input_path.nth(0).unwrap());
 
-                            generator_configuration.set_input_path(input_path);
+                            generator_configuration.set_path(input_path);
                         }
 
                         generator_configuration.set_force_generation(generate_dossier_matches.get_flag("force"));

@@ -60,7 +60,10 @@ impl Compiler {
 
         dossier.parse(Arc::clone(&codex), Arc::new(compilation_configuration.parsing_configuration()))?;
 
-        let assembler_configuration = AssemblerConfiguration::new(compilation_configuration.output_location().clone(), dossier_theme);
+        let mut assembler_configuration = AssemblerConfiguration::default();
+
+        assembler_configuration.set_output_location(compilation_configuration.output_location().clone());
+        assembler_configuration.set_theme(dossier_theme);
 
         log::info!("assembling...");
 

@@ -12,13 +12,13 @@ pub struct Generator {
 impl Generator {
     pub fn generate_dossier(configuration: GeneratorConfiguration) -> Result<(), ResourceError> {
         
-        if configuration.input_path().exists() {
+        if configuration.path().exists() {
 
-            if !configuration.input_path().is_dir() {
+            if !configuration.path().is_dir() {
                 return Err(ResourceError::InvalidResourceVerbose("not a directory".to_string()))
             }
 
-            if let Ok(entries) = fs::read_dir(&configuration.input_path()) {
+            if let Ok(entries) = fs::read_dir(&configuration.path()) {
                 if entries.count() != 0 && !configuration.force_generation() {
                     return Err(ResourceError::InvalidResourceVerbose("directory not empty, try to use force option".to_string()))
                 }
@@ -28,15 +28,15 @@ impl Generator {
 
         } else {
             if !configuration.force_generation() {
-                return Err(ResourceError::ResourceNotFound(configuration.input_path().to_string_lossy().to_string()))
+                return Err(ResourceError::ResourceNotFound(configuration.path().to_string_lossy().to_string()))
             }
 
-            if let Err(err) = fs::create_dir_all(&configuration.input_path()) {
+            if let Err(err) = fs::create_dir_all(&configuration.path()) {
                 return Err(ResourceError::ReadError(err.to_string()))
             }
         }
 
-        let assets_path = configuration.input_path().join("assets");
+        let assets_path = configuration.path().join("assets");
 
         if assets_path.exists() && configuration.force_generation() {
             fs::remove_dir_all(assets_path.clone())?;
@@ -64,22 +64,25 @@ impl Generator {
 
             log::info!("add welcome...");
 
-            let mut welcome_document = DiskResource::try_from(configuration.input_path().join(WELCOME_FILE_NAME))?;
+            let mut welcome_document = DiskResource::try_from(configuration.path().join(WELCOME_FILE_NAME))?;
 
             welcome_document.write("Welcome in NMD!")?;
 
-            dossier_configuration.set_documents(vec![WELCOME_FILE_NAME.to_string()]);
+            let mut path = "./".to_string();
+            path.push_str(WELCOME_FILE_NAME);
+            
+            dossier_configuration.set_documents(vec![path]);
         }
 
         let yaml_string = serde_yaml::to_string(&dossier_configuration).unwrap();
 
-        let mut disk_resource = DiskResource::try_from(configuration.input_path().join(dossier_configuration::YAML_FILE_NAME))?;
+        let mut disk_resource = DiskResource::try_from(configuration.path().join(dossier_configuration::YAML_FILE_NAME))?;
 
         if configuration.force_generation() {
             disk_resource.erase()?;
         }       
 
-        log::info!("add {}", dossier_configuration::YAML_FILE_NAME);
+        log::info!("add dossier configuration file: '{}'", dossier_configuration::YAML_FILE_NAME);
         disk_resource.write(&yaml_string)?;
 
         Ok(())

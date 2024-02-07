@@ -27,48 +27,85 @@ impl Assembler for HtmlAssembler {
 
         let mut page = HtmlPage::new()
                                 .with_title(dossier.name())
-                                .with_meta(vec![("charset", "utf-8")])
+                                .with_meta(vec![("charset", "utf-8")]);
 
-                                // add math block js/css
-                                .with_head_link_attr("https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css", "stylesheet", [
-                                    ("integrity", "sha384-n8MVd4RsNIU0tAv4ct0nTaAbDJwPJzDEaqSD1odI+WdtXRGWt2kTvGFasHpSy3SV"),
-                                    ("crossorigin", "anonymous")
-                                ])
-                                .with_script_link_attr("https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js", [
-                                    ("integrity", "sha384-XjKyOOlGwcjNTAIQHIpgOno0Hl1YQqzUOEleOLALmuqehneUG+vnGctmUb0ZY0l8"),
-                                    ("crossorigin", "anonymous")
-                                ])
-                                .with_script_link_attr("https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js", [
-                                    ("integrity", "sha384-+VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4+/RRE05"),
-                                    ("crossorigin", "anonymous")
-                                ]);
+        if self.configuration.use_remote_addons() {
 
-        page.add_script_literal(r#"
-document.addEventListener("DOMContentLoaded", function() {
-    renderMathInElement(document.body, {
-        
-        delimiters: [
-            {left: '$$', right: '$$', display: true},
-            {left: '$', right: '$', display: false},
-        ],
-        
-        throwOnError : false
-    });
-});"#);
+            // add code block js/css
+            match self.configuration.theme() {
+                crate::compiler::theme::Theme::Light => {
+                    page = page
+                        .with_script_link_attr("https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js", [
+                            ("crossorigin", "anonymous"),
+                        ])
+                        .with_script_link_attr("https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js", [
+                            ("crossorigin", "anonymous"),
+                        ])
+                        .with_head_link("https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.css", "stylesheet");
+                    
+                },
+                crate::compiler::theme::Theme::Dark => {
+                    page = page
+                        .with_script_link_attr("https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js", [
+                            ("crossorigin", "anonymous"),
+                        ])
+                        .with_script_link_attr("https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js", [
+                            ("crossorigin", "anonymous"),
+                        ])
+                        .with_head_link("https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-okaidia.css", "stylesheet");
+                },
+            }
 
-        // page.add_script_literal(include_str!("html_assembler/math_block/mathjax.min.js"));
+            page = page
+                    // add math block js/css
+                    .with_head_link_attr("https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css", "stylesheet", [
+                        ("integrity", "sha384-n8MVd4RsNIU0tAv4ct0nTaAbDJwPJzDEaqSD1odI+WdtXRGWt2kTvGFasHpSy3SV"),
+                        ("crossorigin", "anonymous")
+                    ])
+                    .with_script_link_attr("https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js", [
+                        ("integrity", "sha384-XjKyOOlGwcjNTAIQHIpgOno0Hl1YQqzUOEleOLALmuqehneUG+vnGctmUb0ZY0l8"),
+                        ("crossorigin", "anonymous")
+                    ])
+                    .with_script_link_attr("https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js", [
+                        ("integrity", "sha384-+VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4+/RRE05"),
+                        ("crossorigin", "anonymous")
+                    ]);
 
-        // add code block js/css                        
-        match self.configuration.theme() {
-            crate::compiler::theme::Theme::Light => {
-                page.add_style(include_str!("html_assembler/code_block/light_theme/code_block.css"));
-                page.add_script_literal(include_str!("html_assembler/code_block/light_theme/code_block.js"));
-            },
-            crate::compiler::theme::Theme::Dark => {
-                page.add_style(include_str!("html_assembler/code_block/dark_theme/code_block.css"));
-                page.add_script_literal(include_str!("html_assembler/code_block/dark_theme/code_block.js"));
-            },
+            page.add_script_literal(r#"
+                    document.addEventListener("DOMContentLoaded", function() {
+                        renderMathInElement(document.body, {
+                            
+                            delimiters: [
+                                {left: '$$', right: '$$', display: true},
+                                {left: '$', right: '$', display: false},
+                            ],
+                            
+                            throwOnError : false
+                        });
+                    });"#);
+        } else {
+
+            // TODO!!!!
+            // page.add_script_literal(include_str!("html_assembler/math_block/mathjax.min.js"));
+
+            // add code block js/css                        
+            match self.configuration.theme() {
+                crate::compiler::theme::Theme::Light => {
+                    page.add_style(include_str!("html_assembler/code_block/light_theme/prismjs.min.css"));
+                    page.add_script_literal(include_str!("html_assembler/code_block/light_theme/prismjs.min.js"));
+                },
+                crate::compiler::theme::Theme::Dark => {
+                    page.add_style(include_str!("html_assembler/code_block/dark_theme/prismjs.min.css"));
+                    page.add_script_literal(include_str!("html_assembler/code_block/dark_theme/prismjs.min.js"));
+                },
+            }
         }
+
+                                
+
+        
+
+        
 
         
 

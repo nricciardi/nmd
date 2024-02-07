@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 
 pub struct GeneratorConfiguration {
-    input_path: PathBuf,
+    path: PathBuf,
     force_generation: bool,
     welcome: bool,
     gitkeep: bool
@@ -9,21 +9,21 @@ pub struct GeneratorConfiguration {
 
 
 impl GeneratorConfiguration {
-    pub fn new(input_path: PathBuf, force_generation: bool, welcome: bool, gitkeep: bool) -> Self {
+    pub fn new(path: PathBuf, force_generation: bool, welcome: bool, gitkeep: bool) -> Self {
         GeneratorConfiguration {
-            input_path,
+            path,
             force_generation,
             welcome,
             gitkeep
         }
     }
 
-    pub fn input_path(&self) -> &PathBuf {
-        &self.input_path
+    pub fn path(&self) -> &PathBuf {
+        &self.path
     }
 
-    pub fn set_input_path(&mut self, new_input_path: PathBuf) {
-        self.input_path = new_input_path;
+    pub fn set_path(&mut self, new_input_path: PathBuf) {
+        self.path = new_input_path;
     }
 
     pub fn force_generation(&self) -> bool {
@@ -54,7 +54,7 @@ impl GeneratorConfiguration {
 impl Default for GeneratorConfiguration {
     fn default() -> Self {
         Self {
-            input_path: Default::default(),
+            path: Default::default(),
             force_generation: Default::default(),
             welcome: Default::default(),
             gitkeep: Default::default()

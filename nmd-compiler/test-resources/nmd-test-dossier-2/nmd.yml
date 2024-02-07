@@ -1,5 +1,6 @@
 name: New Dossier
-documents: []
+documents:
+- ./welcome.nmd
 style:
   theme: Light
   addons: []
