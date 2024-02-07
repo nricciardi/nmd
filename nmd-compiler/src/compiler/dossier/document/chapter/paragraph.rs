@@ -23,6 +23,10 @@ impl Paragraph {
     pub fn content(&self) -> &String {
         &self.content
     }
+
+    pub fn contains_only_newlines(&self) -> bool {
+        self.content.chars().all(|c| c == '\n')
+    }
 }
 
 impl Clone for Paragraph {

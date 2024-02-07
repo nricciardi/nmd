@@ -126,7 +126,7 @@ impl CompilerCli {
                                             .short('k')
                                             .long("gitkeep")
                                             .help("add .gitkeep file")
-                                            .action(ArgAction::SetFalse)
+                                            .action(ArgAction::SetTrue)
 
                                         )
                                         .arg(

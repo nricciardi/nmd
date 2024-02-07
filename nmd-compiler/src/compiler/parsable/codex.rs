@@ -161,7 +161,9 @@ impl Codex {
 
                 let paragraph = Paragraph::from(matched_str);
 
-                paragraphs.push((start, end, paragraph));
+                if !paragraph.contains_only_newlines() {
+                    paragraphs.push((start, end, paragraph));
+                }
 
             });
         }

@@ -5,6 +5,8 @@ use std::path::PathBuf;
 use rayon::iter::{IntoParallelRefMutIterator, ParallelIterator};
 use thiserror::Error;
 
+use crate::compiler::resource::Resource;
+
 use self::artifact_assets::ArtifactAssets;
 
 use super::{dumpable::{Dumpable, DumpError}, resource::{ResourceError, cached_disk_resource::CachedDiskResource}};
@@ -63,9 +65,12 @@ impl Artifact {
 impl Dumpable for Artifact {
     fn dump(&mut self) -> Result<(), DumpError> {
 
-        log::info!("dump artifact...");
+        log::info!("dump artifact...",);
 
         Ok(self.documents.par_iter_mut().for_each(|document| {
+
+            log::info!("dump document in {:?}", document.location());
+
             document.dump_cached_content().unwrap()         // TODO: handle errors
         }))
     }
