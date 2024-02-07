@@ -1,7 +1,7 @@
 # NMD (New MarkDown) Compiler
 
 [![License](https://img.shields.io/badge/license-GPL3-green.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v0.0.1-blue.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-v0.3.1-blue.svg)](CHANGELOG.md)
 
 ## Overview
 
