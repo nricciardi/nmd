@@ -1,5 +1,6 @@
 mod dossier_configuration_style;
 mod dossier_configuration_metadata;
+mod dossier_configuration_compilation;
 
 use std::path::{PathBuf, MAIN_SEPARATOR_STR};
 
@@ -9,7 +10,7 @@ use log;
 use crate::resource::ResourceError;
 use crate::utility::file_utility;
 
-use self::{dossier_configuration_metadata::DossierConfigurationMetadata, dossier_configuration_style::DossierConfigurationStyle};
+use self::{dossier_configuration_compilation::DossierConfigurationCompilation, dossier_configuration_metadata::DossierConfigurationMetadata, dossier_configuration_style::DossierConfigurationStyle};
 
 
 pub const YAML_FILE_NAME: &str = "nmd.yml";
@@ -29,6 +30,9 @@ pub struct DossierConfiguration {
 
     #[serde(default = "default_metadata")]
     metadata: DossierConfigurationMetadata,
+
+    #[serde(default = "default_compilation")]
+    compilation: DossierConfigurationCompilation,
 }
 
 fn default_name() -> String {
@@ -43,17 +47,21 @@ fn default_metadata() -> DossierConfigurationMetadata {
     DossierConfigurationMetadata::default()
 }
 
+fn default_compilation() -> DossierConfigurationCompilation {
+    DossierConfigurationCompilation::default()
+}
 
 
 #[allow(dead_code)]
 impl DossierConfiguration {
 
-    pub fn new(name: String, documents: Vec<String>, style: DossierConfigurationStyle, metadata: DossierConfigurationMetadata) -> Self {
+    pub fn new(name: String, documents: Vec<String>, style: DossierConfigurationStyle, metadata: DossierConfigurationMetadata, compilation: DossierConfigurationCompilation) -> Self {
         Self {
             name,
             documents,
             style,
-            metadata
+            metadata,
+            compilation
         }
     }
 
@@ -71,6 +79,10 @@ impl DossierConfiguration {
 
     pub fn style(&self) -> &DossierConfigurationStyle {
         &self.style
+    }
+
+    pub fn compilation(&self) -> &DossierConfigurationCompilation {
+        &self.compilation
     }
 
     pub fn apply_root_path(&mut self, root_path: &PathBuf) -> () {
@@ -101,8 +113,9 @@ impl Default for DossierConfiguration {
         Self {
             name: String::from("New Dossier"),
             documents: vec![],          // TODO: all .nmd file in running directory
-            style: DossierConfigurationStyle::default(),              // TODO: default style
+            style: DossierConfigurationStyle::default(),
             metadata: DossierConfigurationMetadata::default(),
+            compilation: DossierConfigurationCompilation::default()
         }
     }
 }

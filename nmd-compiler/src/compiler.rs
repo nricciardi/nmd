@@ -42,7 +42,7 @@ pub struct Compiler {
 
 impl Compiler {
 
-    pub fn compile_dossier(compilation_configuration: CompilationConfiguration) -> Result<(), CompilationError> {
+    pub fn compile_dossier(mut compilation_configuration: CompilationConfiguration) -> Result<(), CompilationError> {
 
         log::info!("start to compile dossier");
 
@@ -54,13 +54,17 @@ impl Compiler {
 
         let dossier_configuration = dossier.configuration();
 
+        compilation_configuration.merge_dossier_configuration(dossier_configuration);
+
+        log::info!("will use dossier configuration:\n\n{:#?}\n", dossier_configuration);
+
+        let mut assembler_configuration = AssemblerConfiguration::from(dossier_configuration.clone());
+
         let dossier_theme = dossier_configuration.style().theme().clone();
         
         log::info!("parsing...");
 
         dossier.parse(Arc::clone(&codex), Arc::new(compilation_configuration.parsing_configuration()))?;
-
-        let mut assembler_configuration = AssemblerConfiguration::default();
 
         assembler_configuration.set_output_location(compilation_configuration.output_location().clone());
         assembler_configuration.set_theme(dossier_theme);

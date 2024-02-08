@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use crate::compiler::theme::Theme;
+use crate::compiler::{dossier::dossier_configuration::{self, DossierConfiguration}, theme::Theme};
 
 #[derive(Debug)]
 pub struct AssemblerConfiguration {
@@ -50,6 +50,16 @@ impl Default for AssemblerConfiguration {
             output_location: Default::default(),
             theme: Theme::default(),
             use_remote_addons: false
+        }
+    }
+}
+
+impl From<DossierConfiguration> for AssemblerConfiguration {
+    fn from(dossier_configuration: DossierConfiguration) -> Self {
+        Self {
+            theme: dossier_configuration.style().theme().clone(),
+            use_remote_addons: dossier_configuration.compilation().use_remote_addons(),
+            ..Default::default()
         }
     }
 }

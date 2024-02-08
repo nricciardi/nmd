@@ -3,4 +3,5 @@ documents:
   - "./d2.nmd"
   - "./d3.nmd"
   - "./d4.nmd"
-
+compilation:
+    parallelization: true

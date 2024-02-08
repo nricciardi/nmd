@@ -4,6 +4,8 @@ pub mod image;
 pub mod remote_resource;
 
 use std::{path::PathBuf, str::FromStr, fs::{File, self, OpenOptions}, io::{self, Write}};
+use ::image::ImageError;
+use serde_json::error;
 use thiserror::Error;
 
 
@@ -26,7 +28,10 @@ pub enum ResourceError {
     ReadError(String),
 
     #[error(transparent)]
-    IoError(#[from] io::Error)
+    IoError(#[from] io::Error),
+
+    #[error(transparent)]
+    ImageError(#[from] ImageError),
 }
 
 pub trait Resource: FromStr {
