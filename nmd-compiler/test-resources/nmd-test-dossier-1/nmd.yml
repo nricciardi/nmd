@@ -5,3 +5,4 @@ documents:
   - "./d4.nmd"
 compilation:
     parallelization: true
+    compress_embed_image: false
