@@ -49,7 +49,7 @@ impl Default for AssemblerConfiguration {
         Self {
             output_location: Default::default(),
             theme: Theme::default(),
-            use_remote_addons: true
+            use_remote_addons: false
         }
     }
 }

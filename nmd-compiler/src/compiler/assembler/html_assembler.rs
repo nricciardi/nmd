@@ -85,8 +85,19 @@ impl Assembler for HtmlAssembler {
                     });"#);
         } else {
 
-            // TODO!!!!
-            // page.add_script_literal(include_str!("html_assembler/math_block/mathjax.min.js"));
+            page.add_style(include_str!("html_assembler/math_block/katex.css"));
+            page.add_style(include_str!("html_assembler/math_block/katex-fonts.css"));
+            page.add_script_literal(include_str!("html_assembler/math_block/katex.min.js"));
+            page.add_script_literal(include_str!("html_assembler/math_block/auto-render.min.js"));
+            page.add_script_literal(r#"window.onload = function() {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                    ],
+                    throwOnError : false
+                  });
+            }"#);
 
             // add code block js/css                        
             match self.configuration.theme() {

@@ -74,12 +74,13 @@ nmd-compiler compile dossier -f html -i dossier/input/path -o artifact/output/pa
 
 - [x] Use file name instead of absolute path in dossier configuration
 - [ ] Local math (no CDN)
+- [ ] Lists
 - [ ] Other sections in dossier configuration to manage all options
 - [ ] Base page style
 - [ ] Paper format support (A4, A5, ...)
 - [ ] Custom style
 - [ ] PDF compile format
-- [ ] Table
+- [ ] Tables
 
 
 ## Author
