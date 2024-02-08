@@ -54,7 +54,7 @@ impl Compiler {
 
         let dossier_configuration = dossier.configuration();
 
-        compilation_configuration.merge_dossier_configuration(dossier_configuration);
+        // compilation_configuration.merge_dossier_configuration(dossier_configuration);    // TODO: bad merge
 
         log::info!("will use dossier configuration:\n\n{:#?}\n", dossier_configuration);
 
