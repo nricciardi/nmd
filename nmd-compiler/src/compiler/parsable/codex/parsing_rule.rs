@@ -1,6 +1,7 @@
 pub mod replacement_rule;
 pub mod parsing_outcome;
 pub mod html_image_rule;
+pub mod html_list_rule;
 
 use super::modifier::{Modifier, Modifiers};
 use std::sync::Arc;

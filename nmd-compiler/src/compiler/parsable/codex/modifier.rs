@@ -72,6 +72,8 @@ pub enum Modifier {
     HeadingGeneralExtendedVersion(u32),
 
     // PARAGRAPH MODIFIERs
+    OrderedList,
+    UnorderedList,
     Image,
     CodeBlock,
     CommentBlock,
@@ -89,6 +91,8 @@ impl Modifier {
 
         // they must have the compatibility order
         vec![
+            Self::OrderedList,
+            Self::UnorderedList,
             Self::Image,
             Self::CodeBlock,
             Self::CommentBlock,
@@ -163,6 +167,8 @@ impl Modifier {
             Self::CommonParagraph => String::from(r#"(?s:(?m:^(.+?)(?:\n\n|\n$)))"#),
             Self::CodeBlock => String::from(r"```([a-zA-Z]+)\n+(.*?)\n+```"),
             Self::MathBlock => String::from(r#"\$\$((?s:.+?))\$\$"#),
+            Self::OrderedList => String::from(r"^[\d][.)]?[[:space:]]"),
+            Self::UnorderedList => String::from(r"^[-*][[:space:]]"),
             
             _ => String::from(r"RULE TODO")                                               // TODO
         }
