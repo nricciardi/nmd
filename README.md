@@ -1,7 +1,7 @@
 # NMD (New MarkDown) Compiler
 
 [![License](https://img.shields.io/badge/license-GPL3-green.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v0.3.1-blue.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-v0.4.0-blue.svg)](CHANGELOG.md)
 
 ## Overview
 
@@ -75,7 +75,7 @@ nmd-compiler compile dossier -f html -i dossier/input/path -o artifact/output/pa
 - [x] Use file name instead of absolute path in dossier configuration
 - [x] Local math (no CDN)
 - [ ] Lists
-- [ ] Other sections in dossier configuration to manage all options
+- [x] Other sections in dossier configuration to manage all options
 - [ ] Base page style
 - [ ] Paper format support (A4, A5, ...)
 - [ ] Custom style
