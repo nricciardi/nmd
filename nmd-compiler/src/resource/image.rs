@@ -67,3 +67,29 @@ impl TryFrom<String> for Image {
         Self::try_from(path)
     }
 }
+
+#[cfg(test)]
+mod test {
+    use std::{fs::File, io::Read, path::PathBuf};
+
+
+    #[test]
+    fn vec_u8() {
+        let project_directory = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        let image_path = project_directory.join("test-resources").join("wikipedia-logo.png");
+
+        let image_from_image_lib = image::open(image_path.clone()).unwrap();
+        let mut image_vec_u8 = File::open(image_path.clone()).unwrap();
+
+
+        let mut buffer: Vec<u8> = Vec::new();
+        image_vec_u8.read_to_end(&mut buffer).unwrap();
+
+        let image_from_image_lib_using_load_from_memory = image::load_from_memory(&buffer).unwrap();
+
+        let image_raw = image_from_image_lib_using_load_from_memory.as_flat_samples_u8().unwrap().samples;
+
+        assert_eq!(buffer.len(), image_raw.len())
+    }
+
+}

@@ -143,11 +143,11 @@ impl From<CompilationConfiguration> for ParsingConfiguration {
 
             input_location: compilation_configuration.input_location().clone(),
             output_location: compilation_configuration.output_location().clone(),
-            embed_local_image: compilation_configuration.embed_local_image().clone(),
-            embed_remote_image: compilation_configuration.embed_remote_image().clone(),
-            compress_embed_image: compilation_configuration.compress_embed_image().clone(),
-            strict_image_src_check: compilation_configuration.strict_image_src_check().clone(),
-            parallelization: compilation_configuration.parallelization().clone(),
+            embed_local_image: compilation_configuration.embed_local_image().clone().unwrap(),
+            embed_remote_image: compilation_configuration.embed_remote_image().clone().unwrap(),
+            compress_embed_image: compilation_configuration.compress_embed_image().clone().unwrap(),
+            strict_image_src_check: compilation_configuration.strict_image_src_check().clone().unwrap(),
+            parallelization: compilation_configuration.parallelization().clone().unwrap(),
             
             ..Default::default()
         }

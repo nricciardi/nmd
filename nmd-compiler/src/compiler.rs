@@ -45,6 +45,7 @@ impl Compiler {
     pub fn compile_dossier(mut compilation_configuration: CompilationConfiguration) -> Result<(), CompilationError> {
 
         log::info!("start to compile dossier");
+        log::info!("compilation configuration (this will override dossier compilation configuration):\n\n{:#?}\n", compilation_configuration);
 
         let codex = Arc::new(compilation_configuration.codex());
 
@@ -54,7 +55,7 @@ impl Compiler {
 
         let dossier_configuration = dossier.configuration();
 
-        // compilation_configuration.merge_dossier_configuration(dossier_configuration);    // TODO: bad merge
+        compilation_configuration.merge_dossier_configuration(dossier_configuration);
 
         log::info!("will use dossier configuration:\n\n{:#?}\n", dossier_configuration);
 
