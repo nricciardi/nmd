@@ -67,7 +67,9 @@ impl ParsingRule for HtmlImageRule {
                                 image.compress().unwrap();
                             }
     
-                            return format!(r#"<img src="data:image/png;base64,{}" alt="{}" class="img" />"#, image.to_base64(), label.as_str())
+                            let base64_image = image.to_base64();
+                            
+                            return format!(r#"<img src="data:image/png;base64,{}" alt="{}" class="img" />"#, base64_image.unwrap(), label.as_str())
 
                         } else if parsing_configuration.strict_image_src_check() {
 

@@ -1,4 +1,7 @@
+use clap::error;
 use thiserror::Error;
+
+use crate::resource::ResourceError;
 
 #[derive(Error, Debug)]
 pub enum ParsingError {

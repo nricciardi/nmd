@@ -1,7 +1,7 @@
-use std::{fs::File, io::Read, path::PathBuf};
+use std::{fs::File, io::{Cursor, Read}, path::PathBuf};
 
 use base64::{engine::general_purpose::STANDARD, Engine};
-use image::{codecs::jpeg, io::Reader, DynamicImage};
+use image::{codecs::jpeg, io::Reader, DynamicImage, ImageOutputFormat};
 
 use super::ResourceError;
 use jpeg::JpegEncoder;
@@ -14,8 +14,13 @@ pub struct Image {
 }
 
 impl Image {
-    pub fn to_base64(self) -> String {
-        STANDARD.encode(self.image.into_bytes())
+    pub fn to_base64(self) -> Result<String, ResourceError> {
+
+        let mut buffer: Vec<u8> = Vec::new();
+
+        self.image.write_to(&mut Cursor::new(&mut buffer), ImageOutputFormat::Png)?;
+
+        Ok(STANDARD.encode(buffer))
     }
 
     pub fn is_image(file_path: &PathBuf) -> bool {
@@ -30,6 +35,8 @@ impl Image {
     }
 
     pub fn compress(&mut self) -> Result<(), ResourceError> {
+        
+        todo!();
         
         let rgba_image = self.image.to_rgba8();
         let width = self.image.width();
@@ -70,7 +77,9 @@ impl TryFrom<String> for Image {
 
 #[cfg(test)]
 mod test {
-    use std::{fs::File, io::Read, path::PathBuf};
+    use std::{fs::File, io::{Cursor, Read}, path::PathBuf};
+
+    use image::ImageOutputFormat;
 
 
     #[test]
@@ -78,18 +87,17 @@ mod test {
         let project_directory = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
         let image_path = project_directory.join("test-resources").join("wikipedia-logo.png");
 
-        let image_from_image_lib = image::open(image_path.clone()).unwrap();
         let mut image_vec_u8 = File::open(image_path.clone()).unwrap();
-
-
         let mut buffer: Vec<u8> = Vec::new();
         image_vec_u8.read_to_end(&mut buffer).unwrap();
 
-        let image_from_image_lib_using_load_from_memory = image::load_from_memory(&buffer).unwrap();
+        let dynamic_image = image::load_from_memory(&buffer).unwrap();
+        let mut buffer_from_dynamic_image: Vec<u8> = Vec::new();
 
-        let image_raw = image_from_image_lib_using_load_from_memory.as_flat_samples_u8().unwrap().samples;
+        dynamic_image.write_to(&mut Cursor::new(&mut buffer_from_dynamic_image), ImageOutputFormat::Png).unwrap();
 
-        assert_eq!(buffer.len(), image_raw.len())
+        assert_eq!(buffer.len(), buffer_from_dynamic_image.len());
+        assert_eq!(buffer, buffer_from_dynamic_image)
     }
 
 }
