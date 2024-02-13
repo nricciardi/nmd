@@ -10,6 +10,7 @@ use rayon::slice::ParallelSliceMut;
 use regex::Regex;
 use self::modifier::Modifiers;
 pub use self::modifier::{MAX_HEADING_LEVEL, Modifier};
+use self::parsing_rule::html_list_rule::HtmlListRule;
 use crate::compiler::dossier::document::chapter::paragraph::ParagraphError;
 use crate::compiler::dossier::document::Paragraph;
 use crate::compiler::output_format::OutputFormat;
@@ -154,15 +155,18 @@ impl Codex {
                 let end = m.end();
 
                 if paragraphs.par_iter().find_any(|p| {
-                    (p.0 > start && p.1 < end) ||
-                    (p.0 < start && p.1 > end) ||
-                    (p.0 < start && start < p.1) ||
-                    (p.0 < end && end < p.1)
+                    (p.0 >= start && p.1 <= end) ||
+                    (p.0 <= start && p.1 >= end) ||
+                    (p.0 <= start && start <= p.1) ||
+                    (p.0 <= end && end <= p.1)
                 }).is_some() {     // => overlap
+                    log::debug!("discarded paragraph between {} to {} using pattern: {:?}", start, end, &modifier.search_pattern());
                     return
                 }
 
                 let matched_str = m.as_str().to_string();
+
+                log::debug!("found paragraph between {} to {}:\n{}\nusing pattern: {:?}", start, end, matched_str, &modifier.search_pattern());
 
                 let paragraph = Paragraph::from(matched_str);
 
@@ -227,6 +231,7 @@ impl Codex {
         ]);
 
         let paragraph_rules: Vec<Box<dyn ParsingRule>> = vec![
+            Box::new(HtmlListRule::new()),
             Box::new(ReplacementRule::new(Modifier::MathBlock, String::from(r#"<p class="math-block">$$$$${1}$$$$</p>"#))),
             Box::new(HtmlImageRule::new()),
             Box::new(ReplacementRule::new(Modifier::CodeBlock, String::from(r#"<pre><code class="language-${1} code-block">$2</code></pre>"#))),

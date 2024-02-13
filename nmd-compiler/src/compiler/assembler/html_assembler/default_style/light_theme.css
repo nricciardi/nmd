@@ -1,0 +1,14 @@
+.list {
+    list-style-type: none;
+    padding: 0;
+}
+
+.list-item-indentation {
+    padding-left: 2vw;
+}
+
+
+.list-item-bullet {
+    margin-right: 0.5vw;
+    font-size: large;
+}

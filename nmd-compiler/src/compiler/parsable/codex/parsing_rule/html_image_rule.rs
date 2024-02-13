@@ -34,10 +34,10 @@ impl ParsingRule for HtmlImageRule {
             Err(_) => return Err(ParsingError::InvalidPattern(self.modifier().search_pattern()))  
         };
 
-        let parsed_content = regex.replace_all(content, |captueres: &Captures| {
+        let parsed_content = regex.replace_all(content, |captures: &Captures| {
             
-            if let Some(label) = captueres.get(1) {
-                if let Some(src) = captueres.get(2) {
+            if let Some(label) = captures.get(1) {
+                if let Some(src) = captures.get(2) {
 
                     let src = src.as_str();
 
@@ -87,7 +87,7 @@ impl ParsingRule for HtmlImageRule {
                 }
             }
 
-            captueres.get(0).unwrap().as_str().to_string()
+            captures.get(0).unwrap().as_str().to_string()
 
         }).to_string();
         

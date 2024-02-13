@@ -1,6 +1,6 @@
 use build_html::{HtmlPage, HtmlContainer, Html, Container};
 
-use crate::compiler::{dossier::Dossier, artifact::Artifact};
+use crate::compiler::{artifact::Artifact, dossier::Dossier, theme::Theme};
 
 use super::{Assembler, AssemblerError, assembler_configuration::AssemblerConfiguration};
 
@@ -33,7 +33,7 @@ impl Assembler for HtmlAssembler {
 
             // add code block js/css
             match self.configuration.theme() {
-                crate::compiler::theme::Theme::Light => {
+                Theme::Light => {
                     page = page
                         .with_script_link_attr("https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js", [
                             ("crossorigin", "anonymous"),
@@ -44,7 +44,7 @@ impl Assembler for HtmlAssembler {
                         .with_head_link("https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.css", "stylesheet");
                     
                 },
-                crate::compiler::theme::Theme::Dark => {
+                Theme::Dark => {
                     page = page
                         .with_script_link_attr("https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js", [
                             ("crossorigin", "anonymous"),
@@ -101,19 +101,22 @@ impl Assembler for HtmlAssembler {
 
             // add code block js/css                        
             match self.configuration.theme() {
-                crate::compiler::theme::Theme::Light => {
+                Theme::Light => {
                     page.add_style(include_str!("html_assembler/code_block/light_theme/prismjs.min.css"));
                     page.add_script_literal(include_str!("html_assembler/code_block/light_theme/prismjs.min.js"));
                 },
-                crate::compiler::theme::Theme::Dark => {
+                Theme::Dark => {
                     page.add_style(include_str!("html_assembler/code_block/dark_theme/prismjs.min.css"));
                     page.add_script_literal(include_str!("html_assembler/code_block/dark_theme/prismjs.min.js"));
                 },
             }
         }
 
-                                
-
+        match self.configuration.theme() {
+            Theme::Light => page.add_style(include_str!("html_assembler/default_style/light_theme.css")),
+            Theme::Dark => page.add_style(include_str!("html_assembler/default_style/dark_theme.css")),
+        }                        
+        
         
 
         

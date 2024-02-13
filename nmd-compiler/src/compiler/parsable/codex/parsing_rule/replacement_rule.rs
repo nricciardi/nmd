@@ -1,7 +1,8 @@
+use std::fmt::Display;
 use std::sync::Arc;
 
 use log;
-use regex::Regex;
+use regex::{Regex, Replacer};
 
 use crate::compiler::parsable::ParsingConfiguration;
 
@@ -10,12 +11,12 @@ use super::{Modifier, ParsingRule};
 
 
 /// Rule to replace a NMD text based on a specific pattern matching rule
-pub struct ReplacementRule {
+pub struct ReplacementRule<R: Replacer> {
     modifier: Modifier,
-    replacement_pattern: String
+    replacement_pattern: R
 }
 
-impl ReplacementRule {
+impl<R: Replacer + Display> ReplacementRule<R> {
     /// Returns a new instance having a search pattern and a replication pattern
     ///
     /// # Arguments
@@ -23,7 +24,7 @@ impl ReplacementRule {
     /// * `pattern_type` - PatternType which represent the pattern used to search in text 
     /// * `replacement_pattern` - A string slice which represent the pattern used to replace the text
     ///
-    pub fn new(modifier: Modifier, replacement_pattern: String) -> Self {
+    pub fn new(modifier: Modifier, replacement_pattern: R) -> Self {
 
         log::debug!("created new parsing rule with search_pattern: '{}' and replacement_pattern: '{}'", modifier.search_pattern(), replacement_pattern);
 
@@ -34,7 +35,7 @@ impl ReplacementRule {
     }
 }
 
-impl ParsingRule for ReplacementRule {
+impl ParsingRule for ReplacementRule<String> {
 
     /// Parse the content using internal search and replacement pattern
     fn parse(&self, content: &str, parsing_configuration: Arc<ParsingConfiguration>) -> Result<ParsingOutcome, ParsingError> {

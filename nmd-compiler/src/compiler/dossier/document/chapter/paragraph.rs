@@ -15,6 +15,7 @@ pub enum ParagraphError {
     Empty
 }
 
+#[derive(Debug)]
 pub struct Paragraph {
     content: String
 }

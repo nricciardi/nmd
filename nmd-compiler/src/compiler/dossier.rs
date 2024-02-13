@@ -85,7 +85,7 @@ impl Loadable<DossierConfiguration> for Dossier {
 impl Parsable for Dossier {
     fn parse(&mut self, codex: Arc<Codex>, parsing_configuration: Arc<ParsingConfiguration>) -> Result<(), ParsingError> {
 
-        log::info!("parse dossier {} with parallelization: {}", self.name(), parsing_configuration.parallelization());
+        log::info!("parse dossier {} with {} document(s) (parallelization: {})", self.name(), self.documents().len(), parsing_configuration.parallelization());
 
         if parsing_configuration.parallelization() {
 

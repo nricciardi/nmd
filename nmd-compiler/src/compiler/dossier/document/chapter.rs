@@ -12,6 +12,7 @@ use crate::compiler::parsable::parsing_configuration::ParsingConfiguration;
 use crate::compiler::parsable::{codex::parsing_rule::parsing_outcome::ParsingError, Parsable};
 
 
+#[derive(Debug)]
 pub struct Chapter {
     heading: String,
     paragraphs: Vec<Paragraph>
@@ -54,6 +55,8 @@ impl Clone for Chapter {
 impl Parsable for Chapter {
     fn parse(&mut self, codex: Arc<Codex>, parsing_configuration: Arc<ParsingConfiguration>) -> Result<(), ParsingError> {
         self.heading = String::from(codex.parse_content(&self.heading, Arc::clone(&parsing_configuration))?.parsed_content());
+
+        log::debug!("parsing chapter:\n{:#?}", self);
 
         if parsing_configuration.parallelization() {
 
