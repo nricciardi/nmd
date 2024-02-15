@@ -5,10 +5,10 @@ mod utility;
 
 use std::{path::PathBuf, str::FromStr};
 
-use clap::{error, Arg, ArgAction, Command};
+use clap::{Arg, ArgAction, Command};
 use compiler::{output_format::OutputFormatError, CompilationError};
 pub use compiler::Compiler;
-use generator::{generator_configuration::{self, GeneratorConfiguration}, Generator};
+use generator::{generator_configuration::GeneratorConfiguration, Generator};
 use log::{LevelFilter, ParseLevelError};
 use resource::ResourceError;
 use thiserror::Error;
@@ -19,7 +19,7 @@ use crate::compiler::{compilation_configuration::CompilationConfiguration, outpu
 pub const VERSION: &str = "0.6.0-alpha";
 
 #[derive(Error, Debug)]
-pub enum CompilerCliError {
+pub enum NmdCliError {
     #[error(transparent)]
     CompilationError(#[from] CompilationError),
 
@@ -37,11 +37,11 @@ pub enum CompilerCliError {
 }
 
 
-pub struct CompilerCli {
+pub struct NmdCli {
     cli: Command
 }
 
-impl CompilerCli {
+impl NmdCli {
 
     pub fn new() -> Self {
 
@@ -157,7 +157,7 @@ impl CompilerCli {
         }
     }
 
-    pub fn parse(self) -> Result<(), CompilerCliError> {
+    pub fn parse(self) -> Result<(), NmdCliError> {
 
         let matches = self.cli.get_matches();
 
@@ -169,7 +169,7 @@ impl CompilerCli {
                         if let Some(mut verbose) = compile_dossier_matches.get_many::<String>("verbose") {
                             
                             if verbose.len() != 1 {
-                                return Err(CompilerCliError::MoreThanOneValue("verbose".to_string()));
+                                return Err(NmdCliError::MoreThanOneValue("verbose".to_string()));
                             }
                             
                             
@@ -183,7 +183,7 @@ impl CompilerCli {
                         if let Some(mut format) = compile_dossier_matches.get_many::<String>("format") {
                             
                             if format.len() != 1 {
-                                return Err(CompilerCliError::MoreThanOneValue("format".to_string()));
+                                return Err(NmdCliError::MoreThanOneValue("format".to_string()));
                             }
                             
                             
@@ -195,7 +195,7 @@ impl CompilerCli {
                         if let Some(mut input_path) = compile_dossier_matches.get_many::<String>("input-path") {
                             
                             if input_path.len() != 1 {
-                                return Err(CompilerCliError::MoreThanOneValue("input-path".to_string()));
+                                return Err(NmdCliError::MoreThanOneValue("input-path".to_string()));
                             }
                             
                             
@@ -207,7 +207,7 @@ impl CompilerCli {
                         if let Some(mut output_path) = compile_dossier_matches.get_many::<String>("output-path") {
                             
                             if output_path.len() != 1 {
-                                return Err(CompilerCliError::MoreThanOneValue("output-path".to_string()));
+                                return Err(NmdCliError::MoreThanOneValue("output-path".to_string()));
                             }
                             
                             
@@ -233,7 +233,7 @@ impl CompilerCli {
                         if let Some(mut format) = generate_dossier_matches.get_many::<String>("verbose") {
                             
                             if format.len() != 1 {
-                                return Err(CompilerCliError::MoreThanOneValue("verbose".to_string()));
+                                return Err(NmdCliError::MoreThanOneValue("verbose".to_string()));
                             }
                             
                             
@@ -247,7 +247,7 @@ impl CompilerCli {
                         if let Some(mut input_path) = generate_dossier_matches.get_many::<String>("path") {
                             
                             if input_path.len() != 1 {
-                                return Err(CompilerCliError::MoreThanOneValue("path".to_string()));
+                                return Err(NmdCliError::MoreThanOneValue("path".to_string()));
                             }
                             
                             

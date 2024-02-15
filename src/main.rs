@@ -1,9 +1,9 @@
-use nmd_compiler::{CompilerCli, CompilerCliError};
+use nmd::{NmdCli, NmdCliError};
 
 
-fn main() -> Result<(), CompilerCliError> {
+fn main() -> Result<(), NmdCliError> {
 
-    let cli = CompilerCli::new();
+    let cli = NmdCli::new();
 
     cli.parse()
 }
