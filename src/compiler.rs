@@ -57,6 +57,9 @@ impl Compiler {
 
         compilation_configuration.merge_dossier_configuration(dossier_configuration);
 
+        let mut parsing_configuration = compilation_configuration.parsing_configuration();
+        parsing_configuration.set_list_bullets_configuration(dossier_configuration.style().list_bullets_configuration().clone());
+
         log::info!("will use dossier configuration:\n\n{:#?}\n", dossier_configuration);
 
         let mut assembler_configuration = AssemblerConfiguration::from(dossier_configuration.clone());
@@ -64,8 +67,9 @@ impl Compiler {
         let dossier_theme = dossier_configuration.style().theme().clone();
         
         log::info!("parsing...");
+        log::debug!("parsing configuration:\n{:#?}\n", parsing_configuration);
 
-        dossier.parse(Arc::clone(&codex), Arc::new(compilation_configuration.parsing_configuration()))?;
+        dossier.parse(Arc::clone(&codex), Arc::new(parsing_configuration))?;
 
         assembler_configuration.set_output_location(compilation_configuration.output_location().clone());
         assembler_configuration.set_theme(dossier_theme);

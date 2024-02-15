@@ -1,14 +1,18 @@
+pub mod list_bullet_configuration_record;
+
 use std::{ops::Add, path::PathBuf};
 
-use crate::compiler::compilation_configuration::{self, CompilationConfiguration};
+use crate::compiler::compilation_configuration::CompilationConfiguration;
+
+use self::list_bullet_configuration_record::ListBulletConfigurationRecord;
 
 use super::codex::modifier::Modifiers;
 
 
-
-#[derive(Clone, Default)]
+#[derive(Clone, Default, Debug)]
 pub struct ParsingConfigurationMetadata {}
 
+#[derive(Clone, Debug)]
 pub struct ParsingConfiguration {
 
     input_location: PathBuf,
@@ -24,11 +28,13 @@ pub struct ParsingConfiguration {
     excluded_modifiers: Modifiers,
 
     parallelization: bool,
+
+    list_bullets_configuration: Vec<ListBulletConfigurationRecord>
 }
 
 impl ParsingConfiguration {
 
-    pub fn new(input_location: PathBuf, output_location: PathBuf, embed_local_image: bool, embed_remote_image: bool, compress_embed_image: bool, strict_image_src_check: bool, metadata: ParsingConfigurationMetadata, excluded_modifiers: Modifiers, parallelization: bool) -> Self {
+    pub fn new(input_location: PathBuf, output_location: PathBuf, embed_local_image: bool, embed_remote_image: bool, compress_embed_image: bool, strict_image_src_check: bool, metadata: ParsingConfigurationMetadata, excluded_modifiers: Modifiers, parallelization: bool, list_bullets_configuration: Vec<ListBulletConfigurationRecord>) -> Self {
         Self {
             input_location,
             output_location,
@@ -38,7 +44,8 @@ impl ParsingConfiguration {
             strict_image_src_check,
             metadata,
             excluded_modifiers,
-            parallelization
+            parallelization,
+            list_bullets_configuration
         }
     }
 
@@ -76,6 +83,10 @@ impl ParsingConfiguration {
 
     pub fn parallelization(&self) -> bool {
         self.parallelization
+    }
+
+    pub fn list_bullets_configuration(&self) -> &Vec<ListBulletConfigurationRecord> {
+        &self.list_bullets_configuration
     }
 
     pub fn set_input_location(&mut self, new_input_location: PathBuf) {
@@ -118,6 +129,9 @@ impl ParsingConfiguration {
         self.parallelization = value
     }
 
+    pub fn set_list_bullets_configuration(&mut self, value: Vec<ListBulletConfigurationRecord>) {
+        self.list_bullets_configuration = value
+    }
 }
 
 impl Default for ParsingConfiguration {
@@ -131,7 +145,57 @@ impl Default for ParsingConfiguration {
             strict_image_src_check: false,
             metadata: ParsingConfigurationMetadata::default(),
             excluded_modifiers: Modifiers::None,
-            parallelization: false
+            parallelization: false,
+            list_bullets_configuration: vec![
+                ListBulletConfigurationRecord {
+                    from: String::from(r"|"),
+                    to: String::from(r"&#8205;"),
+                    indentation_level: 0,
+                    strict_indentation: false
+                },
+                ListBulletConfigurationRecord {
+                    from: String::from(r"-"),
+                    to: String::from(r"&bull;"),
+                    indentation_level: 0,
+                    strict_indentation: true
+                },
+                ListBulletConfigurationRecord {
+                    from: String::from(r"-"),
+                    to: String::from(r"&#9702;"),
+                    indentation_level: 1,
+                    strict_indentation: true
+                },
+                ListBulletConfigurationRecord {
+                    from: String::from(r"-"),
+                    to: String::from(r"&#8211;"),
+                    indentation_level: 2,
+                    strict_indentation: false
+                },
+                ListBulletConfigurationRecord {
+                    from: String::from(r"*"),
+                    to: String::from(r"&bull;"),
+                    indentation_level: 0,
+                    strict_indentation: false
+                },
+                ListBulletConfigurationRecord {
+                    from: String::from(r"+"),
+                    to: String::from(r"&#9702;"),
+                    indentation_level: 0,
+                    strict_indentation: false
+                },
+                ListBulletConfigurationRecord {
+                    from: String::from(r"->"),
+                    to: String::from(r"&#9654;"),
+                    indentation_level: 0,
+                    strict_indentation: false
+                },
+                ListBulletConfigurationRecord {
+                    from: String::from(r"--"),
+                    to: String::from(r"&#8211;"),
+                    indentation_level: 0,
+                    strict_indentation: false
+                },
+            ]
         }
     }
 }

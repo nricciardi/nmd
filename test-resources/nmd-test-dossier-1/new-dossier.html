@@ -1427,9 +1427,11 @@ Prism.languages.yang={comment:/\/\*[\s\S]*?\*\/|\/\/.*/,string:{pattern:/"(?:[^\
 
 
 .list-item-bullet {
+    display: inline-block;
     margin-right: 0.5vw;
     font-size: large;
-}</style></head><body><section><h1 class="h1">List</h1><ul class="list"><li class="list-item">
+    width: 0.5em;
+}</style></head><body><section><h1 class="heading-1">List</h1><ul class="list"><li class="list-item">
                             
                             <span class="list-item-bullet">
                                 &bull;
@@ -1464,6 +1466,14 @@ Prism.languages.yang={comment:/\/\*[\s\S]*?\*\/|\/\/.*/,string:{pattern:/"(?:[^\
                         </li><li class="list-item">
                             <span class="list-item-indentation"></span><span class="list-item-indentation"></span>
                             <span class="list-item-bullet">
+                                &#8205;
+                            </span>
+                            <span class="list-item-content">
+                                element 2.1.1b
+                            </span>
+                        </li><li class="list-item">
+                            <span class="list-item-indentation"></span><span class="list-item-indentation"></span>
+                            <span class="list-item-bullet">
                                 &#8211;
                             </span>
                             <span class="list-item-content">
@@ -1486,12 +1496,28 @@ Prism.languages.yang={comment:/\/\*[\s\S]*?\*\/|\/\/.*/,string:{pattern:/"(?:[^\
                                 element 2.2
                             </span>
                         </li><li class="list-item">
-                            
+                            <span class="list-item-indentation"></span>
                             <span class="list-item-bullet">
                                 &#9654;
                             </span>
                             <span class="list-item-content">
+                                element 2.3
+                            </span>
+                        </li><li class="list-item">
+                            
+                            <span class="list-item-bullet">
+                                &bull;
+                            </span>
+                            <span class="list-item-content">
                                 element 3
+                            </span>
+                        </li><li class="list-item">
+                            
+                            <span class="list-item-bullet">
+                                &#9702;
+                            </span>
+                            <span class="list-item-content">
+                                element 4
                             </span>
                         </li><li class="list-item">
                             
@@ -1508,5 +1534,29 @@ Prism.languages.yang={comment:/\/\*[\s\S]*?\*\/|\/\/.*/,string:{pattern:/"(?:[^\
                             </span>
                             <span class="list-item-content">
                                 element 6
+                            </span>
+                        </li><li class="list-item">
+                            
+                            <span class="list-item-bullet">
+                                :checkbox:
+                            </span>
+                            <span class="list-item-content">
+                                todo1
+                            </span>
+                        </li><li class="list-item">
+                            
+                            <span class="list-item-bullet">
+                                -[ ]
+                            </span>
+                            <span class="list-item-content">
+                                todo2
+                            </span>
+                        </li><li class="list-item">
+                            
+                            <span class="list-item-bullet">
+                                -[x]
+                            </span>
+                            <span class="list-item-content">
+                                todo3
                             </span>
                         </li></ul></section></body></html>

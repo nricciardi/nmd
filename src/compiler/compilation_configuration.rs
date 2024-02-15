@@ -2,7 +2,7 @@ use std::{clone, path::PathBuf};
 
 use crate::compiler::{parsable::{codex::{Codex, codex_configuration::CodexConfiguration}, ParsingConfiguration}, output_format::OutputFormat};
 
-use super::dossier::dossier_configuration::{self, DossierConfiguration};
+use super::{dossier::dossier_configuration::{self, DossierConfiguration}, parsable::parsing_configuration::list_bullet_configuration_record::ListBulletConfigurationRecord};
 
 
 #[derive(Clone, Debug)]
@@ -86,7 +86,6 @@ impl CompilationConfiguration {
     pub fn strict_image_src_check(&self) -> Option<bool> {
         self.strict_image_src_check
     }
-
     pub fn set_embed_local_image(&mut self, value: bool) {
         self.embed_local_image = Some(value);
     }

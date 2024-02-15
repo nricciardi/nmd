@@ -7,7 +7,15 @@
 - [New MarkDown \[ALPHA\]](#new-markdown-alpha)
   - [Overview](#overview)
     - [Features](#features)
-    - [Structure](#structure)
+  - [Develop](#develop)
+    - [Planned Features](#planned-features)
+    - [Features in Progress](#features-in-progress)
+  - [Getting Started](#getting-started)
+    - [Installation](#installation)
+    - [Generate a new dossier using compiler](#generate-a-new-dossier-using-compiler)
+      - [Compile dossier](#compile-dossier)
+      - [HTML](#html)
+  - [Structure](#structure)
       - [Dossier](#dossier)
         - [Dossier configuration](#dossier-configuration)
           - [name](#name)
@@ -15,14 +23,6 @@
           - [style](#style)
           - [metadata](#metadata)
           - [compilation](#compilation)
-  - [Getting Started](#getting-started)
-    - [Installation](#installation)
-    - [Generate a new dossier using compiler](#generate-a-new-dossier-using-compiler)
-      - [Compile dossier](#compile-dossier)
-      - [HTML](#html)
-  - [Features](#features-1)
-    - [Planned Features](#planned-features)
-    - [Features in Progress](#features-in-progress)
   - [NMD Syntax](#nmd-syntax)
     - [Heading (Title of a chapter)](#heading-title-of-a-chapter)
     - [Inline modifier](#inline-modifier)
@@ -33,6 +33,7 @@
       - [Italic](#italic)
       - [Strikethrough](#strikethrough)
       - [Underlined](#underlined)
+        - [Checkbox](#checkbox)
         - [Colors and Highlighted Text \[NOT SUPPORTED YET\]](#colors-and-highlighted-text-not-supported-yet)
         - [Compatible highlight text \[NOT SUPPORTED YET\]](#compatible-highlight-text-not-supported-yet)
       - [Custom text style \[NOT SUPPORTED YET\]](#custom-text-style-not-supported-yet)
@@ -49,7 +50,7 @@
       - [Paragraph styles and metadata \[TO BE DEFINE; NOT SUPPORTED YET\]](#paragraph-styles-and-metadata-to-be-define-not-supported-yet)
       - [Image](#image)
       - [Line separator \[NOT SUPPORTED YET\]](#line-separator-not-supported-yet)
-      - [List \[NOT SUPPORTED YET; WIP\]](#list-not-supported-yet-wip)
+      - [List](#list)
       - [Code block](#code-block)
       - [Multiline comments \[TO BE DEFINE; NOT SUPPORTED YET\]](#multiline-comments-to-be-define-not-supported-yet)
       - [Focus block \[TO BE DEFINE; NOT SUPPORTED YET\]](#focus-block-to-be-define-not-supported-yet)
@@ -73,7 +74,67 @@ NMD is full compatible with CommonMark standard.
 - **Easy Integration**: Compile NMD files into HTML effortlessly for seamless integration with your web projects.
 - **Open Source**: This compiler is open source under the GPL-3.0 License, allowing you to modify and adapt it to suit your needs.
 
-### Structure
+
+## Develop
+
+### Planned Features
+
+- [ ] All modifiers
+- [ ] Possibility to use a different dossier configuration name
+
+### Features in Progress
+
+- [x] Use file name instead of absolute path in dossier configuration
+- [x] Other sections in dossier configuration to manage all options
+- [x] Local math (no CDN)
+- [ ] Lists
+- [ ] Quotation and "focus block"
+- [ ] Base page style
+- [ ] Paper format support (A4, A5, ...)
+- [ ] Custom style
+- [ ] Style modifier
+- [ ] PDF compile format
+- [ ] Tables
+- [ ] Vintage style (typewriter)
+
+
+## Getting Started
+
+### Installation
+
+To install NMD, follow these steps:
+
+1. Download the last release based on your operating system
+2. Extract files
+3. Run `nmd` execution file 
+
+### Generate a new dossier using compiler
+
+To **generate a new dossier** you can use the following command:
+
+```shell
+nmd generate dossier -p your/final/directory/path/
+```
+
+There are many *flags* that you can use in combination with `generate dossier`. For example, if you want *force* the generation you can use `-f`, or if you want a *welcome page* you can use `-w`.
+
+The Git support is planned, but not implemented yet. You can only add `.gitkeep` files in assets directories using `-k`.
+
+#### Compile dossier
+
+#### HTML
+
+Compile a dossier in `html`:
+
+```shell
+nmd compile dossier -f html -i dossier/input/path -o artifact/output/path
+```
+
+> In this moment, to render *math block* and *inline math* an Internet connection is needed. This requirement will be removed in future version.
+
+
+
+## Structure
 
 There are several type of ways to write NMD.
 
@@ -125,6 +186,7 @@ documents:
 style:
   theme: Light
   addons: []
+  list_bullets_configuration: []
 
 metadata: {}
 
@@ -157,6 +219,8 @@ compilation:
 
 `addons` is **not** used now. **[WIP]**
 
+`list_bullets_configuration` is described in [list section](#list)
+
 ###### metadata
 
 `metadata` is **not** used now. **[WIP]**
@@ -172,64 +236,6 @@ In `compilation` section you can specified the default values to use during comp
 - `parallelization` (boolean): if `true` parallelize execution of compilation
 - `use_remote_addons` (boolean): if `true` use CDN instead of local CSS/Javascript to include third part library
 
-
-## Getting Started
-
-### Installation
-
-To install NMD, follow these steps:
-
-1. Download the last release based on your operating system
-2. Extract files
-3. Run `nmd` execution file 
-
-### Generate a new dossier using compiler
-
-To **generate a new dossier** you can use the following command:
-
-```shell
-nmd generate dossier -p your/final/directory/path/
-```
-
-There are many *flags* that you can use in combination with `generate dossier`. For example, if you want *force* the generation you can use `-f`, or if you want a *welcome page* you can use `-w`.
-
-The Git support is planned, but not implemented yet. You can only add `.gitkeep` files in assets directories using `-k`.
-
-#### Compile dossier
-
-#### HTML
-
-Compile a dossier in `html`:
-
-```shell
-nmd compile dossier -f html -i dossier/input/path -o artifact/output/path
-```
-
-> In this moment, to render *math block* and *inline math* an Internet connection is needed. This requirement will be removed in future version.
-
-
-
-## Features
-
-### Planned Features
-
-- [ ] All modifiers
-- [ ] Possibility to use a different dossier configuration name
-
-### Features in Progress
-
-- [x] Use file name instead of absolute path in dossier configuration
-- [x] Other sections in dossier configuration to manage all options
-- [x] Local math (no CDN)
-- [ ] Lists
-- [ ] Quotation and "focus block"
-- [ ] Base page style
-- [ ] Paper format support (A4, A5, ...)
-- [ ] Custom style
-- [ ] Style modifier
-- [ ] PDF compile format
-- [ ] Tables
-- [ ] Vintage style (typewriter)
 
 
 ## NMD Syntax
@@ -337,6 +343,16 @@ or
 ```
 ++Underlined text++
 ```
+
+##### Checkbox
+
+**Style class**: `checkbox`, `checkbox-checked`
+
+```
+[x] or [x]
+[] or [ ]
+```
+
 
 ##### Colors and Highlighted Text [NOT SUPPORTED YET]
 
@@ -538,22 +554,66 @@ This [word]{#the-word; color: red} is red.
 
 To apply a line separator use --- or *** in a new blank line.
 
-#### List [NOT SUPPORTED YET; WIP]
+#### List
 
 **Style class**: `list`, `list-item`, `list-item-indentation`, `list-item-bullet`, `list-item-content` 
 
 Different types of list are supported in NMD, below the list with modifier
 
-- `-` first style bullet
-- `*` second style bullet
-- `-[] or -[ ] or - [] or - [ ]` todo bullet
+- `-` default style bullet
+- `*` full dot bullet
+- `+` empty dot bullet
 - `->` arrow bullet
+- `--` dash bullet
+- `|` to use more than one line in an item content
+- `-[] or -[ ] or - [] or - [ ]` todo bullet
 - `1. or 1) or a. or a) or I. or I)` ordered bullet (numerical, alphabetical, romans numbers)
 - `&unicode;` UNICODE bullet
 
 Using `tabs` or `   ` (3 spaces) you can create different list levels.
 
 Style of first and second bullet types can be managed using the configuration file.
+
+Actually, the behavior of bullets can be modified using [dossier configuration](#dossier-configuration). In particular, using `list_bullets_configuration`.
+
+For each record, you must specified 4 fields:
+
+- `from` (string): NMD bullet
+- `to` (string): output bullet (`:checkbox:` or `:checkbox-checked:` to show *checkbox* bullets)
+- `indentation_level` (number)
+- `strict_indentation` (boolean): if `false` the actual rule use `>=` instead of `==` to check indentation
+
+> The rules are checked in order.
+
+Following an example:
+
+```yaml
+  list_bullets_configuration:
+  - from: '|'
+    to: '&#8205;'
+    indentation_level: 0
+    strict_indentation: false
+  - from: '-'
+    to: '&bull;'
+    indentation_level: 0
+    strict_indentation: true
+  - from: '-'
+    to: '&#9702;'
+    indentation_level: 1
+    strict_indentation: true
+  - from: '-'
+    to: '&#8211;'
+    indentation_level: 2
+    strict_indentation: false
+  - from: '*'
+    to: '&bull;'
+    indentation_level: 0
+    strict_indentation: false
+  - from: +
+    to: '&#9702;'
+    indentation_level: 0
+    strict_indentation: false
+```
 
 #### Code block
 

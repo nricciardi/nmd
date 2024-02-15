@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use regex::Regex;
 
-use crate::compiler::parsable::{codex::Modifier, ParsingConfiguration};
+use crate::compiler::parsable::{codex::Modifier, parsing_configuration::list_bullet_configuration_record::{self, ListBulletConfigurationRecord}, ParsingConfiguration};
 use super::{parsing_outcome::{ParsingError, ParsingOutcome}, ParsingRule};
 
 const SPACE_TAB_EQUIVALENCE: &str = r"   ";
@@ -22,17 +22,36 @@ impl HtmlListRule {
 }
 
 impl HtmlListRule {
-    fn bullet_transform(bullet: &str, indentation_level: usize) -> String {
 
-        // TODO: based on parsing configuration
+    fn transform_to_field(to: String) -> String {
 
-        String::from(match bullet {
-            "-" if indentation_level == 0 => r"&bull;",
-            "-" if indentation_level == 1 => r"&#9702;",
-            "-" if indentation_level >= 2 => r"&#8211;",
-            "*" => r"&#9654;",
-            _ => bullet
-        })
+        if to.eq(list_bullet_configuration_record::CHECKBOX) {
+            return String::from(r#"<div class="checkbox"></div>"#)
+        }
+
+        if to.eq(list_bullet_configuration_record::CHECKBOX_CHECKED) {
+            return String::from(r#"<div class="checkbox-checked"></div>"#)
+        }
+
+        to
+    }
+
+    fn bullet_transform(bullet: &str, indentation_level: usize, list_bullets_configurations: &Vec<ListBulletConfigurationRecord>) -> String {
+
+        for bullet_configuration in list_bullets_configurations {
+
+            if bullet_configuration.from.eq(bullet) {
+                if bullet_configuration.strict_indentation && indentation_level == bullet_configuration.indentation_level {
+
+                    return Self::transform_to_field(bullet_configuration.to.clone())
+
+                } else if !bullet_configuration.strict_indentation && indentation_level >= bullet_configuration.indentation_level {
+                    return Self::transform_to_field(bullet_configuration.to.clone())
+                }
+            }
+        }
+
+        String::from(bullet)
     }
 }
 
@@ -68,7 +87,7 @@ impl ParsingRule for HtmlListRule {
                             indentation_level += 1;
                         }
 
-                        let bullet = Self::bullet_transform(bullet, indentation_level);
+                        let bullet = Self::bullet_transform(bullet, indentation_level, parsing_configuration.list_bullets_configuration());
 
                         parsed_content.push_str(format!(r#"
                         <li class="list-item">
@@ -103,10 +122,11 @@ mod test {
 - element 2
     - element 2.1
         - element 2.1.1a
-        element 2.1.1b
+        | element 2.1.1b
         - element 2.1.2
         - element 2.1.3
     - element 2.2
+- element 3
 "#.trim();
        
        let rule = HtmlListRule::new();

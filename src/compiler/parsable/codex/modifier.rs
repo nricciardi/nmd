@@ -68,6 +68,7 @@ pub enum Modifier {
     InlineMath,
     Comment,
     Bookmark,
+    Checkbox,
     HeadingGeneralCompactVersion(u32),
     HeadingGeneralExtendedVersion(u32),
 
@@ -165,7 +166,7 @@ impl Modifier {
             Self::CommonParagraph => String::from(r#"(?s:(?m:^(.+?)(?:\n\n|\n$)))"#),
             Self::CodeBlock => String::from(r"```([a-zA-Z]+)\n+(.*?)\n+```"),
             Self::MathBlock => String::from(r#"\$\$((?s:.+?))\$\$"#),
-            Self::List => String::from(r#"(?s)(\s*)(-|\*|\d|&[^;]+;[.)]?)[[:space:]](.*\s*?)?"#),
+            Self::List => String::from(r#"(?s)(\s*)(-\[\]|-\[ \]|-\[x\]|-\[x\]|-|->|\||\*|\+|--|\d[.)]?|.+[.)]|&[^;]+;)[[:space:]](.*\s*?)?"#),
             
             _ => String::from(r"RULE TODO")                                               // TODO
         }

@@ -9,6 +9,8 @@
 
 
 .list-item-bullet {
+    display: inline-block;
     margin-right: 0.5vw;
     font-size: large;
+    width: 0.5em;
 }
