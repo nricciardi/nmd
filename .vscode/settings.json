@@ -1,26 +1,8 @@
 {
     "rust-analyzer.linkedProjects": [
-        "./nmd-compiler/Cargo.toml",
-        "./nmd-compiler/Cargo.toml",
-        "./nmd-compiler/Cargo.toml",
-        "./nmd-compiler/Cargo.toml",
-        "./nmd-compiler/Cargo.toml",
-        "./nmd-compiler/Cargo.toml",
-        "./nmd-compiler/Cargo.toml",
-        "./nmd-compiler/Cargo.toml",
-        "./nmd-compiler/Cargo.toml",
-        "./nmd-compiler/Cargo.toml",
-        "./nmd-compiler/Cargo.toml",
-        "./nmd-compiler/Cargo.toml",
-        "./nmd-compiler/Cargo.toml",
-        "./nmd-compiler/Cargo.toml"
+        "./Cargo.toml",
+        "./Cargo.toml",
+        "./Cargo.toml"
     ],
-    "cSpell.words": [
-        "Assemblable",
-        "Dumpable",
-        "subresource",
-        "subresources",
-        "superchapter",
-        "thiserror"
-    ]
+    "rust-analyzer.showUnlinkedFileNotification": false
 }
