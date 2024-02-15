@@ -1,15 +1,29 @@
-# New MarkDown [BETA]
+# New MarkDown [ALPHA]
 
 [![License](https://img.shields.io/badge/license-GPL3-green.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v0.5.0-blue.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-v0.6.0-blue.svg)](CHANGELOG.md)
 
 
-- [New MarkDown \[BETA\]](#new-markdown-beta)
+- [New MarkDown \[ALPHA\]](#new-markdown-alpha)
   - [Overview](#overview)
     - [Features](#features)
     - [Structure](#structure)
       - [Dossier](#dossier)
-  - [Modifier](#modifier)
+        - [Dossier configuration](#dossier-configuration)
+          - [name](#name)
+          - [documents](#documents)
+          - [style](#style)
+          - [metadata](#metadata)
+          - [compilation](#compilation)
+  - [Getting Started](#getting-started)
+    - [Installation](#installation)
+    - [Generate a new dossier using compiler](#generate-a-new-dossier-using-compiler)
+      - [Compile dossier](#compile-dossier)
+      - [HTML](#html)
+  - [Features](#features-1)
+    - [Planned Features](#planned-features)
+    - [Features in Progress](#features-in-progress)
+  - [NMD Syntax](#nmd-syntax)
     - [Heading (Title of a chapter)](#heading-title-of-a-chapter)
     - [Inline modifier](#inline-modifier)
       - [Escape \[NOT SUPPORTED YET\]](#escape-not-supported-yet)
@@ -17,8 +31,8 @@
       - [Reference \[NOT SUPPORTED YET\]](#reference-not-supported-yet)
       - [Bold](#bold)
       - [Italic](#italic)
-      - [Strikethrough text](#strikethrough-text)
-      - [Underlined text](#underlined-text)
+      - [Strikethrough](#strikethrough)
+      - [Underlined](#underlined)
         - [Colors and Highlighted Text \[NOT SUPPORTED YET\]](#colors-and-highlighted-text-not-supported-yet)
         - [Compatible highlight text \[NOT SUPPORTED YET\]](#compatible-highlight-text-not-supported-yet)
       - [Custom text style \[NOT SUPPORTED YET\]](#custom-text-style-not-supported-yet)
@@ -27,6 +41,7 @@
       - [Subscript \[NOT SUPPORTED YET\]](#subscript-not-supported-yet)
       - [Link \[NOT SUPPORTED YET\]](#link-not-supported-yet)
       - [Inline code](#inline-code)
+      - [Inline math](#inline-math)
       - [Inline comments \[TO BE DEFINE; NOT SUPPORTED YET\]](#inline-comments-to-be-define-not-supported-yet)
       - [Bookmark \[TO BE DEFINE; NOT SUPPORTED YEY\]](#bookmark-to-be-define-not-supported-yey)
         - [Todo](#todo)
@@ -39,16 +54,6 @@
       - [Multiline comments \[TO BE DEFINE; NOT SUPPORTED YET\]](#multiline-comments-to-be-define-not-supported-yet)
       - [Focus block \[TO BE DEFINE; NOT SUPPORTED YET\]](#focus-block-to-be-define-not-supported-yet)
       - [Math block (LaTeX)](#math-block-latex)
-  - [Getting Started](#getting-started)
-    - [Installation](#installation)
-    - [How to use](#how-to-use)
-      - [Create a new dossier](#create-a-new-dossier)
-      - [Generate a new empty dossier using compiler](#generate-a-new-empty-dossier-using-compiler)
-      - [Compile dossier](#compile-dossier)
-      - [HTML](#html)
-  - [Features](#features-1)
-    - [Planned Features](#planned-features)
-    - [Features in Progress](#features-in-progress)
   - [Author](#author)
   - [Contributing](#contributing)
   - [License](#license)
@@ -70,15 +75,174 @@ NMD is full compatible with CommonMark standard.
 
 ### Structure
 
-TODO
+There are several type of ways to write NMD.
+
+The structure hierarchy is the following:
+
+1. **Dossier**: structured project
+2. **Document**: single NMD file having `.nmd` extension
+3. **Chapter**: actual NMD text, it is identified by the heading and it has some paragraph
+4. **Paragraph**: actual NMD text, it is the text block in a chapter. Each paragraph is separated by each other by two new lines (`\n\n`)
+
+![Structure](./docs/assets/images/nmd-strucutre-sets.png)
 
 #### Dossier
 
-TODO
+A **dossier** is a structured project having one or more *NMD documents*.
 
-## Modifier
+It allows to manage a set of related NMD documents and their assets.
+
+> **Asset** is a resource used in a document, e.g. an image, or a custom *style*. 
+
+A dossier allows to write the content in different NMD files and than union them in a single output.
+
+The actual structure of a dossier is the following:
+
+- `assets/`
+  - `images/`
+  - `documents/`
+  - `styles/`
+  - ...
+- `nmd.yml` or `nmd.json` called **dossier configuration**
+- set of NMD document (having `.nmd` extension)
+
+The `images/` directory contains... images! Such as `documents` which contains documents and `styles/` which contains custom style for dossier.
+
+The custom style must be written in **CSS**. The CSS classes are specified in each following *modifier section*.
+
+##### Dossier configuration
+
+The **dossier configuration** is a YAML or JSON file which contains configuration parameters for the dossier.
+
+Considering YAML version, it may have the following content:
+
+```yaml
+name: New Dossier
+
+documents:
+- ./welcome.nmd
+
+style:
+  theme: Light
+  addons: []
+
+metadata: {}
+
+compilation:
+  embed_local_image: true
+  embed_remote_image: true
+  compress_embed_image: true
+  strict_image_src_check: true
+  parallelization: true
+  use_remote_addons: false
+```
+
+###### name
+
+`name` is the name of dossier.
+
+###### documents
+
+`documents` is a list where are specified the order of the documents in the final output.
+
+###### style
+
+`style` section has the *style configuration*.
+
+`theme` specified the theme used to create output. It can be:
+
+- `Light` (default)
+- `Dark`
+- `Vintage` is work in progress now 
+
+`addons` is **not** used now. **[WIP]**
+
+###### metadata
+
+`metadata` is **not** used now. **[WIP]**
+
+###### compilation
+
+In `compilation` section you can specified the default values to use during compilation.
+
+- `embed_local_image` (boolean): local images (specified by local path) are inserted in the output without reference, but embedded 
+- `embed_remote_image` (boolean): remote images (specified by remote path, e.g. URL) are inserted in the output without reference, but embedded 
+- `compress_embed_image` (boolean) **[WIP]**: compress embedded images
+- `strict_image_src_check` (boolean): apply a strict check to image sources
+- `parallelization` (boolean): if `true` parallelize execution of compilation
+- `use_remote_addons` (boolean): if `true` use CDN instead of local CSS/Javascript to include third part library
+
+
+## Getting Started
+
+### Installation
+
+To install NMD, follow these steps:
+
+1. Download the last release based on your operating system
+2. Extract files
+3. Run `nmd` execution file 
+
+### Generate a new dossier using compiler
+
+To **generate a new dossier** you can use the following command:
+
+```shell
+nmd generate dossier -p your/final/directory/path/
+```
+
+There are many *flags* that you can use in combination with `generate dossier`. For example, if you want *force* the generation you can use `-f`, or if you want a *welcome page* you can use `-w`.
+
+The Git support is planned, but not implemented yet. You can only add `.gitkeep` files in assets directories using `-k`.
+
+#### Compile dossier
+
+#### HTML
+
+Compile a dossier in `html`:
+
+```shell
+nmd compile dossier -f html -i dossier/input/path -o artifact/output/path
+```
+
+> In this moment, to render *math block* and *inline math* an Internet connection is needed. This requirement will be removed in future version.
+
+
+
+## Features
+
+### Planned Features
+
+- [ ] All modifiers
+- [ ] Possibility to use a different dossier configuration name
+
+### Features in Progress
+
+- [x] Use file name instead of absolute path in dossier configuration
+- [x] Other sections in dossier configuration to manage all options
+- [x] Local math (no CDN)
+- [ ] Lists
+- [ ] Quotation and "focus block"
+- [ ] Base page style
+- [ ] Paper format support (A4, A5, ...)
+- [ ] Custom style
+- [ ] Style modifier
+- [ ] PDF compile format
+- [ ] Tables
+- [ ] Vintage style (typewriter)
+
+
+## NMD Syntax
+
+NMD syntax is based on [CommonMark](https://commonmark.org/), but add new concepts and modifiers.
+
+> A **modifier** is a special combination of symbols which allows to modify the text style.
+
+In the next section there are all modifiers of NMD.
 
 ### Heading (Title of a chapter)
+
+**Style class**: `heading-#` (where `#` is the heading number, e.g. `heading-3`)
 
 Create headings using `#` (up to 6 levels). `#` must be separated from text using a blank space ` `.
 
@@ -136,6 +300,8 @@ The syntax is below.
 
 #### Bold
 
+**Style class**: `bold`
+
 ```markdown
 **Bold**
 
@@ -146,6 +312,8 @@ __Bold__
 
 #### Italic
 
+**Style class**: `italic`
+
 ```markdown
 _Italic_
 
@@ -154,13 +322,17 @@ or
 *Italic*
 ```
 
-#### Strikethrough text
+#### Strikethrough
+
+**Style class**: `strikethrough`
 
 ```
 ~~Strikethrough text~~
 ```
 
-#### Underlined text
+#### Underlined
+
+**Style class**: `underlined`
 
 ```
 ++Underlined text++
@@ -231,14 +403,26 @@ Pay attention, those are two single quote
 
 #### Link [NOT SUPPORTED YET]
 
+**Style class**: `link`
+
 ```markdown
 [Link](http://a.com)
 ```
 
 #### Inline code
 
+**Style class**: `inline-code`
+
 ```markdown
 `inline code`
+```
+
+#### Inline math
+
+**Style class**: `inline-math`
+
+```markdown
+$inline math$
 ```
 
 #### Inline comments [TO BE DEFINE; NOT SUPPORTED YET]
@@ -344,6 +528,8 @@ This [word]{#the-word; color: red} is red.
 
 #### Image
 
+**Style class**: `image`
+
 ```markdown
 ![Image](http://url/a.png)
 ```
@@ -353,6 +539,8 @@ This [word]{#the-word; color: red} is red.
 To apply a line separator use --- or *** in a new blank line.
 
 #### List [NOT SUPPORTED YET; WIP]
+
+**Style class**: `list`, `list-item`, `list-item-indentation`, `list-item-bullet`, `list-item-content` 
 
 Different types of list are supported in NMD, below the list with modifier
 
@@ -368,6 +556,8 @@ Using `tabs` or `   ` (3 spaces) you can create different list levels.
 Style of first and second bullet types can be managed using the configuration file.
 
 #### Code block
+
+**Style class**: `code-block`
 
 Code blocks use ``` as paragraph modifier.
 
@@ -415,6 +605,8 @@ Watch out!!!
 
 #### Math block (LaTeX)
 
+**Style class**: `math-block`
+
 Math block is a particular paragraph used to print mathematical formulas and more.
 
 The paragraph modifier for math block is double $, i.e. `$$` to open and close blocks.
@@ -423,77 +615,13 @@ NMD uses [Katex](https://katex.org/) to render math blocks.
 
 
 
-## Getting Started
-
-### Installation
-
-To install the NMD compiler, follow these steps:
-
-TODO
-
-### How to use
-
-#### Create a new dossier
-
-Each dossier must have a *dossier configuration file*. It can be named `nmd.yml` or `nmd.json`.
-
-An example of `nmd.yml` file to create a dossier with 3 documents:
-
-```yaml
-name: "new dossier"
-documents:
-  - "./document1.nmd"
-  - "./document2.nmd"
-  - "./document3.nmd"
-```
-
-Each document path can me absolute or relative (from `nmd.yml`).
-
-#### Generate a new empty dossier using compiler
-
-To generate a new NMD dossier:
-
-```shell
-nmd-compiler generate dossier -p new/dossier/path
-```
-
-You can add a `welcome.nmd` page using `-w`, add `.gitkeep` using `-k` and force directory creation using `-f`.
-
-#### Compile dossier
-
-#### HTML
-
-Build a dossier in `html`:
-
-```shell
-nmd-compiler compile dossier -f html -i dossier/input/path -o artifact/output/path
-```
-
-> In this moment, to render *math block* and *inline math* an Internet connection is needed. This requirement will be removed in future version.
 
 
 
-## Features
 
-### Planned Features
 
-- [ ] All modifiers
-- [ ] Possibility to use a different dossier configuration name
 
-### Features in Progress
 
-- [x] Use file name instead of absolute path in dossier configuration
-- [x] Other sections in dossier configuration to manage all options
-- [x] Local math (no CDN)
-- [ ] Lists
-- [ ] Quotation and "focus block"
-- [ ] Base page style
-- [ ] Paper format support (A4, A5, ...)
-- [ ] Custom style
-- [ ] Style modifier
-- [ ] PDF compile format
-- [ ] Tables
-- [ ] Vintage style (typewriter)
 
 
 ## Author

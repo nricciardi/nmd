@@ -200,8 +200,8 @@ impl Codex {
         let mut content_rules: Vec<Box<dyn ParsingRule>> = Vec::new();
 
         for i in (1..=MAX_HEADING_LEVEL).rev() {
-            content_rules.push(Box::new(ReplacementRule::new(Modifier::HeadingGeneralExtendedVersion(i), format!(r#"<h{} class="h{}">$1</h{}>"#, i, i, i))));
-            content_rules.push(Box::new(ReplacementRule::new(Modifier::HeadingGeneralCompactVersion(i), String::from(r#"<h${1} class="h${1}">$2</h$>"#))));
+            content_rules.push(Box::new(ReplacementRule::new(Modifier::HeadingGeneralExtendedVersion(i), format!(r#"<h{} class="heading-{}">$1</h{}>"#, i, i, i))));
+            content_rules.push(Box::new(ReplacementRule::new(Modifier::HeadingGeneralCompactVersion(i), String::from(r#"<h${1} class="heading-${1}">$2</h$>"#))));
         }
 
         content_rules.append(&mut vec![

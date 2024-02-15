@@ -16,7 +16,7 @@ use simple_logger::SimpleLogger;
 
 use crate::compiler::{compilation_configuration::CompilationConfiguration, output_format::OutputFormat};
 
-pub const VERSION: &str = "0.5.0-alpha";
+pub const VERSION: &str = "0.6.0-alpha";
 
 #[derive(Error, Debug)]
 pub enum CompilerCliError {
@@ -45,7 +45,7 @@ impl CompilerCli {
 
     pub fn new() -> Self {
 
-        let cli: Command = Command::new("nmd-compiler")
+        let cli: Command = Command::new("nmd")
                 .about("Official compiler to parse NMD")
                 .version(VERSION)
                 .subcommand_required(true)
