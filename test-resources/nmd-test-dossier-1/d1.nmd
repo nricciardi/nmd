@@ -6,9 +6,9 @@ paragraph 1
 
 emoji: :alien:
 
-^superscript^
+^superscript^ normal text
 
-~subscript~
+~subscript~ normal text
 
 ## title 2
 

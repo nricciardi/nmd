@@ -157,8 +157,8 @@ impl Codex {
                 if paragraphs.par_iter().find_any(|p| {
                     (p.0 >= start && p.1 <= end) ||
                     (p.0 <= start && p.1 >= end) ||
-                    (p.0 <= start && start <= p.1) ||
-                    (p.0 <= end && end <= p.1)
+                    (p.0 <= start && p.1 >= start && p.1 <= end) ||
+                    (p.0 >= start && p.0 <= end && p.1 <= end)
                 }).is_some() {     // => overlap
                     log::debug!("discarded paragraph between {} to {} using pattern: {:?}", start, end, &modifier.search_pattern());
                     return

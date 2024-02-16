@@ -141,7 +141,7 @@ impl Modifier {
     pub fn search_pattern(&self) -> String {
         match *self {
             Self::Comment => String::from(r"^//(.*)"),
-            Self::Emoji => String::from(r":(.*):"),
+            Self::Emoji => String::from(r":(\w*):"),
             Self::Checkbox => String::from(r"(\[\]|\[ \])"),
             Self::CheckboxChecked => String::from(r"(\[x\]|\[X\])"),
             Self::Superscript => String::from(r"\^(.*)\^"),
