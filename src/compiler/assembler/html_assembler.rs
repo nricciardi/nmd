@@ -41,7 +41,8 @@ impl Assembler for HtmlAssembler {
                         .with_script_link_attr("https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js", [
                             ("crossorigin", "anonymous"),
                         ])
-                        .with_head_link("https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.css", "stylesheet");
+                        .with_head_link("https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.css", "stylesheet")
+                        .with_head_link("https://emoji-css.afeld.me/emoji.css", "stylesheet");
                     
                 },
                 Theme::Dark => {
@@ -52,7 +53,8 @@ impl Assembler for HtmlAssembler {
                         .with_script_link_attr("https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js", [
                             ("crossorigin", "anonymous"),
                         ])
-                        .with_head_link("https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-okaidia.css", "stylesheet");
+                        .with_head_link("https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-okaidia.css", "stylesheet")
+                        .with_head_link("https://emoji-css.afeld.me/emoji.css", "stylesheet");
                 },
             }
 
@@ -85,6 +87,8 @@ impl Assembler for HtmlAssembler {
                     });"#);
         } else {
 
+            page.add_style(include_str!("html_assembler/emoji/emoji.min.css"));
+            
             page.add_style(include_str!("html_assembler/math_block/katex.css"));
             page.add_style(include_str!("html_assembler/math_block/katex-fonts.css"));
             page.add_script_literal(include_str!("html_assembler/math_block/katex.min.js"));

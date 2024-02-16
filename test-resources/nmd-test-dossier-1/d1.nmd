@@ -4,6 +4,12 @@ paragraph 1
 
 **bold text**, __bold text__, _italic text_, *bold text*, ~~strikethrough~~, ++underlined++
 
+emoji: :alien:
+
+^superscript^
+
+~subscript~
+
 ## title 2
 
 paragraph 2a.
@@ -15,3 +21,13 @@ paragraph
 multi
 line
 .
+
+# title 1
+
+::: warning
+new
+warning
+
+multiline
+:::
+

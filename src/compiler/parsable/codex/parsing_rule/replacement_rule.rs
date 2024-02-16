@@ -13,7 +13,9 @@ use super::{Modifier, ParsingRule};
 /// Rule to replace a NMD text based on a specific pattern matching rule
 pub struct ReplacementRule<R: Replacer> {
     modifier: Modifier,
-    replacement_pattern: R
+    replacement_pattern: R,
+    newline_fix: bool,
+    newline_fix_pattern: Option<String>
 }
 
 impl<R: Replacer + Display> ReplacementRule<R> {
@@ -30,8 +32,17 @@ impl<R: Replacer + Display> ReplacementRule<R> {
 
         Self {
             modifier,
-            replacement_pattern
+            replacement_pattern,
+            newline_fix: false,
+            newline_fix_pattern: None
         }
+    }
+
+    pub fn with_newline_fix(mut self, pattern: String) -> Self {
+        self.newline_fix = true;
+        self.newline_fix_pattern = Some(pattern);
+
+        self
     }
 }
 
@@ -45,9 +56,14 @@ impl ParsingRule for ReplacementRule<String> {
           Err(_) => return Err(ParsingError::InvalidPattern(self.modifier().search_pattern()))  
         };
 
-        log::debug!("parsing:\n{}\nusing '{}'->'{}'", content, self.modifier().search_pattern(), self.replacement_pattern);
+        log::debug!("parsing:\n{}\nusing '{}'->'{}' (newline fix: {})", content, self.modifier().search_pattern(), self.replacement_pattern, self.newline_fix);
 
-        let parsed_content = regex.replace_all(content, self.replacement_pattern.as_str()).to_string();
+        let mut parsed_content = regex.replace_all(content, self.replacement_pattern.as_str()).to_string();
+
+        if self.newline_fix {
+            let regex = Regex::new("\n\n").unwrap();
+            parsed_content = regex.replace_all(&parsed_content, self.newline_fix_pattern.clone().unwrap().as_str()).to_string();
+        }
 
         log::debug!("result:\n{}", parsed_content);
         

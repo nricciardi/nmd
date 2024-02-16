@@ -1,7 +1,7 @@
 # New MarkDown [ALPHA]
 
 [![License](https://img.shields.io/badge/license-GPL3-green.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v0.7.0-blue.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-v0.7.3-blue.svg)](CHANGELOG.md)
 
 
 - [New MarkDown \[ALPHA\]](#new-markdown-alpha)
@@ -38,12 +38,12 @@
         - [Compatible highlight text \[NOT SUPPORTED YET\]](#compatible-highlight-text-not-supported-yet)
       - [Custom text style \[NOT SUPPORTED YET\]](#custom-text-style-not-supported-yet)
       - [Emoji \[NOT SUPPORTED YET\]](#emoji-not-supported-yet)
-      - [Superscript \[NOT SUPPORTED YET\]](#superscript-not-supported-yet)
-      - [Subscript \[NOT SUPPORTED YET\]](#subscript-not-supported-yet)
+      - [Superscript](#superscript)
+      - [Subscript](#subscript)
       - [Link \[NOT SUPPORTED YET\]](#link-not-supported-yet)
       - [Inline code](#inline-code)
       - [Inline math](#inline-math)
-      - [Inline comments \[TO BE DEFINE; NOT SUPPORTED YET\]](#inline-comments-to-be-define-not-supported-yet)
+      - [Inline comments](#inline-comments)
       - [Bookmark \[TO BE DEFINE; NOT SUPPORTED YEY\]](#bookmark-to-be-define-not-supported-yey)
         - [Todo](#todo)
     - [Paragraph modifier](#paragraph-modifier)
@@ -87,7 +87,8 @@ NMD is full compatible with CommonMark standard.
 - [x] Use file name instead of absolute path in dossier configuration
 - [x] Other sections in dossier configuration to manage all options
 - [x] Local math (no CDN)
-- [ ] Lists
+- [x] Lists
+- [ ] Link
 - [ ] Quotation and "focus block"
 - [ ] Base page style
 - [ ] Paper format support (A4, A5, ...)
@@ -397,7 +398,7 @@ Two ways to add emoji:
 - Using `:emojiCode:`, for example 🐫
 
 
-#### Superscript [NOT SUPPORTED YET]
+#### Superscript
 
 ```
 1^st^
@@ -405,7 +406,7 @@ Two ways to add emoji:
 
 > This modifier can be placed attached on other text.
 
-#### Subscript [NOT SUPPORTED YET]
+#### Subscript
 
 For example, if you want to write "water" in a more scientific way:
 
@@ -441,7 +442,7 @@ Pay attention, those are two single quote
 $inline math$
 ```
 
-#### Inline comments [TO BE DEFINE; NOT SUPPORTED YET]
+#### Inline comments
 
 ```
 // this is a comment

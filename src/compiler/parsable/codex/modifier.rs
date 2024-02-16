@@ -69,6 +69,7 @@ pub enum Modifier {
     Comment,
     Bookmark,
     Checkbox,
+    CheckboxChecked,
     HeadingGeneralCompactVersion(u32),
     HeadingGeneralExtendedVersion(u32),
 
@@ -77,6 +78,7 @@ pub enum Modifier {
     Image,
     CodeBlock,
     CommentBlock,
+    FocusQuotationBlock,
     FocusBlock,
     MathBlock,
     CommonParagraph,
@@ -95,6 +97,7 @@ impl Modifier {
             Self::Image,
             Self::CodeBlock,
             Self::CommentBlock,
+            Self::FocusQuotationBlock,
             Self::FocusBlock,
             Self::MathBlock,
             Self::CommonParagraph,
@@ -136,6 +139,12 @@ impl Modifier {
 
     pub fn search_pattern(&self) -> String {
         match *self {
+            Self::Comment => String::from(r"^//(.*)"),
+            Self::Emoji => String::from(r":(.*):"),
+            Self::Checkbox => String::from(r"(\[\]|\[ \])"),
+            Self::CheckboxChecked => String::from(r"(\[x\]|\[X\])"),
+            Self::Superscript => String::from(r"\^(.*)\^"),
+            Self::Subscript => String::from(r"~(.*)~"),
             Self::BoldStarVersion => String::from(r"\*\*(.*?)\*\*"),
             Self::BoldUnderscoreVersion => String::from(r"__(.*?)__"),
             Self::ItalicStarVersion => String::from(r"\*(.*?)\*"),
@@ -166,7 +175,10 @@ impl Modifier {
             Self::CommonParagraph => String::from(r#"(?s:(?m:^(.+?)(?:\n\n|\n$)))"#),
             Self::CodeBlock => String::from(r"```([a-zA-Z]+)\n+(.*?)\n+```"),
             Self::MathBlock => String::from(r#"\$\$((?s:.+?))\$\$"#),
-            Self::List => String::from(r#"(?s)(\s*)(-\[\]|-\[ \]|-\[x\]|-\[x\]|-|->|\||\*|\+|--|\d[.)]?|.+[.)]|&[^;]+;)[[:space:]](.*\s*?)?"#),
+
+            // TODO!: matches over the list
+            Self::List => String::from(r#"(?s)([\t ]*)(-\[\]|-\[ \]|-\[x\]|-\[x\]|-|->|\||\*|\+|--|\d[\.)]?|.{1,8}[\.)]|&[^;]+;) (.*\s*?)?"#),
+            Self::FocusBlock => String::from(r"^::: (.*)\n(?s:(.*))\n:::"),
             
             _ => String::from(r"RULE TODO")                                               // TODO
         }
@@ -180,6 +192,7 @@ impl Modifier {
             Self::CodeBlock => Modifiers::All,
             Self::InlineMath => Modifiers::All,
             Self::MathBlock => Modifiers::All,
+            Self::Emoji => Modifiers::All,
             _ => Modifiers::None
         }
     }
