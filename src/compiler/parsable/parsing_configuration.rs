@@ -146,56 +146,7 @@ impl Default for ParsingConfiguration {
             metadata: ParsingConfigurationMetadata::default(),
             excluded_modifiers: Modifiers::None,
             parallelization: false,
-            list_bullets_configuration: vec![
-                ListBulletConfigurationRecord {
-                    from: String::from(r"|"),
-                    to: String::from(r"&#8205;"),
-                    indentation_level: 0,
-                    strict_indentation: false
-                },
-                ListBulletConfigurationRecord {
-                    from: String::from(r"-"),
-                    to: String::from(r"&bull;"),
-                    indentation_level: 0,
-                    strict_indentation: true
-                },
-                ListBulletConfigurationRecord {
-                    from: String::from(r"-"),
-                    to: String::from(r"&#9702;"),
-                    indentation_level: 1,
-                    strict_indentation: true
-                },
-                ListBulletConfigurationRecord {
-                    from: String::from(r"-"),
-                    to: String::from(r"&#8211;"),
-                    indentation_level: 2,
-                    strict_indentation: false
-                },
-                ListBulletConfigurationRecord {
-                    from: String::from(r"*"),
-                    to: String::from(r"&bull;"),
-                    indentation_level: 0,
-                    strict_indentation: false
-                },
-                ListBulletConfigurationRecord {
-                    from: String::from(r"+"),
-                    to: String::from(r"&#9702;"),
-                    indentation_level: 0,
-                    strict_indentation: false
-                },
-                ListBulletConfigurationRecord {
-                    from: String::from(r"->"),
-                    to: String::from(r"&#9654;"),
-                    indentation_level: 0,
-                    strict_indentation: false
-                },
-                ListBulletConfigurationRecord {
-                    from: String::from(r"--"),
-                    to: String::from(r"&#8211;"),
-                    indentation_level: 0,
-                    strict_indentation: false
-                },
-            ]
+            list_bullets_configuration: list_bullet_configuration_record::default_bullets_configuration()
         }
     }
 }

@@ -152,15 +152,16 @@ impl Codex {
             regex.find_iter(content.clone().as_str()).for_each(|m| {
 
                 let start = m.start();
-                let end = m.end();
+                let end = m.end() - 1;
 
-                if paragraphs.par_iter().find_any(|p| {
+                let overlap_paragraph = paragraphs.par_iter().find_any(|p| {
                     (p.0 >= start && p.1 <= end) ||
                     (p.0 <= start && p.1 >= end) ||
                     (p.0 <= start && p.1 >= start && p.1 <= end) ||
                     (p.0 >= start && p.0 <= end && p.1 <= end)
-                }).is_some() {     // => overlap
-                    log::debug!("discarded paragraph between {} to {} using pattern: {:?}", start, end, &modifier.search_pattern());
+                });
+                if let Some(p) = overlap_paragraph {     // => overlap
+                    log::debug!("discarded paragraph:\n{}\nbecause there is another between {} to {} using pattern {:?}:\n{:#?}\n", m.as_str(), start, end, &modifier.search_pattern(), p);
                     return
                 }
 
