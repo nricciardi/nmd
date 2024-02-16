@@ -231,10 +231,10 @@ impl Codex {
         ]);
 
         let paragraph_rules: Vec<Box<dyn ParsingRule>> = vec![
-            Box::new(HtmlListRule::new()),
             Box::new(ReplacementRule::new(Modifier::MathBlock, String::from(r#"<p class="math-block">$$$$${1}$$$$</p>"#))),
             Box::new(HtmlImageRule::new()),
             Box::new(ReplacementRule::new(Modifier::CodeBlock, String::from(r#"<pre><code class="language-${1} code-block">$2</code></pre>"#))),
+            Box::new(HtmlListRule::new()),
             Box::new(ReplacementRule::new(Modifier::CommonParagraph, String::from(r#"<p class="p">${1}</p>"#))),
         ];
 
