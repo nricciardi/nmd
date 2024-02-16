@@ -66,7 +66,7 @@ impl ParsingRule for HtmlListRule {
 
         parsed_content.push_str(r#"<ul class="list">"#);
 
-        let search_patter = self.modifier().search_pattern().replace(r"(?s)", r"(?m)^");
+        let search_patter = Modifier::ListItem.search_pattern();
 
         let regex = Regex::new(&search_patter).unwrap();
 

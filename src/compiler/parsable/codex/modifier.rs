@@ -75,6 +75,7 @@ pub enum Modifier {
 
     // PARAGRAPH MODIFIERs
     List,
+    ListItem,
     Image,
     CodeBlock,
     CommentBlock,
@@ -176,8 +177,8 @@ impl Modifier {
             Self::CodeBlock => String::from(r"```([a-zA-Z]+)\n+(.*?)\n+```"),
             Self::MathBlock => String::from(r#"\$\$((?s:.+?))\$\$"#),
 
-            // TODO!: matches over the list
-            Self::List => String::from(r#"(?s)([\t ]*)(-\[\]|-\[ \]|-\[x\]|-\[x\]|-|->|\||\*|\+|--|\d[\.)]?|.{1,8}[\.)]|&[^;]+;) (.*\s*?)?"#),
+            Self::ListItem => String::from(r#"(?s)([\t ]*)(-\[\]|-\[ \]|-\[x\]|-\[X\]|-|->|\||\*|\+|--|\d[\.)]?|.{1,8}[\.)]|&[^;]+;) (.*)"#),
+            Self::List => format!("({})(?s:.*)({})", Self::ListItem.search_pattern(), Self::ListItem.search_pattern()),
             Self::FocusBlock => String::from(r"^::: (.*)\n(?s:(.*))\n:::"),
             
             _ => String::from(r"RULE TODO")                                               // TODO
