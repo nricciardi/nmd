@@ -1,7 +1,7 @@
 # New MarkDown [ALPHA]
 
 [![License](https://img.shields.io/badge/license-GPL3-green.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v0.7.5-blue.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-v0.7.6-blue.svg)](CHANGELOG.md)
 
 
 - [New MarkDown \[ALPHA\]](#new-markdown-alpha)
@@ -53,7 +53,7 @@
       - [List](#list)
       - [Code block](#code-block)
       - [Multiline comments \[TO BE DEFINE; NOT SUPPORTED YET\]](#multiline-comments-to-be-define-not-supported-yet)
-      - [Focus block \[TO BE DEFINE; NOT SUPPORTED YET\]](#focus-block-to-be-define-not-supported-yet)
+      - [Focus block](#focus-block)
       - [Math block (LaTeX)](#math-block-latex)
   - [Author](#author)
   - [Contributing](#contributing)
@@ -646,7 +646,9 @@ comment
 */
 ```
 
-#### Focus block [TO BE DEFINE; NOT SUPPORTED YET]
+#### Focus block
+
+**Style class**: `focus-block`, `focus-block-type` (replace `type`)
 
 Focus blocks allow to insert text in particular paragraph in which the text is highlighted.
 

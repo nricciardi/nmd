@@ -147,6 +147,9 @@ impl Codex {
         }
 
         for modifier in Modifier::paragraph_modifiers() {
+
+            log::debug!("test {:?}", modifier);
+
             let regex = Regex::new(&modifier.search_pattern()).unwrap();
 
             regex.find_iter(content.clone().as_str()).for_each(|m| {
@@ -155,19 +158,19 @@ impl Codex {
                 let end = m.end() - 1;
 
                 let overlap_paragraph = paragraphs.par_iter().find_any(|p| {
-                    (p.0 >= start && p.1 <= end) ||
-                    (p.0 <= start && p.1 >= end) ||
-                    (p.0 <= start && p.1 >= start && p.1 <= end) ||
-                    (p.0 >= start && p.0 <= end && p.1 <= end)
+                    (p.0 >= start && p.1 <= end) ||     // current paragraph contains p
+                    (p.0 <= start && p.1 >= end) ||     // p contains current paragraph
+                    (p.0 <= start && p.1 >= start && p.1 <= end) ||     // left overlap
+                    (p.0 >= start && p.0 <= end && p.1 >= end)          // right overlap
                 });
                 if let Some(p) = overlap_paragraph {     // => overlap
-                    log::debug!("discarded paragraph:\n{}\nbecause there is another between {} to {} using pattern {:?}:\n{:#?}\n", m.as_str(), start, end, &modifier.search_pattern(), p);
+                    log::debug!("discarded paragraph:\n{}\nbecause there is an overlap between {} and {} using pattern {:?}:\n{:#?}\n", m.as_str(), start, end, &modifier.search_pattern(), p);
                     return
                 }
 
                 let matched_str = m.as_str().to_string();
 
-                log::debug!("found paragraph between {} to {}:\n{}\nusing pattern: {:?}", start, end, matched_str, &modifier.search_pattern());
+                log::debug!("found paragraph between {} and {}:\n{}\nusing {:?}", start, end, matched_str, &modifier);
 
                 let paragraph = Paragraph::from(matched_str);
 
@@ -209,13 +212,13 @@ impl Codex {
             Box::new(ReplacementRule::new(Modifier::InlineMath, String::from(r#"<span class="inline-math">$$${1}$$</span>"#))),
             Box::new(ReplacementRule::new(Modifier::InlineCode, String::from(r#"<code class="language-markup inline-code">${1}</code>"#))),
             Box::new(ReplacementRule::new(Modifier::BoldStarVersion, String::from(r#"<strong class="bold">${1}</strong>"#))),
-            Box::new(ReplacementRule::new(Modifier::Superscript, String::from(r#"<sup class="superscript">${1}</sup>"#))),
-            Box::new(ReplacementRule::new(Modifier::Subscript, String::from(r#"<sub class="subscript">${1}</sub>"#))),
             Box::new(ReplacementRule::new(Modifier::BoldUnderscoreVersion, String::from(r#"<strong class="bold">${1}</strong>"#))),
             Box::new(ReplacementRule::new(Modifier::ItalicStarVersion, String::from(r#"<em class="italic">${1}</em>"#))),
             Box::new(ReplacementRule::new(Modifier::ItalicUnderscoreVersion, String::from(r#"<em class="italic">${1}</em>"#))),
             Box::new(ReplacementRule::new(Modifier::Strikethrough, String::from(r#"<del class="strikethrough">${1}</del>"#))),
             Box::new(ReplacementRule::new(Modifier::Underlined, String::from(r#"<u class="underlined">${1}</u>"#))),
+            Box::new(ReplacementRule::new(Modifier::Superscript, String::from(r#"<sup class="superscript">${1}</sup>"#))),
+            Box::new(ReplacementRule::new(Modifier::Subscript, String::from(r#"<sub class="subscript">${1}</sub>"#))),
             Box::new(ReplacementRule::new(Modifier::Link, String::from(r#"<a href=\"$2\" class="link">${1}</a>"#))),
             Box::new(ReplacementRule::new(Modifier::Comment, String::from(r#"<!-- ${1} -->"#))),
             Box::new(ReplacementRule::new(Modifier::Checkbox, String::from(r#"<div class="checkbox"></div>"#))),
@@ -226,10 +229,10 @@ impl Codex {
         let paragraph_rules: Vec<Box<dyn ParsingRule>> = vec![
             Box::new(ReplacementRule::new(Modifier::MathBlock, String::from(r#"<p class="math-block">$$$$${1}$$$$</p>"#))),
             Box::new(HtmlImageRule::new()),
-            Box::new(ReplacementRule::new(Modifier::CodeBlock, String::from(r#"<pre><code class="language-${1} code-block">$2</code></pre>"#)).with_newline_fix(r"<br>".to_string())),
+            Box::new(ReplacementRule::new(Modifier::CodeBlock, String::from(r#"<pre><code class="language-${1} code-block">$2</code></pre>"#))),
             Box::new(HtmlListRule::new()),
-            Box::new(ReplacementRule::new(Modifier::FocusBlock, String::from(r#"<div class="focus-block focus-block-$1">$2</div>"#))),
-            Box::new(ReplacementRule::new(Modifier::CommonParagraph, String::from(r#"<p class="p">${1}</p>"#))),
+            Box::new(ReplacementRule::new(Modifier::FocusBlock, String::from(r#"<div class="focus-block focus-block-$1">$2</div>"#)).with_newline_fix(r"<br>".to_string())),
+            Box::new(ReplacementRule::new(Modifier::CommonParagraph, String::from(r#"<p class="paragraph">${1}</p>"#))),
         ];
 
         Self::new(configuration, content_rules, paragraph_rules, vec![], vec![])
@@ -239,7 +242,7 @@ impl Codex {
         
         self.content_rules.iter().filter(|&rules| {
             match rules.modifier() {
-                Modifier::HeadingGeneralCompactVersion(level) | Modifier::HeadingGeneralExtendedVersion(level) => true,
+                Modifier::HeadingGeneralCompactVersion(_) | Modifier::HeadingGeneralExtendedVersion(_) => true,
                 _ => false
             }
         }).collect()

@@ -2,7 +2,7 @@
 
 paragraph 1
 
-**bold text**, __bold text__, _italic text_, *bold text*, ~~strikethrough~~, ++underlined++
+**bold text**, __bold text__, _italic text_, *italic text*, ~~strikethrough~~, ++underlined++
 
 emoji: :alien:
 

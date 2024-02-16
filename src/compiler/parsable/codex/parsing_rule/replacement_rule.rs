@@ -159,22 +159,28 @@ print("hello world")
     }
 
     #[test]
-    fn math() {
+    fn focus_block() {
         let parsing_configuration = Arc::new(ParsingConfiguration::default());
 
-        let parsing_rule = ReplacementRule::new(Modifier::CodeBlock, String::from(r#"<pre><code class="language-$1 codeblock">$2</code></pre>"#));
+        let parsing_rule = ReplacementRule::new(Modifier::FocusBlock, String::from(r#"<div class="focus-block focus-block-$1">$2</div>"#)).with_newline_fix(r"<br>".to_string());
 
         let text_to_parse = r#"
-```python
+# title 1
 
-print("hello world")
+::: warning
+new
+warning
 
-```
+multiline
+:::
+
+
 "#;
 
         let parsed_text = parsing_rule.parse(text_to_parse, Arc::clone(&parsing_configuration)).unwrap();
+        let parsed_text = parsed_text.parsed_content();
 
-        assert_eq!(parsed_text.parsed_content(), "\n<pre><code class=\"language-python codeblock\">print(\"hello world\")</code></pre>\n");
+        assert_ne!(parsed_text, text_to_parse);
      
     }
 }

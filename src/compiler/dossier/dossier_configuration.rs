@@ -124,20 +124,26 @@ impl Default for DossierConfiguration {
 impl DossierConfiguration {
     fn try_from_as_yaml(content: String) -> Result<Self, ResourceError> {
 
-        log::debug!("try to load dossier configuration from yaml content...");
+        log::info!("try to load dossier configuration from yaml content...");
         
         match serde_yaml::from_str(&content) {
-            Ok(config) => return Ok(config),
+            Ok(config) => {
+                log::info!("dossier configuration loaded from yaml");
+                return Ok(config)
+            },
             Err(e) => return Err(ResourceError::InvalidResourceVerbose(e.to_string()))
         }
     }
 
     fn try_from_as_json(content: String) -> Result<Self, ResourceError> {
 
-        log::debug!("try to load dossier configuration from json content...");
+        log::info!("try to load dossier configuration from json content...");
 
         match serde_json::from_str(&content) {
-            Ok(config) => return Ok(config),
+            Ok(config) => {
+                log::info!("dossier configuration loaded from json");
+                return Ok(config)
+            },
             Err(e) => return Err(ResourceError::InvalidResourceVerbose(e.to_string()))
         }
     }

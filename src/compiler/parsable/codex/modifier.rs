@@ -174,12 +174,12 @@ impl Modifier {
             Self::InlineMath => String::from(r#"\$([^$\n]+)\$"#),
 
             Self::CommonParagraph => String::from(r#"(?s:(?m:^(.+?)(?:\n\n|\n$)))"#),
-            Self::CodeBlock => String::from(r"```([a-zA-Z]+)\n+(.*?)\n+```"),
+            Self::CodeBlock => String::from(r"```(\w+)\n+(.*?)\n+```"),
             Self::MathBlock => String::from(r#"\$\$((?s:.+?))\$\$"#),
 
             Self::ListItem => String::from(r#"(?s)([\t ]*)(-\[\]|-\[ \]|-\[x\]|-\[X\]|-|->|\||\*|\+|--|\d[\.)]?|.{1,8}[\.)]|&[^;]+;) (.*)"#),
             Self::List => format!("({})(?s:.*)({})", Self::ListItem.search_pattern(), Self::ListItem.search_pattern()),
-            Self::FocusBlock => String::from(r"^::: (.*)\n(?s:(.*))\n:::"),
+            Self::FocusBlock => String::from(r"::: (\w+)\n(?s:(.*))\n:::"),
             
             _ => String::from(r"RULE TODO")                                               // TODO
         }
