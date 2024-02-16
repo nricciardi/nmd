@@ -53,7 +53,7 @@
       - [List](#list)
       - [Code block](#code-block)
       - [Multiline comments \[TO BE DEFINE; NOT SUPPORTED YET\]](#multiline-comments-to-be-define-not-supported-yet)
-      - [Focus block](#focus-block)
+      - [Focus block \[NOT FULLY SUPPORTED YET\]](#focus-block-not-fully-supported-yet)
       - [Math block (LaTeX)](#math-block-latex)
   - [Author](#author)
   - [Contributing](#contributing)
@@ -648,7 +648,7 @@ comment
 */
 ```
 
-#### Focus block
+#### Focus block [NOT FULLY SUPPORTED YET]
 
 **Style class**: `focus-block`, `focus-block-type` (replace `type`)
 
