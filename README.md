@@ -1,7 +1,7 @@
 # New MarkDown [ALPHA]
 
 [![License](https://img.shields.io/badge/license-GPL3-green.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v0.7.6-blue.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-v0.8.0-blue.svg)](CHANGELOG.md)
 
 
 - [New MarkDown \[ALPHA\]](#new-markdown-alpha)
@@ -34,13 +34,13 @@
       - [Strikethrough](#strikethrough)
       - [Underlined](#underlined)
         - [Checkbox](#checkbox)
-        - [Colors and Highlighted Text \[NOT SUPPORTED YET\]](#colors-and-highlighted-text-not-supported-yet)
-        - [Compatible highlight text \[NOT SUPPORTED YET\]](#compatible-highlight-text-not-supported-yet)
-      - [Custom text style \[NOT SUPPORTED YET\]](#custom-text-style-not-supported-yet)
-      - [Emoji \[NOT SUPPORTED YET\]](#emoji-not-supported-yet)
+        - [Colors and Highlighted Text \[TO BE DEFINE; NOT SUPPORTED YET\]](#colors-and-highlighted-text-to-be-define-not-supported-yet)
+        - [Compatible highlight text \[TO BE DEFINE; NOT SUPPORTED YET\]](#compatible-highlight-text-to-be-define-not-supported-yet)
+      - [Custom text style \[TO BE DEFINE; NOT SUPPORTED YET\]](#custom-text-style-to-be-define-not-supported-yet)
+      - [Emoji](#emoji)
       - [Superscript](#superscript)
       - [Subscript](#subscript)
-      - [Link \[NOT SUPPORTED YET\]](#link-not-supported-yet)
+      - [Link \[NOT FULLY SUPPORTED YET\]](#link-not-fully-supported-yet)
       - [Inline code](#inline-code)
       - [Inline math](#inline-math)
       - [Inline comments](#inline-comments)
@@ -49,7 +49,7 @@
     - [Paragraph modifier](#paragraph-modifier)
       - [Paragraph styles and metadata \[TO BE DEFINE; NOT SUPPORTED YET\]](#paragraph-styles-and-metadata-to-be-define-not-supported-yet)
       - [Image](#image)
-      - [Line separator \[NOT SUPPORTED YET\]](#line-separator-not-supported-yet)
+      - [Line break](#line-break)
       - [List](#list)
       - [Code block](#code-block)
       - [Multiline comments \[TO BE DEFINE; NOT SUPPORTED YET\]](#multiline-comments-to-be-define-not-supported-yet)
@@ -355,7 +355,7 @@ or
 ```
 
 
-##### Colors and Highlighted Text [NOT SUPPORTED YET]
+##### Colors and Highlighted Text [TO BE DEFINE; NOT SUPPORTED YET]
 
 Color can be written in hexadecimal if you use `#rrggbb` convention or you can use their names.
 
@@ -368,29 +368,29 @@ You can modify text color, text background and its font using this modifier:
 You can omit font and background color if you want only modify text color.
 
 ```
-[Only text color]{{#rrggbb}}
+[Only text color]{#rrggbb}
 ```
 
 You can insert only background color or only text font using this convention:
 
 ```
-[Only background]{{;#rrggbb}}
-[Only font]{{;;fontName}}
+[Only background]{;#rrggbb}
+[Only font]{;;fontName}
 ```
 
-##### Compatible highlight text [NOT SUPPORTED YET]
+##### Compatible highlight text [TO BE DEFINE; NOT SUPPORTED YET]
 
 You can use also `==Highlight text==`.
 
-#### Custom text style [NOT SUPPORTED YET]
+#### Custom text style [TO BE DEFINE; NOT SUPPORTED YET]
 
 ```
-{Custom text style}(style)
+[Custom text style]{{style}}
 ```
 
 There are some standard style such as the color names (to color text) and others.
 
-#### Emoji [NOT SUPPORTED YET]
+#### Emoji
 
 Two ways to add emoji:
 
@@ -418,7 +418,7 @@ Pay attention, those are two single quote
 
 > This modifier can be placed attached on other text.
 
-#### Link [NOT SUPPORTED YET]
+#### Link [NOT FULLY SUPPORTED YET]
 
 **Style class**: `link`
 
@@ -551,9 +551,11 @@ This [word]{#the-word; color: red} is red.
 ![Image](http://url/a.png)
 ```
 
-#### Line separator [NOT SUPPORTED YET]
+#### Line break
 
-To apply a line separator use --- or *** in a new blank line.
+**Style class**: `line-break`, `line-break-dash`, `line-break-star`, `line-break-plus`
+
+To apply a line break use `---` (or more than 3 `-`) or `***` (or more than 3 `*`) or `+++` (or more than 3 `+`) in a new blank line.
 
 #### List
 

@@ -82,6 +82,9 @@ pub enum Modifier {
     FocusQuotationBlock,
     FocusBlock,
     MathBlock,
+    LineBreakDash,
+    LineBreakStar,
+    LineBreakPlus,
     CommonParagraph,
 
     Custom
@@ -94,6 +97,9 @@ impl Modifier {
 
         // they must have the compatibility order
         vec![
+            Self::LineBreakDash,
+            Self::LineBreakStar,
+            Self::LineBreakPlus,
             Self::List,
             Self::Image,
             Self::CodeBlock,
@@ -179,6 +185,9 @@ impl Modifier {
 
             Self::ListItem => String::from(r#"(?s)([\t ]*)(-\[\]|-\[ \]|-\[x\]|-\[X\]|-|->|\||\*|\+|--|\d[\.)]?|.{1,8}[\.)]|&[^;]+;) (.*)"#),
             Self::List => format!("({})(?s:.*)({})", Self::ListItem.search_pattern(), Self::ListItem.search_pattern()),
+            Self::LineBreakDash => String::from(r"(?m:^-{3,})"),
+            Self::LineBreakStar => String::from(r"(?m:^\*{3,})"),
+            Self::LineBreakPlus => String::from(r"(?m:^\+{3,})"),
             Self::FocusBlock => String::from(r"::: (\w+)\n(?s:(.*))\n:::"),
             
             _ => String::from(r"RULE TODO")                                               // TODO
