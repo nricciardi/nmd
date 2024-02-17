@@ -87,7 +87,8 @@ NMD is full compatible with CommonMark standard.
 - [x] Use file name instead of absolute path in dossier configuration
 - [x] Other sections in dossier configuration to manage all options
 - [x] Local math (no CDN)
-- [x] Lists
+- [x] List
+- [ ] List creation check
 - [ ] Link
 - [ ] Quotation and "focus block"
 - [ ] Base page style
