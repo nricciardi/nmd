@@ -132,8 +132,6 @@ Compile a dossier in `html`:
 nmd compile dossier -f html -i dossier/input/path -o artifact/output/path
 ```
 
-> In this moment, to render *math block* and *inline math* an Internet connection is needed. This requirement will be removed in future version.
-
 
 
 ## Structure
