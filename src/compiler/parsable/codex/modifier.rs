@@ -59,7 +59,9 @@ pub enum Modifier {
     Strikethrough,
     Underlined,
     Link,
-    Highlight,
+    DefaultHighlight,
+    CustomSingleColorHighlight,
+    CustomDoubleColorHighlight,
     ColoredText,
     Emoji,
     Superscript,
@@ -146,6 +148,9 @@ impl Modifier {
 
     pub fn search_pattern(&self) -> String {
         match *self {
+            Self::DefaultHighlight => String::from(r"==(.*)=="),
+            Self::CustomSingleColorHighlight => String::from(r"=(.*)=(.*)=="),
+            Self::CustomDoubleColorHighlight => String::from(r"=(.*)=(.*)=(.*)="),
             Self::Comment => String::from(r"^//(.*)"),
             Self::Emoji => String::from(r":(\w*):"),
             Self::Checkbox => String::from(r"(\[\]|\[ \])"),

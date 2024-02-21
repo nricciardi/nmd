@@ -70,10 +70,14 @@ impl ParsingRule for HtmlListRule {
 
         let regex = Regex::new(&search_patter).unwrap();
 
+        let mut items_found = 0;
+
         for captures in regex.captures_iter(content) {
             if let Some(indentation) = captures.get(1) {
                 if let Some(bullet) = captures.get(2) {
                     if let Some(content) = captures.get(3) {
+
+                        items_found += 1;
 
                         let mut indentation = String::from(indentation.as_str());
                         let bullet = bullet.as_str();
@@ -103,6 +107,10 @@ impl ParsingRule for HtmlListRule {
                     }
                 }
             }
+        }
+
+        if items_found != content.lines().count() {
+            log::warn!("the following list has incorrect item(s):\n{}\n", content);
         }
 
         parsed_content.push_str("</ul>");

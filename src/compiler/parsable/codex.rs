@@ -209,6 +209,10 @@ impl Codex {
         }
 
         content_rules.append(&mut vec![
+            // TODO!: handle colors
+            Box::new(ReplacementRule::new(Modifier::CustomDoubleColorHighlight, String::from(r#"<mark class="highlight highlight-default">$1</mark>"#))),
+            Box::new(ReplacementRule::new(Modifier::CustomSingleColorHighlight, String::from(r#"<mark class="highlight highlight-$2">$1</mark>"#))),
+            Box::new(ReplacementRule::new(Modifier::DefaultHighlight, String::from(r#"<mark class="highlight highlight-default">$1</mark>"#))),
             Box::new(ReplacementRule::new(Modifier::InlineMath, String::from(r#"<span class="inline-math">$$${1}$$</span>"#))),
             Box::new(ReplacementRule::new(Modifier::InlineCode, String::from(r#"<code class="language-markup inline-code">${1}</code>"#))),
             Box::new(ReplacementRule::new(Modifier::BoldStarVersion, String::from(r#"<strong class="bold">${1}</strong>"#))),

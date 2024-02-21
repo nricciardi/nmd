@@ -35,6 +35,8 @@ impl Assembler for HtmlAssembler {
             match self.configuration.theme() {
                 Theme::Light => {
                     page = page
+                        .with_script_link("https://cdn.tailwindcss.com")
+
                         .with_script_link_attr("https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js", [
                             ("crossorigin", "anonymous"),
                         ])
@@ -47,6 +49,8 @@ impl Assembler for HtmlAssembler {
                 },
                 Theme::Dark => {
                     page = page
+                        .with_script_link("https://cdn.tailwindcss.com")
+
                         .with_script_link_attr("https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js", [
                             ("crossorigin", "anonymous"),
                         ])
@@ -86,6 +90,8 @@ impl Assembler for HtmlAssembler {
                         });
                     });"#);
         } else {
+
+            page.add_script_literal(include_str!("html_assembler/lib/tilewind.js"));
 
             page.add_style(include_str!("html_assembler/emoji/emoji.min.css"));
             
