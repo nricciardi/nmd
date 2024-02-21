@@ -344,7 +344,7 @@ or
 ++Underlined text++
 ```
 
-##### Checkbox
+#### Checkbox
 
 **Style class**: `checkbox`, `checkbox-checked`
 
@@ -354,7 +354,7 @@ or
 ```
 
 
-##### Colors and Highlighted Text [TO BE DEFINE; NOT SUPPORTED YET]
+#### Colors and Highlighted Text [TO BE DEFINE; NOT SUPPORTED YET]
 
 Color can be written in hexadecimal if you use `#rrggbb` convention or you can use their names.
 
