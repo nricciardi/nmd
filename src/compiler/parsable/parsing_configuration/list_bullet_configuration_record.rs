@@ -90,5 +90,29 @@ pub fn default_bullets_configuration() -> Vec<ListBulletConfigurationRecord> {
                     indentation_level: 0,
                     strict_indentation: false
                 },
+                ListBulletConfigurationRecord {
+                    from: String::from(r"-[]"),
+                    to: String::from(r":checkbox:"),
+                    indentation_level: 0,
+                    strict_indentation: false
+                },
+                ListBulletConfigurationRecord {
+                    from: String::from(r"-[ ]"),
+                    to: String::from(r":checkbox:"),
+                    indentation_level: 0,
+                    strict_indentation: false
+                },
+                ListBulletConfigurationRecord {
+                    from: String::from(r"-[x]"),
+                    to: String::from(r":checkbox-checked:"),
+                    indentation_level: 0,
+                    strict_indentation: false
+                },
+                ListBulletConfigurationRecord {
+                    from: String::from(r"-[X]"),
+                    to: String::from(r":checkbox-checked:"),
+                    indentation_level: 0,
+                    strict_indentation: false
+                },
             ]
 }

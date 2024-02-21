@@ -1,5 +1,9 @@
 documents:
   - "./d1.nmd"
+  - "./d2.nmd"
+  - "./d3.nmd"
+  - "./d4.nmd"
+  - "./d5.nmd"
 compilation:
     parallelization: false
     compress_embed_image: false
