@@ -87,7 +87,8 @@ NMD is full compatible with CommonMark standard.
 - [x] Use file name instead of absolute path in dossier configuration
 - [x] Other sections in dossier configuration to manage all options
 - [x] Local math (no CDN)
-- [x] Lists
+- [x] List
+- [ ] List creation check
 - [ ] Link
 - [ ] Quotation and "focus block"
 - [ ] Base page style
@@ -130,8 +131,6 @@ Compile a dossier in `html`:
 ```shell
 nmd compile dossier -f html -i dossier/input/path -o artifact/output/path
 ```
-
-> In this moment, to render *math block* and *inline math* an Internet connection is needed. This requirement will be removed in future version.
 
 
 
@@ -345,7 +344,7 @@ or
 ++Underlined text++
 ```
 
-##### Checkbox
+#### Checkbox
 
 **Style class**: `checkbox`, `checkbox-checked`
 
@@ -355,7 +354,7 @@ or
 ```
 
 
-##### Colors and Highlighted Text [TO BE DEFINE; NOT SUPPORTED YET]
+#### Colors and Highlighted Text [TO BE DEFINE; NOT SUPPORTED YET]
 
 Color can be written in hexadecimal if you use `#rrggbb` convention or you can use their names.
 
