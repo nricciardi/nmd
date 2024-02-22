@@ -94,6 +94,7 @@ impl Document {
 
         for (_, line) in content.lines().enumerate().filter(|(index, _)| *index >= end_preamble) {
             
+            // TODO!: for paragraph style this must change
             if Modifier::is_heading(line) {
                 
                 if let Some(chapter_builder) = chapter_builder {

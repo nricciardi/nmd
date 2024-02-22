@@ -20,7 +20,9 @@ emoji: :alien:
 
 [abridged style]{;gray}
 
-[style]{{color:red;font-size:5em;}}
+[embedded style]{{color:red;font-size:5em;}}
+
+
 
 ==highlight==
 

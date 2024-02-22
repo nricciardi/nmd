@@ -110,7 +110,13 @@ impl ParsingRule for HtmlListRule {
         }
 
         if items_found != content.lines().count() {
-            log::warn!("the following list has incorrect item(s):\n{}\n", content);
+
+            if parsing_configuration.strict_list_check() {
+                log::error!("the following list has incorrect item(s):\n{}\n", content);
+                panic!("incorrect list item(s)")
+            } else {
+                log::warn!("the following list has incorrect item(s):\n{}\n", content);
+            }
         }
 
         parsed_content.push_str("</ul>");

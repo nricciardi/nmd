@@ -29,12 +29,13 @@ pub struct ParsingConfiguration {
 
     parallelization: bool,
 
-    list_bullets_configuration: Vec<ListBulletConfigurationRecord>
+    list_bullets_configuration: Vec<ListBulletConfigurationRecord>,
+    strict_list_check: bool,
 }
 
 impl ParsingConfiguration {
 
-    pub fn new(input_location: PathBuf, output_location: PathBuf, embed_local_image: bool, embed_remote_image: bool, compress_embed_image: bool, strict_image_src_check: bool, metadata: ParsingConfigurationMetadata, excluded_modifiers: Modifiers, parallelization: bool, list_bullets_configuration: Vec<ListBulletConfigurationRecord>) -> Self {
+    pub fn new(input_location: PathBuf, output_location: PathBuf, embed_local_image: bool, embed_remote_image: bool, compress_embed_image: bool, strict_image_src_check: bool, metadata: ParsingConfigurationMetadata, excluded_modifiers: Modifiers, parallelization: bool, list_bullets_configuration: Vec<ListBulletConfigurationRecord>, strict_list_check: bool) -> Self {
         Self {
             input_location,
             output_location,
@@ -45,7 +46,8 @@ impl ParsingConfiguration {
             metadata,
             excluded_modifiers,
             parallelization,
-            list_bullets_configuration
+            list_bullets_configuration,
+            strict_list_check,
         }
     }
 
@@ -87,6 +89,10 @@ impl ParsingConfiguration {
 
     pub fn list_bullets_configuration(&self) -> &Vec<ListBulletConfigurationRecord> {
         &self.list_bullets_configuration
+    }
+
+    pub fn strict_list_check(&self) -> bool {
+        self.strict_list_check
     }
 
     pub fn set_input_location(&mut self, new_input_location: PathBuf) {
@@ -132,6 +138,10 @@ impl ParsingConfiguration {
     pub fn set_list_bullets_configuration(&mut self, value: Vec<ListBulletConfigurationRecord>) {
         self.list_bullets_configuration = value
     }
+
+    pub fn set_strict_list_check(&mut self, strict_list_check: bool) {
+        self.strict_list_check = strict_list_check;
+    }
 }
 
 impl Default for ParsingConfiguration {
@@ -146,7 +156,8 @@ impl Default for ParsingConfiguration {
             metadata: ParsingConfigurationMetadata::default(),
             excluded_modifiers: Modifiers::None,
             parallelization: false,
-            list_bullets_configuration: list_bullet_configuration_record::default_bullets_configuration()
+            list_bullets_configuration: list_bullet_configuration_record::default_bullets_configuration(),
+            strict_list_check: false
         }
     }
 }

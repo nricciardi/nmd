@@ -1,7 +1,7 @@
 # New MarkDown [ALPHA]
 
 [![License](https://img.shields.io/badge/license-GPL3-green.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v0.9.0-blue.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-v0.9.1-blue.svg)](CHANGELOG.md)
 
 
 - [New MarkDown \[ALPHA\]](#new-markdown-alpha)
@@ -88,13 +88,15 @@ NMD is full compatible with CommonMark standard.
 - [x] Other sections in dossier configuration to manage all options
 - [x] Local math (no CDN)
 - [x] List
-- [ ] List creation check
-- [ ] Link
-- [ ] Quotation and "focus block"
+- [x] List creation check
+- [ ] Link with identifier
+- [ ] Quotation
+- [x] Focus block
 - [ ] Base page style
 - [ ] Paper format support (A4, A5, ...)
-- [ ] Custom style
-- [ ] Style modifier
+- [x] Embedded style
+- [ ] Embedded paragraph style
+- [ ] Custom style files
 - [ ] PDF compile format
 - [ ] Tables
 - [ ] Vintage style (typewriter)

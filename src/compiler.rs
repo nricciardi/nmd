@@ -59,6 +59,7 @@ impl Compiler {
 
         let mut parsing_configuration = compilation_configuration.parsing_configuration();
         parsing_configuration.set_list_bullets_configuration(dossier_configuration.style().list_bullets_configuration().clone());
+        parsing_configuration.set_strict_list_check(dossier_configuration.compilation().strict_list_check());
 
         log::info!("will use dossier configuration:\n\n{:#?}\n", dossier_configuration);
 

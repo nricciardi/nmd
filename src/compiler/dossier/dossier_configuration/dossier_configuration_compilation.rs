@@ -1,27 +1,39 @@
 use serde::{Deserialize, Serialize};
 
 
+fn yes() -> bool {
+    true
+}
+
+fn no() -> bool {
+    false
+}
+
+
 #[allow(dead_code)]
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct DossierConfigurationCompilation {
-    #[serde(default)]
+    #[serde(default = "yes")]
     embed_local_image: bool,
 
-    #[serde(default)]
+    #[serde(default = "yes")]
     embed_remote_image: bool,
     
-    #[serde(default)]
+    #[serde(default = "yes")]
     compress_embed_image: bool,
     
-    #[serde(default)]
+    #[serde(default = "yes")]
     strict_image_src_check: bool,
     
     // excluded_modifiers: Modifiers,       // TODO
-    #[serde(default)]
+    #[serde(default = "yes")]
     parallelization: bool,
     
-    #[serde(default)]
-    use_remote_addons: bool
+    #[serde(default = "no")]
+    use_remote_addons: bool,
+
+    #[serde(default = "no")]
+    strict_list_check: bool,
 }
 
 impl DossierConfigurationCompilation {
@@ -50,6 +62,10 @@ impl DossierConfigurationCompilation {
         self.strict_image_src_check
     }
 
+    pub fn strict_list_check(&self) -> bool {
+        self.strict_list_check
+    }
+
     pub fn set_embed_local_image(&mut self, value: bool) {
         self.embed_local_image = value;
     }
@@ -73,6 +89,10 @@ impl DossierConfigurationCompilation {
     pub fn set_use_remote_addons(&mut self, value: bool) {
         self.use_remote_addons = value;
     }
+
+    pub fn set_strict_list_check(&mut self, strict_list_check: bool) {
+        self.strict_list_check = strict_list_check;
+    }
 }
 
 impl Default for DossierConfigurationCompilation {
@@ -83,7 +103,8 @@ impl Default for DossierConfigurationCompilation {
             compress_embed_image: true,
             strict_image_src_check: true,
             parallelization: true,
-            use_remote_addons: false
+            use_remote_addons: false,
+            strict_list_check: false
         }
     }
 }
