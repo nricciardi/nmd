@@ -91,7 +91,7 @@ impl Assembler for HtmlAssembler {
                     });"#);
         } else {
 
-            page.add_script_literal(include_str!("html_assembler/lib/tilewind.js"));
+            page.add_script_literal(include_str!("html_assembler/lib/tailwind.js"));
 
             page.add_style(include_str!("html_assembler/emoji/emoji.min.css"));
             

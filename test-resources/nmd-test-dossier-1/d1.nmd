@@ -10,6 +10,18 @@ emoji: :alien:
 
 ~subscript~ normal text
 
+[abridged style]{red;gray;Arial}
+
+[abridged style]{green;gray;Garamond}
+
+[abridged style]{;;Garamond}
+
+[abridged style]{blue;gray}
+
+[abridged style]{;gray}
+
+[style]{{color:red;font-size:5em;}}
+
 ## title 2
 
 paragraph 2a.

@@ -1,7 +1,7 @@
 # New MarkDown [ALPHA]
 
 [![License](https://img.shields.io/badge/license-GPL3-green.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v0.8.1-blue.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-v0.9.0-blue.svg)](CHANGELOG.md)
 
 
 - [New MarkDown \[ALPHA\]](#new-markdown-alpha)
@@ -34,8 +34,8 @@
       - [Strikethrough](#strikethrough)
       - [Underlined](#underlined)
       - [Checkbox](#checkbox)
-      - [Colors and Highlighted Text \[TO BE DEFINE; NOT SUPPORTED YET\]](#colors-and-highlighted-text-to-be-define-not-supported-yet)
-        - [Compatible highlight text \[TO BE DEFINE; NOT SUPPORTED YET\]](#compatible-highlight-text-to-be-define-not-supported-yet)
+      - [Identifier, Color, Highlight and Font](#identifier-color-highlight-and-font)
+        - [Compatible highlight text](#compatible-highlight-text)
       - [Custom text style \[TO BE DEFINE; NOT SUPPORTED YET\]](#custom-text-style-to-be-define-not-supported-yet)
       - [Emoji](#emoji)
       - [Superscript](#superscript)
@@ -354,15 +354,19 @@ or
 ```
 
 
-#### Colors and Highlighted Text [TO BE DEFINE; NOT SUPPORTED YET]
+#### Identifier, Color, Highlight and Font
+
+**Style class**: `identifier`, `embedded-style`, `abridged-embedded-style`
 
 Color can be written in hexadecimal if you use `#rrggbb` convention or you can use their names.
 
 You can modify text color, text background and its font using this modifier:
 
 ```
-[Custom colored text]{{textColor;backgroundColor;fontName}}
+[Custom colored text]#id{textColor;backgroundColor;fontName}
 ```
+
+You can omit `id`.
 
 You can omit font and background color if you want only modify text color.
 
@@ -377,9 +381,11 @@ You can insert only background color or only text font using this convention:
 [Only font]{;;fontName}
 ```
 
-##### Compatible highlight text [TO BE DEFINE; NOT SUPPORTED YET]
+##### Compatible highlight text
 
-You can use also `==Highlight text==`.
+**Style class**: `highlight`
+
+You can use also `==Highlight text==` to mark text. This uses the default highlight style.
 
 #### Custom text style [TO BE DEFINE; NOT SUPPORTED YET]
 

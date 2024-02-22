@@ -209,10 +209,12 @@ impl Codex {
         }
 
         content_rules.append(&mut vec![
-            // TODO!: handle colors
-            Box::new(ReplacementRule::new(Modifier::CustomDoubleColorHighlight, String::from(r#"<mark class="highlight highlight-default">$1</mark>"#))),
-            Box::new(ReplacementRule::new(Modifier::CustomSingleColorHighlight, String::from(r#"<mark class="highlight highlight-$2">$1</mark>"#))),
-            Box::new(ReplacementRule::new(Modifier::DefaultHighlight, String::from(r#"<mark class="highlight highlight-default">$1</mark>"#))),
+            Box::new(ReplacementRule::new(Modifier::EmbeddedStyle, String::from(r#"<span class="identifier embedded-style" id="$2" style="$3">$1</span>"#))),
+            Box::new(ReplacementRule::new(Modifier::EmbeddedStyleWithoutId, String::from(r#"<span class="embedded-style" style="$2">$1</span>"#))),
+            Box::new(ReplacementRule::new(Modifier::AbridgedEmbeddedStyle, String::from(r#"<span class="identifier abridged-embedded-style" id="$2" style="color: $3; background-color: $4; font-family: $5;">$1</span>"#))),
+            Box::new(ReplacementRule::new(Modifier::AbridgedEmbeddedStyleWithoutId, String::from(r#"<span class="abridged-embedded-style" style="color: $2; background-color: $3; font-family: $4;">$1</span>"#))),
+            Box::new(ReplacementRule::new(Modifier::Identifier, String::from(r#"<span class="identifier" id="$2">$1</span>"#))),
+            Box::new(ReplacementRule::new(Modifier::Highlight, String::from(r#"<mark class="highlight">$1</mark>"#))),
             Box::new(ReplacementRule::new(Modifier::InlineMath, String::from(r#"<span class="inline-math">$$${1}$$</span>"#))),
             Box::new(ReplacementRule::new(Modifier::InlineCode, String::from(r#"<code class="language-markup inline-code">${1}</code>"#))),
             Box::new(ReplacementRule::new(Modifier::BoldStarVersion, String::from(r#"<strong class="bold">${1}</strong>"#))),
