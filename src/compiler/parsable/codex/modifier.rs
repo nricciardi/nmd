@@ -177,7 +177,7 @@ impl Modifier {
                     panic!("{level} is an invalid heading level.")
                 }
 
-                format!(r"{}\s+(.*)", "#".repeat(level as usize))
+                format!(r"(?m:^{}\s+(.*))", "#".repeat(level as usize))
             },
             Self::HeadingGeneralCompactVersion(level) => {
 
@@ -185,7 +185,7 @@ impl Modifier {
                     panic!("{level} is an invalid heading level.")
                 }
 
-                format!(r"#({})\s+(.*)", level)
+                format!(r"(?m:^#({})\s+(.*))", level)
             },
             Self::InlineCode => String::from(r"`(.*?)`"),
             Self::InlineMath => String::from(r#"\$([^$\n]+)\$"#),
