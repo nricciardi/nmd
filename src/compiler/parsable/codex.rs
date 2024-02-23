@@ -10,6 +10,7 @@ use rayon::slice::ParallelSliceMut;
 use regex::Regex;
 use self::modifier::Modifiers;
 pub use self::modifier::{MAX_HEADING_LEVEL, Modifier};
+use self::parsing_rule::html_extended_block_quote_rule::HtmlExtendedBlockQuoteRule;
 use self::parsing_rule::html_list_rule::HtmlListRule;
 use crate::compiler::dossier::document::chapter::paragraph::ParagraphError;
 use crate::compiler::dossier::document::Paragraph;
@@ -233,6 +234,7 @@ impl Codex {
         ]);
 
         let paragraph_rules: Vec<Box<dyn ParsingRule>> = vec![
+            Box::new(HtmlExtendedBlockQuoteRule::new()),
             Box::new(ReplacementRule::new(Modifier::MathBlock, String::from(r#"<p class="math-block">$$$$${1}$$$$</p>"#))),
             Box::new(HtmlImageRule::new()),
             Box::new(ReplacementRule::new(Modifier::CodeBlock, String::from(r#"<pre><code class="language-${1} code-block">$2</code></pre>"#))),

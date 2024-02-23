@@ -1,7 +1,7 @@
 # New MarkDown [ALPHA]
 
 [![License](https://img.shields.io/badge/license-GPL3-green.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v0.9.1-blue.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-v0.9.2-blue.svg)](CHANGELOG.md)
 
 
 - [New MarkDown \[ALPHA\]](#new-markdown-alpha)
@@ -53,7 +53,8 @@
       - [List](#list)
       - [Code block](#code-block)
       - [Multiline comments \[TO BE DEFINE; NOT SUPPORTED YET\]](#multiline-comments-to-be-define-not-supported-yet)
-      - [Focus block \[NOT FULLY SUPPORTED YET\]](#focus-block-not-fully-supported-yet)
+      - [Focus block](#focus-block)
+        - [Focus quote block](#focus-quote-block)
       - [Math block (LaTeX)](#math-block-latex)
   - [Author](#author)
   - [Contributing](#contributing)
@@ -655,7 +656,7 @@ comment
 */
 ```
 
-#### Focus block [NOT FULLY SUPPORTED YET]
+#### Focus block
 
 **Style class**: `focus-block`, `focus-block-type` (replace `type`)
 
@@ -663,9 +664,12 @@ Focus blocks allow to insert text in particular paragraph in which the text is h
 
 There are many types of focus block:
 
-- **info**
+- **quote**
+- **note**
+- **tip**
+- **important**
 - **warning**
-- **danger**
+- **caution**
 
 The syntax is below.
 
@@ -674,6 +678,17 @@ The syntax is below.
 Watch out!!!
 :::
 ```
+
+##### Focus quote block
+
+**Style class**: `focus-quote-block`, `focus-quote-block-type` (replace `type`)
+
+```
+> [!note]
+> note...
+```
+
+> **Only** for `[!type]` pattern you can write `type` in uppercase (`TYPE`).
 
 #### Math block (LaTeX)
 

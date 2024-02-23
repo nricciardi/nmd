@@ -22,6 +22,31 @@ emoji: :alien:
 
 [embedded style]{{color:red;font-size:5em;}}
 
+> Simple quote
+
+text between quote
+
+> Simple
+> multiline
+> quote
+
+> Simple
+> multiline
+> quote
+>
+> with 2 paragraphs
+
+> [!NOTE]
+> Simple
+> multiline
+> quote
+
+> [!WARNING]
+> Simple
+> multiline
+> quote
+>
+> with 2 paragraphs
 
 
 ==highlight==
