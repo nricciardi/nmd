@@ -91,7 +91,7 @@ NMD is full compatible with CommonMark standard.
 - [x] List
 - [x] List creation check
 - [ ] Link with identifier
-- [ ] Quotation
+- [x] Quote
 - [x] Focus block
 - [ ] Base page style
 - [ ] Paper format support (A4, A5, ...)
