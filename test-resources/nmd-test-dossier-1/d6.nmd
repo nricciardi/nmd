@@ -1,0 +1,32 @@
+
+# Style
+
+[embedded style2]{{color:red;
+font-size:2em;}} text [abridged style]{red;
+gray;Arial} text [abridged style]{red;
+gray;Arial} text [embedded style2]{{color:red;
+font-size:2em;}}
+
+[abridged style]{green;gray;
+Garamond}
+
+[abridged style]{;;Garamond} text [abridged style]{blue;gray}
+
+[abridged style]{blue;gray} text [abridged style]{blue;gray}
+
+[abridged style]{;gray} text without style [abridged style]{;red}
+
+[embedded style]{{color:red;font-size:2em;}} text without style [embedded style2]{{color:red;
+font-size:2em;}}
+
+[[embedded style
+
+multiline]]{{color:red;
+font-size:2em;}}
+
+text
+
+[[embedded style
+
+multiline]]{red;
+gray}

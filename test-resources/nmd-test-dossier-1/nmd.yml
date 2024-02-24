@@ -4,6 +4,8 @@ documents:
   - "./d3.nmd"
   - "./d4.nmd"
   - "./d5.nmd"
+  - "./d6.nmd"
+  - "./d7.nmd"
 compilation:
     parallelization: false
     compress_embed_image: false

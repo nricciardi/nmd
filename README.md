@@ -1,7 +1,7 @@
 # New MarkDown [ALPHA]
 
 [![License](https://img.shields.io/badge/license-GPL3-green.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v0.9.3-blue.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-v0.9.4-blue.svg)](CHANGELOG.md)
 
 
 - [New MarkDown \[ALPHA\]](#new-markdown-alpha)
@@ -45,10 +45,12 @@
       - [Inline code](#inline-code)
       - [Inline math](#inline-math)
       - [Inline comments](#inline-comments)
-      - [Bookmark \[TO BE DEFINE; NOT SUPPORTED YEY\]](#bookmark-to-be-define-not-supported-yey)
+      - [Bookmark](#bookmark)
+        - [Anonymous bookmark](#anonymous-bookmark)
+        - [Titled bookmark](#titled-bookmark)
         - [Todo](#todo)
     - [Paragraph modifier](#paragraph-modifier)
-      - [Paragraph styles and metadata \[TO BE DEFINE; NOT SUPPORTED YET\]](#paragraph-styles-and-metadata-to-be-define-not-supported-yet)
+      - [Embedded style](#embedded-style-1)
       - [Image](#image)
       - [Line break](#line-break)
       - [List](#list)
@@ -57,6 +59,7 @@
       - [Focus block](#focus-block)
         - [Focus quote block](#focus-quote-block)
       - [Math block (LaTeX)](#math-block-latex)
+      - [Chapter styles and metadata \[TO BE DEFINE; NOT SUPPORTED YET\]](#chapter-styles-and-metadata-to-be-define-not-supported-yet)
   - [Author](#author)
   - [Contributing](#contributing)
   - [License](#license)
@@ -476,26 +479,40 @@ $inline math$
 // this is a comment
 ```
 
-#### Bookmark [TO BE DEFINE; NOT SUPPORTED YEY]
+#### Bookmark
 
 **Bookmarks** are label which can be inserted in text body to mark a paragraph or a piece of paragraph.
 
-```
-@[bookmark](description)
-```
+##### Anonymous bookmark
 
-Description can be multi-lines or can be omitted:
+**Style class**: `bookmark`, `abridged-bookmark`
 
 ```
-@[bookmark]
+@[bookmark description]
+@[bookmark description]#the-id
+```
+
+Description can be multi-lines.
+
+
+##### Titled bookmark
+
+**Style class**: `bookmark`, `bookmark-title`, `bookmark-description`
+
+```
+@[bookmark title](bookmark description)
+@[bookmark title]#the-id(bookmark description)
 ```
 
 ##### Todo
 
+**Style class**: `todo`, `todo-description`
+
 Todo is a special tag to insert... TODOs
 
 ```
-@[TODO]
+@[TODO](description)
+@[todo](description)
 ```
 
 
@@ -517,55 +534,22 @@ Todo is a special tag to insert... TODOs
 
 TODO
 
-#### Paragraph styles and metadata [TO BE DEFINE; NOT SUPPORTED YET]
 
-In NMD each paragraph can be decorated with a set of **paragraph decorators**, i.e. **metadata**, **in-line styles** and **style classes**. 
+#### Embedded style
 
-There is a set of standard and custom styles which each indicates a particular style. These are guide lines, each editor could implement a standard style in different ways.
-
-Metadata are introduced using `@`:
+**Style class**: `embedded-paragraph-style`, `abridged-embedded-paragraph-style`
 
 ```
-@ + metadata tag + single space + metadata content
+[[Custom text
+style]]{{style}}
 ```
 
-Supported metadata:
-
-- `author`
-- `content` description of paragraph content
-- `createdAt`
-- `updatedAt`
-
-A special metadata is the **id** which can be written in two alternatives ways:
+`style` is literally the css-like style to apply.
 
 ```
-#the-id
-@id the-id
+[[Custom text
+style]]{}
 ```
-
-> the identifiers should be all in lowercase and each word should be separated using `-`.
-
-Style classes are introduced using `.`, e.g. `.styleClass1`.
-
-In-line styles use CSS (or SCSS/SASS based on editor) key-value modifiers, they haven't a symbol.
-
-To add decorators to a paragraph you must insert `{}` in the line below title, in parenthesis each type of decorator has a particular symbol which introduces it. You can use `;` to separate decorator in the same line or a `\n` to insert decorator in multiple lines.
-
-There is an example below.
-
-```
-## Foo title
-{
-    #the-id
-    @author you
-    @author yourFriend
-    .styleClass1
-    background-color: red
-}
-```
-
-You can add decorators also to a single word using this syntax:
-
 
 #### Image
 
@@ -717,6 +701,54 @@ The paragraph modifier for math block is double $, i.e. `$$` to open and close b
 NMD uses [Katex](https://katex.org/) to render math blocks.
 
 
+#### Chapter styles and metadata [TO BE DEFINE; NOT SUPPORTED YET]
+
+In NMD each paragraph can be decorated with a set of **paragraph decorators**, i.e. **metadata**, **in-line styles** and **style classes**. 
+
+There is a set of standard and custom styles which each indicates a particular style. These are guide lines, each editor could implement a standard style in different ways.
+
+Metadata are introduced using `@`:
+
+```
+@ + metadata tag + single space + metadata content
+```
+
+Supported metadata:
+
+- `author`
+- `content` description of paragraph content
+- `createdAt`
+- `updatedAt`
+
+A special metadata is the **id** which can be written in two alternatives ways:
+
+```
+#the-id
+@id the-id
+```
+
+> the identifiers should be all in lowercase and each word should be separated using `-`.
+
+Style classes are introduced using `.`, e.g. `.styleClass1`.
+
+In-line styles use CSS (or SCSS/SASS based on editor) key-value modifiers, they haven't a symbol.
+
+To add decorators to a paragraph you must insert `{}` in the line below title, in parenthesis each type of decorator has a particular symbol which introduces it. You can use `;` to separate decorator in the same line or a `\n` to insert decorator in multiple lines.
+
+There is an example below.
+
+```
+## Foo title
+{
+    #the-id
+    @author you
+    @author yourFriend
+    .styleClass1
+    background-color: red
+}
+```
+
+You can add decorators also to a single word using this syntax:
 
 
 

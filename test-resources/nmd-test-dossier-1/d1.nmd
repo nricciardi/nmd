@@ -10,23 +10,6 @@ emoji: :alien:
 
 ~subscript~ normal text
 
-[abridged style]{red;gray;Arial}
-
-[abridged style]{green;gray;Garamond}
-
-[abridged style]{;;Garamond}
-
-[abridged style]{blue;gray}
-
-[abridged style]{;gray}
-
-[embedded style]{{
-    color:red;font-size:5em;}}
-
-[[embedded style
-
-multiline]]{{color:red;
-font-size:5em;}}
 
 > Simple quote
 

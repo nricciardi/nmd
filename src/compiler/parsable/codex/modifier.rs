@@ -59,15 +59,10 @@ pub enum Modifier {
     Strikethrough,
     Underlined,
     Link,
+    AbridgedEmbeddedStyleWithId,
     AbridgedEmbeddedStyle,
-    AbridgedEmbeddedStyleWithoutId,
+    EmbeddedStyleWithId,
     EmbeddedStyle,
-    EmbeddedStyleWithoutId,
-    AbridgedEmbeddedParagraphStyle,
-    AbridgedEmbeddedParagraphStyleWithoutId,
-    EmbeddedParagraphStyle,
-    EmbeddedParagraphStyleWithoutId,
-    ParagraphIdentifier,
     Identifier,
     Highlight,
     ColoredText,
@@ -77,7 +72,11 @@ pub enum Modifier {
     InlineCode,
     InlineMath,
     Comment,
+    AbridgedBookmark,
     Bookmark,
+    AbridgedBookmarkWithId,
+    BookmarkWithId,
+    Todo,
     Checkbox,
     CheckboxChecked,
     HeadingGeneralCompactVersion(u32),
@@ -97,6 +96,11 @@ pub enum Modifier {
     LineBreakStar,
     LineBreakPlus,
     CommonParagraph,
+    AbridgedEmbeddedParagraphStyleWithId,
+    AbridgedEmbeddedParagraphStyle,
+    EmbeddedParagraphStyleWithId,
+    EmbeddedParagraphStyle,
+    ParagraphIdentifier,
 
     Custom
 }
@@ -106,13 +110,13 @@ impl Modifier {
     pub fn paragraph_modifiers() -> Vec<Self> {
 
 
-        // they must have the compatibility order
+        //! they must have the compatibility order
         vec![
-            Self::EmbeddedParagraphStyle,
-            Self::EmbeddedParagraphStyleWithoutId,
             Self::ParagraphIdentifier,
+            Self::EmbeddedParagraphStyleWithId,
+            Self::EmbeddedParagraphStyle,
+            Self::AbridgedEmbeddedParagraphStyleWithId,
             Self::AbridgedEmbeddedParagraphStyle,
-            Self::AbridgedEmbeddedParagraphStyleWithoutId,
             Self::LineBreakDash,
             Self::LineBreakStar,
             Self::LineBreakPlus,
@@ -162,11 +166,16 @@ impl Modifier {
 
     pub fn search_pattern(&self) -> String {
         match *self {
-            Self::AbridgedEmbeddedStyleWithoutId => String::from(r"\[(.*?)\]\{(.*?)(?:;(.*?)(?:;(.*?))?)?\}"),
-            Self::AbridgedEmbeddedStyle => String::from(r"\[(.*?)\]#(.*)\{(.*?)(?:;(.*?)(?:;(.*?))?)?\}"),
-            Self::Identifier => String::from(r"\[(.*?)\]#(.*)"),
-            Self::EmbeddedStyle => String::from(r"\[(.*?)\]#(.*)\{\{(?xs:((?:.*:.*;)*))\}\}"),
-            Self::EmbeddedStyleWithoutId => String::from(r"\[(.*?)\]\{\{(?xs:((?:.*:.*;)*))\}\}"),
+            Self::AbridgedBookmark => String::from(r"@\[([^\]]*?)\]"),
+            Self::AbridgedBookmarkWithId => String::from(r"@\[([^\]]*?)\]#([\w-]*)"),
+            Self::Bookmark => String::from(r"@\[([^\]]*?)\]\((?s:(.*?))\)"),
+            Self::BookmarkWithId => String::from(r"@\[([^\]]*?)\]#([\w-]*)\((?s:(.*?))\)"),
+            Self::Todo => String::from(r"@\[(?i:TODO)\]\((?s:(.*?))\)"),
+            Self::AbridgedEmbeddedStyle => String::from(r"\[([^\]]*?)\]\{(.*?)(?s:;(.*?)(?:;(.*?))?)?\}"),
+            Self::AbridgedEmbeddedStyleWithId => String::from(r"\[([^\]]*?)\]\n?#([\w-]*)\n?\{(.*?)(?s:;(.*?)(?:;(.*?))?)?\}"),
+            Self::Identifier => String::from(r"\[(.*?)\]\n?#([\w-]*)"),
+            Self::EmbeddedStyleWithId => String::from(r"\[([^\]]*?)\]\n?#([\w-]*)\n?\{\{(?xs:((?:.*?:.*?;?)))\}\}"),
+            Self::EmbeddedStyle => String::from(r"\[([^\]]*?)\]\{\{(?xs:((?:.*?:.*?;?)))\}\}"),
             Self::Highlight => String::from(r"==(.*)=="),
             Self::Comment => String::from(r"^//(.*)"),
             Self::Emoji => String::from(r":(\w*):"),
@@ -212,12 +221,12 @@ impl Modifier {
             Self::LineBreakDash => String::from(r"(?m:^-{3,})"),
             Self::LineBreakStar => String::from(r"(?m:^\*{3,})"),
             Self::LineBreakPlus => String::from(r"(?m:^\+{3,})"),
-            Self::FocusBlock => String::from(r"::: (\w+)\n(?s:(.*))\n:::"),
-            Self::AbridgedEmbeddedParagraphStyleWithoutId => String::from(r"\[\[(?sx:(.*?))\]\]\{(.*?)(?:;(.*?)(?:;(.*?))?)?\}"),
-            Self::AbridgedEmbeddedParagraphStyle => String::from(r"\[\[(?sx:(.*?))\]\]#(.*)\{(.*?)(?:;(.*?)(?:;(.*?))?)?\}"),
-            Self::ParagraphIdentifier => String::from(r"\[\[(?sx:(.*?))\]\]#(.*)"),
-            Self::EmbeddedParagraphStyle => String::from(r"\[\[(?sx:(.*?))\]\]#(.*)\{\{(?xs:((?:.*:.*;)*))\}\}"),
-            Self::EmbeddedParagraphStyleWithoutId => String::from(r"\[\[(?sx:(.*?))\]\]\{\{(?xs:((?:.*:.*;)*))\}\}"),
+            Self::FocusBlock => String::from(r":::\s(\w+)\n(?s:(.*))\n:::"),
+            Self::AbridgedEmbeddedParagraphStyle => String::from(r"\[\[(?sx:(.*?))\]\]\{(.*?)(?s:;(.*?)(?:;(.*?))?)?\}"),
+            Self::AbridgedEmbeddedParagraphStyleWithId => String::from(r"\[\[(?sx:(.*?))\]\]\n?#([\w-]*)\n?\{(.*?)(?s:;(.*?)(?:;(.*?))?)?\}"),
+            Self::ParagraphIdentifier => String::from(r"\[\[(?sx:(.*?))\]\]\n?#([\w-]*)"),
+            Self::EmbeddedParagraphStyleWithId => String::from(r"\[\[(?sx:(.*?))\]\]\n?#([\w-]*)\n?\{\{(?xs:((?:.*?:.*?;?)))\}\}"),
+            Self::EmbeddedParagraphStyle => String::from(r"\[\[(?sx:(.*?))\]\]\{\{(?xs:((?:.*?:.*?;?)))\}\}"),
             
             _ => String::from(r"RULE TODO")                                               // TODO
         }

@@ -1,0 +1,8 @@
+# bookmark
+
+@[todo](this is a todo) text @[TODO](this is a todo)
+
+
+@[abridged bookmark] text @[abridged bookmark]#the-id
+
+@[bookmark](this is a bookmark) text @[bookmark]#the-id(this is a bookmark)
