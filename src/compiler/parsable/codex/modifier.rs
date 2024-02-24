@@ -63,6 +63,11 @@ pub enum Modifier {
     AbridgedEmbeddedStyleWithoutId,
     EmbeddedStyle,
     EmbeddedStyleWithoutId,
+    AbridgedEmbeddedParagraphStyle,
+    AbridgedEmbeddedParagraphStyleWithoutId,
+    EmbeddedParagraphStyle,
+    EmbeddedParagraphStyleWithoutId,
+    ParagraphIdentifier,
     Identifier,
     Highlight,
     ColoredText,
@@ -103,6 +108,11 @@ impl Modifier {
 
         // they must have the compatibility order
         vec![
+            Self::EmbeddedParagraphStyle,
+            Self::EmbeddedParagraphStyleWithoutId,
+            Self::ParagraphIdentifier,
+            Self::AbridgedEmbeddedParagraphStyle,
+            Self::AbridgedEmbeddedParagraphStyleWithoutId,
             Self::LineBreakDash,
             Self::LineBreakStar,
             Self::LineBreakPlus,
@@ -155,8 +165,8 @@ impl Modifier {
             Self::AbridgedEmbeddedStyleWithoutId => String::from(r"\[(.*?)\]\{(.*?)(?:;(.*?)(?:;(.*?))?)?\}"),
             Self::AbridgedEmbeddedStyle => String::from(r"\[(.*?)\]#(.*)\{(.*?)(?:;(.*?)(?:;(.*?))?)?\}"),
             Self::Identifier => String::from(r"\[(.*?)\]#(.*)"),
-            Self::EmbeddedStyle => String::from(r"\[(.*?)\]#(.*)\{\{(.*)\}\}"),
-            Self::EmbeddedStyleWithoutId => String::from(r"\[(.*?)\]\{\{(.*)\}\}"),
+            Self::EmbeddedStyle => String::from(r"\[(.*?)\]#(.*)\{\{(?xs:((?:.*:.*;)*))\}\}"),
+            Self::EmbeddedStyleWithoutId => String::from(r"\[(.*?)\]\{\{(?xs:((?:.*:.*;)*))\}\}"),
             Self::Highlight => String::from(r"==(.*)=="),
             Self::Comment => String::from(r"^//(.*)"),
             Self::Emoji => String::from(r":(\w*):"),
@@ -203,6 +213,11 @@ impl Modifier {
             Self::LineBreakStar => String::from(r"(?m:^\*{3,})"),
             Self::LineBreakPlus => String::from(r"(?m:^\+{3,})"),
             Self::FocusBlock => String::from(r"::: (\w+)\n(?s:(.*))\n:::"),
+            Self::AbridgedEmbeddedParagraphStyleWithoutId => String::from(r"\[\[(?sx:(.*?))\]\]\{(.*?)(?:;(.*?)(?:;(.*?))?)?\}"),
+            Self::AbridgedEmbeddedParagraphStyle => String::from(r"\[\[(?sx:(.*?))\]\]#(.*)\{(.*?)(?:;(.*?)(?:;(.*?))?)?\}"),
+            Self::ParagraphIdentifier => String::from(r"\[\[(?sx:(.*?))\]\]#(.*)"),
+            Self::EmbeddedParagraphStyle => String::from(r"\[\[(?sx:(.*?))\]\]#(.*)\{\{(?xs:((?:.*:.*;)*))\}\}"),
+            Self::EmbeddedParagraphStyleWithoutId => String::from(r"\[\[(?sx:(.*?))\]\]\{\{(?xs:((?:.*:.*;)*))\}\}"),
             
             _ => String::from(r"RULE TODO")                                               // TODO
         }

@@ -1,7 +1,7 @@
 # New MarkDown [ALPHA]
 
 [![License](https://img.shields.io/badge/license-GPL3-green.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v0.9.2-blue.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-v0.9.3-blue.svg)](CHANGELOG.md)
 
 
 - [New MarkDown \[ALPHA\]](#new-markdown-alpha)
@@ -34,9 +34,10 @@
       - [Strikethrough](#strikethrough)
       - [Underlined](#underlined)
       - [Checkbox](#checkbox)
-      - [Identifier, Color, Highlight and Font](#identifier-color-highlight-and-font)
+      - [Color, Highlight and Font](#color-highlight-and-font)
         - [Compatible highlight text](#compatible-highlight-text)
-      - [Custom text style \[TO BE DEFINE; NOT SUPPORTED YET\]](#custom-text-style-to-be-define-not-supported-yet)
+      - [Embedded style](#embedded-style)
+      - [Identifier](#identifier)
       - [Emoji](#emoji)
       - [Superscript](#superscript)
       - [Subscript](#subscript)
@@ -357,9 +358,9 @@ or
 ```
 
 
-#### Identifier, Color, Highlight and Font
+#### Color, Highlight and Font
 
-**Style class**: `identifier`, `embedded-style`, `abridged-embedded-style`
+**Style class**: `abridged-embedded-style`
 
 Color can be written in hexadecimal if you use `#rrggbb` convention or you can use their names.
 
@@ -390,13 +391,32 @@ You can insert only background color or only text font using this convention:
 
 You can use also `==Highlight text==` to mark text. This uses the default highlight style.
 
-#### Custom text style [TO BE DEFINE; NOT SUPPORTED YET]
+#### Embedded style
+
+**Style class**: `embedded-style`
 
 ```
 [Custom text style]{{style}}
 ```
 
-There are some standard style such as the color names (to color text) and others.
+`style` is literally the css-like style to apply.
+
+#### Identifier
+
+**Style class**: `identifier`
+
+You can mark with an identifier a piece of text using:
+
+```
+[Text]#the-id
+```
+
+You can combine identifier modifier with embedded style:
+
+```
+[Text]#the-id{textColor;backgroundColor;fontName}
+[Text]#the-id{{style}}
+```
 
 #### Emoji
 
@@ -545,10 +565,6 @@ There is an example below.
 ```
 
 You can add decorators also to a single word using this syntax:
-
-```
-This [word]{#the-word; color: red} is red.
-```
 
 
 #### Image

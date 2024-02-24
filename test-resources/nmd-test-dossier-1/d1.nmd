@@ -20,7 +20,13 @@ emoji: :alien:
 
 [abridged style]{;gray}
 
-[embedded style]{{color:red;font-size:5em;}}
+[embedded style]{{
+    color:red;font-size:5em;}}
+
+[[embedded style
+
+multiline]]{{color:red;
+font-size:5em;}}
 
 > Simple quote
 

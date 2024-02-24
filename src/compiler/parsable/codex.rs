@@ -234,6 +234,11 @@ impl Codex {
         ]);
 
         let paragraph_rules: Vec<Box<dyn ParsingRule>> = vec![
+            Box::new(ReplacementRule::new(Modifier::EmbeddedParagraphStyle, String::from(r#"<span class="identifier embedded-style" id="$2" style="$3">$1</span>"#))),
+            Box::new(ReplacementRule::new(Modifier::EmbeddedParagraphStyleWithoutId, String::from(r#"<span class="embedded-style" style="$2">$1</span>"#))),
+            Box::new(ReplacementRule::new(Modifier::AbridgedEmbeddedParagraphStyle, String::from(r#"<span class="identifier abridged-embedded-style" id="$2" style="color: $3; background-color: $4; font-family: $5;">$1</span>"#))),
+            Box::new(ReplacementRule::new(Modifier::AbridgedEmbeddedParagraphStyleWithoutId, String::from(r#"<span class="abridged-embedded-style" style="color: $2; background-color: $3; font-family: $4;">$1</span>"#))),
+            Box::new(ReplacementRule::new(Modifier::ParagraphIdentifier, String::from(r#"<span class="identifier" id="$2">$1</span>"#))),
             Box::new(HtmlExtendedBlockQuoteRule::new()),
             Box::new(ReplacementRule::new(Modifier::MathBlock, String::from(r#"<p class="math-block">$$$$${1}$$$$</p>"#))),
             Box::new(HtmlImageRule::new()),
