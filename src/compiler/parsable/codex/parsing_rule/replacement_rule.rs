@@ -1,8 +1,8 @@
-use std::fmt::Display;
+use std::fmt::{Display, Debug};
 use std::sync::Arc;
 
 use log;
-use regex::{Regex, Replacer};
+use regex::{Captures, Regex, Replacer};
 
 use crate::compiler::parsable::ParsingConfiguration;
 
@@ -13,12 +13,12 @@ use super::{Modifier, ParsingRule};
 /// Rule to replace a NMD text based on a specific pattern matching rule
 pub struct ReplacementRule<R: Replacer> {
     modifier: Modifier,
-    replacement_pattern: R,
+    replacer: R,
     newline_fix: bool,
     newline_fix_pattern: Option<String>
 }
 
-impl<R: Replacer + Display> ReplacementRule<R> {
+impl<R: Replacer> ReplacementRule<R> {
     /// Returns a new instance having a search pattern and a replication pattern
     ///
     /// # Arguments
@@ -26,13 +26,13 @@ impl<R: Replacer + Display> ReplacementRule<R> {
     /// * `pattern_type` - PatternType which represent the pattern used to search in text 
     /// * `replacement_pattern` - A string slice which represent the pattern used to replace the text
     ///
-    pub fn new(modifier: Modifier, replacement_pattern: R) -> Self {
+    pub fn new(modifier: Modifier, replacer: R) -> Self {
 
-        log::debug!("created new parsing rule with search_pattern: '{}' and replacement_pattern: '{}'", modifier.search_pattern(), replacement_pattern);
+        log::debug!("created new parsing rule with search_pattern: '{}'", modifier.search_pattern()); //  and replacer: '{:?}'
 
         Self {
             modifier,
-            replacement_pattern,
+            replacer,
             newline_fix: false,
             newline_fix_pattern: None
         }
@@ -56,9 +56,9 @@ impl ParsingRule for ReplacementRule<String> {
           Err(_) => return Err(ParsingError::InvalidPattern(self.modifier().search_pattern()))  
         };
 
-        log::debug!("parsing:\n{}\nusing '{}'->'{}' (newline fix: {})", content, self.modifier().search_pattern(), self.replacement_pattern, self.newline_fix);
+        log::debug!("parsing:\n{}\nusing '{}'->'{}' (newline fix: {})", content, self.modifier().search_pattern(), self.replacer, self.newline_fix);
 
-        let mut parsed_content = regex.replace_all(content, self.replacement_pattern.as_str()).to_string();
+        let mut parsed_content = regex.replace_all(content, self.replacer.as_str()).to_string();
 
         if self.newline_fix {
             let regex = Regex::new("\n\n").unwrap();
@@ -74,6 +74,37 @@ impl ParsingRule for ReplacementRule<String> {
         &self.modifier
     }
 }
+
+impl<F> ParsingRule for ReplacementRule<F>
+where F: 'static + Sync + Send + Fn(&Captures) -> String {
+
+    /// Parse the content using internal search and replacement pattern
+    fn parse(&self, content: &str, parsing_configuration: Arc<ParsingConfiguration>) -> Result<ParsingOutcome, ParsingError> {
+
+        let regex = match Regex::new(&self.modifier().search_pattern()) {
+          Ok(r) => r,
+          Err(_) => return Err(ParsingError::InvalidPattern(self.modifier().search_pattern()))  
+        };
+
+        // log::debug!("parsing:\n{}\nusing '{}'->'{}' (newline fix: {})", content, self.modifier().search_pattern(), self.replacer, self.newline_fix);
+
+        let mut parsed_content = regex.replace_all(content, &self.replacer).to_string();
+
+        if self.newline_fix {
+            let regex = Regex::new("\n\n").unwrap();
+            parsed_content = regex.replace_all(&parsed_content, self.newline_fix_pattern.clone().unwrap().as_str()).to_string();
+        }
+
+        log::debug!("result:\n{}", parsed_content);
+        
+        Ok(ParsingOutcome::new(parsed_content))
+    }
+
+    fn modifier(&self) -> &Modifier {
+        &self.modifier
+    }
+}
+
 
 #[cfg(test)]
 mod test {

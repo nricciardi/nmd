@@ -1,7 +1,7 @@
 # New MarkDown [ALPHA]
 
 [![License](https://img.shields.io/badge/license-GPL3-green.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v0.9.4-blue.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-v0.9.5-blue.svg)](CHANGELOG.md)
 
 
 - [New MarkDown \[ALPHA\]](#new-markdown-alpha)
@@ -100,7 +100,7 @@ NMD is full compatible with CommonMark standard.
 - [ ] Base page style
 - [ ] Paper format support (A4, A5, ...)
 - [x] Embedded style
-- [ ] Embedded paragraph style
+- [ ] Embedded chapter style
 - [ ] Custom style files
 - [ ] PDF compile format
 - [ ] Tables

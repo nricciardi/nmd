@@ -7,7 +7,7 @@ use std::sync::Arc;
 pub use parsing_rule::ParsingRule;
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use rayon::slice::ParallelSliceMut;
-use regex::Regex;
+use regex::{Captures, Regex};
 use self::modifier::Modifiers;
 pub use self::modifier::{MAX_HEADING_LEVEL, Modifier};
 use self::parsing_rule::html_extended_block_quote_rule::HtmlExtendedBlockQuoteRule;
@@ -45,6 +45,19 @@ impl Codex {
 
     pub fn paragraph_rules(&self) -> &Vec<Box<dyn ParsingRule>> {
         &self.paragraph_rules
+    }
+
+    pub fn create_id(s: &str) -> String {
+
+        let allowed_chars = s.chars().filter(|c| c.is_alphanumeric() || *c == '_' || *c == '-' || *c == ' ').map(|c| {
+            if c == ' ' {
+                return '-';
+            }
+
+            c
+        });
+
+        allowed_chars.collect()
     }
 
     pub fn parse_content(&self, content: &str, parsing_configuration: Arc<ParsingConfiguration>) -> Result<ParsingOutcome, ParsingError> {
@@ -205,8 +218,25 @@ impl Codex {
         let mut content_rules: Vec<Box<dyn ParsingRule>> = Vec::new();
 
         for i in (1..=MAX_HEADING_LEVEL).rev() {
-            content_rules.push(Box::new(ReplacementRule::new(Modifier::HeadingGeneralExtendedVersion(i), format!(r#"<h{} class="heading-{}">$1</h{}>"#, i, i, i))));
-            content_rules.push(Box::new(ReplacementRule::new(Modifier::HeadingGeneralCompactVersion(i), String::from(r#"<h${1} class="heading-${1}">$2</h$>"#))));
+            content_rules.push(Box::new(ReplacementRule::new(Modifier::HeadingGeneralExtendedVersion(i), move |caps: &Captures| {
+                let title = &caps[1];
+
+                let id = Self::create_id(title);
+
+                format!(r#"<h{} class="heading-{}" id="{}">{}</h{}>"#, i, i, id, title, i)
+            })));
+
+            content_rules.push(Box::new(ReplacementRule::new(Modifier::HeadingGeneralCompactVersion(i), |caps: &Captures| {
+                let heading_lv = &caps[1];
+                let title = &caps[2];
+
+                let id = Self::create_id(title);
+
+                format!(r#"<h{} class="heading-{}" id="{}">{}</h>"#, heading_lv, heading_lv, id, title)
+            })));
+
+            // content_rules.push(Box::new(ReplacementRule::new(Modifier::HeadingGeneralExtendedVersion(i), format!(r#"<h{} class="heading-{}">$1</h{}>"#, i, i, i))));
+            // content_rules.push(Box::new(ReplacementRule::new(Modifier::HeadingGeneralCompactVersion(i), String::from(r#"<h${1} class="heading-${1}">$2</h$>"#))));
         }
 
         content_rules.append(&mut vec![
@@ -357,5 +387,14 @@ print("hello world")
         let paragraphs = codex.split_str_in_paragraphs(nmd_text).unwrap();
 
         assert_eq!(paragraphs.len(), 2)
+    }
+
+    #[test]
+    fn id() {
+        let s = "my $string<-_778ks";
+
+        let id = Codex::create_id(s);
+
+        assert_eq!(id, "my-string-_778ks");
     }
 }
