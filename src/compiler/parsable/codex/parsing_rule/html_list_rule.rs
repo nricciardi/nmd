@@ -109,13 +109,15 @@ impl ParsingRule for HtmlListRule {
             }
         }
 
-        if items_found != content.lines().count() {
+        let total_valid_lines = content.lines().into_iter().filter(|l| !l.is_empty() && !l.to_string().eq("\n")).count();
+
+        if items_found != total_valid_lines {
 
             if parsing_configuration.strict_list_check() {
-                log::error!("the following list has incorrect item(s):\n{}\n", content);
+                log::error!("the following list has incorrect items (parsed {} on {}):\n{}", items_found, total_valid_lines, content);
                 panic!("incorrect list item(s)")
             } else {
-                log::warn!("the following list has incorrect item(s):\n{}\n", content);
+                log::warn!("the following list has incorrect items (parsed {} on {}):\n{}\n", items_found, total_valid_lines, content);
             }
         }
 

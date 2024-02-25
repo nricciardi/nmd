@@ -1,6 +1,91 @@
+/* Reset CSS */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body, h1, h2, h3, p, ul, li {
+    margin: 0;
+    padding: 0;
+}
+
+/* PAGE */
+
+body {
+    font-family: Arial, sans-serif;
+}
+
+.paragraph {
+    line-height: 1.5;
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+}
+
+.page-break {
+    page-break-after: always;
+}
+
+/* HEADING */
+
+.heading-1, .heading-2, .heading-3, .heading-4, .heading-5, .heading-6 {
+    font-weight: 600;
+    font-family: 'Arial', sans-serif;
+    color: #333;
+    margin-top: 0.75em;
+    margin-bottom: 0.5em;
+    line-height: 1.25;
+
+    page-break-after: avoid;
+}
+
+
+.heading-1 {
+    font-size: 2em;
+	margin-top: 0;
+	padding-bottom: 0.3em;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+
+    page-break-before: always;
+}
+
+.heading-2 {
+    font-size: 1.5em;
+	padding-bottom: 0.3em;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+.heading-3 {
+    font-size: 1.25em;
+    font-weight: bold;
+}
+
+.heading-4 {
+    font-size: 1.1em;
+}
+
+.heading-5 {
+    font-size: 1em;
+}
+
+.heading-6 {
+    font-size: 0.875em;
+}
+
+
+/* CHECKBOX */
+
+
+
+/* LIST */
+
 .list {
     list-style-type: none;
     padding: 0;
+
+    page-break-inside: avoid;
 }
 
 .list-item-indentation {

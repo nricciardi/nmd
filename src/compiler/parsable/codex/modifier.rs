@@ -101,6 +101,7 @@ pub enum Modifier {
     EmbeddedParagraphStyleWithId,
     EmbeddedParagraphStyle,
     ParagraphIdentifier,
+    PageBreak,
 
     Custom
 }
@@ -112,6 +113,7 @@ impl Modifier {
 
         //! they must have the compatibility order
         vec![
+            Self::PageBreak,
             Self::ParagraphIdentifier,
             Self::EmbeddedParagraphStyleWithId,
             Self::EmbeddedParagraphStyle,
@@ -215,9 +217,9 @@ impl Modifier {
             Self::MathBlock => String::from(r#"\$\$((?s:.+?))\$\$"#),
 
             Self::ListItem => String::from(r#"(?m:^([\t ]*)(-\[\]|-\[ \]|-\[x\]|-\[X\]|-|->|\||\*|\+|--|\d[\.)]?|[a-zA-Z]{1,8}[\.)]|&[^;]+;) (.*))"#),
-            Self::List => format!(r"({}){}({})?", Self::ListItem.search_pattern(), String::from(r"\n(?:(?mx:^([\t ]*)(-\[\]|-\[ \]|-\[x\]|-\[X\]|-|->|\||\*|\+|--|\d[\.)]?|[a-zA-Z]{1,8}[\.)]|&[^;]+;) (.*)\n)*)"), Self::ListItem.search_pattern()),
+            Self::List => format!(r"({}\n){}({})?\n\n", Self::ListItem.search_pattern(), String::from(r"(?:(?m:^([\t ]*)(-\[\]|-\[ \]|-\[x\]|-\[X\]|-|->|\||\*|\+|--|\d[\.)]?|[a-zA-Z]{1,8}[\.)]|&[^;]+;) (.*)\n))*"), Self::ListItem.search_pattern()),
             Self::ExtendedBlockQuoteLine => String::from(r"(?m:^> (.*))"),
-            Self::ExtendedBlockQuote => format!("({}){}({})?", Self::ExtendedBlockQuoteLine.search_pattern(), String::from(r"\n(?:(?mx:^> .*\n)*)"), Self::ExtendedBlockQuoteLine.search_pattern()),
+            Self::ExtendedBlockQuote => format!(r"({}){}({})?", Self::ExtendedBlockQuoteLine.search_pattern(), String::from(r"\n(?:(?mx:^> .*\n)*)"), Self::ExtendedBlockQuoteLine.search_pattern()),
             Self::LineBreakDash => String::from(r"(?m:^-{3,})"),
             Self::LineBreakStar => String::from(r"(?m:^\*{3,})"),
             Self::LineBreakPlus => String::from(r"(?m:^\+{3,})"),
@@ -227,6 +229,7 @@ impl Modifier {
             Self::ParagraphIdentifier => String::from(r"\[\[(?sx:(.*?))\]\]\n?#([\w-]*)"),
             Self::EmbeddedParagraphStyleWithId => String::from(r"\[\[(?sx:(.*?))\]\]\n?#([\w-]*)\n?\{\{(?xs:((?:.*?:.*?;?)))\}\}"),
             Self::EmbeddedParagraphStyle => String::from(r"\[\[(?sx:(.*?))\]\]\{\{(?xs:((?:.*?:.*?;?)))\}\}"),
+            Self::PageBreak => String::from(r"(?m:^#{3,}$)"),
             
             _ => String::from(r"RULE TODO")                                               // TODO
         }

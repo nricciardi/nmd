@@ -7,5 +7,5 @@ documents:
   - "./d6.nmd"
   - "./d7.nmd"
 compilation:
-    parallelization: false
+    parallelization: true
     compress_embed_image: false

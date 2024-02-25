@@ -1,7 +1,7 @@
 # New MarkDown [ALPHA]
 
 [![License](https://img.shields.io/badge/license-GPL3-green.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v0.9.5-blue.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-v0.9.6-blue.svg)](CHANGELOG.md)
 
 
 - [New MarkDown \[ALPHA\]](#new-markdown-alpha)
@@ -52,6 +52,7 @@
     - [Paragraph modifier](#paragraph-modifier)
       - [Embedded style](#embedded-style-1)
       - [Image](#image)
+      - [Page break](#page-break)
       - [Line break](#line-break)
       - [List](#list)
       - [Code block](#code-block)
@@ -557,6 +558,14 @@ style]]{}
 
 ```markdown
 ![Image](http://url/a.png)
+```
+
+#### Page break
+
+**Style class**: `page-break`
+
+```
+### or more #
 ```
 
 #### Line break
