@@ -26,11 +26,11 @@ impl HtmlListRule {
     fn transform_to_field(to: String) -> String {
 
         if to.eq(list_bullet_configuration_record::CHECKBOX) {
-            return String::from(r#"<div class="checkbox"></div>"#)
+            return String::from(r#"<div class="checkbox checkbox-unchecked"></div>"#)
         }
 
         if to.eq(list_bullet_configuration_record::CHECKBOX_CHECKED) {
-            return String::from(r#"<div class="checkbox-checked"></div>"#)
+            return String::from(r#"<div class="checkbox checkbox-checked"></div>"#)
         }
 
         to

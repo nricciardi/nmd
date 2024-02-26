@@ -112,6 +112,38 @@ minima nesciunt dolorem! Officiis iure rerum voluptates a cumque velit
 
 # title 1
 
+::: quote
+new
+warning
+
+multiline
+:::
+
+> [!TIP]
+>
+> new quote
+
+::: tip
+new
+warning
+
+multiline
+:::
+
+::: note
+new
+warning
+
+multiline
+:::
+
+::: important
+new
+warning
+
+multiline
+:::
+
 ::: warning
 new
 warning
@@ -119,3 +151,9 @@ warning
 multiline
 :::
 
+::: caution
+new
+warning
+
+multiline
+:::

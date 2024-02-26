@@ -1,7 +1,7 @@
 # New MarkDown [ALPHA]
 
 [![License](https://img.shields.io/badge/license-GPL3-green.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v0.9.6-blue.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-v0.9.7-blue.svg)](CHANGELOG.md)
 
 
 - [New MarkDown \[ALPHA\]](#new-markdown-alpha)
@@ -47,7 +47,7 @@
       - [Inline comments](#inline-comments)
       - [Bookmark](#bookmark)
         - [Anonymous bookmark](#anonymous-bookmark)
-        - [Titled bookmark](#titled-bookmark)
+        - [Bookmark](#bookmark-1)
         - [Todo](#todo)
     - [Paragraph modifier](#paragraph-modifier)
       - [Embedded style](#embedded-style-1)
@@ -87,6 +87,10 @@ NMD is full compatible with CommonMark standard.
 
 - [ ] All modifiers
 - [ ] Possibility to use a different dossier configuration name
+- [ ] PDF compile format
+- [ ] Vintage style (typewriter)
+- [ ] Image description
+- [ ] Table of Content
 
 ### Features in Progress
 
@@ -100,12 +104,11 @@ NMD is full compatible with CommonMark standard.
 - [x] Focus block
 - [ ] Base page style
 - [ ] Paper format support (A4, A5, ...)
+- [ ] Footer with page counter
 - [x] Embedded style
 - [ ] Embedded chapter style
 - [ ] Custom style files
-- [ ] PDF compile format
 - [ ] Tables
-- [ ] Vintage style (typewriter)
 
 
 ## Getting Started
@@ -354,7 +357,7 @@ or
 
 #### Checkbox
 
-**Style class**: `checkbox`, `checkbox-checked`
+**Style class**: `checkbox`, `checkbox-unchecked`, `checkbox-checked`
 
 ```
 [x] or [x]
@@ -496,7 +499,7 @@ $inline math$
 Description can be multi-lines.
 
 
-##### Titled bookmark
+##### Bookmark
 
 **Style class**: `bookmark`, `bookmark-title`, `bookmark-description`
 
@@ -667,7 +670,7 @@ comment
 
 #### Focus block
 
-**Style class**: `focus-block`, `focus-block-type` (replace `type`)
+**Style class**: `focus-block`, `focus-block-type`, `focus-block-title`, `focus-block-type-title`, `focus-block-description`, `focus-block-type-description` (replace `type`)
 
 Focus blocks allow to insert text in particular paragraph in which the text is highlighted.
 
@@ -690,7 +693,7 @@ Watch out!!!
 
 ##### Focus quote block
 
-**Style class**: `focus-quote-block`, `focus-quote-block-type` (replace `type`)
+**Style class**: `focus-quote-block`, `focus-quote-block-type`, `focus-quote-block-title`, `focus-quote-block-type-title`, `focus-quote-block-description`, `focus-quote-block-type-description` (replace `type`)
 
 ```
 > [!note]

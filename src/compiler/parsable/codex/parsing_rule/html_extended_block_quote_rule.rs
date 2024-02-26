@@ -64,8 +64,11 @@ impl ParsingRule for HtmlExtendedBlockQuoteRule {
 
         let outcome = ParsingOutcome::new(format!(r#"
         <div class="focus-quote-block focus-quote-block-{}">
-        {}
-        </div>"#, quote_type, tag_body));
+        <div class="focus-quote-block-title focus-quote-block-{}-title"></div>
+        <div class="focus-quote-block-description focus-quote-block-{}-description">
+            {}
+        </div>
+        </div>"#, quote_type, quote_type, quote_type, tag_body));
 
         Ok(outcome)
     }
