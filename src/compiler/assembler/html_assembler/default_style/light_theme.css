@@ -14,12 +14,26 @@ body, h1, h2, h3, p, ul, li {
 
 body {
     font-family: Arial, sans-serif;
+    font-size: 11pt;
+    margin: 2cm;
+    background-color: #fdfdfd;
+}
+
+@media print {
+    body {
+        font-family: Arial, sans-serif;
+        font-size: 11pt;
+        margin: 2cm;
+        background-color: white;
+    }
 }
 
 .paragraph {
     line-height: 1.5;
     margin-top: 0.5em;
     margin-bottom: 0.5em;
+    text-align: justify;
+    padding-left: 0.25em;
 }
 
 .page-break {
@@ -35,6 +49,7 @@ body {
     margin-top: 0.75em;
     margin-bottom: 0.5em;
     line-height: 1.25;
+    padding-left: 0.1em;
 
     page-break-after: avoid;
 }
