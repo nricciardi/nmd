@@ -1,10 +1,10 @@
-# New MarkDown [PRE-BETA]
+# New MarkDown [BETA]
 
 [![License](https://img.shields.io/badge/license-GPL3-green.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v0.10.0-blue.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-v0.10.1-blue.svg)](CHANGELOG.md)
 
 
-- [New MarkDown \[PRE-BETA\]](#new-markdown-pre-beta)
+- [New MarkDown \[BETA\]](#new-markdown-beta)
   - [Overview](#overview)
     - [Features](#features)
   - [Develop](#develop)
@@ -520,6 +520,15 @@ Todo is a special tag to insert... TODOs
 @[TODO](description)
 @[todo](description)
 ```
+
+...or only as first characters of the line:
+
+```
+TODO: description
+todo: description
+```
+
+
 
 
 
