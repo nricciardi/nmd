@@ -1,7 +1,7 @@
 # New MarkDown [ALPHA]
 
 [![License](https://img.shields.io/badge/license-GPL3-green.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v0.9.7-blue.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-v0.10.0-blue.svg)](CHANGELOG.md)
 
 
 - [New MarkDown \[ALPHA\]](#new-markdown-alpha)
@@ -46,7 +46,7 @@
       - [Inline math](#inline-math)
       - [Inline comments](#inline-comments)
       - [Bookmark](#bookmark)
-        - [Anonymous bookmark](#anonymous-bookmark)
+        - [Abridged bookmark](#abridged-bookmark)
         - [Bookmark](#bookmark-1)
         - [Todo](#todo)
     - [Paragraph modifier](#paragraph-modifier)
@@ -89,7 +89,7 @@ NMD is full compatible with CommonMark standard.
 - [ ] Possibility to use a different dossier configuration name
 - [ ] PDF compile format
 - [ ] Vintage style (typewriter)
-- [ ] Image description
+- [ ] Dark style
 - [ ] Table of Content
 
 ### Features in Progress
@@ -101,8 +101,10 @@ NMD is full compatible with CommonMark standard.
 - [x] List creation check
 - [ ] Link with identifier
 - [x] Quote
+- [x] Image caption
+- [ ] Image URL fix meta-characters
 - [x] Focus block
-- [ ] Base page style
+- [x] Light base page style
 - [ ] Paper format support (A4, A5, ...)
 - [ ] Footer with page counter
 - [x] Embedded style
@@ -487,9 +489,9 @@ $inline math$
 
 **Bookmarks** are label which can be inserted in text body to mark a paragraph or a piece of paragraph.
 
-##### Anonymous bookmark
+##### Abridged bookmark
 
-**Style class**: `bookmark`, `abridged-bookmark`
+**Style class**: `abridged-bookmark`, `abridged-bookmark-title`
 
 ```
 @[bookmark description]
@@ -510,7 +512,7 @@ Description can be multi-lines.
 
 ##### Todo
 
-**Style class**: `todo`, `todo-description`
+**Style class**: `todo`, `todo-title`, `todo-description`
 
 Todo is a special tag to insert... TODOs
 
@@ -557,7 +559,7 @@ style]]{}
 
 #### Image
 
-**Style class**: `image`
+**Style class**: `figure`, `image`, `image-caption`
 
 ```markdown
 ![Image](http://url/a.png)

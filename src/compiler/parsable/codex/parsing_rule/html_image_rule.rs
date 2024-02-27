@@ -3,6 +3,7 @@ use std::{path::PathBuf, sync::Arc};
 use log;
 use regex::{Regex, Captures};
 
+use crate::compiler::parsable::codex::Codex;
 use crate::resource::{image::Image, remote_resource::RemoteResource};
 use crate::compiler::parsable::ParsingConfiguration;
 
@@ -19,8 +20,14 @@ impl HtmlImageRule {
         Self {}
     }
 
-    fn get_standard_img_tag(src: &str, label: &str) -> String {
-        format!(r#"<img src="{}" alt="{}" class="img" />"#, src, label)
+    fn create_img_tag(src: &str, label: &str) -> String {
+
+        let id = Codex::create_id(label);
+
+        format!(r#"<figure class="figure" id="{}">
+                    <img src="{}" alt="{}" class="image" />
+                    <figcaption class="image-caption">{}</figcaption>
+                </figure>"#, id, src, label, label)
     }
 }
 
@@ -48,7 +55,7 @@ impl ParsingRule for HtmlImageRule {
                             todo!()
 
                         } else {
-                            return Self::get_standard_img_tag(src, label.as_str())
+                            return Self::create_img_tag(src, label.as_str())
                         }
 
                     } else {
@@ -68,8 +75,8 @@ impl ParsingRule for HtmlImageRule {
                             }
     
                             let base64_image = image.to_base64();
-                            
-                            return format!(r#"<img src="data:image/png;base64,{}" alt="{}" class="img" />"#, base64_image.unwrap(), label.as_str())
+
+                            return Self::create_img_tag(format!("data:image/png;base64,{}", base64_image.unwrap()).as_str(), label.as_str());
 
                         } else if parsing_configuration.strict_image_src_check() {
 
@@ -78,7 +85,7 @@ impl ParsingRule for HtmlImageRule {
                             panic!("invalid src")
 
                         } else {
-                            return Self::get_standard_img_tag(src, label.as_str())
+                            return Self::create_img_tag(src, label.as_str())
                         }
 
                     }
