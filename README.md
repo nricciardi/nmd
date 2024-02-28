@@ -97,6 +97,7 @@ NMD is full compatible with CommonMark standard.
 - [ ] Vintage style (typewriter)
 - [ ] Dark style
 - [ ] Table of Content
+- [ ] Run code
 
 ### Features in Progress
 
