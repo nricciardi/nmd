@@ -61,6 +61,10 @@
         - [Focus quote block](#focus-quote-block)
       - [Math block (LaTeX)](#math-block-latex)
       - [Chapter styles and metadata \[TO BE DEFINE; NOT SUPPORTED YET\]](#chapter-styles-and-metadata-to-be-define-not-supported-yet)
+      - [Tables \[TO BE DEFINE; NOT SUPPORTED YET\]](#tables-to-be-define-not-supported-yet)
+        - [Table Head](#table-head)
+        - [Table Body](#table-body)
+        - [Table Footer](#table-footer)
   - [Author](#author)
   - [Contributing](#contributing)
   - [License](#license)
@@ -773,7 +777,29 @@ There is an example below.
 
 You can add decorators also to a single word using this syntax:
 
+#### Tables [TO BE DEFINE; NOT SUPPORTED YET]
 
+Each table has an table head, body and footer (like HTML tables). A table can have only head or only footer, but it must always have body.
+
+##### Table Head
+
+The pattern for a cell table head is: 
+
+```
+|| + single space + cell head text + one or more spaces ||
+```
+
+##### Table Body
+
+The pattern for a generic table record is: | + single space + cell text + one or more spaces |
+
+```
+| cell text | cell text | cell text |
+```
+
+##### Table Footer
+
+> WIP
 
 
 
