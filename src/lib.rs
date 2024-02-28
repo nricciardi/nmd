@@ -150,6 +150,31 @@ impl NmdCli {
                                         )
 
                                 )
+                )
+                .subcommand(
+                    Command::new("dossier")
+                    .about("Manage NMD dossier")
+                    .short_flag('d')
+                    .subcommand_required(true)
+                    .subcommand(
+                        Command::new("add")
+                        .about("Add resource to a dossier")
+                        .short_flag('a')
+                        .arg(
+                            Arg::new("document")
+                            .short('p')
+                            .long("path")
+                            .help("add a document")
+                            .action(ArgAction::Append)
+                        )
+                        .arg(
+                            Arg::new("verbose")
+                                .short('v')
+                                .long("verbose")
+                                .action(ArgAction::Set)
+                                .default_value("info")
+                        )
+                    )
                 );
 
         Self {
@@ -230,14 +255,14 @@ impl NmdCli {
                 match generate_matches.subcommand() {
                     Some(("dossier", generate_dossier_matches)) => {
 
-                        if let Some(mut format) = generate_dossier_matches.get_many::<String>("verbose") {
+                        if let Some(mut verbose) = generate_dossier_matches.get_many::<String>("verbose") {
                             
-                            if format.len() != 1 {
+                            if verbose.len() != 1 {
                                 return Err(NmdCliError::MoreThanOneValue("verbose".to_string()));
                             }
                             
                             
-                            let log_level = LevelFilter::from_str(format.nth(0).unwrap())?;
+                            let log_level = LevelFilter::from_str(verbose.nth(0).unwrap())?;
         
                             Self::set_logger(log_level);
                         }
@@ -262,6 +287,28 @@ impl NmdCli {
                         
                         Ok(Generator::generate_dossier(generator_configuration)?)
                     },
+                    _ => unreachable!()
+                }
+            },
+
+            Some(("dossier", dossier_matches)) => {
+                match dossier_matches.subcommand() {
+                    Some(("add", generate_dossier_matches)) => {
+                        if let Some(mut verbose) = generate_dossier_matches.get_many::<String>("verbose") {
+                            
+                            if verbose.len() != 1 {
+                                return Err(NmdCliError::MoreThanOneValue("verbose".to_string()));
+                            }
+                            
+                            
+                            let log_level = LevelFilter::from_str(verbose.nth(0).unwrap())?;
+        
+                            Self::set_logger(log_level);
+                        }
+
+                        todo!()
+                    },
+
                     _ => unreachable!()
                 }
             },
