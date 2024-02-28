@@ -193,6 +193,8 @@ body {
     gap: 10px;
     align-items: center;
     font-size: 1.05em;
+
+    page-break-inside: avoid;
 }
 
 .focus-block-quote, .focus-quote-block-quote {
@@ -284,6 +286,8 @@ body {
     overflow-x: hidden;
     padding-right: calc(var(--body-margin-right) / 2.0);
     padding-left: calc(var(--body-margin-right) / 2.0);
+
+    page-break-inside: avoid;
 }
 
 .bookmark-title, .abridged-bookmark-title {
@@ -316,6 +320,8 @@ body {
     overflow-x: hidden;
     padding-right: calc(var(--body-margin-right) / 2.0);
     padding-left: calc(var(--body-margin-right) / 2.0);
+
+    page-break-inside: avoid;
 }
 
 .todo-title::before {

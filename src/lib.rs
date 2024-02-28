@@ -1,6 +1,7 @@
 pub mod compiler;
 pub mod resource;
 pub mod generator;
+pub mod dossier_manager;
 mod utility;
 
 use std::{path::PathBuf, str::FromStr};
@@ -8,6 +9,7 @@ use std::{path::PathBuf, str::FromStr};
 use clap::{Arg, ArgAction, Command};
 use compiler::{output_format::OutputFormatError, CompilationError};
 pub use compiler::Compiler;
+use dossier_manager::{dossier_manager_configuration::{self, DossierManagerConfiguration}, DossierManager, DossierManagerError};
 use generator::{generator_configuration::GeneratorConfiguration, Generator};
 use log::{LevelFilter, ParseLevelError};
 use resource::ResourceError;
@@ -16,7 +18,7 @@ use simple_logger::SimpleLogger;
 
 use crate::compiler::{compilation_configuration::CompilationConfiguration, output_format::OutputFormat};
 
-pub const VERSION: &str = "0.10.1-beta";
+pub const VERSION: &str = "0.10.5-beta";
 
 #[derive(Error, Debug)]
 pub enum NmdCliError {
@@ -34,6 +36,12 @@ pub enum NmdCliError {
 
     #[error(transparent)]
     ResourceError(#[from] ResourceError),
+
+    #[error("too few arguments: {0} needed")]
+    TooFewArguments(String),
+
+    #[error(transparent)]
+    DossierManagerError(#[from] DossierManagerError),
 }
 
 
@@ -161,10 +169,19 @@ impl NmdCli {
                         .about("Add resource to a dossier")
                         .short_flag('a')
                         .arg(
-                            Arg::new("document")
+                            Arg::new("dossier-path")
                             .short('p')
-                            .long("path")
-                            .help("add a document")
+                            .long("dossier-path")
+                            .help("insert dossier path")
+                            .action(ArgAction::Append)
+                            .default_value(".")
+                        )
+                        .arg(
+                            Arg::new("document-name")
+                            .short('d')
+                            .long("document-name")
+                            .help("insert file name of the document")
+                            .required(true)
                             .action(ArgAction::Append)
                         )
                         .arg(
@@ -293,8 +310,8 @@ impl NmdCli {
 
             Some(("dossier", dossier_matches)) => {
                 match dossier_matches.subcommand() {
-                    Some(("add", generate_dossier_matches)) => {
-                        if let Some(mut verbose) = generate_dossier_matches.get_many::<String>("verbose") {
+                    Some(("add", add_dossier_matches)) => {
+                        if let Some(mut verbose) = add_dossier_matches.get_many::<String>("verbose") {
                             
                             if verbose.len() != 1 {
                                 return Err(NmdCliError::MoreThanOneValue("verbose".to_string()));
@@ -306,7 +323,32 @@ impl NmdCli {
                             Self::set_logger(log_level);
                         }
 
-                        todo!()
+                        if let Some(mut dossier_path) = add_dossier_matches.get_many::<String>("dossier-path") {
+                            
+                            if dossier_path.len() != 1 {
+                                return Err(NmdCliError::MoreThanOneValue("dossier-path".to_string()));
+                            }
+
+                            if let Some(mut document_name) = add_dossier_matches.get_many::<String>("document-name") {
+                            
+                                if document_name.len() != 1 {
+                                    return Err(NmdCliError::MoreThanOneValue("document-name".to_string()));
+                                }
+
+                                let dossier_path = PathBuf::from(dossier_path.nth(0).unwrap());
+                        
+                                let dossier_manager_configuration = DossierManagerConfiguration::new(dossier_path);
+
+                                let dossier_manager = DossierManager::new(dossier_manager_configuration);
+
+                                let file_name = document_name.nth(0).unwrap();
+
+                                return Ok(dossier_manager.add_document(&file_name)?)
+                            }
+                            
+                        }
+
+                        Err(NmdCliError::TooFewArguments("dossier path".to_string()))
                     },
 
                     _ => unreachable!()

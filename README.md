@@ -1,7 +1,7 @@
 # New MarkDown [BETA]
 
 [![License](https://img.shields.io/badge/license-GPL3-green.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v0.10.1-blue.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-v0.10.5-blue.svg)](CHANGELOG.md)
 
 
 - [New MarkDown \[BETA\]](#new-markdown-beta)
@@ -11,8 +11,10 @@
     - [Planned Features](#planned-features)
     - [Features in Progress](#features-in-progress)
   - [Getting Started](#getting-started)
+    - [TL;DR](#tldr)
     - [Installation](#installation)
     - [Generate a new dossier using compiler](#generate-a-new-dossier-using-compiler)
+      - [Add a new document](#add-a-new-document)
       - [Compile dossier](#compile-dossier)
       - [HTML](#html)
   - [Structure](#structure)
@@ -107,6 +109,8 @@ NMD is full compatible with CommonMark standard.
 - [x] Quote
 - [x] Image caption
 - [ ] Image URL fix meta-characters
+- [ ] Multiple image in a single row
+- [ ] Image in dossier: default path to `assets/images`
 - [x] Focus block
 - [x] Light base page style
 - [ ] Paper format support (A4, A5, ...)
@@ -118,6 +122,16 @@ NMD is full compatible with CommonMark standard.
 
 
 ## Getting Started
+
+### TL;DR
+
+```shell
+nmd generate dossier -p dossier/input/path -f -w
+
+nmd dossier add -p dossier/input/path -d new-document.nmd
+
+nmd compile dossier -f html -i dossier/input/path -o artifact/output/path
+```
 
 ### Installation
 
@@ -132,12 +146,25 @@ To install NMD, follow these steps:
 To **generate a new dossier** you can use the following command:
 
 ```shell
-nmd generate dossier -p your/final/directory/path/
+nmd generate dossier -p dossier/input/path
 ```
 
 There are many *flags* that you can use in combination with `generate dossier`. For example, if you want *force* the generation you can use `-f`, or if you want a *welcome page* you can use `-w`.
 
+```shell
+nmd generate dossier -p dossier/input/path -f -w
+```
+
 The Git support is planned, but not implemented yet. You can only add `.gitkeep` files in assets directories using `-k`.
+
+#### Add a new document
+
+To **add a new document** you can use the following command:
+
+```shell
+nmd dossier add -p dossier/input/path -d new-document.nmd
+```
+
 
 #### Compile dossier
 
@@ -148,7 +175,6 @@ Compile a dossier in `html`:
 ```shell
 nmd compile dossier -f html -i dossier/input/path -o artifact/output/path
 ```
-
 
 
 ## Structure

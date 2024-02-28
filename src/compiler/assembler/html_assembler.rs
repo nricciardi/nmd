@@ -178,7 +178,7 @@ mod test {
         assert!(nmd_file.is_file());
 
         let mut dossier_configuration = DossierConfiguration::default();
-        dossier_configuration.set_documents(vec![nmd_file.to_string_lossy().to_string()]);
+        dossier_configuration.set_raw_documents_paths(vec![nmd_file.to_string_lossy().to_string()]);
 
         let mut dossier = Dossier::load(Arc::clone(&codex), &dossier_configuration).unwrap();
 

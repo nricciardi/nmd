@@ -10,6 +10,8 @@ pub struct Generator {
 }
 
 impl Generator {
+
+    // TODO: move configuration in struct
     pub fn generate_dossier(configuration: GeneratorConfiguration) -> Result<(), ResourceError> {
         
         if configuration.path().exists() {
@@ -26,6 +28,17 @@ impl Generator {
                 return Err(ResourceError::ReadError("check permission".to_string()))
             }
 
+            if configuration.force_generation() {
+                fs::remove_dir_all(configuration.path().clone())?;
+                log::info!("cleared {}", configuration.path().to_string_lossy());
+
+                if let Err(err) = fs::create_dir_all(&configuration.path()) {
+                    return Err(ResourceError::ReadError(err.to_string()))
+                }
+
+                log::info!("created dossier directory");
+            }
+
         } else {
             if !configuration.force_generation() {
                 return Err(ResourceError::ResourceNotFound(configuration.path().to_string_lossy().to_string()))
@@ -34,56 +47,52 @@ impl Generator {
             if let Err(err) = fs::create_dir_all(&configuration.path()) {
                 return Err(ResourceError::ReadError(err.to_string()))
             }
+
+            log::info!("created dossier directory");
         }
 
         let assets_path = configuration.path().join("assets");
 
-        if assets_path.exists() && configuration.force_generation() {
-            fs::remove_dir_all(assets_path.clone())?;
-        }
-
-
-        log::info!("add assets/ directory");
-
         file_utility::create_directory(&assets_path)?;
+        log::info!("added assets/ directory");
+
         file_utility::create_directory(&assets_path.join("images"))?;
+        log::info!("added assets/images directory");
+
         file_utility::create_directory(&assets_path.join("documents"))?;
+        log::info!("added assets/documents directory");
+
         file_utility::create_directory(&assets_path.join("styles"))?;
+        log::info!("added assets/styles directory");
 
         if configuration.gitkeep() {
-            log::info!("add .gitkeep files");
 
             file_utility::create_empty_file(&assets_path.join("images").join(".gitkeep"))?;
             file_utility::create_empty_file(&assets_path.join("documents").join(".gitkeep"))?;
             file_utility::create_empty_file(&assets_path.join("styles").join(".gitkeep"))?;
+
+            log::info!("added .gitkeep files");
         }
 
         let mut dossier_configuration = DossierConfiguration::default();
 
         if configuration.welcome() {
 
-            log::info!("add welcome...");
-
             let mut welcome_document = DiskResource::try_from(configuration.path().join(WELCOME_FILE_NAME))?;
 
-            welcome_document.write("Welcome in NMD!")?;
+            welcome_document.write("Welcome in **NMD**!")?;
+
+            log::info!("added welcome page");
 
             let mut path = "./".to_string();
             path.push_str(WELCOME_FILE_NAME);
             
-            dossier_configuration.set_documents(vec![path]);
+            dossier_configuration.set_raw_documents_paths(vec![path]);
         }
 
-        let yaml_string = serde_yaml::to_string(&dossier_configuration).unwrap();
+        dossier_configuration.dump_as_yaml(configuration.path().join(dossier_configuration::YAML_FILE_NAME))?;
 
-        let mut disk_resource = DiskResource::try_from(configuration.path().join(dossier_configuration::YAML_FILE_NAME))?;
-
-        if configuration.force_generation() {
-            disk_resource.erase()?;
-        }       
-
-        log::info!("add dossier configuration file: '{}'", dossier_configuration::YAML_FILE_NAME);
-        disk_resource.write(&yaml_string)?;
+        log::info!("added dossier configuration file: '{}'", dossier_configuration::YAML_FILE_NAME);
 
         Ok(())
     }

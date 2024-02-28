@@ -16,7 +16,7 @@ use super::{loadable::{Loadable, LoadError}, parsable::{ParsingConfiguration, Pa
 #[derive(Error, Debug)]
 pub enum DossierError {
     #[error("dossier loading failed: '{0}'")]
-    Load(&'static str)
+    Load(#[from] ResourceError)
 }
 
 pub struct Dossier {
@@ -43,10 +43,7 @@ impl Loadable<PathBuf> for Dossier {
 
     fn load(codex: Arc<Codex>, location: &PathBuf) -> Result<Box<Self>, LoadError> {
 
-        let dossier_configuration = match DossierConfiguration::try_from(location) {
-            Ok(dc) => dc,
-            Err(e) => return Err(LoadError::ResourceError(ResourceError::InvalidResourceVerbose(String::from(format!("invalid dossier configuration: {}", e.to_string())))))
-        };
+        let dossier_configuration = DossierConfiguration::try_from(location)?;
 
         Self::load(Arc::clone(&codex), &dossier_configuration)
     }
@@ -56,7 +53,7 @@ impl Loadable<PathBuf> for Dossier {
 impl Loadable<DossierConfiguration> for Dossier {
     fn load(codex: Arc<Codex>, dossier_configuration: &DossierConfiguration) -> Result<Box<Self>, LoadError> {
         // TODO: are really mandatory?
-        if dossier_configuration.documents().is_empty() {
+        if dossier_configuration.raw_documents_paths().is_empty() {
             return Err(LoadError::ResourceError(ResourceError::InvalidResourceVerbose("there are no documents".to_string())))
         }
 
@@ -67,7 +64,7 @@ impl Loadable<DossierConfiguration> for Dossier {
 
         let mut documents: Vec<Document> = Vec::new();
 
-        for document in dossier_configuration.documents() {
+        for document in dossier_configuration.raw_documents_paths() {
 
             let document = Document::load(Arc::clone(&codex), document)?;
 
