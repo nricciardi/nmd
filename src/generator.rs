@@ -2,7 +2,7 @@ pub mod generator_configuration;
 
 use std::{fs, path::PathBuf};
 use self::generator_configuration::GeneratorConfiguration;
-use crate::{compiler::dossier::dossier_configuration::{self, DossierConfiguration}, resource::{disk_resource::DiskResource, Resource, ResourceError}, utility::file_utility};
+use crate::{compiler::dossier::{self, dossier_configuration::{self, DossierConfiguration}}, resource::{disk_resource::DiskResource, Resource, ResourceError}, utility::file_utility};
 
 pub const WELCOME_FILE_NAME: &str = "welcome.nmd";
 
@@ -51,19 +51,19 @@ impl Generator {
             log::info!("created dossier directory");
         }
 
-        let assets_path = configuration.path().join("assets");
+        let assets_path = configuration.path().join(dossier::ASSETS_DIR);
 
         file_utility::create_directory(&assets_path)?;
-        log::info!("added assets/ directory");
+        log::info!("added {}/ directory", dossier::ASSETS_DIR);
 
-        file_utility::create_directory(&assets_path.join("images"))?;
-        log::info!("added assets/images directory");
+        file_utility::create_directory(&assets_path.join(dossier::IMAGES_DIR))?;
+        log::info!("added {}/{} directory", dossier::ASSETS_DIR, dossier::IMAGES_DIR);
 
-        file_utility::create_directory(&assets_path.join("documents"))?;
-        log::info!("added assets/documents directory");
+        file_utility::create_directory(&assets_path.join(dossier::DOCUMENTS_DIR))?;
+        log::info!("added {}/{} directory", dossier::ASSETS_DIR, dossier::DOCUMENTS_DIR);
 
-        file_utility::create_directory(&assets_path.join("styles"))?;
-        log::info!("added assets/styles directory");
+        file_utility::create_directory(&assets_path.join(dossier::STYLES_DIR))?;
+        log::info!("added {}/{} directory", dossier::ASSETS_DIR, dossier::STYLES_DIR);
 
         if configuration.gitkeep() {
 

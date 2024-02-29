@@ -13,6 +13,11 @@ use self::dossier_configuration::DossierConfiguration;
 use super::{loadable::{Loadable, LoadError}, parsable::{ParsingConfiguration, ParsingError, codex::Codex}};
 
 
+pub const ASSETS_DIR: &str = "assets";
+pub const IMAGES_DIR: &str = "images";
+pub const DOCUMENTS_DIR: &str = "documents";
+pub const STYLES_DIR: &str = "styles";
+
 #[derive(Error, Debug)]
 pub enum DossierError {
     #[error("dossier loading failed: '{0}'")]

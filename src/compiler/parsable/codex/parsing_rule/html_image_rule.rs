@@ -3,6 +3,7 @@ use std::{path::PathBuf, sync::Arc};
 use log;
 use regex::{Regex, Captures};
 
+use crate::compiler::dossier;
 use crate::compiler::parsable::codex::Codex;
 use crate::resource::{image::Image, remote_resource::RemoteResource};
 use crate::compiler::parsable::ParsingConfiguration;
@@ -64,6 +65,10 @@ impl ParsingRule for HtmlImageRule {
 
                         if src_path_buf.is_relative() {
                             src_path_buf = parsing_configuration.input_location().clone().join(src_path_buf);
+
+                            if !src_path_buf.exists() {
+                                src_path_buf = parsing_configuration.input_location().clone().join(dossier::ASSETS_DIR).join(dossier::IMAGES_DIR);
+                            }
                         }
 
                         if src_path_buf.exists() {

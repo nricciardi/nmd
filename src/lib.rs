@@ -18,7 +18,7 @@ use simple_logger::SimpleLogger;
 
 use crate::compiler::{compilation_configuration::CompilationConfiguration, output_format::OutputFormat};
 
-pub const VERSION: &str = "0.10.5-beta";
+pub const VERSION: &str = "0.10.6-beta";
 
 #[derive(Error, Debug)]
 pub enum NmdCliError {

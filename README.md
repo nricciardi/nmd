@@ -1,7 +1,7 @@
 # New MarkDown [BETA]
 
 [![License](https://img.shields.io/badge/license-GPL3-green.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v0.10.5-blue.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-v0.10.6-blue.svg)](CHANGELOG.md)
 
 
 - [New MarkDown \[BETA\]](#new-markdown-beta)
@@ -111,7 +111,7 @@ NMD is full compatible with CommonMark standard.
 - [x] Image caption
 - [ ] Image URL fix meta-characters
 - [ ] Multiple image in a single row
-- [ ] Image in dossier: default path to `assets/images`
+- [ ] Image in dossier: default path to `assets/images` (TESTING)
 - [x] Focus block
 - [x] Light base page style
 - [ ] Paper format support (A4, A5, ...)
