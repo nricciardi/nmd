@@ -98,6 +98,7 @@ NMD is full compatible with CommonMark standard.
 - [ ] Dark style
 - [ ] Table of Content
 - [ ] Run code
+- [ ] Video
 
 ### Features in Progress
 
