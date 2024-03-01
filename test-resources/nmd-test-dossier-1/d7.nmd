@@ -2,6 +2,7 @@
 
 @[todo](this is a todo) text @[TODO](this is a todo)
 
+TODO: abridged todo
 
 @[abridged bookmark] text @[abridged bookmark]#the-id
 

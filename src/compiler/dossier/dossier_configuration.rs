@@ -24,6 +24,7 @@ pub struct DossierConfiguration {
     #[serde(default = "default_name")]
     name: String,
 
+    #[serde(rename = "documents")]
     raw_documents_paths: Vec<String>,
 
     #[serde(default = "default_style")]
