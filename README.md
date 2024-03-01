@@ -6,10 +6,11 @@
 
 - [New MarkDown \[BETA\]](#new-markdown-beta)
   - [Overview](#overview)
-    - [Features](#features)
-  - [Develop](#develop)
-    - [Planned Features](#planned-features)
-    - [Features in Progress](#features-in-progress)
+    - [Why NMD?](#why-nmd)
+      - [Extended Syntax](#extended-syntax)
+      - [Order with Integrated Dossiers](#order-with-integrated-dossiers)
+      - [Predefined Styles and Customization](#predefined-styles-and-customization)
+      - [Cool Factor](#cool-factor)
   - [Getting Started](#getting-started)
     - [TL;DR](#tldr)
     - [Installation](#installation)
@@ -25,6 +26,9 @@
           - [style](#style)
           - [metadata](#metadata)
           - [compilation](#compilation)
+  - [Develop](#develop)
+    - [Planned Features](#planned-features)
+    - [Features in Progress for current version](#features-in-progress-for-current-version)
   - [NMD Syntax](#nmd-syntax)
     - [Heading (Title of a chapter)](#heading-title-of-a-chapter)
     - [Inline modifier](#inline-modifier)
@@ -80,48 +84,38 @@ NMD is a custom Markdown dialect designed to enhance the classic Markdown syntax
 
 NMD is full compatible with CommonMark standard.
 
-### Features
+### Why NMD?
 
-- **Extended Syntax**: NMD introduces new modifiers and components to elevate your document styling.
+#### Extended Syntax
+
+NMD introduces new modifiers and components to elevate your document styling.
+
+For example, you can't emphasize section "work in progress" in common mark, but in NMD you can!
+
+You can use [TODO](#todo) modifier to emphasize a missed section:
+
+![TODO modifier](docs/assets/images/todo-modifier.png)
+
+Alternatively, do you want emphasize a section where you wrote a tip or warning comment? You can use [Focus Block](#focus-block)
+
+![Focus Block modifier](docs/assets/images/focus-block-modifier.png)
+
+#### Order with Integrated Dossiers
+
+Keep your documents organized with integrated "dossiers" for more intuitive and structured management.
+
+#### Predefined Styles and Customization
+
+- **Built-in Styles**: Choose from three predefined styles like Light, Dark, and Vintage, for a personalized reading experience.
+- **Styling in Syntax**: Apply style directly in the text using NMD syntax.
+- **Additional Page Styling**: Further customize the look of your page with additional styles.
+
 - **Easy Integration**: Compile NMD files into HTML effortlessly for seamless integration with your web projects.
 - **Open Source**: This compiler is open source under the GPL-3.0 License, allowing you to modify and adapt it to suit your needs.
 
+#### Cool Factor
 
-## Develop
-
-### Planned Features
-
-- [ ] All modifiers
-- [ ] Possibility to use a different dossier configuration name
-- [ ] PDF compile format
-- [ ] Vintage style (typewriter)
-- [ ] Dark style
-- [ ] Table of Content
-- [ ] Run code
-- [ ] Video
-
-### Features in Progress
-
-- [x] Use file name instead of absolute path in dossier configuration
-- [x] Other sections in dossier configuration to manage all options
-- [x] Local math (no CDN)
-- [x] List
-- [x] List creation check
-- [ ] Link with identifier
-- [x] Quote
-- [x] Image caption
-- [ ] Image URL fix meta-characters
-- [ ] Multiple image in a single row
-- [ ] Image in dossier: default path to `assets/images` (TESTING)
-- [x] Focus block
-- [x] Light base page style
-- [ ] Paper format support (A4, A5, ...)
-- [ ] Footer with page counter
-- [x] Embedded style
-- [ ] Embedded chapter style
-- [ ] Custom style files
-- [ ] Tables
-
+Why stick to Markdown when you can be cool using **NMD**?
 
 ## Getting Started
 
@@ -281,6 +275,46 @@ In `compilation` section you can specified the default values to use during comp
 - `parallelization` (boolean): if `true` parallelize execution of compilation
 - `use_remote_addons` (boolean): if `true` use CDN instead of local CSS/Javascript to include third part library
 
+
+
+
+## Develop
+
+### Planned Features
+
+- [ ] All modifiers
+- [ ] Possibility to use a different dossier configuration name
+- [ ] PDF compile format
+- [ ] Vintage style (typewriter)
+- [ ] Dark style
+- [ ] Table of Content
+- [ ] Run code
+- [ ] Video
+- [ ] Bibliography
+- [ ] Scientific style
+
+### Features in Progress for current version
+
+- [x] Use file name instead of absolute path in dossier configuration
+- [x] Other sections in dossier configuration to manage all options
+- [x] Local math (no CDN)
+- [x] List
+- [x] List creation check
+- [ ] Link with identifier
+- [x] Quote
+- [x] Image caption
+- [ ] Image URL fix meta-characters
+- [ ] Multiple image in a single row
+- [ ] Image in dossier: default path to `assets/images` (TESTING)
+- [x] Focus block
+- [x] Light base page style
+- [ ] Paper format support (A4, A5, ...)
+- [ ] Footer with page counter
+- [x] Embedded style
+- [ ] Embedded chapter style
+- [ ] Custom style files
+- [ ] Tables
+- [ ] Fix single list item
 
 
 ## NMD Syntax
