@@ -1,7 +1,7 @@
 # New MarkDown [BETA]
 
 [![License](https://img.shields.io/badge/license-GPL3-green.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v0.10.6-blue.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-v0.11.0-blue.svg)](CHANGELOG.md)
 
 
 - [New MarkDown \[BETA\]](#new-markdown-beta)
@@ -657,6 +657,8 @@ To apply a line break use `---` (or more than 3 `-`) or `***` (or more than 3 `*
 #### List
 
 **Style class**: `list`, `list-item`, `list-item-indentation`, `list-item-bullet`, `list-item-content` 
+
+> Each list must have 2 or more items.
 
 Different types of list are supported in NMD, below the list with modifier
 

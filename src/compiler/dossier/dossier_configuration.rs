@@ -93,24 +93,53 @@ impl DossierConfiguration {
 
     pub fn apply_root_path(&mut self, root_path: &PathBuf) -> () {
 
-        let replacement_pattern: String = ".".to_string() + MAIN_SEPARATOR_STR;
+        log::info!("apply dossier root path to specified documents file. OS directory separator found: {}", MAIN_SEPARATOR_STR);
 
-        for document in self.raw_documents_paths.iter_mut() {
+        let mut not_unix_like_os = false;
 
-            if document.starts_with(replacement_pattern.as_str()) {
+        if MAIN_SEPARATOR_STR.eq(r"/") {     // => unix-like
+            log::info!("UNIX-like OS inferred: no logical separator replacement");
 
-                // remove . + MAIN_SEPARATOR_STR
+        } else {     // => windows
+            log::info!("Windows OS inferred: it will be applied a logical separator replacement (from {} to /)", MAIN_SEPARATOR_STR);
+            not_unix_like_os = true;
+        }
+
+        let replacement_pattern: String = String::from(r"./");
+
+        let mut new_raw_documents_paths: Vec<String> = Vec::new();
+
+        for raw_document_path in self.raw_documents_paths.iter() {
+
+            let mut raw_document_path = String::from(raw_document_path.as_str()); 
+
+            if not_unix_like_os {
+                raw_document_path = raw_document_path.replace(format!(".{}", MAIN_SEPARATOR_STR).as_str(), r"./")
+            }
+
+            if raw_document_path.starts_with(replacement_pattern.as_str()) {
+
+                log::debug!("apply root path to '{}'", raw_document_path);
+    
+                // remove ./
                 for _ in 0..replacement_pattern.len() {
-                    document.remove(0);
+                    raw_document_path.remove(0);
                 }
 
-                let new_path = root_path.join(&document);
+                let new_path = root_path.join(&raw_document_path);
 
-                document.clear();
+                raw_document_path.clear();
                 
-                document.push_str(new_path.to_string_lossy().to_string().as_str());
+                raw_document_path.push_str(new_path.to_string_lossy().to_string().as_str());
+
+                new_raw_documents_paths.push(raw_document_path)
+
+            } else {
+                log::debug!("'{}' skipped from apply", raw_document_path);
             }
         }
+
+        self.raw_documents_paths = new_raw_documents_paths
     }
 
     pub fn dump_as_yaml(&self, complete_output_path: PathBuf) -> Result<(), ResourceError> {

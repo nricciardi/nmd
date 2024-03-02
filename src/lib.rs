@@ -18,7 +18,7 @@ use simple_logger::SimpleLogger;
 
 use crate::compiler::{compilation_configuration::CompilationConfiguration, output_format::OutputFormat};
 
-pub const VERSION: &str = "0.10.6-beta";
+pub const VERSION: &str = "0.11.0-beta";
 
 #[derive(Error, Debug)]
 pub enum NmdCliError {
@@ -77,20 +77,20 @@ impl NmdCli {
                                             .default_value("html")
                                         )
                                         .arg(
-                                            Arg::new("input-path")
+                                            Arg::new("input-dossier-path")
                                             .short('i')
-                                            .long("input-path")
-                                            .help("input path")
+                                            .long("input-dossier-path")
+                                            .help("input dossier path")
                                             .action(ArgAction::Set)
                                             .num_args(1)
                                             .default_value(".")
 
                                         )
                                         .arg(
-                                            Arg::new("output-path")
+                                            Arg::new("output-directory-path")
                                             .short('o')
-                                            .long("output-path")
-                                            .help("output path")
+                                            .long("output-directory-path")
+                                            .help("output directory path")
                                             .action(ArgAction::Set)
                                             .num_args(1)
                                             .default_value(".")
@@ -234,10 +234,10 @@ impl NmdCli {
                             compilation_configuration.set_format(format);
                         }
 
-                        if let Some(mut input_path) = compile_dossier_matches.get_many::<String>("input-path") {
+                        if let Some(mut input_path) = compile_dossier_matches.get_many::<String>("input-dossier-path") {
                             
                             if input_path.len() != 1 {
-                                return Err(NmdCliError::MoreThanOneValue("input-path".to_string()));
+                                return Err(NmdCliError::MoreThanOneValue("input-dossier-path".to_string()));
                             }
                             
                             
@@ -246,10 +246,10 @@ impl NmdCli {
                             compilation_configuration.set_input_location(input_path);
                         }
 
-                        if let Some(mut output_path) = compile_dossier_matches.get_many::<String>("output-path") {
+                        if let Some(mut output_path) = compile_dossier_matches.get_many::<String>("output-directory-path") {
                             
                             if output_path.len() != 1 {
-                                return Err(NmdCliError::MoreThanOneValue("output-path".to_string()));
+                                return Err(NmdCliError::MoreThanOneValue("output-directory-path".to_string()));
                             }
                             
                             
