@@ -135,7 +135,7 @@ To install NMD, follow these steps:
 
 1. Download the last release based on your operating system
 2. Extract files
-3. Run `nmd` execution file 
+3. Run `nmd` execution file
 
 ### Generate a new dossier using compiler
 
@@ -292,6 +292,7 @@ In `compilation` section you can specified the default values to use during comp
 - [ ] Video
 - [ ] Bibliography
 - [ ] Scientific style
+- [ ] Linkify (convert URL-like strings in links)
 
 ### Features in Progress for current version
 
