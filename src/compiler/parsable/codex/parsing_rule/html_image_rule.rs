@@ -67,6 +67,9 @@ impl ParsingRule for HtmlImageRule {
                             src_path_buf = parsing_configuration.input_location().clone().join(src_path_buf);
 
                             if !src_path_buf.exists() {
+
+                                log::debug!("'{}' not found, try adding images directory path", src_path_buf.to_string_lossy());
+
                                 src_path_buf = parsing_configuration.input_location().clone().join(dossier::ASSETS_DIR).join(dossier::IMAGES_DIR);
                             }
                         }

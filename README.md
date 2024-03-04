@@ -306,6 +306,7 @@ In `compilation` section you can specified the default values to use during comp
 - [x] Image caption
 - [ ] Image URL fix meta-characters
 - [ ] Multiple image in a single row
+- [ ] Image compression
 - [ ] Image in dossier: default path to `assets/images` (TESTING)
 - [x] Focus block
 - [x] Light base page style
