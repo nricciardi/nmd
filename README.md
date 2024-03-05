@@ -317,6 +317,8 @@ In `compilation` section you can specified the default values to use during comp
 - [ ] Custom style files
 - [ ] Tables
 - [ ] Fix single list item
+- [ ] Todo modifier with only `todo` or `TODO`
+- [ ] Relative header (e.g. `#+` to indicate precedent header level + 1)
 
 
 ## NMD Syntax
