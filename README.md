@@ -29,6 +29,7 @@
   - [Develop](#develop)
     - [Planned Features](#planned-features)
     - [Features in Progress for current version](#features-in-progress-for-current-version)
+    - [Known issues](#known-issues)
   - [NMD Syntax](#nmd-syntax)
     - [Heading (Title of a chapter)](#heading-title-of-a-chapter)
     - [Inline modifier](#inline-modifier)
@@ -320,7 +321,14 @@ In `compilation` section you can specified the default values to use during comp
 - [ ] Todo modifier with only `todo` or `TODO`
 - [ ] Todo modifier with text between `TODO:` and `:TODO`
 - [ ] Relative header (e.g. `#+` to indicate precedent header level + 1, `#=` to indicate same header level of precedente header)
+- [ ] `nmd dossier add` auto-add `.nmd`
+- [ ] `nmd dossier add` accept more than one file
 
+### Known issues
+
+- [ ] `nmd dossier add` transform relative paths to absolute paths
+- [ ] `nmd dossier add` save only 2 paths
+- [ ] unsupported images except PNG
 
 ## NMD Syntax
 
