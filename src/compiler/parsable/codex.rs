@@ -9,7 +9,7 @@ use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use rayon::slice::ParallelSliceMut;
 use regex::{Captures, Regex};
 use self::modifier::Modifiers;
-pub use self::modifier::{MAX_HEADING_LEVEL, Modifier};
+use self::modifier::{MAX_HEADING_LEVEL, Modifier};
 use self::parsing_rule::html_extended_block_quote_rule::HtmlExtendedBlockQuoteRule;
 use self::parsing_rule::html_list_rule::HtmlListRule;
 use crate::compiler::dossier::document::chapter::paragraph::ParagraphError;
