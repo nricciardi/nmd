@@ -8,6 +8,9 @@ pub use parsing_rule::ParsingRule;
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use rayon::slice::ParallelSliceMut;
 use regex::{Captures, Regex};
+use self::modifier::chapter_modifier::ChapterModifier;
+use self::modifier::paragraph_modifier::ParagraphModifier;
+use self::modifier::text_modifier::TextModifier;
 use self::modifier::Modifiers;
 use self::modifier::{MAX_HEADING_LEVEL, Modifier};
 use self::parsing_rule::html_extended_block_quote_rule::HtmlExtendedBlockQuoteRule;
@@ -25,7 +28,7 @@ use super::ParsingConfiguration;
 /// Ordered collection of rules
 pub struct Codex {
     configuration: CodexConfiguration,
-    content_rules: Vec<Box<dyn ParsingRule>>,
+    text_rules: Vec<Box<dyn ParsingRule>>,
     paragraph_rules: Vec<Box<dyn ParsingRule>>,
     chapter_rules: Vec<Box<dyn ParsingRule>>,
     document_rules: Vec<Box<dyn ParsingRule>>,
@@ -40,7 +43,7 @@ impl Codex {
     }
 
     pub fn content_rules(&self) -> &Vec<Box<dyn ParsingRule>> {
-        &self.content_rules
+        &self.text_rules
     }
 
     pub fn paragraph_rules(&self) -> &Vec<Box<dyn ParsingRule>> {
@@ -62,7 +65,7 @@ impl Codex {
 
     pub fn parse_content(&self, content: &str, parsing_configuration: Arc<ParsingConfiguration>) -> Result<ParsingOutcome, ParsingError> {
 
-        let excluded_modifiers = parsing_configuration.modifiers_excluded().clone();
+        let excluded_modifiers = parsing_configuration.excluded_modifiers().clone();
 
         self.parse_content_excluding_modifiers(content, Arc::clone(&parsing_configuration), excluded_modifiers)
     }
@@ -150,6 +153,15 @@ impl Codex {
         Ok(outcome)
     }
 
+    fn count_newlines_at_start(s: &str) -> usize {
+        s.bytes().take_while(|&b| b == b'\n').count()
+    }
+
+    fn count_newlines_at_end(s: &str) -> usize {
+        s.bytes().rev().take_while(|&b| b == b'\n').count()
+    }
+
+    /// Split a string in the corresponding vector of paragraphs
     pub fn split_str_in_paragraphs(&self, content: &str) -> Result<Vec<Paragraph>, ParagraphError> {
 
         let mut paragraphs: Vec<(usize, usize, Paragraph)> = Vec::new();
@@ -160,7 +172,7 @@ impl Codex {
             content.push_str("\n");
         }
 
-        for modifier in Modifier::paragraph_modifiers() {
+        for modifier in ParagraphModifier::ordered_paragraph_modifiers() {
 
             log::debug!("test {:?}", modifier);
 
@@ -168,8 +180,10 @@ impl Codex {
 
             regex.find_iter(content.clone().as_str()).for_each(|m| {
 
-                let start = m.start();
-                let end = m.end() - 1;
+                let matched_str = m.as_str().to_string();
+
+                let start = m.start() + Self::count_newlines_at_start(&matched_str);
+                let end = m.end() - Self::count_newlines_at_end(&matched_str) - 1;
 
                 let overlap_paragraph = paragraphs.par_iter().find_any(|p| {
                     (p.0 >= start && p.1 <= end) ||     // current paragraph contains p
@@ -177,12 +191,11 @@ impl Codex {
                     (p.0 <= start && p.1 >= start && p.1 <= end) ||     // left overlap
                     (p.0 >= start && p.0 <= end && p.1 >= end)          // right overlap
                 });
+
                 if let Some(p) = overlap_paragraph {     // => overlap
                     log::debug!("discarded paragraph:\n{}\nbecause there is an overlap between {} and {} using pattern {:?}:\n{:#?}\n", m.as_str(), start, end, &modifier.search_pattern(), p);
                     return
                 }
-
-                let matched_str = m.as_str().to_string();
 
                 log::debug!("found paragraph between {} and {}:\n{}\nusing {:?}", start, end, matched_str, &modifier);
 
@@ -206,7 +219,7 @@ impl Codex {
 
         Codex {
             configuration,
-            content_rules,
+            text_rules: content_rules,
             paragraph_rules,
             chapter_rules,
             document_rules
@@ -218,7 +231,7 @@ impl Codex {
         let mut content_rules: Vec<Box<dyn ParsingRule>> = Vec::new();
 
         for i in (1..=MAX_HEADING_LEVEL).rev() {
-            content_rules.push(Box::new(ReplacementRule::new(Modifier::HeadingGeneralExtendedVersion(i), move |caps: &Captures| {
+            content_rules.push(Box::new(ReplacementRule::new(Box::new(ChapterModifier::HeadingGeneralExtendedVersion(i)), move |caps: &Captures| {
                 let title = &caps[1];
 
                 let id = Self::create_id(title);
@@ -226,7 +239,7 @@ impl Codex {
                 format!(r#"<h{} class="heading-{}" id="{}">{}</h{}>"#, i, i, id, title, i)
             })));
 
-            content_rules.push(Box::new(ReplacementRule::new(Modifier::HeadingGeneralCompactVersion(i), |caps: &Captures| {
+            content_rules.push(Box::new(ReplacementRule::new(Box::new(ChapterModifier::HeadingGeneralCompactVersion(i)), |caps: &Captures| {
                 let heading_lv = &caps[1];
                 let title = &caps[2];
 
@@ -240,52 +253,52 @@ impl Codex {
         }
 
         content_rules.append(&mut vec![
-            Box::new(ReplacementRule::new(Modifier::Todo, String::from(r#"<div class="todo"><div class="todo-title"></div><div class="todo-description">$1</div></div>"#))),
-            Box::new(ReplacementRule::new(Modifier::AbridgedTodo, String::from(r#"<div class="todo"><div class="todo-title"></div><div class="todo-description">$1</div></div>"#))),
-            Box::new(ReplacementRule::new(Modifier::BookmarkWithId, String::from(r#"<div class="bookmark" id="$2"><div class="bookmark-title">$1</div><div class="bookmark-description">$3</div></div>"#))),
-            Box::new(ReplacementRule::new(Modifier::Bookmark, String::from(r#"<div class="bookmark"><div class="bookmark-title">$1</div><div class="bookmark-description">$2</div></div>"#))),
-            Box::new(ReplacementRule::new(Modifier::AbridgedBookmarkWithId, String::from(r#"<div class="abridged-bookmark" id="$2"><div class="abridged-bookmark-title">$1</div></div>"#))),
-            Box::new(ReplacementRule::new(Modifier::AbridgedBookmark, String::from(r#"<div class="abridged-bookmark"><div class="abridged-bookmark-title">$1</div></div>"#))),
-            Box::new(ReplacementRule::new(Modifier::EmbeddedStyleWithId, String::from(r#"<span class="identifier embedded-style" id="$2" style="$3">$1</span>"#))),
-            Box::new(ReplacementRule::new(Modifier::EmbeddedStyle, String::from(r#"<span class="embedded-style" style="$2">$1</span>"#))),
-            Box::new(ReplacementRule::new(Modifier::AbridgedEmbeddedStyleWithId, String::from(r#"<span class="identifier abridged-embedded-style" id="$2" style="color: $3; background-color: $4; font-family: $5;">$1</span>"#))),
-            Box::new(ReplacementRule::new(Modifier::AbridgedEmbeddedStyle, String::from(r#"<span class="abridged-embedded-style" style="color: $2; background-color: $3; font-family: $4;">$1</span>"#))),
-            Box::new(ReplacementRule::new(Modifier::Identifier, String::from(r#"<span class="identifier" id="$2">$1</span>"#))),
-            Box::new(ReplacementRule::new(Modifier::Highlight, String::from(r#"<mark class="highlight">$1</mark>"#))),
-            Box::new(ReplacementRule::new(Modifier::InlineMath, String::from(r#"<span class="inline-math">$$${1}$$</span>"#))),
-            Box::new(ReplacementRule::new(Modifier::InlineCode, String::from(r#"<code class="language-markup inline-code">${1}</code>"#))),
-            Box::new(ReplacementRule::new(Modifier::BoldStarVersion, String::from(r#"<strong class="bold">${1}</strong>"#))),
-            Box::new(ReplacementRule::new(Modifier::BoldUnderscoreVersion, String::from(r#"<strong class="bold">${1}</strong>"#))),
-            Box::new(ReplacementRule::new(Modifier::ItalicStarVersion, String::from(r#"<em class="italic">${1}</em>"#))),
-            Box::new(ReplacementRule::new(Modifier::ItalicUnderscoreVersion, String::from(r#"<em class="italic">${1}</em>"#))),
-            Box::new(ReplacementRule::new(Modifier::Strikethrough, String::from(r#"<del class="strikethrough">${1}</del>"#))),
-            Box::new(ReplacementRule::new(Modifier::Underlined, String::from(r#"<u class="underlined">${1}</u>"#))),
-            Box::new(ReplacementRule::new(Modifier::Superscript, String::from(r#"<sup class="superscript">${1}</sup>"#))),
-            Box::new(ReplacementRule::new(Modifier::Subscript, String::from(r#"<sub class="subscript">${1}</sub>"#))),
-            Box::new(ReplacementRule::new(Modifier::Link, String::from(r#"<a href=\"$2\" class="link">${1}</a>"#))),
-            Box::new(ReplacementRule::new(Modifier::Comment, String::from(r#"<!-- ${1} -->"#))),
-            Box::new(ReplacementRule::new(Modifier::Checkbox, String::from(r#"<div class="checkbox checkbox-unchecked"></div>"#))),
-            Box::new(ReplacementRule::new(Modifier::CheckboxChecked, String::from(r#"<div class="checkbox checkbox-checked"></div>"#))),
-            Box::new(ReplacementRule::new(Modifier::Emoji, String::from(r#"<i class="em-svg em-${1}" aria-role="presentation"></i>"#))),
+            Box::new(ReplacementRule::new(Box::new(TextModifier::Todo), String::from(r#"<div class="todo"><div class="todo-title"></div><div class="todo-description">$1</div></div>"#))),
+            Box::new(ReplacementRule::new(Box::new(TextModifier::BookmarkWithId), String::from(r#"<div class="bookmark" id="$2"><div class="bookmark-title">$1</div><div class="bookmark-description">$3</div></div>"#))),
+            Box::new(ReplacementRule::new(Box::new(TextModifier::Bookmark), String::from(r#"<div class="bookmark"><div class="bookmark-title">$1</div><div class="bookmark-description">$2</div></div>"#))),
+            Box::new(ReplacementRule::new(Box::new(TextModifier::AbridgedBookmarkWithId), String::from(r#"<div class="abridged-bookmark" id="$2"><div class="abridged-bookmark-title">$1</div></div>"#))),
+            Box::new(ReplacementRule::new(Box::new(TextModifier::AbridgedBookmark), String::from(r#"<div class="abridged-bookmark"><div class="abridged-bookmark-title">$1</div></div>"#))),
+            Box::new(ReplacementRule::new(Box::new(TextModifier::EmbeddedStyleWithId), String::from(r#"<span class="identifier embedded-style" id="$2" style="$3">$1</span>"#))),
+            Box::new(ReplacementRule::new(Box::new(TextModifier::EmbeddedStyle), String::from(r#"<span class="embedded-style" style="$2">$1</span>"#))),
+            Box::new(ReplacementRule::new(Box::new(TextModifier::AbridgedEmbeddedStyleWithId), String::from(r#"<span class="identifier abridged-embedded-style" id="$2" style="color: $3; background-color: $4; font-family: $5;">$1</span>"#))),
+            Box::new(ReplacementRule::new(Box::new(TextModifier::AbridgedEmbeddedStyle), String::from(r#"<span class="abridged-embedded-style" style="color: $2; background-color: $3; font-family: $4;">$1</span>"#))),
+            Box::new(ReplacementRule::new(Box::new(TextModifier::Identifier), String::from(r#"<span class="identifier" id="$2">$1</span>"#))),
+            Box::new(ReplacementRule::new(Box::new(TextModifier::Highlight), String::from(r#"<mark class="highlight">$1</mark>"#))),
+            Box::new(ReplacementRule::new(Box::new(TextModifier::InlineMath), String::from(r#"<span class="inline-math">$$${1}$$</span>"#))),
+            Box::new(ReplacementRule::new(Box::new(TextModifier::InlineCode), String::from(r#"<code class="language-markup inline-code">${1}</code>"#))),
+            Box::new(ReplacementRule::new(Box::new(TextModifier::BoldStarVersion), String::from(r#"<strong class="bold">${1}</strong>"#))),
+            Box::new(ReplacementRule::new(Box::new(TextModifier::BoldUnderscoreVersion), String::from(r#"<strong class="bold">${1}</strong>"#))),
+            Box::new(ReplacementRule::new(Box::new(TextModifier::ItalicStarVersion), String::from(r#"<em class="italic">${1}</em>"#))),
+            Box::new(ReplacementRule::new(Box::new(TextModifier::ItalicUnderscoreVersion), String::from(r#"<em class="italic">${1}</em>"#))),
+            Box::new(ReplacementRule::new(Box::new(TextModifier::Strikethrough), String::from(r#"<del class="strikethrough">${1}</del>"#))),
+            Box::new(ReplacementRule::new(Box::new(TextModifier::Underlined), String::from(r#"<u class="underlined">${1}</u>"#))),
+            Box::new(ReplacementRule::new(Box::new(TextModifier::Superscript), String::from(r#"<sup class="superscript">${1}</sup>"#))),
+            Box::new(ReplacementRule::new(Box::new(TextModifier::Subscript), String::from(r#"<sub class="subscript">${1}</sub>"#))),
+            Box::new(ReplacementRule::new(Box::new(TextModifier::Link), String::from(r#"<a href=\"$2\" class="link">${1}</a>"#))),
+            Box::new(ReplacementRule::new(Box::new(TextModifier::Comment), String::from(r#"<!-- ${1} -->"#))),
+            Box::new(ReplacementRule::new(Box::new(TextModifier::Checkbox), String::from(r#"<div class="checkbox checkbox-unchecked"></div>"#))),
+            Box::new(ReplacementRule::new(Box::new(TextModifier::CheckboxChecked), String::from(r#"<div class="checkbox checkbox-checked"></div>"#))),
+            Box::new(ReplacementRule::new(Box::new(TextModifier::Emoji), String::from(r#"<i class="em-svg em-${1}" aria-role="presentation"></i>"#))),
         ]);
 
         let paragraph_rules: Vec<Box<dyn ParsingRule>> = vec![
-            Box::new(ReplacementRule::new(Modifier::PageBreak, String::from(r#"<div class="page-break"></div>"#))),
-            Box::new(ReplacementRule::new(Modifier::EmbeddedParagraphStyleWithId, String::from(r#"<div class="identifier embedded-paragraph-style" id="$2" style="$3">$1</div>"#)).with_newline_fix(r"<br>".to_string())),
-            Box::new(ReplacementRule::new(Modifier::EmbeddedParagraphStyle, String::from(r#"<div class="embedded-paragraph-style" style="$2">$1</div>"#)).with_newline_fix(r"<br>".to_string())),
-            Box::new(ReplacementRule::new(Modifier::AbridgedEmbeddedParagraphStyleWithId, String::from(r#"<div class="identifier abridged-embedded-paragraph-style" id="$2" style="color: $3; background-color: $4; font-family: $5;">$1</div>"#)).with_newline_fix(r"<br>".to_string())),
-            Box::new(ReplacementRule::new(Modifier::AbridgedEmbeddedParagraphStyle, String::from(r#"<div class="abridged-embedded-paragraph-style" style="color: $2; background-color: $3; font-family: $4;">$1</div>"#)).with_newline_fix(r"<br>".to_string())),
-            Box::new(ReplacementRule::new(Modifier::ParagraphIdentifier, String::from(r#"<span class="identifier" id="$2">$1</span>"#)).with_newline_fix(r"<br>".to_string())),
+            Box::new(ReplacementRule::new(Box::new(ParagraphModifier::AbridgedTodo), String::from(r#"<div class="todo"><div class="todo-title"></div><div class="todo-description">$1</div></div>"#))),
+            Box::new(ReplacementRule::new(Box::new(ParagraphModifier::PageBreak), String::from(r#"<div class="page-break"></div>"#))),
+            Box::new(ReplacementRule::new(Box::new(ParagraphModifier::EmbeddedParagraphStyleWithId), String::from(r#"<div class="identifier embedded-paragraph-style" id="$2" style="$3">$1</div>"#)).with_newline_fix(r"<br>".to_string())),
+            Box::new(ReplacementRule::new(Box::new(ParagraphModifier::EmbeddedParagraphStyle), String::from(r#"<div class="embedded-paragraph-style" style="$2">$1</div>"#)).with_newline_fix(r"<br>".to_string())),
+            Box::new(ReplacementRule::new(Box::new(ParagraphModifier::AbridgedEmbeddedParagraphStyleWithId), String::from(r#"<div class="identifier abridged-embedded-paragraph-style" id="$2" style="color: $3; background-color: $4; font-family: $5;">$1</div>"#)).with_newline_fix(r"<br>".to_string())),
+            Box::new(ReplacementRule::new(Box::new(ParagraphModifier::AbridgedEmbeddedParagraphStyle), String::from(r#"<div class="abridged-embedded-paragraph-style" style="color: $2; background-color: $3; font-family: $4;">$1</div>"#)).with_newline_fix(r"<br>".to_string())),
+            Box::new(ReplacementRule::new(Box::new(ParagraphModifier::ParagraphIdentifier), String::from(r#"<span class="identifier" id="$2">$1</span>"#)).with_newline_fix(r"<br>".to_string())),
             Box::new(HtmlExtendedBlockQuoteRule::new()),
-            Box::new(ReplacementRule::new(Modifier::MathBlock, String::from(r#"<p class="math-block">$$$$${1}$$$$</p>"#))),
+            Box::new(ReplacementRule::new(Box::new(ParagraphModifier::MathBlock), String::from(r#"<p class="math-block">$$$$${1}$$$$</p>"#))),
             Box::new(HtmlImageRule::new()),
-            Box::new(ReplacementRule::new(Modifier::CodeBlock, String::from(r#"<pre><code class="language-${1} code-block">$2</code></pre>"#))),
+            Box::new(ReplacementRule::new(Box::new(ParagraphModifier::CodeBlock), String::from(r#"<pre><code class="language-${1} code-block">$2</code></pre>"#))),
             Box::new(HtmlListRule::new()),
-            Box::new(ReplacementRule::new(Modifier::FocusBlock, String::from(r#"<div class="focus-block focus-block-$1"><div class="focus-block-title focus-block-$1-title"></div><div class="focus-block-description focus-block-$1-description"">$2</div></div>"#)).with_newline_fix(r"<br>".to_string())),
-            Box::new(ReplacementRule::new(Modifier::LineBreakDash, String::from(r#"<hr class="line-break line-break-dash">"#))),
-            Box::new(ReplacementRule::new(Modifier::LineBreakStar, String::from(r#"<hr class="line-break line-break-star">"#))),
-            Box::new(ReplacementRule::new(Modifier::LineBreakPlus, String::from(r#"<hr class="line-break line-break-plus">"#))),
-            Box::new(ReplacementRule::new(Modifier::CommonParagraph, String::from(r#"<p class="paragraph">${1}</p>"#))),
+            Box::new(ReplacementRule::new(Box::new(ParagraphModifier::FocusBlock), String::from(r#"<div class="focus-block focus-block-$1"><div class="focus-block-title focus-block-$1-title"></div><div class="focus-block-description focus-block-$1-description"">$2</div></div>"#)).with_newline_fix(r"<br>".to_string())),
+            Box::new(ReplacementRule::new(Box::new(ParagraphModifier::LineBreakDash), String::from(r#"<hr class="line-break line-break-dash">"#))),
+            Box::new(ReplacementRule::new(Box::new(ParagraphModifier::LineBreakStar), String::from(r#"<hr class="line-break line-break-star">"#))),
+            Box::new(ReplacementRule::new(Box::new(ParagraphModifier::LineBreakPlus), String::from(r#"<hr class="line-break line-break-plus">"#))),
+            Box::new(ReplacementRule::new(Box::new(ParagraphModifier::CommonParagraph), String::from(r#"<p class="paragraph">${1}</p>"#))),
         ];
 
         Self::new(configuration, content_rules, paragraph_rules, vec![], vec![])
@@ -293,14 +306,19 @@ impl Codex {
 
     pub fn heading_rules(&self) -> Vec<&Box<dyn ParsingRule>> {
         
-        self.content_rules.iter().filter(|&rules| {
+        self.text_rules.iter().filter(|&rules| {
             match rules.modifier() {
-                Modifier::HeadingGeneralCompactVersion(_) | Modifier::HeadingGeneralExtendedVersion(_) => true,
+                ChapterModifier::HeadingGeneralCompactVersion(_) | ChapterModifier::HeadingGeneralExtendedVersion(_) => true,
                 _ => false
             }
         }).collect()
     }
 }
+
+
+
+
+
 
 #[cfg(test)]
 mod test {

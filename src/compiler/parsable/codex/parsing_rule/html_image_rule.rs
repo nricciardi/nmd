@@ -4,6 +4,7 @@ use log;
 use regex::{Regex, Captures};
 
 use crate::compiler::dossier;
+use crate::compiler::parsable::codex::modifier::paragraph_modifier::ParagraphModifier;
 use crate::compiler::parsable::codex::Codex;
 use crate::resource::{image::Image, remote_resource::RemoteResource};
 use crate::compiler::parsable::ParsingConfiguration;
@@ -109,8 +110,8 @@ impl ParsingRule for HtmlImageRule {
         Ok(ParsingOutcome::new(parsed_content))
     }
 
-    fn modifier(&self) -> &Modifier {
-        &Modifier::Image
+    fn modifier(&self) -> &Box<dyn Modifier> {
+        &ParagraphModifier::Image
     }
 }
 

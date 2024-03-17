@@ -1,6 +1,7 @@
 use super::{Modifier, Modifiers};
 
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum ParagraphModifier {
     List,
     ListItem,
@@ -25,7 +26,7 @@ pub enum ParagraphModifier {
 }
 
 impl ParagraphModifier {
-    pub fn paragraph_modifiers_ordered() -> Vec<Self> {
+    pub fn ordered_paragraph_modifiers() -> Vec<Self> {
 
         //! they must have the compatibility order
         vec![
@@ -53,13 +54,15 @@ impl ParagraphModifier {
 
 impl Modifier for ParagraphModifier {
     fn search_pattern(&self) -> String {
-        match *self {
-            Self::CommonParagraph => String::from(r#"(?s:(?m:^(.+?)(?:\n\n|\n$)))"#),
+
+        let mut search_pattern = String::from(r"\n{2,}");
+
+        let base = match *self {
+            Self::CommonParagraph => String::from(r#"(?s:(?m:^(.+?)(?:\n\n|\n$)))"#),           // TODO
             Self::CodeBlock => String::from(r"```(\w+)\n+(.*?)\n+```"),
             Self::MathBlock => String::from(r#"\$\$((?s:.+?))\$\$"#),
-
             Self::ListItem => String::from(r#"(?m:^([\t ]*)(-\[\]|-\[ \]|-\[x\]|-\[X\]|-|->|\||\*|\+|--|\d[\.)]?|[a-zA-Z]{1,8}[\.)]|&[^;]+;) (.*))"#),
-            Self::List => format!(r"({}\n){}({})?\n", Self::ListItem.search_pattern(), String::from(r"(?:(?m:^([\t ]*)(-\[\]|-\[ \]|-\[x\]|-\[X\]|-|->|\||\*|\+|--|\d[\.)]?|[a-zA-Z]{1,8}[\.)]|&[^;]+;) (.*)\n))+"), Self::ListItem.search_pattern()),
+            Self::List => format!(r"({}\n){}({})?", Self::ListItem.search_pattern(), String::from(r"(?:(?m:^([\t ]*)(-\[\]|-\[ \]|-\[x\]|-\[X\]|-|->|\||\*|\+|--|\d[\.)]?|[a-zA-Z]{1,8}[\.)]|&[^;]+;) (.*)\n))+"), Self::ListItem.search_pattern()),
             Self::ExtendedBlockQuoteLine => String::from(r"(?m:^> (.*))"),
             Self::ExtendedBlockQuote => format!(r"({}){}({})?", Self::ExtendedBlockQuoteLine.search_pattern(), String::from(r"\n(?:(?mx:^> .*\n)*)"), Self::ExtendedBlockQuoteLine.search_pattern()),
             Self::LineBreakDash => String::from(r"(?m:^-{3,})"),
@@ -74,9 +77,13 @@ impl Modifier for ParagraphModifier {
             Self::PageBreak => String::from(r"(?m:^#{3,}$)"),
             Self::AbridgedTodo => String::from(r"(?m:^(?i:TODO):\s(?:(.*?))$)"),
             Self::Image => String::from(r"!\[([^\]]+)\]\(([^)]+)\)"),
-            
-            _ => String::from(r"RULE TODO")                                               // TODO
-        }
+            Self::CommentBlock => String::from("CommentBlock"),                             // TODO
+        };
+
+        search_pattern.push_str(&base);
+        search_pattern.push_str(r"\n{2,}");
+
+        search_pattern
     }
 
     fn incompatible_modifiers(&self) -> Modifiers {

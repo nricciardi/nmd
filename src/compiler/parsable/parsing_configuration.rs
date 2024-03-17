@@ -82,7 +82,7 @@ impl ParsingConfiguration {
         &self.metadata
     }
 
-    pub fn modifiers_excluded(&self) -> &Modifiers {
+    pub fn excluded_modifiers(&self) -> &Modifiers {
         &self.excluded_modifiers
     }
 

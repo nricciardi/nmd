@@ -5,6 +5,7 @@ use super::MAX_HEADING_LEVEL;
 use super::Modifier;
 
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum ChapterModifier {
     HeadingGeneralCompactVersion(u32),
     HeadingGeneralExtendedVersion(u32),

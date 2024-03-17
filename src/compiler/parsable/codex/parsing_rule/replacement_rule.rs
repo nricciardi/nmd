@@ -12,7 +12,7 @@ use super::{Modifier, ParsingRule};
 
 /// Rule to replace a NMD text based on a specific pattern matching rule
 pub struct ReplacementRule<R: Replacer> {
-    modifier: Modifier,
+    modifier: Box<dyn Modifier + Sync + Send>,
     replacer: R,
     newline_fix: bool,
     newline_fix_pattern: Option<String>
@@ -26,9 +26,9 @@ impl<R: Replacer> ReplacementRule<R> {
     /// * `pattern_type` - PatternType which represent the pattern used to search in text 
     /// * `replacement_pattern` - A string slice which represent the pattern used to replace the text
     ///
-    pub fn new(modifier: Modifier, replacer: R) -> Self {
+    pub fn new(modifier: Box<dyn Modifier + Sync + Send>, replacer: R) -> Self {
 
-        log::debug!("created new parsing rule with search_pattern: '{}'", modifier.search_pattern()); //  and replacer: '{:?}'
+        log::debug!("created new parsing rule with search_pattern: '{}'", modifier.search_pattern());
 
         Self {
             modifier,
@@ -70,7 +70,7 @@ impl ParsingRule for ReplacementRule<String> {
         Ok(ParsingOutcome::new(parsed_content))
     }
 
-    fn modifier(&self) -> &Modifier {
+    fn modifier(&self) -> &Box<dyn Modifier + Sync + Send> {
         &self.modifier
     }
 }
@@ -100,7 +100,7 @@ where F: 'static + Sync + Send + Fn(&Captures) -> String {
         Ok(ParsingOutcome::new(parsed_content))
     }
 
-    fn modifier(&self) -> &Modifier {
+    fn modifier(&self) -> &Box<dyn Modifier + Sync + Send> {
         &self.modifier
     }
 }
@@ -109,14 +109,14 @@ where F: 'static + Sync + Send + Fn(&Captures) -> String {
 #[cfg(test)]
 mod test {
 
-    use crate::compiler::parsable::ParsingConfiguration;
+    use crate::compiler::parsable::{codex::modifier::{chapter_modifier::ChapterModifier, paragraph_modifier::ParagraphModifier, text_modifier::TextModifier}, ParsingConfiguration};
 
     use super::*;
 
     #[test]
     fn bold_parsing() {
         // valid pattern with a valid text modifier
-        let parsing_rule = ReplacementRule::new(Modifier::BoldStarVersion, String::from("<strong>$1</strong>"));
+        let parsing_rule = ReplacementRule::new(Box::new(TextModifier::BoldStarVersion), String::from("<strong>$1</strong>"));
 
         let text_to_parse = r"A piece of **bold text**";
         let parsing_configuration = Arc::new(ParsingConfiguration::default());
@@ -139,7 +139,7 @@ mod test {
     fn heading_parsing() {
         let parsing_configuration = Arc::new(ParsingConfiguration::default());
 
-        let parsing_rule = ReplacementRule::new(Modifier::HeadingGeneralExtendedVersion(6), String::from("<h6>$1</h6>"));
+        let parsing_rule = ReplacementRule::new(Box::new(ChapterModifier::HeadingGeneralExtendedVersion(6)), String::from("<h6>$1</h6>"));
 
         let text_to_parse = r"###### title 6";
 
@@ -152,7 +152,7 @@ mod test {
     fn paragraph_parsing() {
         let parsing_configuration = Arc::new(ParsingConfiguration::default());
 
-        let parsing_rule = ReplacementRule::new(Modifier::CommonParagraph, String::from("<p>$1</p>"));
+        let parsing_rule = ReplacementRule::new(Box::new(ParagraphModifier::CommonParagraph), String::from("<p>$1</p>"));
 
         let text_to_parse = r#"
 paragraph 2a.
@@ -174,7 +174,7 @@ paragraph
     fn code_block() {
         let parsing_configuration = Arc::new(ParsingConfiguration::default());
 
-        let parsing_rule = ReplacementRule::new(Modifier::CodeBlock, String::from(r#"<pre><code class="language-$1 codeblock">$2</code></pre>"#));
+        let parsing_rule = ReplacementRule::new(Box::new(ParagraphModifier::CodeBlock), String::from(r#"<pre><code class="language-$1 codeblock">$2</code></pre>"#));
 
         let text_to_parse = r#"
 ```python
@@ -193,7 +193,7 @@ print("hello world")
     fn focus_block() {
         let parsing_configuration = Arc::new(ParsingConfiguration::default());
 
-        let parsing_rule = ReplacementRule::new(Modifier::FocusBlock, String::from(r#"<div class="focus-block focus-block-$1">$2</div>"#)).with_newline_fix(r"<br>".to_string());
+        let parsing_rule = ReplacementRule::new(Box::new(ParagraphModifier::FocusBlock), String::from(r#"<div class="focus-block focus-block-$1">$2</div>"#)).with_newline_fix(r"<br>".to_string());
 
         let text_to_parse = r#"
 # title 1

@@ -13,7 +13,7 @@ use self::parsing_outcome::{ParsingOutcome, ParsingError};
 
 pub trait ParsingRule: Send + Sync {
 
-    fn modifier(&self) -> &Modifier;
+    fn modifier(&self) -> &Box<dyn Modifier + Sync + Send>;
 
     fn is_match(&self, content: &str) -> bool {
         let modifier = self.modifier();
@@ -34,20 +34,22 @@ pub trait ParsingRule: Send + Sync {
 
 #[cfg(test)]
 mod test {
+    use crate::compiler::parsable::codex::modifier::chapter_modifier::ChapterModifier;
+
     use super::*;
 
     #[test]
     fn is_heading() {
         let content = "#6 title 6";
 
-        assert!(Modifier::heading_level(content).is_some());
+        assert!(ChapterModifier::heading_level(content).is_some());
 
         let content = "### title 3";
 
-        assert!(Modifier::heading_level(content).is_some());
+        assert!(ChapterModifier::heading_level(content).is_some());
 
         let content = "text";
 
-        assert!(Modifier::heading_level(content).is_none())
+        assert!(ChapterModifier::heading_level(content).is_none())
     }
 }
