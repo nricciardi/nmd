@@ -3,7 +3,7 @@ use std::{sync::Arc, fmt::Display};
 use regex::Regex;
 use thiserror::Error;
 
-use crate::compiler::parsable::{codex::{parsing_rule::parsing_outcome::ParsingError, Codex}, Parsable};
+use crate::compiler::parsable::{codex::{modifier::paragraph_modifier::ParagraphModifier, parsing_rule::parsing_outcome::ParsingError, Codex}, Parsable};
 use crate::compiler::parsable::parsing_configuration::ParsingConfiguration;
 
 #[derive(Error, Debug)]
@@ -15,12 +15,21 @@ pub enum ParagraphError {
     Empty
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Paragraph {
-    content: String
+    content: String,
+    paragraph_type: ParagraphModifier,
 }
 
 impl Paragraph {
+
+    pub fn new(content: String, paragraph_type: ParagraphModifier) -> Self {
+        Self {
+            content,
+            paragraph_type
+        }
+    }
+
     pub fn content(&self) -> &String {
         &self.content
     }
@@ -28,13 +37,12 @@ impl Paragraph {
     pub fn contains_only_newlines(&self) -> bool {
         self.content.chars().all(|c| c == '\n')
     }
-}
 
-impl Clone for Paragraph {
-    fn clone(&self) -> Self {
-        Self { content: self.content.clone() }
+    pub fn paragraph_type(&self) -> &ParagraphModifier {
+        &self.paragraph_type
     }
 }
+
 
 impl Parsable for Paragraph {
     fn parse(&mut self, codex: Arc<Codex>, parsing_configuration: Arc<ParsingConfiguration>) -> Result<(), ParsingError> {
@@ -44,14 +52,6 @@ impl Parsable for Paragraph {
         self.content = String::from(parsing_outcome.parsed_content());
 
         Ok(())
-    }
-}
-
-impl From<String> for Paragraph {
-    fn from(content: String) -> Self {
-        Self {
-            content
-        }
     }
 }
 

@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use regex::Regex;
 
-use crate::compiler::parsable::{codex::Modifier, ParsingConfiguration};
+use crate::compiler::parsable::{codex::{modifier::Mod, Modifier}, ParsingConfiguration};
 
 use super::{parsing_outcome::{ParsingError, ParsingOutcome}, ParsingRule};
 
@@ -19,7 +19,7 @@ impl HtmlExtendedBlockQuoteRule {
 }
 
 impl ParsingRule for HtmlExtendedBlockQuoteRule {
-    fn modifier(&self) -> &Modifier {
+    fn modifier(&self) -> &dyn Mod {
         &Modifier::ExtendedBlockQuote
     }
 

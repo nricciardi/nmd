@@ -4,7 +4,7 @@ pub mod html_image_rule;
 pub mod html_list_rule;
 pub mod html_extended_block_quote_rule;
 
-use super::modifier::{Modifier, Modifiers};
+use super::modifier::{Mod, Modifier, modifiers_bucket::ModifiersBucket};
 use std::sync::Arc;
 use regex::Regex;
 use crate::compiler::parsable::ParsingConfiguration;
@@ -13,7 +13,7 @@ use self::parsing_outcome::{ParsingOutcome, ParsingError};
 
 pub trait ParsingRule: Send + Sync {
 
-    fn modifier(&self) -> &Modifier;
+    fn modifier(&self) -> &dyn Mod;
 
     fn is_match(&self, content: &str) -> bool {
         let modifier = self.modifier();
@@ -27,7 +27,7 @@ pub trait ParsingRule: Send + Sync {
 
     fn parse(&self, content: &str, parsing_configuration: Arc<ParsingConfiguration>) -> Result<ParsingOutcome, ParsingError>;
 
-    fn incompatible_modifiers(&self) -> Modifiers {
+    fn incompatible_modifiers(&self) -> &ModifiersBucket {
         self.modifier().incompatible_modifiers()
     }
 }

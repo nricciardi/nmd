@@ -1,51 +1,36 @@
-use std::{fmt::Display, ops::Add};
+pub mod paragraph_modifier;
+pub mod modifiers_bucket;
+pub mod text_modifier;
+
+use std::fmt;
 
 use regex::Regex;
+
+use self::modifiers_bucket::ModifiersBucket;
 
 
 pub const MAX_HEADING_LEVEL: u32 = 6; 
 
+pub type ModifierIdentifier = String;
 
+pub trait Mod {
 
-#[derive(Debug, PartialEq, Clone)]
-pub enum Modifiers {
-    All,
-    List(Vec<Modifier>),
-    None
-}
+    fn identifier(&self) -> &ModifierIdentifier {
+        &self.search_pattern()
+    }
 
-impl Modifiers {
-    pub fn contains(&self, searched_modifier: &Modifier) -> bool {
-        match self {
-            Modifiers::All => true,
-            Modifiers::List(modifiers_list) => modifiers_list.contains(searched_modifier),
-            Modifiers::None => false,
-        }
+    fn search_pattern(&self) -> &String;
+
+    fn incompatible_modifiers(&self) -> &ModifiersBucket {
+        &ModifiersBucket::None
     }
 }
 
-impl Add for Modifiers {
-    type Output = Modifiers;
-
-    fn add(self, new_modifiers_excluded: Self) -> Self::Output {
-        match new_modifiers_excluded.clone() {
-            Modifiers::All => Self::All,
-            Modifiers::List(mut modifiers_to_add) => {
-                match self {
-                    Modifiers::All => return Self::All,
-                    Modifiers::List(mut modifiers_already_excluded) => {
-                        modifiers_already_excluded.append(&mut modifiers_to_add);
-
-                        return Modifiers::List(modifiers_already_excluded)
-                    },
-                    Modifiers::None => return new_modifiers_excluded.clone(),
-                }
-            },
-            Modifiers::None => return self
-        }
+impl fmt::Debug for dyn Mod {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{:?}", self.search_pattern())
     }
 }
-
 
 /// NMD modifiers pattern types
 #[derive(Debug, PartialEq, Clone)]
@@ -109,7 +94,7 @@ pub enum Modifier {
 
 impl Modifier {
 
-    pub fn paragraph_modifiers() -> Vec<Self> {
+    pub fn ordered_paragraph_modifiers() -> Vec<Self> {
 
 
         //! they must have the compatibility order
@@ -164,12 +149,15 @@ impl Modifier {
         Option::None
     }
 
-    pub fn is_heading(content: &str) -> bool {
+    pub fn str_is_heading(content: &str) -> bool {
         Self::heading_level(content).is_some()
     }
+}
 
-    pub fn search_pattern(&self) -> String {
-        match *self {
+
+impl Mod for Modifier {
+    fn search_pattern(&self) -> &String {
+        &match *self {
             Self::AbridgedBookmark => String::from(r"@\[([^\]]*?)\]"),
             Self::AbridgedBookmarkWithId => String::from(r"@\[([^\]]*?)\]#([\w-]*)"),
             Self::Bookmark => String::from(r"@\[([^\]]*?)\]\((?s:(.*?))\)"),
@@ -214,12 +202,12 @@ impl Modifier {
             Self::InlineCode => String::from(r"`(.*?)`"),
             Self::InlineMath => String::from(r#"\$([^$\n]+)\$"#),
 
-            Self::CommonParagraph => String::from(r#"(?s:(?m:^(.+?)(?:\n\n|\n$)))"#),
+            Self::CommonParagraph => String::from(r#"([\s\S]*?)"#),       // TODO
             Self::CodeBlock => String::from(r"```(\w+)\n+(.*?)\n+```"),
             Self::MathBlock => String::from(r#"\$\$((?s:.+?))\$\$"#),
 
-            Self::ListItem => String::from(r#"(?m:^([\t ]*)(-\[\]|-\[ \]|-\[x\]|-\[X\]|-|->|\||\*|\+|--|\d[\.)]?|[a-zA-Z]{1,8}[\.)]|&[^;]+;) (.*))"#),
-            Self::List => format!(r"({}\n){}({})?\n", Self::ListItem.search_pattern(), String::from(r"(?:(?m:^([\t ]*)(-\[\]|-\[ \]|-\[x\]|-\[X\]|-|->|\||\*|\+|--|\d[\.)]?|[a-zA-Z]{1,8}[\.)]|&[^;]+;) (.*)\n))+"), Self::ListItem.search_pattern()),
+            Self::ListItem => String::from(r#"(?m:^([\t ]*)(-\[\]|-\[ \]|-\[x\]|-\[X\]|-|->|\||\*|\+|--|\d[\.)]?|[a-zA-Z]{1,8}[\.)]|&[^;]+;) (.*)\n)"#),
+            Self::List => format!(r#"((?:{}+)+)"#, Self::ListItem.search_pattern()),
             Self::ExtendedBlockQuoteLine => String::from(r"(?m:^> (.*))"),
             Self::ExtendedBlockQuote => format!(r"({}){}({})?", Self::ExtendedBlockQuoteLine.search_pattern(), String::from(r"\n(?:(?mx:^> .*\n)*)"), Self::ExtendedBlockQuoteLine.search_pattern()),
             Self::LineBreakDash => String::from(r"(?m:^-{3,})"),
@@ -238,16 +226,16 @@ impl Modifier {
         }
     }
 
-    pub fn incompatible_modifiers(&self) -> Modifiers {
-        match self {
+    fn incompatible_modifiers(&self) -> &ModifiersBucket {
+        &match self {
 
-            Self::Image => Modifiers::All,
-            Self::InlineCode => Modifiers::All,
-            Self::CodeBlock => Modifiers::All,
-            Self::InlineMath => Modifiers::All,
-            Self::MathBlock => Modifiers::All,
-            Self::Emoji => Modifiers::All,
-            _ => Modifiers::None
+            Self::Image => ModifiersBucket::All,
+            Self::InlineCode => ModifiersBucket::All,
+            Self::CodeBlock => ModifiersBucket::All,
+            Self::InlineMath => ModifiersBucket::All,
+            Self::MathBlock => ModifiersBucket::All,
+            Self::Emoji => ModifiersBucket::All,
+            _ => ModifiersBucket::None
         }
     }
 }

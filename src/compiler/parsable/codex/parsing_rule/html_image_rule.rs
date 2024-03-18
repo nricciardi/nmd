@@ -4,6 +4,7 @@ use log;
 use regex::{Regex, Captures};
 
 use crate::compiler::dossier;
+use crate::compiler::parsable::codex::modifier::Mod;
 use crate::compiler::parsable::codex::Codex;
 use crate::resource::{image::Image, remote_resource::RemoteResource};
 use crate::compiler::parsable::ParsingConfiguration;
@@ -39,7 +40,7 @@ impl ParsingRule for HtmlImageRule {
 
         let regex = match Regex::new(&self.modifier().search_pattern()) {
             Ok(r) => r,
-            Err(_) => return Err(ParsingError::InvalidPattern(self.modifier().search_pattern()))  
+            Err(_) => return Err(ParsingError::InvalidPattern(self.modifier().search_pattern().clone()))  
         };
 
         let parsed_content = regex.replace_all(content, |captures: &Captures| {
@@ -109,7 +110,7 @@ impl ParsingRule for HtmlImageRule {
         Ok(ParsingOutcome::new(parsed_content))
     }
 
-    fn modifier(&self) -> &Modifier {
+    fn modifier(&self) -> &dyn Mod {
         &Modifier::Image
     }
 }

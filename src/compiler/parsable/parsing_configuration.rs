@@ -6,7 +6,7 @@ use crate::compiler::compilation_configuration::CompilationConfiguration;
 
 use self::list_bullet_configuration_record::ListBulletConfigurationRecord;
 
-use super::codex::modifier::Modifiers;
+use super::codex::modifier::modifiers_bucket::ModifiersBucket;
 
 
 #[derive(Clone, Default, Debug)]
@@ -25,7 +25,7 @@ pub struct ParsingConfiguration {
 
     metadata: ParsingConfigurationMetadata,
 
-    excluded_modifiers: Modifiers,
+    excluded_modifiers: ModifiersBucket,
 
     parallelization: bool,
 
@@ -37,7 +37,7 @@ pub struct ParsingConfiguration {
 
 impl ParsingConfiguration {
 
-    pub fn new(input_location: PathBuf, output_location: PathBuf, embed_local_image: bool, embed_remote_image: bool, compress_embed_image: bool, strict_image_src_check: bool, metadata: ParsingConfigurationMetadata, excluded_modifiers: Modifiers, parallelization: bool, list_bullets_configuration: Vec<ListBulletConfigurationRecord>, strict_list_check: bool, strict_focus_block_check: bool) -> Self {
+    pub fn new(input_location: PathBuf, output_location: PathBuf, embed_local_image: bool, embed_remote_image: bool, compress_embed_image: bool, strict_image_src_check: bool, metadata: ParsingConfigurationMetadata, excluded_modifiers: ModifiersBucket, parallelization: bool, list_bullets_configuration: Vec<ListBulletConfigurationRecord>, strict_list_check: bool, strict_focus_block_check: bool) -> Self {
         Self {
             input_location,
             output_location,
@@ -82,7 +82,7 @@ impl ParsingConfiguration {
         &self.metadata
     }
 
-    pub fn modifiers_excluded(&self) -> &Modifiers {
+    pub fn modifiers_excluded(&self) -> &ModifiersBucket {
         &self.excluded_modifiers
     }
 
@@ -131,11 +131,11 @@ impl ParsingConfiguration {
         self.metadata = new_metadata;
     }
 
-    pub fn set_excluded_modifiers(&mut self, modifiers_excluded: Modifiers) {
+    pub fn set_excluded_modifiers(&mut self, modifiers_excluded: ModifiersBucket) {
         self.excluded_modifiers = modifiers_excluded
     }
 
-    pub fn add_excluded_modifiers(&mut self, modifiers_excluded: Modifiers) {
+    pub fn add_excluded_modifiers(&mut self, modifiers_excluded: ModifiersBucket) {
         self.excluded_modifiers = self.excluded_modifiers.clone().add(modifiers_excluded)
     }
 
@@ -166,7 +166,7 @@ impl Default for ParsingConfiguration {
             compress_embed_image: false,
             strict_image_src_check: false,
             metadata: ParsingConfigurationMetadata::default(),
-            excluded_modifiers: Modifiers::None,
+            excluded_modifiers: ModifiersBucket::None,
             parallelization: false,
             list_bullets_configuration: list_bullet_configuration_record::default_bullets_configuration(),
             strict_list_check: false,

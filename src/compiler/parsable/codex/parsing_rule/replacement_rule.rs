@@ -4,6 +4,7 @@ use std::sync::Arc;
 use log;
 use regex::{Captures, Regex, Replacer};
 
+use crate::compiler::parsable::codex::modifier::Mod;
 use crate::compiler::parsable::ParsingConfiguration;
 
 use super::parsing_outcome::{ParsingError, ParsingOutcome};
@@ -53,7 +54,7 @@ impl ParsingRule for ReplacementRule<String> {
 
         let regex = match Regex::new(&self.modifier().search_pattern()) {
           Ok(r) => r,
-          Err(_) => return Err(ParsingError::InvalidPattern(self.modifier().search_pattern()))  
+          Err(_) => return Err(ParsingError::InvalidPattern(self.modifier().search_pattern().clone()))  
         };
 
         log::debug!("parsing:\n{}\nusing '{}'->'{}' (newline fix: {})", content, self.modifier().search_pattern(), self.replacer, self.newline_fix);
@@ -70,7 +71,7 @@ impl ParsingRule for ReplacementRule<String> {
         Ok(ParsingOutcome::new(parsed_content))
     }
 
-    fn modifier(&self) -> &Modifier {
+    fn modifier(&self) -> &dyn Mod {
         &self.modifier
     }
 }
@@ -83,7 +84,7 @@ where F: 'static + Sync + Send + Fn(&Captures) -> String {
 
         let regex = match Regex::new(&self.modifier().search_pattern()) {
           Ok(r) => r,
-          Err(_) => return Err(ParsingError::InvalidPattern(self.modifier().search_pattern()))  
+          Err(_) => return Err(ParsingError::InvalidPattern(self.modifier().search_pattern().clone()))  
         };
 
         // log::debug!("parsing:\n{}\nusing '{}'->'{}' (newline fix: {})", content, self.modifier().search_pattern(), self.replacer, self.newline_fix);
@@ -100,7 +101,7 @@ where F: 'static + Sync + Send + Fn(&Captures) -> String {
         Ok(ParsingOutcome::new(parsed_content))
     }
 
-    fn modifier(&self) -> &Modifier {
+    fn modifier(&self) -> &dyn Mod {
         &self.modifier
     }
 }

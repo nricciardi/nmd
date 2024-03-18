@@ -1,7 +1,7 @@
 # List
 
-- element 1
-- element 2
+- list 1 element 1
+- list 1 element 2
     - element 2.1
         - element 2.1.1a
         | element 2.1.1b
@@ -9,7 +9,27 @@
         - element 2.1.3
     - element 2.2
     -> element 2.3
-* element 3
+* list 1 element 3
++ element 4
+5. element 5
+6) element 6
+-[] todo1
+-[ ] todo2
+-[x] todo3
+-[X] todo4
+
+text between two list
+
+- list 2 element 1
+- list 2 element 2
+    - element 2.1
+        - element 2.1.1a
+        | element 2.1.1b
+        - element 2.1.2
+        - element 2.1.3
+    - element 2.2
+    -> element 2.3
+* list 2 element 3
 + element 4
 5. element 5
 6) element 6
@@ -21,23 +41,17 @@
 text between two list
 
 - element 1
-- element 2
-    - element 2.1
-        - element 2.1.1a
-        | element 2.1.1b
-        - element 2.1.2
-        - element 2.1.3
-    - element 2.2
-    -> element 2.3
-* element 3
-+ element 4
-5. element 5
-6) element 6
--[] todo1
--[ ] todo2
--[x] todo3
--[X] todo4
 
-text between two list
+text. that must not be a list
+text
+text
 
-- element 1
+text
+text
+text. that must not be a list
+text
+text
+
+text
+text
+text. that must not be a list

@@ -2,31 +2,37 @@ pub mod parsing_rule;
 pub mod codex_configuration;
 pub mod modifier;
 
+use std::collections::HashMap;
 use std::sync::Arc;
 
 pub use parsing_rule::ParsingRule;
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use rayon::slice::ParallelSliceMut;
 use regex::{Captures, Regex};
-use self::modifier::Modifiers;
+use self::modifier::modifiers_bucket::ModifiersBucket;
+use self::modifier::paragraph_modifier::ParagraphModifier;
+use self::modifier::ModifierIdentifier;
 pub use self::modifier::{MAX_HEADING_LEVEL, Modifier};
 use self::parsing_rule::html_extended_block_quote_rule::HtmlExtendedBlockQuoteRule;
 use self::parsing_rule::html_list_rule::HtmlListRule;
 use crate::compiler::dossier::document::chapter::paragraph::ParagraphError;
 use crate::compiler::dossier::document::Paragraph;
 use crate::compiler::output_format::OutputFormat;
+use crate::compiler::parsable::codex::modifier::Mod;
 use self::codex_configuration::CodexConfiguration;
 use self::parsing_rule::html_image_rule::HtmlImageRule;
 use self::parsing_rule::parsing_outcome::{ParsingError, ParsingOutcome};
 use self::parsing_rule::replacement_rule::ReplacementRule;
 use super::ParsingConfiguration;
 
+pub const PARAGRAPH_SEPARATOR: &str = r"(?m:^\n[ \t]*){1}";
 
 /// Ordered collection of rules
+/// A **rule** is defined as the actual text transformation
 pub struct Codex {
     configuration: CodexConfiguration,
     content_rules: Vec<Box<dyn ParsingRule>>,
-    paragraph_rules: Vec<Box<dyn ParsingRule>>,
+    paragraph_rules: HashMap<ModifierIdentifier, Box<dyn ParsingRule>>,
     chapter_rules: Vec<Box<dyn ParsingRule>>,
     document_rules: Vec<Box<dyn ParsingRule>>,
 }
@@ -43,7 +49,7 @@ impl Codex {
         &self.content_rules
     }
 
-    pub fn paragraph_rules(&self) -> &Vec<Box<dyn ParsingRule>> {
+    pub fn paragraph_rules(&self) -> &HashMap<ModifierIdentifier, Box<dyn ParsingRule>> {
         &self.paragraph_rules
     }
 
@@ -67,13 +73,13 @@ impl Codex {
         self.parse_content_excluding_modifiers(content, Arc::clone(&parsing_configuration), excluded_modifiers)
     }
 
-    pub fn parse_content_excluding_modifiers(&self, content: &str, parsing_configuration: Arc<ParsingConfiguration>, mut excluded_modifiers: Modifiers) -> Result<ParsingOutcome, ParsingError> {
+    pub fn parse_content_excluding_modifiers(&self, content: &str, parsing_configuration: Arc<ParsingConfiguration>, mut excluded_modifiers: ModifiersBucket) -> Result<ParsingOutcome, ParsingError> {
 
         log::debug!("start to parse content:\n{}\nexcluding: {:?}", content, excluded_modifiers);
 
         let mut outcome = ParsingOutcome::new(String::from(content));
 
-        if excluded_modifiers == Modifiers::All {
+        if excluded_modifiers == ModifiersBucket::All {
             log::debug!("parsing of content:\n{} is skipped are excluded all modifiers", content);
             
             return Ok(outcome)
@@ -94,8 +100,8 @@ impl Codex {
     
                 excluded_modifiers = excluded_modifiers + content_rule.incompatible_modifiers().clone();
 
-                if excluded_modifiers == Modifiers::All {
-                    log::debug!("all next modifiers will be skipped because {:?} excludes {:?}", content_rule.modifier(), Modifiers::All)
+                if excluded_modifiers == ModifiersBucket::All {
+                    log::debug!("all next modifiers will be skipped because {:?} excludes {:?}", content_rule.modifier(), ModifiersBucket::All)
                 }
 
             } else {
@@ -108,68 +114,98 @@ impl Codex {
     }
 
     pub fn parse_paragraph(&self, paragraph: &Paragraph, parsing_configuration: Arc<ParsingConfiguration>) -> Result<ParsingOutcome, ParsingError> {
-        self.parse_paragraph_excluding_modifiers(paragraph, parsing_configuration, Modifiers::None)
+        self.parse_paragraph_excluding_modifiers(paragraph, parsing_configuration, ModifiersBucket::None)
     }
 
 
-    pub fn parse_paragraph_excluding_modifiers(&self, paragraph: &Paragraph, parsing_configuration: Arc<ParsingConfiguration>, mut excluded_modifiers: Modifiers) -> Result<ParsingOutcome, ParsingError> {
+    pub fn parse_paragraph_excluding_modifiers(&self, paragraph: &Paragraph, parsing_configuration: Arc<ParsingConfiguration>, mut excluded_modifiers: ModifiersBucket) -> Result<ParsingOutcome, ParsingError> {
 
-        log::debug!("start to parse paragraph:\n{}\nexcluding: {:?}", paragraph, excluded_modifiers);
+        log::debug!("start to parse paragraph:\n'{}'\nexcluding: {:?}", paragraph, excluded_modifiers);
 
         let mut outcome = ParsingOutcome::new(String::from(paragraph.content()));
 
-        if excluded_modifiers == Modifiers::All {
+        if excluded_modifiers == ModifiersBucket::All {
             log::debug!("parsing of paragraph:\n{} is skipped are excluded all modifiers", paragraph);
             
             return Ok(outcome)
         }
 
-        for paragraph_rule in self.paragraph_rules() {
+        let paragraph_rule = self.paragraph_rules().get(paragraph.paragraph_type().identifier());
 
+        if let Some(paragraph_rule) = paragraph_rule {
             let search_pattern = paragraph_rule.modifier().search_pattern();
 
             log::debug!("{:?}: '{}' paragraph search pattern that is about to be tested", paragraph_rule.modifier(), search_pattern);
 
-            if paragraph_rule.is_match(outcome.parsed_content()) {
+            outcome = paragraph_rule.parse(outcome.parsed_content(), Arc::clone(&parsing_configuration))?;
 
-                log::debug!("there is a match with '{}'", search_pattern);
+            excluded_modifiers = excluded_modifiers + paragraph_rule.incompatible_modifiers().clone();
+        } else {
 
-                outcome = paragraph_rule.parse(outcome.parsed_content(), Arc::clone(&parsing_configuration))?;
-
-                excluded_modifiers = excluded_modifiers + paragraph_rule.incompatible_modifiers().clone();
-
-                break;      // ONLY ONE paragraph modifier
-            } else {
-
-                log::debug!("there is NOT a match with '{}'", search_pattern);
-            }
+            log::warn!("there is NOT a paragraph rule for '{}' in codex", paragraph.paragraph_type().identifier());
         }
+
+        // for paragraph_rule in self.paragraph_rules() {
+
+        //     let search_pattern = paragraph_rule.modifier().search_pattern();
+
+        //     log::debug!("{:?}: '{}' paragraph search pattern that is about to be tested", paragraph_rule.modifier(), search_pattern);
+
+        //     if paragraph_rule.is_match(outcome.parsed_content()) {
+
+        //         log::debug!("there is a match with '{}'", search_pattern);
+
+        //         outcome = paragraph_rule.parse(outcome.parsed_content(), Arc::clone(&parsing_configuration))?;
+
+        //         excluded_modifiers = excluded_modifiers + paragraph_rule.incompatible_modifiers().clone();
+
+        //         break;      // ONLY ONE paragraph modifier
+        //     } else {
+
+        //         log::debug!("there is NOT a match with '{}'", search_pattern);
+        //     }
+        // }
 
         outcome = self.parse_content_excluding_modifiers(outcome.parsed_content(), Arc::clone(&parsing_configuration), excluded_modifiers)?;
 
         Ok(outcome)
     }
 
+    fn count_newlines_at_start(s: &str) -> usize {
+        s.bytes().take_while(|&b| b == b'\n').count()
+    }
+
+    fn count_newlines_at_end(s: &str) -> usize {
+        s.bytes().rev().take_while(|&b| b == b'\n').count()
+    }
+
+    /// Split a string in the corresponding vector of paragraphs
     pub fn split_str_in_paragraphs(&self, content: &str) -> Result<Vec<Paragraph>, ParagraphError> {
 
         let mut paragraphs: Vec<(usize, usize, Paragraph)> = Vec::new();
         let mut content = String::from(content);
+
+        content = content.replace("\n\n", "\n\n\n");
 
         // work-around to fix paragraph matching end line
         while !content.ends_with("\n\n") {
             content.push_str("\n");
         }
 
-        for modifier in Modifier::paragraph_modifiers() {
+        for modifier in ParagraphModifier::ordered() {
 
-            log::debug!("test {:?}", modifier);
+            let search_pattern = format!(r"{}{}{}", PARAGRAPH_SEPARATOR, modifier.search_pattern(), PARAGRAPH_SEPARATOR);
 
-            let regex = Regex::new(&modifier.search_pattern()).unwrap();
+            log::debug!("test {}", search_pattern);
+
+            let regex = Regex::new(&search_pattern).unwrap();
 
             regex.find_iter(content.clone().as_str()).for_each(|m| {
 
-                let start = m.start();
-                let end = m.end() - 1;
+                let matched_str = m.as_str().to_string();
+
+                let start = m.start() + Self::count_newlines_at_start(&matched_str);
+                let end = m.end() - Self::count_newlines_at_end(&matched_str) - 1;
 
                 let overlap_paragraph = paragraphs.par_iter().find_any(|p| {
                     (p.0 >= start && p.1 <= end) ||     // current paragraph contains p
@@ -182,11 +218,9 @@ impl Codex {
                     return
                 }
 
-                let matched_str = m.as_str().to_string();
-
                 log::debug!("found paragraph between {} and {}:\n{}\nusing {:?}", start, end, matched_str, &modifier);
 
-                let paragraph = Paragraph::from(matched_str);
+                let paragraph = Paragraph::new(matched_str, modifier);
 
                 if !paragraph.contains_only_newlines() {
                     paragraphs.push((start, end, paragraph));
@@ -200,7 +234,7 @@ impl Codex {
         Ok(paragraphs.iter().map(|p| p.2.to_owned()).collect())
     }
 
-    fn new(configuration: CodexConfiguration, content_rules: Vec<Box<dyn ParsingRule>>, paragraph_rules: Vec<Box<dyn ParsingRule>>, chapter_rules: Vec<Box<dyn ParsingRule>>, document_rules: Vec<Box<dyn ParsingRule>>) -> Codex {
+    fn new(configuration: CodexConfiguration, content_rules: Vec<Box<dyn ParsingRule>>, paragraph_rules: HashMap<ModifierIdentifier, Box<dyn ParsingRule>>, chapter_rules: Vec<Box<dyn ParsingRule>>, document_rules: Vec<Box<dyn ParsingRule>>) -> Codex {
 
         // TODO: check if there are all necessary rules based on theirs type
 
@@ -269,24 +303,91 @@ impl Codex {
             Box::new(ReplacementRule::new(Modifier::Emoji, String::from(r#"<i class="em-svg em-${1}" aria-role="presentation"></i>"#))),
         ]);
 
-        let paragraph_rules: Vec<Box<dyn ParsingRule>> = vec![
-            Box::new(ReplacementRule::new(Modifier::PageBreak, String::from(r#"<div class="page-break"></div>"#))),
-            Box::new(ReplacementRule::new(Modifier::EmbeddedParagraphStyleWithId, String::from(r#"<div class="identifier embedded-paragraph-style" id="$2" style="$3">$1</div>"#)).with_newline_fix(r"<br>".to_string())),
-            Box::new(ReplacementRule::new(Modifier::EmbeddedParagraphStyle, String::from(r#"<div class="embedded-paragraph-style" style="$2">$1</div>"#)).with_newline_fix(r"<br>".to_string())),
-            Box::new(ReplacementRule::new(Modifier::AbridgedEmbeddedParagraphStyleWithId, String::from(r#"<div class="identifier abridged-embedded-paragraph-style" id="$2" style="color: $3; background-color: $4; font-family: $5;">$1</div>"#)).with_newline_fix(r"<br>".to_string())),
-            Box::new(ReplacementRule::new(Modifier::AbridgedEmbeddedParagraphStyle, String::from(r#"<div class="abridged-embedded-paragraph-style" style="color: $2; background-color: $3; font-family: $4;">$1</div>"#)).with_newline_fix(r"<br>".to_string())),
-            Box::new(ReplacementRule::new(Modifier::ParagraphIdentifier, String::from(r#"<span class="identifier" id="$2">$1</span>"#)).with_newline_fix(r"<br>".to_string())),
-            Box::new(HtmlExtendedBlockQuoteRule::new()),
-            Box::new(ReplacementRule::new(Modifier::MathBlock, String::from(r#"<p class="math-block">$$$$${1}$$$$</p>"#))),
-            Box::new(HtmlImageRule::new()),
-            Box::new(ReplacementRule::new(Modifier::CodeBlock, String::from(r#"<pre><code class="language-${1} code-block">$2</code></pre>"#))),
-            Box::new(HtmlListRule::new()),
-            Box::new(ReplacementRule::new(Modifier::FocusBlock, String::from(r#"<div class="focus-block focus-block-$1"><div class="focus-block-title focus-block-$1-title"></div><div class="focus-block-description focus-block-$1-description"">$2</div></div>"#)).with_newline_fix(r"<br>".to_string())),
-            Box::new(ReplacementRule::new(Modifier::LineBreakDash, String::from(r#"<hr class="line-break line-break-dash">"#))),
-            Box::new(ReplacementRule::new(Modifier::LineBreakStar, String::from(r#"<hr class="line-break line-break-star">"#))),
-            Box::new(ReplacementRule::new(Modifier::LineBreakPlus, String::from(r#"<hr class="line-break line-break-plus">"#))),
-            Box::new(ReplacementRule::new(Modifier::CommonParagraph, String::from(r#"<p class="paragraph">${1}</p>"#))),
-        ];
+        let paragraph_rules: HashMap<ModifierIdentifier, Box<dyn ParsingRule>> = HashMap::from([
+            (
+                ParagraphModifier::PageBreak.identifier().clone(),
+                Box::new(ReplacementRule::new(Modifier::PageBreak, String::from(r#"<div class="page-break"></div>"#))) as Box<dyn ParsingRule>
+            ),
+            (
+                ParagraphModifier::EmbeddedParagraphStyleWithId.identifier().clone(),
+                Box::new(ReplacementRule::new(Modifier::EmbeddedParagraphStyleWithId, String::from(r#"<div class="identifier embedded-paragraph-style" id="$2" style="$3">$1</div>"#)).with_newline_fix(r"<br>".to_string())),
+            ),
+            (
+                ParagraphModifier::EmbeddedParagraphStyle.identifier().clone(),
+                Box::new(ReplacementRule::new(Modifier::EmbeddedParagraphStyle, String::from(r#"<div class="embedded-paragraph-style" style="$2">$1</div>"#)).with_newline_fix(r"<br>".to_string())),
+            ),
+            (
+                ParagraphModifier::AbridgedEmbeddedParagraphStyleWithId.identifier().clone(),
+                Box::new(ReplacementRule::new(Modifier::AbridgedEmbeddedParagraphStyleWithId, String::from(r#"<div class="identifier abridged-embedded-paragraph-style" id="$2" style="color: $3; background-color: $4; font-family: $5;">$1</div>"#)).with_newline_fix(r"<br>".to_string())),
+            ),
+            (
+                ParagraphModifier::AbridgedEmbeddedParagraphStyle.identifier().clone(),
+                Box::new(ReplacementRule::new(Modifier::AbridgedEmbeddedParagraphStyle, String::from(r#"<div class="abridged-embedded-paragraph-style" style="color: $2; background-color: $3; font-family: $4;">$1</div>"#)).with_newline_fix(r"<br>".to_string())),
+            ),
+            (
+                ParagraphModifier::ParagraphIdentifier.identifier().clone(),
+                Box::new(ReplacementRule::new(Modifier::ParagraphIdentifier, String::from(r#"<span class="identifier" id="$2">$1</span>"#)).with_newline_fix(r"<br>".to_string())),
+            ),
+            (
+                ParagraphModifier::ExtendedBlockQuote.identifier().clone(),
+                Box::new(HtmlExtendedBlockQuoteRule::new()),
+            ),
+            (
+                ParagraphModifier::MathBlock.identifier().clone(),
+                Box::new(ReplacementRule::new(Modifier::MathBlock, String::from(r#"<p class="math-block">$$$$${1}$$$$</p>"#))),
+            ),
+            (
+                ParagraphModifier::Image.identifier().clone(),
+                Box::new(HtmlImageRule::new())
+            ),
+            (
+                ParagraphModifier::CodeBlock.identifier().clone(),
+                Box::new(ReplacementRule::new(Modifier::CodeBlock, String::from(r#"<pre><code class="language-${1} code-block">$2</code></pre>"#))),
+            ),
+            (
+                ParagraphModifier::List.identifier().clone(),
+                Box::new(HtmlListRule::new()),
+            ),
+            (
+                ParagraphModifier::FocusBlock.identifier().clone(),
+                Box::new(ReplacementRule::new(Modifier::FocusBlock, String::from(r#"<div class="focus-block focus-block-$1"><div class="focus-block-title focus-block-$1-title"></div><div class="focus-block-description focus-block-$1-description"">$2</div></div>"#)).with_newline_fix(r"<br>".to_string()))
+            ),
+            (
+                ParagraphModifier::LineBreakDash.identifier().clone(),
+                Box::new(ReplacementRule::new(Modifier::LineBreakDash, String::from(r#"<hr class="line-break line-break-dash">"#)))
+            ),
+            (
+                ParagraphModifier::LineBreakStar.identifier().clone(),
+                Box::new(ReplacementRule::new(Modifier::LineBreakStar, String::from(r#"<hr class="line-break line-break-star">"#)))
+            ),
+            (
+                ParagraphModifier::LineBreakPlus.identifier().clone(),
+                Box::new(ReplacementRule::new(Modifier::LineBreakPlus, String::from(r#"<hr class="line-break line-break-plus">"#)))
+            ),
+            (
+                ParagraphModifier::CommonParagraph.identifier().clone(),
+                Box::new(ReplacementRule::new(Modifier::CommonParagraph, String::from(r#"<p class="paragraph">${1}</p>"#)))
+            ),
+        ]);
+
+        // let paragraph_rules: Vec<Box<dyn ParsingRule>> = vec![
+        //     Box::new(ReplacementRule::new(Modifier::PageBreak, String::from(r#"<div class="page-break"></div>"#))),
+        //     Box::new(ReplacementRule::new(Modifier::EmbeddedParagraphStyleWithId, String::from(r#"<div class="identifier embedded-paragraph-style" id="$2" style="$3">$1</div>"#)).with_newline_fix(r"<br>".to_string())),
+        //     Box::new(ReplacementRule::new(Modifier::EmbeddedParagraphStyle, String::from(r#"<div class="embedded-paragraph-style" style="$2">$1</div>"#)).with_newline_fix(r"<br>".to_string())),
+        //     Box::new(ReplacementRule::new(Modifier::AbridgedEmbeddedParagraphStyleWithId, String::from(r#"<div class="identifier abridged-embedded-paragraph-style" id="$2" style="color: $3; background-color: $4; font-family: $5;">$1</div>"#)).with_newline_fix(r"<br>".to_string())),
+        //     Box::new(ReplacementRule::new(Modifier::AbridgedEmbeddedParagraphStyle, String::from(r#"<div class="abridged-embedded-paragraph-style" style="color: $2; background-color: $3; font-family: $4;">$1</div>"#)).with_newline_fix(r"<br>".to_string())),
+        //     Box::new(ReplacementRule::new(Modifier::ParagraphIdentifier, String::from(r#"<span class="identifier" id="$2">$1</span>"#)).with_newline_fix(r"<br>".to_string())),
+        //     Box::new(HtmlExtendedBlockQuoteRule::new()),
+        //     Box::new(ReplacementRule::new(Modifier::MathBlock, String::from(r#"<p class="math-block">$$$$${1}$$$$</p>"#))),
+        //     Box::new(HtmlImageRule::new()),
+        //     Box::new(ReplacementRule::new(Modifier::CodeBlock, String::from(r#"<pre><code class="language-${1} code-block">$2</code></pre>"#))),
+        //     Box::new(HtmlListRule::new()),
+        //     Box::new(ReplacementRule::new(Modifier::FocusBlock, String::from(r#"<div class="focus-block focus-block-$1"><div class="focus-block-title focus-block-$1-title"></div><div class="focus-block-description focus-block-$1-description"">$2</div></div>"#)).with_newline_fix(r"<br>".to_string())),
+        //     Box::new(ReplacementRule::new(Modifier::LineBreakDash, String::from(r#"<hr class="line-break line-break-dash">"#))),
+        //     Box::new(ReplacementRule::new(Modifier::LineBreakStar, String::from(r#"<hr class="line-break line-break-star">"#))),
+        //     Box::new(ReplacementRule::new(Modifier::LineBreakPlus, String::from(r#"<hr class="line-break line-break-plus">"#))),
+        //     Box::new(ReplacementRule::new(Modifier::CommonParagraph, String::from(r#"<p class="paragraph">${1}</p>"#))),
+        // ];
 
         Self::new(configuration, content_rules, paragraph_rules, vec![], vec![])
     }
@@ -294,10 +395,7 @@ impl Codex {
     pub fn heading_rules(&self) -> Vec<&Box<dyn ParsingRule>> {
         
         self.content_rules.iter().filter(|&rules| {
-            match rules.modifier() {
-                Modifier::HeadingGeneralCompactVersion(_) | Modifier::HeadingGeneralExtendedVersion(_) => true,
-                _ => false
-            }
+            Modifier::str_is_heading(content)
         }).collect()
     }
 }

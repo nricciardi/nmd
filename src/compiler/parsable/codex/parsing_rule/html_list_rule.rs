@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use regex::Regex;
 
-use crate::compiler::parsable::{codex::Modifier, parsing_configuration::list_bullet_configuration_record::{self, ListBulletConfigurationRecord}, ParsingConfiguration};
+use crate::compiler::parsable::{codex::{modifier::Mod, Modifier}, parsing_configuration::list_bullet_configuration_record::{self, ListBulletConfigurationRecord}, ParsingConfiguration};
 use super::{parsing_outcome::{ParsingError, ParsingOutcome}, ParsingRule};
 
 const SPACE_TAB_EQUIVALENCE: &str = r"   ";
@@ -56,7 +56,7 @@ impl HtmlListRule {
 }
 
 impl ParsingRule for HtmlListRule {
-    fn modifier(&self) -> &Modifier {
+    fn modifier(&self) -> &dyn Mod {
         &Modifier::List
     }
 

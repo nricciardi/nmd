@@ -1,5 +1,5 @@
 documents:
-  - "./d2.nmd"
+  - "./d5.nmd"
 compilation:
-    parallelization: true
+    parallelization: false
     compress_embed_image: false
