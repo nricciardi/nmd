@@ -13,7 +13,7 @@ pub const MAX_HEADING_LEVEL: u32 = 6;
 
 pub type ModifierIdentifier = String;
 
-pub trait Mod {
+pub trait Mod: Sync + Send {
 
     fn identifier(&self) -> &ModifierIdentifier {
         &self.search_pattern()
@@ -29,6 +29,12 @@ pub trait Mod {
 impl fmt::Debug for dyn Mod {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{:?}", self.search_pattern())
+    }
+}
+
+impl PartialEq for dyn Mod {
+    fn eq(&self, other: &Self) -> bool {
+        self.search_pattern().eq(other.search_pattern())
     }
 }
 

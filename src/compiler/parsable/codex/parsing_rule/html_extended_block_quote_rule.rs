@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use regex::Regex;
 
-use crate::compiler::parsable::{codex::{modifier::Mod, Modifier}, ParsingConfiguration};
+use crate::compiler::parsable::{codex::{modifier::{modifiers_bucket::ModifiersBucket, paragraph_modifier::ParagraphModifier, Mod}, Modifier}, ParsingConfiguration};
 
 use super::{parsing_outcome::{ParsingError, ParsingOutcome}, ParsingRule};
 
@@ -19,8 +19,13 @@ impl HtmlExtendedBlockQuoteRule {
 }
 
 impl ParsingRule for HtmlExtendedBlockQuoteRule {
-    fn modifier(&self) -> &dyn Mod {
-        &Modifier::ExtendedBlockQuote
+
+    fn search_pattern(&self) -> &String {
+        &ParagraphModifier::ExtendedBlockQuote.search_pattern()
+    }
+    
+    fn incompatible_modifiers(&self) -> &ModifiersBucket {
+        &ParagraphModifier::ExtendedBlockQuote.incompatible_modifiers()
     }
 
     fn parse(&self, content: &str, parsing_configuration: Arc<ParsingConfiguration>) -> Result<ParsingOutcome, ParsingError> {

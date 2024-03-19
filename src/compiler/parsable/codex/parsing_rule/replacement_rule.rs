@@ -4,6 +4,7 @@ use std::sync::Arc;
 use log;
 use regex::{Captures, Regex, Replacer};
 
+use crate::compiler::parsable::codex::modifier::modifiers_bucket::ModifiersBucket;
 use crate::compiler::parsable::codex::modifier::Mod;
 use crate::compiler::parsable::ParsingConfiguration;
 
@@ -13,7 +14,8 @@ use super::{Modifier, ParsingRule};
 
 /// Rule to replace a NMD text based on a specific pattern matching rule
 pub struct ReplacementRule<R: Replacer> {
-    modifier: Modifier,
+    search_pattern: String,
+    incompatible_modifiers: ModifiersBucket,
     replacer: R,
     newline_fix: bool,
     newline_fix_pattern: Option<String>
@@ -32,7 +34,8 @@ impl<R: Replacer> ReplacementRule<R> {
         log::debug!("created new parsing rule with search_pattern: '{}'", modifier.search_pattern()); //  and replacer: '{:?}'
 
         Self {
-            modifier,
+            search_pattern: modifier.search_pattern().clone(),
+            incompatible_modifiers: modifier.incompatible_modifiers().clone(),
             replacer,
             newline_fix: false,
             newline_fix_pattern: None
@@ -52,12 +55,12 @@ impl ParsingRule for ReplacementRule<String> {
     /// Parse the content using internal search and replacement pattern
     fn parse(&self, content: &str, parsing_configuration: Arc<ParsingConfiguration>) -> Result<ParsingOutcome, ParsingError> {
 
-        let regex = match Regex::new(&self.modifier().search_pattern()) {
+        let regex = match Regex::new(&self.search_pattern()) {
           Ok(r) => r,
-          Err(_) => return Err(ParsingError::InvalidPattern(self.modifier().search_pattern().clone()))  
+          Err(_) => return Err(ParsingError::InvalidPattern(self.search_pattern().clone()))  
         };
 
-        log::debug!("parsing:\n{}\nusing '{}'->'{}' (newline fix: {})", content, self.modifier().search_pattern(), self.replacer, self.newline_fix);
+        log::debug!("parsing:\n{}\nusing '{}'->'{}' (newline fix: {})", content, self.search_pattern(), self.replacer, self.newline_fix);
 
         let mut parsed_content = regex.replace_all(content, self.replacer.as_str()).to_string();
 
@@ -70,9 +73,13 @@ impl ParsingRule for ReplacementRule<String> {
         
         Ok(ParsingOutcome::new(parsed_content))
     }
-
-    fn modifier(&self) -> &dyn Mod {
-        &self.modifier
+    
+    fn search_pattern(&self) -> &String {
+        &self.search_pattern
+    }
+    
+    fn incompatible_modifiers(&self) -> &ModifiersBucket {
+        &self.incompatible_modifiers
     }
 }
 
@@ -82,9 +89,9 @@ where F: 'static + Sync + Send + Fn(&Captures) -> String {
     /// Parse the content using internal search and replacement pattern
     fn parse(&self, content: &str, parsing_configuration: Arc<ParsingConfiguration>) -> Result<ParsingOutcome, ParsingError> {
 
-        let regex = match Regex::new(&self.modifier().search_pattern()) {
+        let regex = match Regex::new(&self.search_pattern()) {
           Ok(r) => r,
-          Err(_) => return Err(ParsingError::InvalidPattern(self.modifier().search_pattern().clone()))  
+          Err(_) => return Err(ParsingError::InvalidPattern(self.search_pattern().clone()))  
         };
 
         // log::debug!("parsing:\n{}\nusing '{}'->'{}' (newline fix: {})", content, self.modifier().search_pattern(), self.replacer, self.newline_fix);
@@ -101,8 +108,12 @@ where F: 'static + Sync + Send + Fn(&Captures) -> String {
         Ok(ParsingOutcome::new(parsed_content))
     }
 
-    fn modifier(&self) -> &dyn Mod {
-        &self.modifier
+    fn search_pattern(&self) -> &String {
+        &self.search_pattern
+    }
+    
+    fn incompatible_modifiers(&self) -> &ModifiersBucket {
+        &self.incompatible_modifiers
     }
 }
 

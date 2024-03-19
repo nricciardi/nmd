@@ -4,6 +4,8 @@ use log;
 use regex::{Regex, Captures};
 
 use crate::compiler::dossier;
+use crate::compiler::parsable::codex::modifier::modifiers_bucket::ModifiersBucket;
+use crate::compiler::parsable::codex::modifier::paragraph_modifier::ParagraphModifier;
 use crate::compiler::parsable::codex::modifier::Mod;
 use crate::compiler::parsable::codex::Codex;
 use crate::resource::{image::Image, remote_resource::RemoteResource};
@@ -38,9 +40,9 @@ impl ParsingRule for HtmlImageRule {
     /// Parse the content using internal search and replacement pattern
     fn parse(&self, content: &str, parsing_configuration: Arc<ParsingConfiguration>) -> Result<ParsingOutcome, ParsingError> {
 
-        let regex = match Regex::new(&self.modifier().search_pattern()) {
+        let regex = match Regex::new(&self.search_pattern()) {
             Ok(r) => r,
-            Err(_) => return Err(ParsingError::InvalidPattern(self.modifier().search_pattern().clone()))  
+            Err(_) => return Err(ParsingError::InvalidPattern(self.search_pattern().clone()))  
         };
 
         let parsed_content = regex.replace_all(content, |captures: &Captures| {
@@ -110,8 +112,12 @@ impl ParsingRule for HtmlImageRule {
         Ok(ParsingOutcome::new(parsed_content))
     }
 
-    fn modifier(&self) -> &dyn Mod {
-        &Modifier::Image
+    fn search_pattern(&self) -> &String {
+        &ParagraphModifier::Image.search_pattern()
+    }
+    
+    fn incompatible_modifiers(&self) -> &ModifiersBucket {
+        &ParagraphModifier::Image.incompatible_modifiers()
     }
 }
 

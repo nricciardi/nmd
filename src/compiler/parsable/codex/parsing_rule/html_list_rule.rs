@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use regex::Regex;
 
-use crate::compiler::parsable::{codex::{modifier::Mod, Modifier}, parsing_configuration::list_bullet_configuration_record::{self, ListBulletConfigurationRecord}, ParsingConfiguration};
+use crate::compiler::parsable::{codex::{modifier::{modifiers_bucket::ModifiersBucket, paragraph_modifier::ParagraphModifier, Mod}, Modifier}, parsing_configuration::list_bullet_configuration_record::{self, ListBulletConfigurationRecord}, ParsingConfiguration};
 use super::{parsing_outcome::{ParsingError, ParsingOutcome}, ParsingRule};
 
 const SPACE_TAB_EQUIVALENCE: &str = r"   ";
@@ -56,8 +56,12 @@ impl HtmlListRule {
 }
 
 impl ParsingRule for HtmlListRule {
-    fn modifier(&self) -> &dyn Mod {
-        &Modifier::List
+    fn search_pattern(&self) -> &String {
+        &ParagraphModifier::ListItem.search_pattern()
+    }
+    
+    fn incompatible_modifiers(&self) -> &ModifiersBucket {
+        &ParagraphModifier::List.incompatible_modifiers()
     }
 
     fn parse(&self, content: &str, parsing_configuration: Arc<ParsingConfiguration>) -> Result<ParsingOutcome, ParsingError> {
@@ -66,7 +70,7 @@ impl ParsingRule for HtmlListRule {
 
         parsed_content.push_str(r#"<ul class="list">"#);
 
-        let search_patter = Modifier::ListItem.search_pattern();
+        let search_patter = self.search_pattern();
 
         let regex = Regex::new(&search_patter).unwrap();
 
@@ -147,7 +151,7 @@ mod test {
        
        let rule = HtmlListRule::new();
 
-       let regex = Regex::new(&rule.modifier().search_pattern()).unwrap();
+       let regex = Regex::new(rule.search_pattern()).unwrap();
 
        let outcome = rule.parse(nmd_text, Arc::new(ParsingConfiguration::default())).unwrap();
 
