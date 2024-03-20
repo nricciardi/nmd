@@ -35,6 +35,7 @@ pub struct Codex {
     paragraph_rules: HashMap<ModifierIdentifier, Box<dyn ParsingRule>>,
     chapter_rules: Vec<Box<dyn ParsingRule>>,
     document_rules: Vec<Box<dyn ParsingRule>>,
+    
 }
 
 impl Codex {
@@ -133,13 +134,14 @@ impl Codex {
         let paragraph_rule = self.paragraph_rules().get(paragraph.paragraph_type().identifier());
 
         if let Some(paragraph_rule) = paragraph_rule {
-            let search_pattern = paragraph_rule.modifier().search_pattern();
+            let search_pattern = paragraph_rule.search_pattern();
 
-            log::debug!("{:?}: '{}' paragraph search pattern that is about to be tested", paragraph_rule.modifier(), search_pattern);
+            log::debug!("'{}' paragraph search pattern that is about to be tested", search_pattern);
 
             outcome = paragraph_rule.parse(outcome.parsed_content(), Arc::clone(&parsing_configuration))?;
 
             excluded_modifiers = excluded_modifiers + paragraph_rule.incompatible_modifiers().clone();
+
         } else {
 
             log::warn!("there is NOT a paragraph rule for '{}' in codex", paragraph.paragraph_type().identifier());
