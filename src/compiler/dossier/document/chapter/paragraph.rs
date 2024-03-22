@@ -55,45 +55,45 @@ impl Parsable for Paragraph {
     }
 }
 
-impl Paragraph {
-
-    pub fn str_to_paragraphs(s: &str) -> Result<Vec<Self>, ParagraphError> {
-        if s.is_empty() {
-            return Err(ParagraphError::Empty);
-        }
-
-        let regex = Regex::new(r#"\n{2,}(?!```)"#).unwrap();
-
-        Ok(regex.split(s).map(|splitted_content| {
-            Self::from(splitted_content.to_string())
-        }).collect())
+impl Display for Paragraph {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.content)
     }
 }
+
+// impl Paragraph {
+
+//     pub fn str_to_paragraphs(s: &str) -> Result<Vec<Self>, ParagraphError> {
+//         if s.is_empty() {
+//             return Err(ParagraphError::Empty);
+//         }
+
+//         let regex = Regex::new(r#"\n{2,}(?!```)"#).unwrap();
+
+//         Ok(regex.split(s).map(|splitted_content| {
+//             Self::from(splitted_content.to_string())
+//         }).collect())
+//     }
+// }
 
 #[cfg(test)]
 mod test {
 
     use super::*;
 
-    #[test]
-    fn from_str() {
-        let content = r#"
-this is the first paragraph.
-Paragraph 1 continued.
+//     #[test]
+//     fn from_str() {
+//         let content = r#"
+// this is the first paragraph.
+// Paragraph 1 continued.
 
-Paragraph 2.
+// Paragraph 2.
 
-Paragraph 3.        
-"#.trim();
+// Paragraph 3.        
+// "#.trim();
 
-        let paragraphs = Paragraph::str_to_paragraphs(content).unwrap();
+//         let paragraphs = Paragraph::str_to_paragraphs(content).unwrap();
 
-        assert_eq!(paragraphs.len(), 3)
-    }
-}
-
-impl Display for Paragraph {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.content)
-    }
+//         assert_eq!(paragraphs.len(), 3)
+//     }
 }
