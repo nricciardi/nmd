@@ -5,7 +5,7 @@ pub mod html_list_rule;
 pub mod html_extended_block_quote_rule;
 
 use super::modifier::{Modifier, modifiers_bucket::ModifiersBucket};
-use std::sync::Arc;
+use std::{fmt::Debug, sync::Arc};
 use regex::Regex;
 use crate::compiler::parsable::ParsingConfiguration;
 use self::parsing_outcome::{ParsingOutcome, ParsingError};
@@ -28,6 +28,13 @@ pub trait ParsingRule: Send + Sync {
 
     fn incompatible_modifiers(&self) -> &ModifiersBucket;
 }
+
+impl Debug for dyn ParsingRule {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", self.search_pattern())
+    }
+}
+
 
 #[cfg(test)]
 mod test {

@@ -19,7 +19,7 @@ use self::parsing_rule::html_list_rule::HtmlListRule;
 use crate::compiler::dossier::document::chapter::paragraph::ParagraphError;
 use crate::compiler::dossier::document::Paragraph;
 use crate::compiler::output_format::OutputFormat;
-use crate::compiler::parsable::codex::modifier::Mod;
+use crate::compiler::parsable::codex::modifier::{text_modifier, Mod};
 use self::codex_configuration::CodexConfiguration;
 use self::parsing_rule::html_image_rule::HtmlImageRule;
 use self::parsing_rule::parsing_outcome::{ParsingError, ParsingOutcome};
@@ -87,27 +87,37 @@ impl Codex {
             return Ok(outcome)
         }
 
-        for text_rule in self.text_rules() {
+        for text_modifier in self.configuration.ordered_text_modifiers() {
 
-            if excluded_modifiers.contains(text_rule.modifier()) {
+            if excluded_modifiers.contains(text_modifier) {
 
-                log::debug!("{:?}: '{}' content search pattern is skipped", text_rule.modifier(), text_rule.modifier().search_pattern());
+                log::debug!("{:?} is skipped", text_modifier);
                 continue;
             }
 
+            let text_rule = self.text_rules().get(text_modifier.identifier());
+
+            if text_rule.is_none() {
+                log::warn!("text rule for {:#?} not found", text_modifier);
+                continue;
+            }
+
+            let text_rule = text_rule.unwrap();
+
             if text_rule.is_match(content) {
-                log::debug!("there is a match with {:?}: '{}' (content search pattern)", text_rule.modifier(), text_rule.modifier().search_pattern());
+                log::debug!("there is a match with {:#?}", text_rule);
 
                 outcome = text_rule.parse(outcome.parsed_content(), Arc::clone(&parsing_configuration))?;
     
                 excluded_modifiers = excluded_modifiers + text_rule.incompatible_modifiers().clone();
 
                 if excluded_modifiers == ModifiersBucket::All {
-                    log::debug!("all next modifiers will be skipped because {:?} excludes {:?}", text_rule.modifier(), ModifiersBucket::All)
+                    log::debug!("all next modifiers will be skipped because {:?} is found", ModifiersBucket::All);
+                    break;
                 }
 
             } else {
-                log::debug!("no matches with {:?}: '{}' (content search pattern)", text_rule.modifier(), text_rule.modifier().search_pattern());
+                log::debug!("no matches with {:#?}", text_rule);
             }
             
         }

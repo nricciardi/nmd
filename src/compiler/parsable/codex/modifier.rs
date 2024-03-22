@@ -38,6 +38,12 @@ impl PartialEq for dyn Mod {
     }
 }
 
+impl Clone for Box<dyn Mod> {
+    fn clone(&self) -> Self {
+        self.clone()
+    }
+}
+
 /// NMD modifiers pattern types
 #[derive(Debug, PartialEq, Clone)]
 pub enum Modifier {

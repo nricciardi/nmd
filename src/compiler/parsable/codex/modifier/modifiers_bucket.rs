@@ -10,7 +10,7 @@ pub enum ModifiersBucket {
 }
 
 impl ModifiersBucket {
-    pub fn contains(&self, searched_modifier: &Modifier) -> bool {
+    pub fn contains(&self, searched_modifier: &Box<dyn Mod>) -> bool {
         match self {
             Self::All => true,
             Self::List(modifiers_list) => modifiers_list.contains(searched_modifier),
