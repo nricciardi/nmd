@@ -22,7 +22,6 @@ impl CodexConfiguration {
     pub fn ordered_paragraph_modifiers(&self) -> &Vec<Box<dyn Mod>> {
         &self.ordered_paragraph_modifiers
     }
-
 }
 
 impl Default for CodexConfiguration {

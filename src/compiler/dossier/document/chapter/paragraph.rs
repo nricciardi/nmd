@@ -3,7 +3,7 @@ use std::{sync::Arc, fmt::Display};
 use regex::Regex;
 use thiserror::Error;
 
-use crate::compiler::parsable::{codex::{modifier::paragraph_modifier::ParagraphModifier, parsing_rule::parsing_outcome::ParsingError, Codex}, Parsable};
+use crate::compiler::parsable::{codex::{modifier::{paragraph_modifier::ParagraphModifier, ModifierIdentifier}, parsing_rule::parsing_outcome::ParsingError, Codex}, Parsable};
 use crate::compiler::parsable::parsing_configuration::ParsingConfiguration;
 
 #[derive(Error, Debug)]
@@ -18,12 +18,12 @@ pub enum ParagraphError {
 #[derive(Debug, Clone)]
 pub struct Paragraph {
     content: String,
-    paragraph_type: ParagraphModifier,
+    paragraph_type: ModifierIdentifier,
 }
 
 impl Paragraph {
 
-    pub fn new(content: String, paragraph_type: ParagraphModifier) -> Self {
+    pub fn new(content: String, paragraph_type: ModifierIdentifier) -> Self {
         Self {
             content,
             paragraph_type
@@ -38,7 +38,7 @@ impl Paragraph {
         self.content.chars().all(|c| c == '\n')
     }
 
-    pub fn paragraph_type(&self) -> &ParagraphModifier {
+    pub fn paragraph_type(&self) -> &ModifierIdentifier {
         &self.paragraph_type
     }
 }
