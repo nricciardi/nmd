@@ -1,6 +1,7 @@
 pub mod paragraph_modifier;
 pub mod modifiers_bucket;
 pub mod text_modifier;
+pub mod chapter_modifier;
 
 use std::fmt;
 
