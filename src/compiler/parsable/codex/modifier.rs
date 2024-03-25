@@ -144,27 +144,7 @@ impl Modifier {
         heading_modifiers
     }
 
-    pub fn heading_level(content: &str) -> Option<u32> {
-        let heading_modifiers = Self::heading_modifiers_rev();
-
-        for heading_modifier in heading_modifiers {
-            let regex = Regex::new(&heading_modifier.search_pattern()).unwrap();
-
-            if regex.is_match(content) {
-                match heading_modifier {
-                    Self::HeadingGeneralExtendedVersion(level) => return Option::Some(level),
-                    Self::HeadingGeneralCompactVersion(level) => return Option::Some(level),
-                    _ => panic!("unexpected modifier: {:?}", heading_modifier)
-                }
-            }
-        }
-
-        Option::None
-    }
-
-    pub fn str_is_heading(content: &str) -> bool {
-        Self::heading_level(content).is_some()
-    }
+    
 }
 
 

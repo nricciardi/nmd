@@ -12,7 +12,7 @@ pub enum ChapterModifier {
 }
 
 impl ChapterModifier {
-    pub fn heading_modifiers_rev() -> Vec<Self> {
+    pub fn ordered() -> Vec<Self> {
         let mut heading_modifiers: Vec<Self> = Vec::new();
 
         for i in (1..=MAX_HEADING_LEVEL).rev() {
@@ -24,7 +24,7 @@ impl ChapterModifier {
     }
 
     pub fn heading_level(content: &str) -> Option<u32> {
-        let heading_modifiers = Self::heading_modifiers_rev();
+        let heading_modifiers = Self::ordered();
 
         for heading_modifier in heading_modifiers {
             let regex = Regex::new(&heading_modifier.search_pattern()).unwrap();

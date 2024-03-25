@@ -1,4 +1,5 @@
 pub mod paragraph;
+pub mod heading;
 pub mod chapter_builder;
 
 use std::fmt::Display;
@@ -6,6 +7,7 @@ use std::sync::Arc;
 
 use rayon::iter::{IntoParallelRefMutIterator, ParallelIterator};
 
+use self::heading::Heading;
 pub use self::paragraph::Paragraph;
 use crate::compiler::parsable::codex::Codex;
 use crate::compiler::parsable::parsing_configuration::ParsingConfiguration;
@@ -14,7 +16,7 @@ use crate::compiler::parsable::{codex::parsing_rule::parsing_outcome::ParsingErr
 
 #[derive(Debug)]
 pub struct Chapter {
-    heading: String,
+    heading: Heading,
     paragraphs: Vec<Paragraph>
 
     // TODO: maybe in another version
@@ -25,18 +27,18 @@ pub struct Chapter {
 #[allow(dead_code)]
 impl Chapter {
 
-    pub fn new(heading: String, paragraphs: Vec<Paragraph>) -> Self {
+    pub fn new(heading: Heading, paragraphs: Vec<Paragraph>) -> Self {
         Self {
             heading,
             paragraphs
         }
     }
 
-    pub fn heading(&self) -> &String {
+    pub fn heading(&self) -> &Heading {
         &self.heading
     }
 
-    pub fn set_heading(&mut self, heading: &String) -> () {
+    pub fn set_heading(&mut self, heading: &Heading) -> () {
         self.heading = heading.clone()
     }
 
@@ -54,7 +56,7 @@ impl Clone for Chapter {
 
 impl Parsable for Chapter {
     fn parse(&mut self, codex: Arc<Codex>, parsing_configuration: Arc<ParsingConfiguration>) -> Result<(), ParsingError> {
-        self.heading = String::from(codex.parse_content(&self.heading, Arc::clone(&parsing_configuration))?.parsed_content());
+        self.heading = String::from(codex.parse_text(&self.heading, Arc::clone(&parsing_configuration))?.parsed_content());
 
         log::debug!("parsing chapter:\n{:#?}", self);
 

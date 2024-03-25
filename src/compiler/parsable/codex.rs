@@ -3,6 +3,7 @@ pub mod codex_configuration;
 pub mod modifier;
 
 use std::collections::HashMap;
+use std::str::FromStr;
 use std::sync::Arc;
 
 pub use parsing_rule::ParsingRule;
@@ -16,8 +17,10 @@ use self::modifier::ModifierIdentifier;
 pub use self::modifier::{MAX_HEADING_LEVEL, Modifier};
 use self::parsing_rule::html_extended_block_quote_rule::HtmlExtendedBlockQuoteRule;
 use self::parsing_rule::html_list_rule::HtmlListRule;
+use crate::compiler::dossier::document::chapter::chapter_builder::ChapterBuilder;
+use crate::compiler::dossier::document::chapter::heading::{Heading, HeadingLevel};
 use crate::compiler::dossier::document::chapter::paragraph::ParagraphError;
-use crate::compiler::dossier::document::Paragraph;
+use crate::compiler::dossier::document::{self, chapter, Chapter, Paragraph};
 use crate::compiler::dossier::{Document, DocumentError};
 use crate::compiler::output_format::OutputFormat;
 use crate::compiler::parsable::codex::modifier::{text_modifier, Mod};
@@ -69,14 +72,50 @@ impl Codex {
         allowed_chars.collect()
     }
 
-    pub fn parse_content(&self, content: &str, parsing_configuration: Arc<ParsingConfiguration>) -> Result<ParsingOutcome, ParsingError> {
+    pub fn load_heading_from_str(&self, content: &str) -> Option<Heading> {
+        let chapter_modifiers = self.configuration.ordered_chapter_modifier();
+
+        for chapter_modifier in chapter_modifiers {
+            let regex = Regex::new(&chapter_modifier.search_pattern()).unwrap();
+
+            if regex.is_match(content) {
+                let matched = regex.captures(content).unwrap();
+                
+                let level = HeadingLevel::from_str(matched.get(1).unwrap().as_str()).unwrap();
+                let title = matched.get(2).unwrap().as_str();
+
+                return Some(Heading::new(level, title.to_string()))
+            }
+        }
+
+        Option::None
+    }
+
+    pub fn is_heading(&self, content: &str) -> bool {
+        let chapter_modifiers = self.configuration.ordered_chapter_modifier();
+
+        for chapter_modifier in chapter_modifiers {
+            let regex = Regex::new(&chapter_modifier.search_pattern()).unwrap();
+
+            if regex.is_match(content) {
+                return true
+            }
+        }
+
+        false
+    }
+}
+
+impl Codex {
+
+    pub fn parse_text(&self, content: &str, parsing_configuration: Arc<ParsingConfiguration>) -> Result<ParsingOutcome, ParsingError> {
 
         let excluded_modifiers = parsing_configuration.modifiers_excluded().clone();
 
-        self.parse_content_excluding_modifiers(content, Arc::clone(&parsing_configuration), excluded_modifiers)
+        self.parse_text_excluding_modifiers(content, Arc::clone(&parsing_configuration), excluded_modifiers)
     }
 
-    pub fn parse_content_excluding_modifiers(&self, content: &str, parsing_configuration: Arc<ParsingConfiguration>, mut excluded_modifiers: ModifiersBucket) -> Result<ParsingOutcome, ParsingError> {
+    pub fn parse_text_excluding_modifiers(&self, content: &str, parsing_configuration: Arc<ParsingConfiguration>, mut excluded_modifiers: ModifiersBucket) -> Result<ParsingOutcome, ParsingError> {
 
         log::debug!("start to parse content:\n{}\nexcluding: {:?}", content, excluded_modifiers);
 
@@ -180,7 +219,7 @@ impl Codex {
         //     }
         // }
 
-        outcome = self.parse_content_excluding_modifiers(outcome.parsed_content(), Arc::clone(&parsing_configuration), excluded_modifiers)?;
+        outcome = self.parse_text_excluding_modifiers(outcome.parsed_content(), Arc::clone(&parsing_configuration), excluded_modifiers)?;
 
         Ok(outcome)
     }
@@ -193,15 +232,16 @@ impl Codex {
         s.bytes().rev().take_while(|&b| b == b'\n').count()
     }
 
-    pub fn load_document_from_str(&self, content: &str) -> Result<Document, DocumentError> {
+    pub fn load_document_from_str(&self, document_name: &str, content: &str) -> Result<Document, DocumentError> {
         
 
         let mut preamble: String = String::new();
         
         let mut end_preamble: Option<usize> = Option::None;
+
         for (index, line) in content.lines().enumerate() {
 
-            if Modifier::heading_level(line).is_none() {
+            if !self.is_heading(line) {
                 preamble.push_str(line);
             } else {
                 end_preamble = Some(index);
@@ -211,9 +251,11 @@ impl Codex {
 
         if end_preamble.is_none() {     // => there is no chapters
 
-            self.preamble = Option::Some(Paragraph::from(preamble));
+            let preamble = self.str_to_paragraphs(&preamble)?;
 
-            return Ok(())
+            let document = Document::new(String::from(document_name), Some(preamble), vec![]);
+
+            return Ok(document)
         }
 
         let end_preamble = end_preamble.unwrap();
@@ -222,16 +264,21 @@ impl Codex {
 
         let mut chapter_builder: Option<ChapterBuilder> = Option::None;
 
+        let mut chapter: Option<Chapter> = Option::None;
+        let mut text_of_chapter = String::new();
+
         for (_, line) in content.lines().enumerate().filter(|(index, _)| *index >= end_preamble) {
             
             // TODO!: for paragraph style this must change
-            if Modifier::str_is_heading(line) {
+            if self.is_heading(line) {
                 
-                if let Some(chapter_builder) = chapter_builder {
+                if let Some(chapter) = chapter {
                     document_chapters.push(chapter_builder.build()?)
                 }
 
-                chapter_builder = Option::Some(ChapterBuilder::new_with_heading(Arc::clone(&codex), line.to_string()));
+                let heading = self.load_heading_from_str(line).unwrap();
+
+                chapter_builder = Option::Some(Chapter::new(heading, vec![]));
 
             } else {
 

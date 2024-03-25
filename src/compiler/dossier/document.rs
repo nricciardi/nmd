@@ -17,6 +17,7 @@ use crate::compiler::loadable::{Loadable, LoadError};
 use crate::resource::disk_resource::DiskResource;
 use crate::resource::{Resource, ResourceError};
 
+use self::chapter::paragraph::ParagraphError;
 pub use self::chapter::Paragraph;
 use self::chapter::chapter_builder::{ChapterBuilder, ChapterBuilderError};
 
@@ -30,7 +31,10 @@ pub enum DocumentError {
     Parsing(#[from] ParsingError),
 
     #[error(transparent)]
-    ChapterBuilderError(#[from] ChapterBuilderError)
+    ChapterBuilderError(#[from] ChapterBuilderError),
+
+    #[error(transparent)]
+    ParagraphError(#[from] ParagraphError),
 }
 
 pub struct Document {
