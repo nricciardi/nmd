@@ -63,7 +63,7 @@ impl ChapterBuilder {
 
         if let Some(content) = &self.content {
 
-            paragraphs = self.codex.split_str_in_paragraphs(content)?;
+            paragraphs = self.codex.str_to_paragraphs(content)?;
         }
 
         Ok(Chapter {

@@ -35,7 +35,7 @@ pub enum DocumentError {
 
 pub struct Document {
     name: String,
-    preamble: Option<Paragraph>,
+    preamble: Option<Vec<Paragraph>>,
     chapters: Vec<Chapter>
 }
 
@@ -43,7 +43,7 @@ pub struct Document {
 #[allow(dead_code)]
 impl Document {
 
-    pub fn new(name: String, preamble: Option<Paragraph>, chapters: Vec<Chapter>) -> Self {
+    pub fn new(name: String, preamble: Option<Vec<Paragraph>>, chapters: Vec<Chapter>) -> Self {
         
         Self {
             name,
@@ -56,7 +56,7 @@ impl Document {
         &self.chapters
     }
 
-    pub fn preamble(&self) -> &Option<Paragraph> {
+    pub fn preamble(&self) -> &Option<Vec<Paragraph>> {
         &self.preamble
     }
 }

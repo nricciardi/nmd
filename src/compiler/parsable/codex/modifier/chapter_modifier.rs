@@ -55,7 +55,7 @@ impl Mod for ChapterModifier {
                     panic!("{level} is an invalid heading level.")
                 }
 
-                format!(r"(?m:^{}\s+(.*))", "#".repeat(level as usize))
+                format!(r"(?m:^#{{{}}}\s+(.*))", level)
             },
             Self::HeadingGeneralCompactVersion(level) => {
 

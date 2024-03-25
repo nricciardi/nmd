@@ -18,6 +18,7 @@ use self::parsing_rule::html_extended_block_quote_rule::HtmlExtendedBlockQuoteRu
 use self::parsing_rule::html_list_rule::HtmlListRule;
 use crate::compiler::dossier::document::chapter::paragraph::ParagraphError;
 use crate::compiler::dossier::document::Paragraph;
+use crate::compiler::dossier::{Document, DocumentError};
 use crate::compiler::output_format::OutputFormat;
 use crate::compiler::parsable::codex::modifier::{text_modifier, Mod};
 use self::codex_configuration::CodexConfiguration;
@@ -192,8 +193,72 @@ impl Codex {
         s.bytes().rev().take_while(|&b| b == b'\n').count()
     }
 
+    pub fn load_document_from_str(&self, content: &str) -> Result<Document, DocumentError> {
+        
+
+        let mut preamble: String = String::new();
+        
+        let mut end_preamble: Option<usize> = Option::None;
+        for (index, line) in content.lines().enumerate() {
+
+            if Modifier::heading_level(line).is_none() {
+                preamble.push_str(line);
+            } else {
+                end_preamble = Some(index);
+                break;
+            }
+        }
+
+        if end_preamble.is_none() {     // => there is no chapters
+
+            self.preamble = Option::Some(Paragraph::from(preamble));
+
+            return Ok(())
+        }
+
+        let end_preamble = end_preamble.unwrap();
+
+        let mut document_chapters: Vec<Chapter> = Vec::new();
+
+        let mut chapter_builder: Option<ChapterBuilder> = Option::None;
+
+        for (_, line) in content.lines().enumerate().filter(|(index, _)| *index >= end_preamble) {
+            
+            // TODO!: for paragraph style this must change
+            if Modifier::str_is_heading(line) {
+                
+                if let Some(chapter_builder) = chapter_builder {
+                    document_chapters.push(chapter_builder.build()?)
+                }
+
+                chapter_builder = Option::Some(ChapterBuilder::new_with_heading(Arc::clone(&codex), line.to_string()));
+
+            } else {
+
+                let mut line = line.to_string();
+                line.push_str("\n");        // because .lines() remove \n
+
+                if let Some(ref mut chapter_builder) = chapter_builder {
+                    chapter_builder.append_content(line);
+                }
+            }
+        }
+
+        if let Some(chapter_builder) = chapter_builder {
+            document_chapters.push(chapter_builder.build()?)
+        }
+
+        if !preamble.is_empty() {
+            self.preamble = Option::Some(Paragraph::from(preamble));
+        }
+
+        self.chapters = document_chapters;
+
+        todo!()
+    }
+
     /// Split a string in the corresponding vector of paragraphs
-    pub fn split_str_in_paragraphs(&self, content: &str) -> Result<Vec<Paragraph>, ParagraphError> {
+    pub fn str_to_paragraphs(&self, content: &str) -> Result<Vec<Paragraph>, ParagraphError> {
 
         let mut paragraphs: Vec<(usize, usize, Paragraph)> = Vec::new();
         let mut content = String::from(content);
@@ -217,6 +282,7 @@ impl Codex {
 
                 let matched_str = m.as_str().to_string();
 
+                // TODO: remove count_newlines?
                 let start = m.start() + Self::count_newlines_at_start(&matched_str);
                 let end = m.end() - Self::count_newlines_at_end(&matched_str) - 1;
 
@@ -612,7 +678,7 @@ print("hello world")
 `print("hello world)`
 "#.trim();
 
-        let paragraphs = codex.split_str_in_paragraphs(nmd_text).unwrap();
+        let paragraphs = codex.str_to_paragraphs(nmd_text).unwrap();
 
         assert_eq!(paragraphs.len(), 2)
     }
