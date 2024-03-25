@@ -45,6 +45,10 @@ impl Chapter {
     pub fn paragraphs(&self) -> &Vec<Paragraph> {
         &self.paragraphs
     }
+
+    pub fn set_paragraphs(&mut self, paragraphs: Vec<Paragraph>) {
+        self.paragraphs = paragraphs
+    }
 }
 
 impl Clone for Chapter {

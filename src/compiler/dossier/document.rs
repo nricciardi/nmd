@@ -10,6 +10,7 @@ use thiserror::Error;
 use log;
 use rayon::prelude::*;
 
+use crate::compiler::dossier::document::chapter::paragraph;
 use crate::compiler::parsable::codex::{Modifier, Codex};
 use crate::compiler::parsable::{ParsingError, Parsable};
 use crate::compiler::parsable::parsing_configuration::ParsingConfiguration;
@@ -39,7 +40,7 @@ pub enum DocumentError {
 
 pub struct Document {
     name: String,
-    preamble: Option<Vec<Paragraph>>,
+    preamble: Vec<Paragraph>,
     chapters: Vec<Chapter>
 }
 
@@ -47,7 +48,7 @@ pub struct Document {
 #[allow(dead_code)]
 impl Document {
 
-    pub fn new(name: String, preamble: Option<Vec<Paragraph>>, chapters: Vec<Chapter>) -> Self {
+    pub fn new(name: String, preamble: Vec<Paragraph>, chapters: Vec<Chapter>) -> Self {
         
         Self {
             name,
@@ -60,75 +61,8 @@ impl Document {
         &self.chapters
     }
 
-    pub fn preamble(&self) -> &Option<Vec<Paragraph>> {
+    pub fn preamble(&self) -> &Vec<Paragraph> {
         &self.preamble
-    }
-}
-
-
-impl Document {
-    
-    fn load_content_from_str(&mut self, codex: Arc<Codex>, content: &str) -> Result<(), DocumentError> {
-
-        let mut preamble: String = String::new();
-        
-        let mut end_preamble: Option<usize> = Option::None;
-        for (index, line) in content.lines().enumerate() {
-
-            if Modifier::heading_level(line).is_none() {
-                preamble.push_str(line);
-            } else {
-                end_preamble = Some(index);
-                break;
-            }
-        }
-
-        if end_preamble.is_none() {     // => there is no chapters
-
-            self.preamble = Option::Some(Paragraph::from(preamble));
-
-            return Ok(())
-        }
-
-        let end_preamble = end_preamble.unwrap();
-
-        let mut document_chapters: Vec<Chapter> = Vec::new();
-
-        let mut chapter_builder: Option<ChapterBuilder> = Option::None;
-
-        for (_, line) in content.lines().enumerate().filter(|(index, _)| *index >= end_preamble) {
-            
-            // TODO!: for paragraph style this must change
-            if Modifier::str_is_heading(line) {
-                
-                if let Some(chapter_builder) = chapter_builder {
-                    document_chapters.push(chapter_builder.build()?)
-                }
-
-                chapter_builder = Option::Some(ChapterBuilder::new_with_heading(Arc::clone(&codex), line.to_string()));
-
-            } else {
-
-                let mut line = line.to_string();
-                line.push_str("\n");        // because .lines() remove \n
-
-                if let Some(ref mut chapter_builder) = chapter_builder {
-                    chapter_builder.append_content(line);
-                }
-            }
-        }
-
-        if let Some(chapter_builder) = chapter_builder {
-            document_chapters.push(chapter_builder.build()?)
-        }
-
-        if !preamble.is_empty() {
-            self.preamble = Option::Some(Paragraph::from(preamble));
-        }
-
-        self.chapters = document_chapters;
-
-        Ok(())
     }
 }
 
@@ -151,19 +85,9 @@ impl Loadable<DiskResource> for Document {
 
         let document_name = resource.name();
 
-        let mut document = Box::new(Self {
-            name: document_name.clone(),
-            preamble: Option::None,
-            chapters: Vec::new()
-        });
-
-        if content.is_empty() {
-            return Ok(document);
-        }
-
-        match document.load_content_from_str(Arc::clone(&codex), &content) {
-            Ok(_) => {
-                return Ok(document);
+        match codex.load_document_from_str(document_name, &content) {
+            Ok(document) => {
+                return Ok(Box::new(document))
             },
             Err(err) => return Err(LoadError::ElaborationError(err.to_string()))
         }
@@ -177,12 +101,18 @@ impl Parsable for Document {
 
         log::info!("parsing {} chapters of document: '{}'", self.chapters().len(), self.name);
 
-        if let Some(p) = &mut self.preamble {
-            p.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration))?;
-        }
-
-
         if parsing_configuration.parallelization() {
+
+            let maybe_one_failed = self.preamble.par_iter_mut()
+                .map(|paragraph| {
+
+                    paragraph.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration))
+                
+                }).find_any(|result| result.is_err());
+
+            if let Some(result) = maybe_one_failed {
+                return result;
+            }
 
             let maybe_one_failed = self.chapters.par_iter_mut()
                 .map(|chapter| {
@@ -196,6 +126,17 @@ impl Parsable for Document {
             }
         
         } else {
+
+            let maybe_one_failed: Option<Result<(), ParsingError>> = self.preamble.iter_mut()
+                .map(|paragraph| {
+
+                    paragraph.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration))
+                
+                }).find(|result| result.is_err());
+
+            if let Some(result) = maybe_one_failed {
+                return result;
+            }
             
             let maybe_one_failed: Option<Result<(), ParsingError>> = self.chapters.iter_mut()
                 .map(|chapter| {
@@ -219,8 +160,8 @@ impl Display for Document {
 
         let mut s = String::new();
 
-        if let Some(preamble) = self.preamble() {
-            s.push_str(preamble.to_string().as_str());
+        for paragraph in &self.preamble {
+            s.push_str(paragraph.to_string().as_str());
         }
 
         for chapter in &self.chapters {

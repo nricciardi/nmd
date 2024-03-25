@@ -10,6 +10,7 @@ pub use parsing_rule::ParsingRule;
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use rayon::slice::ParallelSliceMut;
 use regex::{Captures, Regex};
+use self::modifier::chapter_modifier::ChapterModifier;
 use self::modifier::modifiers_bucket::ModifiersBucket;
 use self::modifier::paragraph_modifier::{self, ParagraphModifier};
 use self::modifier::text_modifier::TextModifier;
@@ -38,8 +39,8 @@ pub struct Codex {
     configuration: CodexConfiguration,
     text_rules: HashMap<ModifierIdentifier, Box<dyn ParsingRule>>,
     paragraph_rules: HashMap<ModifierIdentifier, Box<dyn ParsingRule>>,
-    chapter_rules: Vec<Box<dyn ParsingRule>>,
-    document_rules: Vec<Box<dyn ParsingRule>>,
+    chapter_rules: HashMap<ModifierIdentifier, Box<dyn ParsingRule>>,
+    document_rules: HashMap<ModifierIdentifier, Box<dyn ParsingRule>>,
     
 }
 
@@ -253,7 +254,7 @@ impl Codex {
 
             let preamble = self.str_to_paragraphs(&preamble)?;
 
-            let document = Document::new(String::from(document_name), Some(preamble), vec![]);
+            let document = Document::new(String::from(document_name), preamble, vec![]);
 
             return Ok(document)
         }
@@ -272,36 +273,33 @@ impl Codex {
             // TODO!: for paragraph style this must change
             if self.is_heading(line) {
                 
-                if let Some(chapter) = chapter {
-                    document_chapters.push(chapter_builder.build()?)
+                if let Some(mut chapter) = chapter {
+
+                    chapter.set_paragraphs(self.str_to_paragraphs(&text_of_chapter)?);
+
+                    document_chapters.push(chapter);
                 }
 
                 let heading = self.load_heading_from_str(line).unwrap();
 
-                chapter_builder = Option::Some(Chapter::new(heading, vec![]));
+                chapter = Option::Some(Chapter::new(heading, vec![]));
 
             } else {
 
-                let mut line = line.to_string();
-                line.push_str("\n");        // because .lines() remove \n
-
-                if let Some(ref mut chapter_builder) = chapter_builder {
-                    chapter_builder.append_content(line);
-                }
+                text_of_chapter.push_str(line);
+                text_of_chapter.push_str("\n");        // because .lines() remove \n
             }
         }
 
-        if let Some(chapter_builder) = chapter_builder {
-            document_chapters.push(chapter_builder.build()?)
+        if let Some(mut chapter) = chapter {
+            chapter.set_paragraphs(self.str_to_paragraphs(&text_of_chapter)?);
+
+            document_chapters.push(chapter);
         }
 
-        if !preamble.is_empty() {
-            self.preamble = Option::Some(Paragraph::from(preamble));
-        }
+        let preamble = self.str_to_paragraphs(&preamble)?;
+        Ok(Document::new(document_name.to_string(), preamble, document_chapters))
 
-        self.chapters = document_chapters;
-
-        todo!()
     }
 
     /// Split a string in the corresponding vector of paragraphs
@@ -360,7 +358,7 @@ impl Codex {
         Ok(paragraphs.iter().map(|p| p.2.to_owned()).collect())
     }
 
-    fn new(configuration: CodexConfiguration, text_rules: HashMap<ModifierIdentifier, Box<dyn ParsingRule>>, paragraph_rules: HashMap<ModifierIdentifier, Box<dyn ParsingRule>>, chapter_rules: Vec<Box<dyn ParsingRule>>, document_rules: Vec<Box<dyn ParsingRule>>) -> Codex {
+    fn new(configuration: CodexConfiguration, text_rules: HashMap<ModifierIdentifier, Box<dyn ParsingRule>>, paragraph_rules: HashMap<ModifierIdentifier, Box<dyn ParsingRule>>, chapter_rules: HashMap<ModifierIdentifier, Box<dyn ParsingRule>>, document_rules: HashMap<ModifierIdentifier, Box<dyn ParsingRule>>) -> Codex {
 
         // TODO: check if there are all necessary rules based on theirs type
 
@@ -374,30 +372,6 @@ impl Codex {
     }
 
     pub fn of_html(configuration: CodexConfiguration) -> Self {
-
-        let mut content_rules: Vec<Box<dyn ParsingRule>> = Vec::new();
-
-        for i in (1..=MAX_HEADING_LEVEL).rev() {
-            content_rules.push(Box::new(ReplacementRule::new(Modifier::HeadingGeneralExtendedVersion(i), move |caps: &Captures| {
-                let title = &caps[1];
-
-                let id = Self::create_id(title);
-
-                format!(r#"<h{} class="heading-{}" id="{}">{}</h{}>"#, i, i, id, title, i)
-            })));
-
-            content_rules.push(Box::new(ReplacementRule::new(Modifier::HeadingGeneralCompactVersion(i), |caps: &Captures| {
-                let heading_lv = &caps[1];
-                let title = &caps[2];
-
-                let id = Self::create_id(title);
-
-                format!(r#"<h{} class="heading-{}" id="{}">{}</h>"#, heading_lv, heading_lv, id, title)
-            })));
-
-            // content_rules.push(Box::new(ReplacementRule::new(Modifier::HeadingGeneralExtendedVersion(i), format!(r#"<h{} class="heading-{}">$1</h{}>"#, i, i, i))));
-            // content_rules.push(Box::new(ReplacementRule::new(Modifier::HeadingGeneralCompactVersion(i), String::from(r#"<h${1} class="heading-${1}">$2</h$>"#))));
-        }
 
         let text_rules: HashMap<ModifierIdentifier, Box<dyn ParsingRule>> = HashMap::from([
             (
@@ -607,6 +581,32 @@ impl Codex {
             ),
         ]);
 
+        let chapter_rules: HashMap<ModifierIdentifier, Box<dyn ParsingRule>> = HashMap::new();
+
+        for i in (1..=MAX_HEADING_LEVEL).rev() {
+            chapter_rules.insert(ChapterModifier::HeadingGeneralExtendedVersion(i).identifier().clone(), 
+            Box::new(ReplacementRule::new(ChapterModifier::HeadingGeneralExtendedVersion(i).search_pattern().clone(), ChapterModifier::HeadingGeneralExtendedVersion(i).incompatible_modifiers().clone(), move |caps: &Captures| {
+                let title = &caps[1];
+
+                let id = Self::create_id(title);
+
+                format!(r#"<h{} class="heading-{}" id="{}">{}</h{}>"#, i, i, id, title, i)
+            })));
+
+            chapter_rules.insert(ChapterModifier::HeadingGeneralCompactVersion(i).identifier().clone(), 
+            Box::new(ReplacementRule::new(ChapterModifier::HeadingGeneralCompactVersion(i).search_pattern().clone(), ChapterModifier::HeadingGeneralCompactVersion(i).incompatible_modifiers().clone(), |caps: &Captures| {
+                let heading_lv = &caps[1];
+                let title = &caps[2];
+
+                let id = Self::create_id(title);
+
+                format!(r#"<h{} class="heading-{}" id="{}">{}</h>"#, heading_lv, heading_lv, id, title)
+            })));
+
+            // content_rules.push(Box::new(ReplacementRule::new(Modifier::HeadingGeneralExtendedVersion(i), format!(r#"<h{} class="heading-{}">$1</h{}>"#, i, i, i))));
+            // content_rules.push(Box::new(ReplacementRule::new(Modifier::HeadingGeneralCompactVersion(i), String::from(r#"<h${1} class="heading-${1}">$2</h$>"#))));
+        }
+
         // let paragraph_rules: Vec<Box<dyn ParsingRule>> = vec![
         //     Box::new(ReplacementRule::new(Modifier::PageBreak, String::from(r#"<div class="page-break"></div>"#))),
         //     Box::new(ReplacementRule::new(Modifier::EmbeddedParagraphStyleWithId, String::from(r#"<div class="identifier embedded-paragraph-style" id="$2" style="$3">$1</div>"#)).with_newline_fix(r"<br>".to_string())),
@@ -626,15 +626,15 @@ impl Codex {
         //     Box::new(ReplacementRule::new(Modifier::CommonParagraph, String::from(r#"<p class="paragraph">${1}</p>"#))),
         // ];
 
-        Self::new(configuration, text_rules, paragraph_rules, vec![], vec![])
+        Self::new(configuration, text_rules, paragraph_rules, chapter_rules, HashMap::new())
     }
 
-    pub fn heading_rules(&self) -> Vec<&Box<dyn ParsingRule>> {
+    // pub fn heading_rules(&self) -> Vec<&Box<dyn ParsingRule>> {
         
-        self.text_rules.iter().filter(|&rules| {
-            Modifier::str_is_heading(content)
-        }).collect()
-    }
+    //     self.text_rules.iter().filter(|&rules| {
+    //         Modifier::str_is_heading(content)
+    //     }).collect()
+    // }
 }
 
 #[cfg(test)]
