@@ -127,12 +127,6 @@ impl Assembler for HtmlAssembler {
             Theme::Dark => page.add_style(include_str!("html_assembler/default_style/dark_theme.css")),
         }                        
         
-        
-
-        
-
-        
-
 
         if dossier.documents().is_empty() {
             return Err(AssemblerError::TooFewElements("there are no documents".to_string()))

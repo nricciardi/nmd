@@ -225,6 +225,7 @@ impl Codex {
         Ok(outcome)
     }
 
+
     fn count_newlines_at_start(s: &str) -> usize {
         s.bytes().take_while(|&b| b == b'\n').count()
     }

@@ -7,7 +7,7 @@ pub use document::{Document, DocumentError};
 use rayon::{iter::{IntoParallelRefMutIterator, ParallelIterator}, slice::IterMut};
 use thiserror::Error;
 
-use crate::{compiler::parsable::Parsable, resource::ResourceError};
+use crate::{compiler::parsable::{codex::parsing_rule::parsing_outcome::ParsingOutcome, Parsable}, resource::ResourceError};
 use self::dossier_configuration::DossierConfiguration;
 
 use super::{loadable::{Loadable, LoadError}, parsable::{ParsingConfiguration, ParsingError, codex::Codex}};
@@ -85,15 +85,24 @@ impl Loadable<DossierConfiguration> for Dossier {
 
 
 impl Parsable for Dossier {
-    fn parse(&mut self, codex: Arc<Codex>, parsing_configuration: Arc<ParsingConfiguration>) -> Result<(), ParsingError> {
+    fn parse(&mut self, codex: Arc<Codex>, parsing_configuration: Arc<ParsingConfiguration>) -> Result<ParsingOutcome, ParsingError> {
 
         log::info!("parse dossier {} with {} document(s) (parallelization: {})", self.name(), self.documents().len(), parsing_configuration.parallelization());
 
+        let mut parsing_outcome = ParsingOutcome::new_empty();
+        
         if parsing_configuration.parallelization() {
 
             let maybe_fails = self.documents.par_iter_mut()
                 .map(|document| {
-                    document.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration))  
+                    let result = document.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration));
+
+                    if let Ok(result) = result {
+                        parsing_outcome.append_parsed_content(&result.parsed_content())
+                    }
+
+                    result.map(|r| ())
+
                 })
                 .find_any(|result| result.is_err());
 
@@ -102,9 +111,16 @@ impl Parsable for Dossier {
                 }
             
         } else {
+
             let maybe_fails = self.documents.iter_mut()
                 .map(|document| {
-                    document.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration))
+                    let result = document.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration));
+
+                    if let Ok(result) = result {
+                        parsing_outcome.append_parsed_content(&result.parsed_content())
+                    }
+
+                    result.map(|r| ())
                 })
                 .find(|result| result.is_err());
 
@@ -113,6 +129,6 @@ impl Parsable for Dossier {
                 }
         }
 
-        Ok(())
+        Ok(parsing_outcome)
     }
 }

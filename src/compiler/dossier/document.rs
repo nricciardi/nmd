@@ -10,9 +10,9 @@ use thiserror::Error;
 use log;
 use rayon::prelude::*;
 
-use crate::compiler::dossier::document::chapter::paragraph;
+use crate::compiler::parsable::codex::parsing_rule::parsing_outcome::{self, ParsingOutcome};
 use crate::compiler::parsable::codex::{Modifier, Codex};
-use crate::compiler::parsable::{ParsingError, Parsable};
+use crate::compiler::parsable::{parsing_configuration, Parsable, ParsingError};
 use crate::compiler::parsable::parsing_configuration::ParsingConfiguration;
 use crate::compiler::loadable::{Loadable, LoadError};
 use crate::resource::disk_resource::DiskResource;
@@ -97,60 +97,86 @@ impl Loadable<DiskResource> for Document {
 
 impl Parsable for Document {
 
-    fn parse(&mut self, codex: Arc<Codex>, parsing_configuration: Arc<ParsingConfiguration>) -> Result<(), ParsingError> {
+    fn parse(&mut self, codex: Arc<Codex>, parsing_configuration: Arc<ParsingConfiguration>) -> Result<ParsingOutcome, ParsingError> {
 
         log::info!("parsing {} chapters of document: '{}'", self.chapters().len(), self.name);
+
+        let mut parsing_outcome = ParsingOutcome::new_empty();
 
         if parsing_configuration.parallelization() {
 
             let maybe_one_failed = self.preamble.par_iter_mut()
                 .map(|paragraph| {
 
-                    paragraph.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration))
-                
+                    let result = paragraph.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration));
+
+                    if let Ok(result) = result {
+                        parsing_outcome.append_parsed_content(&result.parsed_content())
+                    }
+
+                    result.map(|r| ())
+                    
                 }).find_any(|result| result.is_err());
 
             if let Some(result) = maybe_one_failed {
-                return result;
+                return Err(result.err().unwrap());
             }
 
             let maybe_one_failed = self.chapters.par_iter_mut()
                 .map(|chapter| {
 
-                    chapter.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration))
-                
+                    let result = chapter.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration));
+
+                    if let Ok(result) = result {
+                        parsing_outcome.append_parsed_content(&result.parsed_content())
+                    }
+
+                    result.map(|r| ())
+                    
                 }).find_any(|result| result.is_err());
 
             if let Some(result) = maybe_one_failed {
-                return result;
+                return Err(result.err().unwrap());
             }
         
         } else {
 
-            let maybe_one_failed: Option<Result<(), ParsingError>> = self.preamble.iter_mut()
+            let maybe_one_failed = self.preamble.iter_mut()
                 .map(|paragraph| {
 
-                    paragraph.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration))
-                
+                    let result = paragraph.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration));
+
+                    if let Ok(result) = result {
+                        parsing_outcome.append_parsed_content(&result.parsed_content())
+                    }
+
+                    result.map(|r| ())
+                    
                 }).find(|result| result.is_err());
 
             if let Some(result) = maybe_one_failed {
-                return result;
+                return Err(result.err().unwrap());
             }
-            
-            let maybe_one_failed: Option<Result<(), ParsingError>> = self.chapters.iter_mut()
+
+            let maybe_one_failed = self.chapters.iter_mut()
                 .map(|chapter| {
 
-                    chapter.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration))
-                
+                    let result = chapter.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration));
+
+                    if let Ok(result) = result {
+                        parsing_outcome.append_parsed_content(&result.parsed_content())
+                    }
+
+                    result.map(|r| ())
+                    
                 }).find(|result| result.is_err());
 
             if let Some(result) = maybe_one_failed {
-                return result;
+                return Err(result.err().unwrap());
             }
         }
 
-       Ok(())
+       Ok(parsing_outcome)
 
     }
 }

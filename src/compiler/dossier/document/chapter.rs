@@ -9,6 +9,7 @@ use rayon::iter::{IntoParallelRefMutIterator, ParallelIterator};
 
 use self::heading::Heading;
 pub use self::paragraph::Paragraph;
+use crate::compiler::parsable::codex::parsing_rule::parsing_outcome::{self, ParsingOutcome};
 use crate::compiler::parsable::codex::Codex;
 use crate::compiler::parsable::parsing_configuration::ParsingConfiguration;
 use crate::compiler::parsable::{codex::parsing_rule::parsing_outcome::ParsingError, Parsable};
@@ -59,8 +60,12 @@ impl Clone for Chapter {
 
 
 impl Parsable for Chapter {
-    fn parse(&mut self, codex: Arc<Codex>, parsing_configuration: Arc<ParsingConfiguration>) -> Result<(), ParsingError> {
-        self.heading = String::from(codex.parse_text(&self.heading, Arc::clone(&parsing_configuration))?.parsed_content());
+    fn parse(&mut self, codex: Arc<Codex>, parsing_configuration: Arc<ParsingConfiguration>) -> Result<ParsingOutcome, ParsingError> {
+
+        // TODO
+
+        let parsing_outcome = ParsingOutcome::new(codex.parse_text(&self.heading, Arc::clone(&parsing_configuration))?.parsed_content());
+
 
         log::debug!("parsing chapter:\n{:#?}", self);
 
@@ -68,28 +73,40 @@ impl Parsable for Chapter {
 
             let maybe_failed = self.paragraphs.par_iter_mut()
                 .map(|paragraph| {
-                    paragraph.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration))
+                    let result = paragraph.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration));
+
+                    if let Ok(result) = result {
+                        parsing_outcome.append_parsed_content(&result.parsed_content())
+                    }
+
+                    result.map(|r| ())
                 })
                 .find_any(|result| result.is_err());
     
             if let Some(result) = maybe_failed {
-                return result
+                return Err(result.err().unwrap());
             }
 
         } else {
             
             let maybe_failed = self.paragraphs.iter_mut()
                 .map(|paragraph| {
-                    paragraph.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration))
+                    let result = paragraph.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration));
+
+                    if let Ok(result) = result {
+                        parsing_outcome.append_parsed_content(&result.parsed_content())
+                    }
+
+                    result.map(|r| ())
                 })
                 .find(|result| result.is_err());
     
             if let Some(result) = maybe_failed {
-                return result
+                return Err(result.err().unwrap());
             }
         }
 
-        Ok(())
+        Ok(parsing_outcome)
     }
 }
 

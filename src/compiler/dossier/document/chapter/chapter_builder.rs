@@ -22,6 +22,7 @@ pub struct ChapterBuilder {
     content: Option<String>,
 }
 
+
 #[allow(dead_code)]
 impl ChapterBuilder {
 
