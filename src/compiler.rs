@@ -7,6 +7,8 @@ mod assembler;
 pub mod dumpable;
 pub mod artifact;
 pub mod theme;
+pub mod parser;
+pub mod loader;
 
 use std::sync::Arc;
 
@@ -48,6 +50,8 @@ impl Compiler {
         log::info!("compilation configuration (this will override dossier compilation configuration):\n\n{:#?}\n", compilation_configuration);
 
         let codex = Arc::new(compilation_configuration.codex());
+
+        let mut dossier = Loader
 
         let mut dossier = Dossier::load(Arc::clone(&codex), compilation_configuration.input_location())?;
 

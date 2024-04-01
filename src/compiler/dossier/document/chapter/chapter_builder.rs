@@ -4,7 +4,7 @@ use thiserror::Error;
 
 use crate::compiler::parsable::codex::Codex;
 
-use super::{Chapter, Paragraph, paragraph::ParagraphError};
+use super::{chapter_options::ChapterOptions, heading::Heading, paragraph::ParagraphError, Chapter, Paragraph};
 
 #[derive(Error, Debug)]
 pub enum ChapterBuilderError {
@@ -17,41 +17,29 @@ pub enum ChapterBuilderError {
 
 
 pub struct ChapterBuilder {
-    codex: Arc<Codex>,
-    heading: Option<String>,
-    content: Option<String>,
+    heading: Option<Heading>,
+    options: ChapterOptions,
+    paragraphs: Vec<Paragraph>,
 }
 
 
 #[allow(dead_code)]
 impl ChapterBuilder {
 
-    pub fn new(codex: Arc<Codex>) -> Self {
+    pub fn new() -> Self {
         Self {
-            codex,
             heading: Option::None,
-            content: Option::None
+            options: ChapterOptions::default(),
+            paragraphs: Vec::new()
         }
     }
 
-    pub fn new_with_heading(codex: Arc<Codex>, heading: String) -> Self {
-        Self {
-            codex,
-            heading: Option::Some(heading),
-            content: Option::None
-        }
-    }
-
-    pub fn set_heading(&mut self, heading: String) -> () {
+    pub fn set_heading(&mut self, heading: Heading) -> () {
         self.heading = Option::Some(heading)
     }
 
-    pub fn append_content(&mut self, new_content: String) -> () {
-        if let Some(ref mut content) = self.content {
-            content.push_str(&new_content);
-        } else {
-            self.content = Option::Some(new_content);
-        }
+    pub fn set_options(&mut self, options: ChapterOptions) -> () {
+        self.options = options
     }
 
     pub fn build(self) -> Result<Chapter, ChapterBuilderError> {
@@ -60,16 +48,12 @@ impl ChapterBuilder {
             return Err(ChapterBuilderError::ImpossibleToBuild);
         }
 
-        let mut paragraphs: Vec<Paragraph> = Vec::new();
+        todo!()
 
-        if let Some(content) = &self.content {
-
-            paragraphs = self.codex.str_to_paragraphs(content)?;
-        }
-
-        Ok(Chapter {
-            heading: self.heading.unwrap(),
-            paragraphs
-        })
+        // Ok(Chapter {
+        //     heading: self.heading.unwrap(),
+        //     options: self.options,
+        //     paragraphs: self.paragraphs
+        // })
     }
 }

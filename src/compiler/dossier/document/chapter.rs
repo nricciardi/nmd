@@ -1,12 +1,14 @@
 pub mod paragraph;
 pub mod heading;
 pub mod chapter_builder;
+pub mod chapter_options;
 
 use std::fmt::Display;
 use std::sync::Arc;
 
 use rayon::iter::{IntoParallelRefMutIterator, ParallelIterator};
 
+use self::chapter_options::ChapterOptions;
 use self::heading::Heading;
 pub use self::paragraph::Paragraph;
 use crate::compiler::parsable::codex::parsing_rule::parsing_outcome::{self, ParsingOutcome};
@@ -17,8 +19,11 @@ use crate::compiler::parsable::{codex::parsing_rule::parsing_outcome::ParsingErr
 
 #[derive(Debug)]
 pub struct Chapter {
-    heading: Heading,
-    paragraphs: Vec<Paragraph>
+    // heading: Heading,
+    // options: ChapterOptions,
+    heading: String,
+    paragraphs: Vec<Paragraph>,
+
 
     // TODO: maybe in another version
     /* subchapters: Option<Vec<Arc<Chapter>>>,
@@ -28,19 +33,20 @@ pub struct Chapter {
 #[allow(dead_code)]
 impl Chapter {
 
-    pub fn new(heading: Heading, paragraphs: Vec<Paragraph>) -> Self {
+    pub fn new(heading: String /*: Heading, options: ChapterOptions*/, paragraphs: Vec<Paragraph>) -> Self {
         Self {
             heading,
+            // options,
             paragraphs
         }
     }
 
-    pub fn heading(&self) -> &Heading {
+    pub fn heading(&self) -> &String /*&Heading*/ {
         &self.heading
     }
 
-    pub fn set_heading(&mut self, heading: &Heading) -> () {
-        self.heading = heading.clone()
+    pub fn set_heading(&mut self, heading: String /*Heading*/) -> () {
+        self.heading = heading
     }
 
     pub fn paragraphs(&self) -> &Vec<Paragraph> {
@@ -54,7 +60,11 @@ impl Chapter {
 
 impl Clone for Chapter {
     fn clone(&self) -> Self {
-        Self { heading: self.heading.clone(), paragraphs: self.paragraphs.clone() }
+        Self {
+            heading: self.heading.clone(),
+            // options: self.options.clone(),
+            paragraphs: self.paragraphs.clone()
+        }
     }
 }
 
