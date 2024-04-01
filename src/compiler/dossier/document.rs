@@ -14,7 +14,6 @@ use crate::compiler::parsable::codex::parsing_rule::parsing_outcome::{self, Pars
 use crate::compiler::parsable::codex::{Modifier, Codex};
 use crate::compiler::parsable::{parsing_configuration, Parsable, ParsingError};
 use crate::compiler::parsable::parsing_configuration::ParsingConfiguration;
-use crate::compiler::loadable::{Loadable, LoadError};
 use crate::resource::disk_resource::DiskResource;
 use crate::resource::{Resource, ResourceError};
 
@@ -66,33 +65,33 @@ impl Document {
     }
 }
 
-impl Loadable<String> for Document {
+// impl Loadable<String> for Document {
 
-    fn load(codex: Arc<Codex>, location: &String) -> Result<Box<Self>, LoadError> {
+//     fn load(codex: Arc<Codex>, location: &String) -> Result<Box<Self>, LoadError> {
 
-        let path_buf = PathBuf::from_str(&location).unwrap();
+//         let path_buf = PathBuf::from_str(&location).unwrap();
 
-        let resource = DiskResource::try_from(path_buf)?;
+//         let resource = DiskResource::try_from(path_buf)?;
 
-        Self::load(Arc::clone(&codex), &resource)
-    }
-}
+//         Self::load(Arc::clone(&codex), &resource)
+//     }
+// }
 
-impl Loadable<DiskResource> for Document {
+// impl Loadable<DiskResource> for Document {
 
-    fn load(codex: Arc<Codex>, resource: &DiskResource) -> Result<Box<Self>, LoadError> {
-        let content = resource.content()?;
+//     fn load(codex: Arc<Codex>, resource: &DiskResource) -> Result<Box<Self>, LoadError> {
+//         let content = resource.content()?;
 
-        let document_name = resource.name();
+//         let document_name = resource.name();
 
-        match codex.load_document_from_str(document_name, &content) {
-            Ok(document) => {
-                return Ok(Box::new(document))
-            },
-            Err(err) => return Err(LoadError::ElaborationError(err.to_string()))
-        }
-    }
-}
+//         match codex.load_document_from_str(document_name, &content) {
+//             Ok(document) => {
+//                 return Ok(Box::new(document))
+//             },
+//             Err(err) => return Err(LoadError::ElaborationError(err.to_string()))
+//         }
+//     }
+// }
 
 
 impl Parsable for Document {

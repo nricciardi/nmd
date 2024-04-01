@@ -2,7 +2,7 @@ use thiserror::Error;
 
 use self::{html_assembler::HtmlAssembler, assembler_configuration::AssemblerConfiguration};
 
-use super::{output_format::OutputFormat, dossier::Dossier, artifact::{Artifact, ArtifactError}};
+use super::{artifact::{Artifact, ArtifactError}, dossier::Dossier, output_format::OutputFormat, parsable::codex::Codex};
 
 pub mod html_assembler;
 pub mod assembler_configuration;
@@ -14,14 +14,17 @@ pub enum AssemblerError {
     TooFewElements(String),
 
     #[error(transparent)]
-    ArtifactError(#[from] ArtifactError)
+    ArtifactError(#[from] ArtifactError),
+
+    #[error(transparent)]
+    ParseError(#[from] ),
 }
 
 pub trait Assembler {
 
     fn set_configuration(&mut self, configuration: AssemblerConfiguration);
 
-    fn assemble(&self, dossier: Dossier) -> Result<Artifact, AssemblerError>;
+    fn assemble(&self, codex: &Codex, dossier: Dossier) -> Result<Artifact, AssemblerError>;
 }
 
 pub fn from(format: OutputFormat, configuration: AssemblerConfiguration) -> Box<dyn Assembler> {

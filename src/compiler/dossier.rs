@@ -10,7 +10,7 @@ use thiserror::Error;
 use crate::{compiler::parsable::{codex::parsing_rule::parsing_outcome::ParsingOutcome, Parsable}, resource::ResourceError};
 use self::dossier_configuration::DossierConfiguration;
 
-use super::{loadable::{Loadable, LoadError}, parsable::{ParsingConfiguration, ParsingError, codex::Codex}};
+use super::parsable::{ParsingConfiguration, ParsingError, codex::Codex};
 
 
 pub const ASSETS_DIR: &str = "assets";
@@ -31,6 +31,13 @@ pub struct Dossier {
 
 impl Dossier {
 
+    pub fn new(configuration: DossierConfiguration, documents: Vec<Document>) -> Self {
+        Self {
+            configuration,
+            documents
+        }
+    }
+
     pub fn name(&self) -> &String {
         self.configuration.name()
     }
@@ -44,44 +51,44 @@ impl Dossier {
     }
 }
 
-impl Loadable<PathBuf> for Dossier {
+// impl Loadable<PathBuf> for Dossier {
 
-    fn load(codex: Arc<Codex>, location: &PathBuf) -> Result<Box<Self>, LoadError> {
+//     fn load(codex: Arc<Codex>, location: &PathBuf) -> Result<Box<Self>, LoadError> {
 
-        let dossier_configuration = DossierConfiguration::try_from(location)?;
+//         let dossier_configuration = DossierConfiguration::try_from(location)?;
 
-        Self::load(Arc::clone(&codex), &dossier_configuration)
-    }
+//         Self::load(Arc::clone(&codex), &dossier_configuration)
+//     }
 
-}
+// }
 
-impl Loadable<DossierConfiguration> for Dossier {
-    fn load(codex: Arc<Codex>, dossier_configuration: &DossierConfiguration) -> Result<Box<Self>, LoadError> {
-        // TODO: are really mandatory?
-        if dossier_configuration.raw_documents_paths().is_empty() {
-            return Err(LoadError::ResourceError(ResourceError::InvalidResourceVerbose("there are no documents".to_string())))
-        }
+// impl Loadable<DossierConfiguration> for Dossier {
+//     fn load(codex: Arc<Codex>, dossier_configuration: &DossierConfiguration) -> Result<Box<Self>, LoadError> {
+//         // TODO: are really mandatory?
+//         if dossier_configuration.raw_documents_paths().is_empty() {
+//             return Err(LoadError::ResourceError(ResourceError::InvalidResourceVerbose("there are no documents".to_string())))
+//         }
 
-        // TODO: is really mandatory?
-        if dossier_configuration.name().is_empty() {
-            return Err(LoadError::ResourceError(ResourceError::InvalidResourceVerbose("there is no name".to_string())))
-        }
+//         // TODO: is really mandatory?
+//         if dossier_configuration.name().is_empty() {
+//             return Err(LoadError::ResourceError(ResourceError::InvalidResourceVerbose("there is no name".to_string())))
+//         }
 
-        let mut documents: Vec<Document> = Vec::new();
+//         let mut documents: Vec<Document> = Vec::new();
 
-        for document in dossier_configuration.raw_documents_paths() {
+//         for document in dossier_configuration.raw_documents_paths() {
 
-            let document = Document::load(Arc::clone(&codex), document)?;
+//             let document = Document::load(Arc::clone(&codex), document)?;
 
-            documents.push(*document)
-        }
+//             documents.push(*document)
+//         }
 
-        Ok(Box::new(Self {
-            configuration: dossier_configuration.clone(),
-            documents: documents
-        }))
-    }
-}
+//         Ok(Box::new(Self {
+//             configuration: dossier_configuration.clone(),
+//             documents: documents
+//         }))
+//     }
+// }
 
 
 impl Parsable for Dossier {

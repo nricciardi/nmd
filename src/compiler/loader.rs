@@ -2,13 +2,14 @@ use std::io;
 use std::path::PathBuf;
 use std::str::FromStr;
 
-use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
+use rayon::iter::{IntoParallelIterator, IntoParallelRefIterator, ParallelBridge, ParallelIterator};
 use rayon::slice::ParallelSliceMut;
 use regex::Regex;
 use thiserror::Error;
 
 use crate::compiler::parsable::codex::PARAGRAPH_SEPARATOR;
-use crate::resource::ResourceError;
+use crate::resource::disk_resource::DiskResource;
+use crate::resource::{Resource, ResourceError};
 
 use super::dossier::document::chapter::chapter_builder::{self, ChapterBuilder};
 use super::dossier::dossier_configuration::DossierConfiguration;
@@ -128,9 +129,20 @@ impl Loader {
 
     }
 
-    pub fn load_document_from_path(codex: &Codex, path: &PathBuf) -> Result<Document, LoadError> {
-        todo!()
-        // TODO
+    pub fn load_document_from_path(codex: &Codex, path_buf: &PathBuf) -> Result<Document, LoadError> {
+
+        let resource = DiskResource::try_from(path_buf.clone())?;
+
+        let content = resource.content()?;
+
+        let document_name = resource.name();
+
+        match Self::load_document_from_str(codex, document_name, &content) {
+            Ok(document) => {
+                return Ok(document)
+            },
+            Err(err) => return Err(LoadError::ElaborationError(err.to_string()))
+        }
     }
 
 
@@ -211,10 +223,12 @@ impl Loader {
         Option::None
     }
 
-    pub fn load_dossier_from_path_buf(codex: &Codex, path: &PathBuf) -> Result<Dossier, LoadError> {
-        todo!()
-        // TODO
+    pub fn load_dossier_from_path_buf(codex: &Codex, path_buf: &PathBuf) -> Result<Dossier, LoadError> {
+        let dossier_configuration = DossierConfiguration::try_from(path_buf)?;
+
+        Self::load_dossier_from_dossier_configuration(codex, &dossier_configuration)
     }
+
 
     pub fn load_dossier_from_dossier_configuration(codex: &Codex, dossier_configuration: &DossierConfiguration) -> Result<Dossier, LoadError> {
 
@@ -228,26 +242,41 @@ impl Loader {
             return Err(LoadError::ResourceError(ResourceError::InvalidResourceVerbose("there is no name".to_string())))
         }
 
-        let mut documents: Vec<Document> = Vec::new();
-
         if dossier_configuration.compilation().parallelization() {
+
+            let mut documents: Vec<(usize, Document)> = Vec::new();
+
+            let error = dossier_configuration.raw_documents_paths().iter().enumerate().par_bridge().map(|(index, document_path)| -> Result<(), LoadError> {
+                Ok(documents.push((
+                    index,
+                    Loader::load_document_from_path(codex, &PathBuf::from(document_path))?
+                )))
+            }).find_any(|result| result.is_err());
+
+            // handle errors
+            if let Some(err) = error {
+                return Err(err.err().unwrap())
+            }
+
+            documents.par_sort_by(|a, b| a.0.cmp(&b.0));
+
+            let documents = documents.into_iter().map(|d| d.1).collect();
+
+            return Ok(Dossier::new(dossier_configuration.clone(), documents))
+
 
         } else {
 
+            let mut documents: Vec<Document> = Vec::new();
+
             for document_path in dossier_configuration.raw_documents_paths() {
     
-                let document = Loader::load_document_from_str ::load(codex, document_path)?;
+                let document = Loader::load_document_from_path(codex, &PathBuf::from(document_path))?;
     
-                documents.push(*document)
+                documents.push(document)
             }
 
+            return Ok(Dossier::new(dossier_configuration.clone(), documents))
         }
-
-        // TODO
-
-        Ok(Dossier {
-            configuration: dossier_configuration.clone(),
-            documents: documents
-        })
     }
 }

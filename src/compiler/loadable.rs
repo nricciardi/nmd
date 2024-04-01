@@ -9,7 +9,7 @@ use super::parsable::codex::Codex;
 
 
 
-pub trait Loadable<T> {
+// pub trait Loadable<T> {
 
-    fn load(codex: Arc<Codex>, resource: &T) -> Result<Box<Self>, LoadError>;
-}
+//     fn load(codex: Arc<Codex>, resource: &T) -> Result<Box<Self>, LoadError>;
+// }

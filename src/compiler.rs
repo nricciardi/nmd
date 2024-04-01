@@ -1,5 +1,5 @@
 pub mod compilation_configuration;
-mod parsable;
+pub mod parsing_rule;
 pub mod dossier;
 pub mod output_format;
 mod loadable;
@@ -9,13 +9,13 @@ pub mod artifact;
 pub mod theme;
 pub mod parser;
 pub mod loader;
+pub mod codex;
 
 use std::sync::Arc;
 
 use thiserror::Error;
-use crate::compiler::{dossier::Dossier, loadable::Loadable, dumpable::{Dumpable, DumpError}};
-
-use self::{assembler::{assembler_configuration::AssemblerConfiguration, AssemblerError}, compilation_configuration::CompilationConfiguration, dossier::dossier_configuration, loadable::LoadError, parsable::{Parsable, ParsingError}};
+use crate::compiler::{dossier::Dossier, dumpable::{DumpError, Dumpable}, loader::Loader};
+use self::{assembler::{assembler_configuration::AssemblerConfiguration, AssemblerError}, compilation_configuration::CompilationConfiguration, dossier::dossier_configuration, loader::LoadError, parsable::{Parsable, ParsingError}};
 
 
 #[derive(Error, Debug)]
@@ -51,9 +51,9 @@ impl Compiler {
 
         let codex = Arc::new(compilation_configuration.codex());
 
-        let mut dossier = Loader
+        let mut dossier = Loader::load_dossier_from_path_buf(&codex, compilation_configuration.input_location())?;
 
-        let mut dossier = Dossier::load(Arc::clone(&codex), compilation_configuration.input_location())?;
+        // let mut dossier = Dossier::load(Arc::clone(&codex), compilation_configuration.input_location())?;
 
         log::info!("dossier loaded");
 
