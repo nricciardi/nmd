@@ -2,8 +2,7 @@ use std::sync::Arc;
 
 use regex::Regex;
 
-use crate::compiler::parsable::{codex::{modifier::{modifiers_bucket::ModifiersBucket, paragraph_modifier::ParagraphModifier, Mod}, Modifier}, parsing_configuration::list_bullet_configuration_record::{self, ListBulletConfigurationRecord}, ParsingConfiguration};
-use super::{parsing_outcome::{ParsingError, ParsingOutcome}, ParsingRule};
+use super::{parsing_configuration::{list_bullet_configuration_record, ParsingConfiguration}, parsing_error::ParsingError, parsing_outcome::ParsingOutcome};
 
 const SPACE_TAB_EQUIVALENCE: &str = r"   ";
 const INDENTATION: &str = r#"<span class="list-item-indentation"></span>"#;

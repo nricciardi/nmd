@@ -1,6 +1,3 @@
-pub mod parsing_error;
-pub mod parsing_outcome;
-
 use std::sync::Arc;
 
 use self::{parsing_error::ParsingError, parsing_outcome::ParsingOutcome};

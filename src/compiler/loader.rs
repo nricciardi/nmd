@@ -7,14 +7,15 @@ use rayon::slice::ParallelSliceMut;
 use regex::Regex;
 use thiserror::Error;
 
-use crate::compiler::parsable::codex::PARAGRAPH_SEPARATOR;
+use crate::compiler::codex::PARAGRAPH_SEPARATOR;
 use crate::resource::disk_resource::DiskResource;
 use crate::resource::{Resource, ResourceError};
 
+use super::codex::Codex;
 use super::dossier::document::chapter::chapter_builder::{self, ChapterBuilder};
 use super::dossier::dossier_configuration::DossierConfiguration;
 use super::dossier::Dossier;
-use super::{dossier::{document::{chapter::{heading::{Heading, HeadingLevel}, paragraph::ParagraphError}, Chapter, Paragraph}, Document, DocumentError}, parsable::codex::Codex};
+use super::{dossier::{document::{chapter::{heading::{Heading, HeadingLevel}, paragraph::ParagraphError}, Chapter, Paragraph}, Document, DocumentError}};
 
 
 #[derive(Error, Debug)]

@@ -6,7 +6,7 @@ use crate::compiler::compilation_configuration::CompilationConfiguration;
 
 use self::list_bullet_configuration_record::ListBulletConfigurationRecord;
 
-use super::codex::modifier::modifiers_bucket::ModifiersBucket;
+use crate::compiler::codex::modifier::modifiers_bucket::ModifiersBucket;
 
 
 #[derive(Clone, Default, Debug)]

@@ -1,5 +1,8 @@
 pub mod replacement_rule;
+pub mod parsing_error;
 pub mod parsing_outcome;
+pub mod parsing_configuration;
+
 pub mod html_image_rule;
 pub mod html_list_rule;
 pub mod html_extended_block_quote_rule;
