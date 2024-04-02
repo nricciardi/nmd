@@ -3,8 +3,8 @@ use std::{sync::Arc, fmt::Display};
 use regex::Regex;
 use thiserror::Error;
 
-use crate::compiler::parsable::{codex::{modifier::{paragraph_modifier::ParagraphModifier, ModifierIdentifier}, parsing_rule::parsing_outcome::{ParsingError, ParsingOutcome}, Codex}, Parsable};
-use crate::compiler::parsable::parsing_configuration::ParsingConfiguration;
+use crate::compiler::codex::modifier::ModifierIdentifier;
+
 
 #[derive(Error, Debug)]
 pub enum ParagraphError {
@@ -44,12 +44,12 @@ impl Paragraph {
 }
 
 
-impl Parsable for Paragraph {
-    fn parse(&mut self, codex: Arc<Codex>, parsing_configuration: Arc<ParsingConfiguration>) -> Result<ParsingOutcome, ParsingError> {
+// impl Parsable for Paragraph {
+//     fn parse(&mut self, codex: Arc<Codex>, parsing_configuration: Arc<ParsingConfiguration>) -> Result<ParsingOutcome, ParsingError> {
 
-        codex.parse_paragraph(self, Arc::clone(&parsing_configuration))
-    }
-}
+//         codex.parse_paragraph(self, Arc::clone(&parsing_configuration))
+//     }
+// }
 
 impl Display for Paragraph {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

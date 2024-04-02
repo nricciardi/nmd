@@ -11,10 +11,6 @@ use rayon::iter::{IntoParallelRefMutIterator, ParallelIterator};
 use self::chapter_options::ChapterOptions;
 use self::heading::Heading;
 pub use self::paragraph::Paragraph;
-use crate::compiler::parsable::codex::parsing_rule::parsing_outcome::{self, ParsingOutcome};
-use crate::compiler::parsable::codex::Codex;
-use crate::compiler::parsable::parsing_configuration::ParsingConfiguration;
-use crate::compiler::parsable::{codex::parsing_rule::parsing_outcome::ParsingError, Parsable};
 
 
 #[derive(Debug)]
