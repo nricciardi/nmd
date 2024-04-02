@@ -200,7 +200,6 @@ impl Display for Document {
 
 #[cfg(test)]
 mod test {
-    use crate::compiler::parsable::codex::codex_configuration::CodexConfiguration;
 
     use super::*;
 

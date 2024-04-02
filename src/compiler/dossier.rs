@@ -7,10 +7,9 @@ pub use document::{Document, DocumentError};
 use rayon::{iter::{IntoParallelRefMutIterator, ParallelIterator}, slice::IterMut};
 use thiserror::Error;
 
-use crate::{compiler::parsable::{codex::parsing_rule::parsing_outcome::ParsingOutcome, Parsable}, resource::ResourceError};
-use self::dossier_configuration::DossierConfiguration;
+use crate::resource::ResourceError;
 
-use super::parsable::{ParsingConfiguration, ParsingError, codex::Codex};
+use self::dossier_configuration::DossierConfiguration;
 
 
 pub const ASSETS_DIR: &str = "assets";
@@ -91,51 +90,51 @@ impl Dossier {
 // }
 
 
-impl Parsable for Dossier {
-    fn parse(&mut self, codex: Arc<Codex>, parsing_configuration: Arc<ParsingConfiguration>) -> Result<ParsingOutcome, ParsingError> {
+// impl Parsable for Dossier {
+//     fn parse(&mut self, codex: Arc<Codex>, parsing_configuration: Arc<ParsingConfiguration>) -> Result<ParsingOutcome, ParsingError> {
 
-        log::info!("parse dossier {} with {} document(s) (parallelization: {})", self.name(), self.documents().len(), parsing_configuration.parallelization());
+//         log::info!("parse dossier {} with {} document(s) (parallelization: {})", self.name(), self.documents().len(), parsing_configuration.parallelization());
 
-        let mut parsing_outcome = ParsingOutcome::new_empty();
+//         let mut parsing_outcome = ParsingOutcome::new_empty();
         
-        if parsing_configuration.parallelization() {
+//         if parsing_configuration.parallelization() {
 
-            let maybe_fails = self.documents.par_iter_mut()
-                .map(|document| {
-                    let result = document.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration));
+//             let maybe_fails = self.documents.par_iter_mut()
+//                 .map(|document| {
+//                     let result = document.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration));
 
-                    if let Ok(result) = result {
-                        parsing_outcome.append_parsed_content(&result.parsed_content())
-                    }
+//                     if let Ok(result) = result {
+//                         parsing_outcome.append_parsed_content(&result.parsed_content())
+//                     }
 
-                    result.map(|r| ())
+//                     result.map(|r| ())
 
-                })
-                .find_any(|result| result.is_err());
+//                 })
+//                 .find_any(|result| result.is_err());
 
-                if let Some(Err(fail)) = maybe_fails {
-                    return Err(fail)
-                }
+//                 if let Some(Err(fail)) = maybe_fails {
+//                     return Err(fail)
+//                 }
             
-        } else {
+//         } else {
 
-            let maybe_fails = self.documents.iter_mut()
-                .map(|document| {
-                    let result = document.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration));
+//             let maybe_fails = self.documents.iter_mut()
+//                 .map(|document| {
+//                     let result = document.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration));
 
-                    if let Ok(result) = result {
-                        parsing_outcome.append_parsed_content(&result.parsed_content())
-                    }
+//                     if let Ok(result) = result {
+//                         parsing_outcome.append_parsed_content(&result.parsed_content())
+//                     }
 
-                    result.map(|r| ())
-                })
-                .find(|result| result.is_err());
+//                     result.map(|r| ())
+//                 })
+//                 .find(|result| result.is_err());
 
-                if let Some(Err(fail)) = maybe_fails {
-                    return Err(fail)
-                }
-        }
+//                 if let Some(Err(fail)) = maybe_fails {
+//                     return Err(fail)
+//                 }
+//         }
 
-        Ok(parsing_outcome)
-    }
-}
+//         Ok(parsing_outcome)
+//     }
+// }

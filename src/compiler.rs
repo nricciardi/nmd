@@ -1,8 +1,6 @@
 pub mod compilation_configuration;
-pub mod parsing_rule;
 pub mod dossier;
 pub mod output_format;
-mod loadable;
 mod assembler;
 pub mod dumpable;
 pub mod artifact;
@@ -15,7 +13,7 @@ use std::sync::Arc;
 
 use thiserror::Error;
 use crate::compiler::{dossier::Dossier, dumpable::{DumpError, Dumpable}, loader::Loader};
-use self::{assembler::{assembler_configuration::AssemblerConfiguration, AssemblerError}, compilation_configuration::CompilationConfiguration, dossier::dossier_configuration, loader::LoadError, parsable::{Parsable, ParsingError}};
+use self::{assembler::{assembler_configuration::AssemblerConfiguration, AssemblerError}, compilation_configuration::CompilationConfiguration, dossier::dossier_configuration, loader::LoadError, parser::parsing_rule::parsing_error::ParsingError};
 
 
 #[derive(Error, Debug)]
@@ -83,7 +81,7 @@ impl Compiler {
 
         let assembler = assembler::from(compilation_configuration.format().clone(), assembler_configuration);
 
-        let mut artifact = assembler.assemble(*dossier)?;
+        let mut artifact = assembler.assemble(codex.into(), *dossier)?;
 
         artifact.dump()?;
 

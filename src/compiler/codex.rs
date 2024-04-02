@@ -1,4 +1,3 @@
-pub mod parsing_rule;
 pub mod codex_configuration;
 pub mod modifier;
 
@@ -6,7 +5,6 @@ use std::collections::HashMap;
 use std::str::FromStr;
 use std::sync::Arc;
 
-pub use parsing_rule::ParsingRule;
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use rayon::slice::ParallelSliceMut;
 use regex::{Captures, Regex};
@@ -16,17 +14,12 @@ use self::modifier::paragraph_modifier::{self, ParagraphModifier};
 use self::modifier::text_modifier::TextModifier;
 use self::modifier::ModifierIdentifier;
 pub use self::modifier::{MAX_HEADING_LEVEL, Modifier};
-use self::parsing_rule::html_extended_block_quote_rule::HtmlExtendedBlockQuoteRule;
-use self::parsing_rule::html_list_rule::HtmlListRule;
 use crate::compiler::dossier::document::chapter::heading::{Heading, HeadingLevel};
 use crate::compiler::dossier::{Document, DocumentError};
 use crate::compiler::output_format::OutputFormat;
-use crate::compiler::parsable::codex::modifier::{text_modifier, Mod};
 use self::codex_configuration::CodexConfiguration;
-use self::parsing_rule::html_image_rule::HtmlImageRule;
-use self::parsing_rule::parsing_outcome::{ParsingError, ParsingOutcome};
-use self::parsing_rule::replacement_rule::ReplacementRule;
-use super::ParsingConfiguration;
+
+use super::parser::parsing_rule::ParsingRule;
 
 pub const PARAGRAPH_SEPARATOR: &str = r"(?m:^\n[ \t]*){1}";
 
@@ -372,13 +365,9 @@ mod test {
 
     use std::sync::Arc;
 
-    use crate::compiler::parsable::ParsingConfiguration;
+    use crate::compiler::parser::parsing_rule::parsing_configuration::ParsingConfiguration;
 
     use super::*;
-
-    use parsing_rule::ParsingRule;
-
-    use crate::compiler::parsable::codex::modifier::{text_modifier, Mod};
 
     #[test]
     fn html_multiple_uses() {

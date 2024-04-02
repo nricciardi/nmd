@@ -156,7 +156,7 @@ mod test {
 
     use std::{path::PathBuf, sync::Arc};
 
-    use crate::compiler::{loadable::Loadable, dossier::dossier_configuration::DossierConfiguration, parsable::{Parsable, codex::{Codex, codex_configuration::CodexConfiguration}, ParsingConfiguration}};
+    use crate::compiler::{codex::Codex, dossier::dossier_configuration::DossierConfiguration, parser::parsing_rule::parsing_configuration::ParsingConfiguration};
 
     use super::*;
 
@@ -180,6 +180,6 @@ mod test {
 
         let assembler = HtmlAssembler::new(AssemblerConfiguration::default());
 
-        let _ = assembler.assemble(*dossier).unwrap();
+        let _ = assembler.assemble(codex.into(), *dossier).unwrap();
     }
 }

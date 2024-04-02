@@ -1,8 +1,11 @@
+pub mod parsing_rule;
+
 use std::sync::Arc;
 
-use self::{parsing_error::ParsingError, parsing_outcome::ParsingOutcome};
 
-use super::{dossier::document::Paragraph, parsable::{codex::{modifier::modifiers_bucket::ModifiersBucket, Codex}, ParsingConfiguration}};
+use self::parsing_rule::{parsing_configuration::ParsingConfiguration, parsing_error::ParsingError, parsing_outcome::ParsingOutcome};
+
+use super::{dossier::document::Paragraph, codex::{modifier::modifiers_bucket::ModifiersBucket, Codex}};
 
 
 

@@ -1,8 +1,7 @@
 use std::{clone, path::PathBuf};
 
-use crate::compiler::{parsable::{codex::{Codex, codex_configuration::CodexConfiguration}, ParsingConfiguration}, output_format::OutputFormat};
+use super::{codex::Codex, dossier::dossier_configuration::DossierConfiguration, output_format::OutputFormat, parser::parsing_rule::parsing_configuration::ParsingConfiguration};
 
-use super::{dossier::dossier_configuration::{self, DossierConfiguration}, parsable::parsing_configuration::list_bullet_configuration_record::ListBulletConfigurationRecord};
 
 
 #[derive(Clone, Debug)]
