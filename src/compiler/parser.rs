@@ -1,4 +1,5 @@
 pub mod parsing_rule;
+pub mod parsable;
 
 use std::sync::Arc;
 
