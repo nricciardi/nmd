@@ -96,89 +96,133 @@ impl Document {
 
 impl Parsable for Document {
 
-    fn parse(&mut self, codex: Arc<Codex>, parsing_configuration: Arc<ParsingConfiguration>) -> Result<ParsingOutcome, ParsingError> {
+    fn parse(&mut self, codex: Arc<Codex>, parsing_configuration: Arc<ParsingConfiguration>) -> Result<(), ParsingError> {
 
         log::info!("parsing {} chapters of document: '{}'", self.chapters().len(), self.name);
 
-        let mut parsing_outcome = ParsingOutcome::new_empty();
+        if let Some(p) = &mut self.preamble {
+            p.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration))?;
+        }
+
 
         if parsing_configuration.parallelization() {
 
-            let maybe_one_failed = self.preamble.par_iter_mut()
-                .map(|paragraph| {
-
-                    let result = paragraph.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration));
-
-                    if let Ok(result) = result {
-                        parsing_outcome.append_parsed_content(&result.parsed_content())
-                    }
-
-                    result.map(|r| ())
-                    
-                }).find_any(|result| result.is_err());
-
-            if let Some(result) = maybe_one_failed {
-                return Err(result.err().unwrap());
-            }
-
-            let maybe_one_failed = self.chapters.par_iter_mut()
+            let maybe_one_failed: Option<Result<(), ParsingError>> = self.chapters.par_iter_mut()
                 .map(|chapter| {
 
-                    let result = chapter.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration));
-
-                    if let Ok(result) = result {
-                        parsing_outcome.append_parsed_content(&result.parsed_content())
-                    }
-
-                    result.map(|r| ())
-                    
+                    chapter.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration))
+                
                 }).find_any(|result| result.is_err());
 
             if let Some(result) = maybe_one_failed {
-                return Err(result.err().unwrap());
+                return result;
             }
         
         } else {
-
-            let maybe_one_failed = self.preamble.iter_mut()
-                .map(|paragraph| {
-
-                    let result = paragraph.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration));
-
-                    if let Ok(result) = result {
-                        parsing_outcome.append_parsed_content(&result.parsed_content())
-                    }
-
-                    result.map(|r| ())
-                    
-                }).find(|result| result.is_err());
-
-            if let Some(result) = maybe_one_failed {
-                return Err(result.err().unwrap());
-            }
-
-            let maybe_one_failed = self.chapters.iter_mut()
+            
+            let maybe_one_failed: Option<Result<(), ParsingError>> = self.chapters.iter_mut()
                 .map(|chapter| {
 
-                    let result = chapter.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration));
-
-                    if let Ok(result) = result {
-                        parsing_outcome.append_parsed_content(&result.parsed_content())
-                    }
-
-                    result.map(|r| ())
-                    
+                    chapter.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration))
+                
                 }).find(|result| result.is_err());
 
             if let Some(result) = maybe_one_failed {
-                return Err(result.err().unwrap());
+                return result;
             }
         }
 
-       Ok(parsing_outcome)
+       Ok(())
 
     }
 }
+
+
+// impl Parsable for Document {
+
+//     fn parse(&mut self, codex: Arc<Codex>, parsing_configuration: Arc<ParsingConfiguration>) -> Result<ParsingOutcome, ParsingError> {
+
+//         log::info!("parsing {} chapters of document: '{}'", self.chapters().len(), self.name);
+
+//         let mut parsing_outcome = ParsingOutcome::new_empty();
+
+//         if parsing_configuration.parallelization() {
+
+//             let maybe_one_failed = self.preamble.par_iter_mut()
+//                 .map(|paragraph| {
+
+//                     let result = paragraph.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration));
+
+//                     if let Ok(result) = result {
+//                         parsing_outcome.append_parsed_content(&result.parsed_content())
+//                     }
+
+//                     result.map(|r| ())
+                    
+//                 }).find_any(|result| result.is_err());
+
+//             if let Some(result) = maybe_one_failed {
+//                 return Err(result.err().unwrap());
+//             }
+
+//             let maybe_one_failed = self.chapters.par_iter_mut()
+//                 .map(|chapter| {
+
+//                     let result = chapter.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration));
+
+//                     if let Ok(result) = result {
+//                         parsing_outcome.append_parsed_content(&result.parsed_content())
+//                     }
+
+//                     result.map(|r| ())
+                    
+//                 }).find_any(|result| result.is_err());
+
+//             if let Some(result) = maybe_one_failed {
+//                 return Err(result.err().unwrap());
+//             }
+        
+//         } else {
+
+//             let maybe_one_failed = self.preamble.iter_mut()
+//                 .map(|paragraph| {
+
+//                     let result = paragraph.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration));
+
+//                     if let Ok(result) = result {
+//                         parsing_outcome.append_parsed_content(&result.parsed_content())
+//                     }
+
+//                     result.map(|r| ())
+                    
+//                 }).find(|result| result.is_err());
+
+//             if let Some(result) = maybe_one_failed {
+//                 return Err(result.err().unwrap());
+//             }
+
+//             let maybe_one_failed = self.chapters.iter_mut()
+//                 .map(|chapter| {
+
+//                     let result = chapter.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration));
+
+//                     if let Ok(result) = result {
+//                         parsing_outcome.append_parsed_content(&result.parsed_content())
+//                     }
+
+//                     result.map(|r| ())
+                    
+//                 }).find(|result| result.is_err());
+
+//             if let Some(result) = maybe_one_failed {
+//                 return Err(result.err().unwrap());
+//             }
+//         }
+
+//        Ok(parsing_outcome)
+
+//     }
+// }
 
 impl Display for Document {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

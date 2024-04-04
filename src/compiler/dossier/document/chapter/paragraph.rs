@@ -3,7 +3,7 @@ use std::{sync::Arc, fmt::Display};
 use regex::Regex;
 use thiserror::Error;
 
-use crate::compiler::codex::modifier::ModifierIdentifier;
+use crate::compiler::{codex::{modifier::ModifierIdentifier, Codex}, parser::{parsable::Parsable, parsed_content_accessor::ParsedContentAccessor, parsing_rule::{parsing_configuration::ParsingConfiguration, parsing_error::ParsingError, parsing_outcome::ParsingOutcome}}};
 
 
 #[derive(Error, Debug)]
@@ -18,6 +18,7 @@ pub enum ParagraphError {
 #[derive(Debug, Clone)]
 pub struct Paragraph {
     content: String,
+    parsed_content: Option<ParsingOutcome>,
     paragraph_type: ModifierIdentifier,
 }
 
@@ -26,7 +27,8 @@ impl Paragraph {
     pub fn new(content: String, paragraph_type: ModifierIdentifier) -> Self {
         Self {
             content,
-            paragraph_type
+            paragraph_type,
+            parsed_content: None
         }
     }
 
@@ -40,6 +42,23 @@ impl Paragraph {
 
     pub fn paragraph_type(&self) -> &ModifierIdentifier {
         &self.paragraph_type
+    }
+}
+
+impl Parsable for Paragraph {
+    fn parse(&mut self, codex: Arc<Codex>, parsing_configuration: Arc<ParsingConfiguration>) -> Result<(), ParsingError> {
+
+        let parsing_outcome = codex.parse_paragraph(self, Arc::clone(&parsing_configuration))?;
+
+        self.parsed_content = Some(parsing_outcome.parsed_content());
+
+        Ok(())
+    }
+}
+
+impl ParsedContentAccessor for Paragraph {
+    fn parsed_content(&self) -> &Option<ParsingOutcome> {
+        &self.parsed_content
     }
 }
 

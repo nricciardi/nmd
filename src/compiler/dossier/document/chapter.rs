@@ -8,6 +8,11 @@ use std::sync::Arc;
 
 use rayon::iter::{IntoParallelRefMutIterator, ParallelIterator};
 
+use crate::compiler::codex::Codex;
+use crate::compiler::parser::parsable::Parsable;
+use crate::compiler::parser::parsing_rule::parsing_configuration::ParsingConfiguration;
+use crate::compiler::parser::parsing_rule::parsing_error::ParsingError;
+
 use self::chapter_options::ChapterOptions;
 use self::heading::Heading;
 pub use self::paragraph::Paragraph;
@@ -66,12 +71,8 @@ impl Clone for Chapter {
 
 
 impl Parsable for Chapter {
-    fn parse(&mut self, codex: Arc<Codex>, parsing_configuration: Arc<ParsingConfiguration>) -> Result<ParsingOutcome, ParsingError> {
-
-        // TODO
-
-        let parsing_outcome = ParsingOutcome::new(codex.parse_text(&self.heading, Arc::clone(&parsing_configuration))?.parsed_content());
-
+    fn parse(&mut self, codex: Arc<Codex>, parsing_configuration: Arc<ParsingConfiguration>) -> Result<(), ParsingError> {
+        self.heading = String::from(codex.parse_content(&self.heading, Arc::clone(&parsing_configuration))?.parsed_content());
 
         log::debug!("parsing chapter:\n{:#?}", self);
 
@@ -79,43 +80,30 @@ impl Parsable for Chapter {
 
             let maybe_failed = self.paragraphs.par_iter_mut()
                 .map(|paragraph| {
-                    let result = paragraph.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration));
-
-                    if let Ok(result) = result {
-                        parsing_outcome.append_parsed_content(&result.parsed_content())
-                    }
-
-                    result.map(|r| ())
+                    paragraph.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration))
                 })
                 .find_any(|result| result.is_err());
     
             if let Some(result) = maybe_failed {
-                return Err(result.err().unwrap());
+                return result
             }
 
         } else {
             
             let maybe_failed = self.paragraphs.iter_mut()
                 .map(|paragraph| {
-                    let result = paragraph.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration));
-
-                    if let Ok(result) = result {
-                        parsing_outcome.append_parsed_content(&result.parsed_content())
-                    }
-
-                    result.map(|r| ())
+                    paragraph.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration))
                 })
                 .find(|result| result.is_err());
     
             if let Some(result) = maybe_failed {
-                return Err(result.err().unwrap());
+                return result
             }
         }
 
-        Ok(parsing_outcome)
+        Ok(())
     }
 }
-
 
 impl Display for Chapter {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

@@ -1,5 +1,6 @@
 pub mod parsing_rule;
 pub mod parsable;
+pub mod parsed_content_accessor;
 
 use std::sync::Arc;
 
