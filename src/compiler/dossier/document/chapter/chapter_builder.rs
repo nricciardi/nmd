@@ -2,8 +2,6 @@ use std::sync::Arc;
 
 use thiserror::Error;
 
-use crate::compiler::parsable::codex::Codex;
-
 use super::{chapter_options::ChapterOptions, heading::Heading, paragraph::ParagraphError, Chapter, Paragraph};
 
 #[derive(Error, Debug)]

@@ -4,12 +4,12 @@ use std::sync::Arc;
 use log;
 use regex::{Captures, Regex, Replacer};
 
-use crate::compiler::parsable::codex::modifier::modifiers_bucket::ModifiersBucket;
-use crate::compiler::parsable::codex::modifier::Mod;
-use crate::compiler::parsable::ParsingConfiguration;
+use crate::compiler::codex::modifier::modifiers_bucket::ModifiersBucket;
 
-use super::parsing_outcome::{ParsingError, ParsingOutcome};
-use super::{Modifier, ParsingRule};
+use super::parsing_configuration::ParsingConfiguration;
+use super::parsing_error::ParsingError;
+use super::parsing_outcome::ParsingOutcome;
+use super::ParsingRule;
 
 
 /// Rule to replace a NMD text based on a specific pattern matching rule
@@ -121,7 +121,7 @@ where F: 'static + Sync + Send + Fn(&Captures) -> String {
 #[cfg(test)]
 mod test {
 
-    use crate::compiler::parsable::{codex::modifier::{chapter_modifier::ChapterModifier, paragraph_modifier::ParagraphModifier, text_modifier::TextModifier}, ParsingConfiguration};
+    use crate::compiler::codex::modifier::{chapter_modifier::ChapterModifier, paragraph_modifier::ParagraphModifier, text_modifier::TextModifier};
 
     use super::*;
 

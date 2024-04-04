@@ -10,10 +10,10 @@ use thiserror::Error;
 use log;
 use rayon::prelude::*;
 
-use crate::compiler::parsable::codex::parsing_rule::parsing_outcome::{self, ParsingOutcome};
-use crate::compiler::parsable::codex::{Modifier, Codex};
-use crate::compiler::parsable::{parsing_configuration, Parsable, ParsingError};
-use crate::compiler::parsable::parsing_configuration::ParsingConfiguration;
+use crate::compiler::codex::Codex;
+use crate::compiler::parser::parsable::Parsable;
+use crate::compiler::parser::parsing_rule::parsing_configuration::ParsingConfiguration;
+use crate::compiler::parser::parsing_rule::parsing_error::ParsingError;
 use crate::resource::disk_resource::DiskResource;
 use crate::resource::{Resource, ResourceError};
 
@@ -244,6 +244,8 @@ impl Display for Document {
 
 #[cfg(test)]
 mod test {
+
+    use crate::compiler::codex::codex_configuration::CodexConfiguration;
 
     use super::*;
 

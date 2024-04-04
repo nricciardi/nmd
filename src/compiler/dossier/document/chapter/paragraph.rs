@@ -3,7 +3,7 @@ use std::{sync::Arc, fmt::Display};
 use regex::Regex;
 use thiserror::Error;
 
-use crate::compiler::{codex::{modifier::ModifierIdentifier, Codex}, parser::{parsable::Parsable, parsed_content_accessor::ParsedContentAccessor, parsing_rule::{parsing_configuration::ParsingConfiguration, parsing_error::ParsingError, parsing_outcome::ParsingOutcome}}};
+use crate::compiler::{codex::{modifier::ModifierIdentifier, Codex}, parser::{parsable::Parsable, parsed_content_accessor::ParsedContentAccessor, parsing_rule::{parsing_configuration::ParsingConfiguration, parsing_error::ParsingError, parsing_outcome::ParsingOutcome}, Parser}};
 
 
 #[derive(Error, Debug)]
@@ -48,7 +48,7 @@ impl Paragraph {
 impl Parsable for Paragraph {
     fn parse(&mut self, codex: Arc<Codex>, parsing_configuration: Arc<ParsingConfiguration>) -> Result<(), ParsingError> {
 
-        let parsing_outcome = codex.parse_paragraph(self, Arc::clone(&parsing_configuration))?;
+        let parsing_outcome = Parser::parse_paragraph(&codex, self, &parsing_configuration)?;
 
         self.parsed_content = Some(parsing_outcome.parsed_content());
 

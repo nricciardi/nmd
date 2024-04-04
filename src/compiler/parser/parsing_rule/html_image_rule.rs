@@ -3,15 +3,17 @@ use std::{path::PathBuf, sync::Arc};
 use log;
 use regex::{Regex, Captures};
 
+use crate::compiler::codex::modifier::modifiers_bucket::ModifiersBucket;
+use crate::compiler::codex::modifier::paragraph_modifier::ParagraphModifier;
+use crate::compiler::codex::modifier::Mod;
+use crate::compiler::codex::Codex;
 use crate::compiler::dossier;
-use crate::compiler::parsable::codex::modifier::modifiers_bucket::ModifiersBucket;
-use crate::compiler::parsable::codex::modifier::paragraph_modifier::ParagraphModifier;
-use crate::compiler::parsable::codex::modifier::Mod;
-use crate::compiler::parsable::codex::Codex;
 use crate::resource::{image::Image, remote_resource::RemoteResource};
-use crate::compiler::parsable::ParsingConfiguration;
 
-use super::{Modifier, ParsingRule, parsing_outcome::{ParsingOutcome, ParsingError}};
+use super::parsing_configuration::ParsingConfiguration;
+use super::parsing_error::ParsingError;
+use super::parsing_outcome::ParsingOutcome;
+use super::ParsingRule;
 
 
 /// Rule to replace a NMD text based on a specific pattern matching rule

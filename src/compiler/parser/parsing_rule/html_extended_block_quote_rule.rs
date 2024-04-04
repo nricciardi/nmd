@@ -2,9 +2,9 @@ use std::sync::Arc;
 
 use regex::Regex;
 
-use crate::compiler::parsable::{codex::{modifier::{modifiers_bucket::ModifiersBucket, paragraph_modifier::ParagraphModifier, Mod}, Modifier}, ParsingConfiguration};
+use crate::compiler::codex::modifier::{modifiers_bucket::ModifiersBucket, paragraph_modifier::ParagraphModifier, Mod};
 
-use super::{parsing_outcome::{ParsingError, ParsingOutcome}, ParsingRule};
+use super::{parsing_configuration::ParsingConfiguration, parsing_error::ParsingError, parsing_outcome::ParsingOutcome, ParsingRule};
 
 pub struct HtmlExtendedBlockQuoteRule {
 

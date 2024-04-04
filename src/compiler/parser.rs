@@ -7,7 +7,7 @@ use std::sync::Arc;
 
 use self::parsing_rule::{parsing_configuration::ParsingConfiguration, parsing_error::ParsingError, parsing_outcome::ParsingOutcome};
 
-use super::{codex::{modifier::modifiers_bucket::ModifiersBucket, Codex}, dossier::document::{Chapter, Paragraph}};
+use super::{codex::{modifier::modifiers_bucket::ModifiersBucket, Codex}, dossier::document::Paragraph};
 
 
 
@@ -131,55 +131,5 @@ impl Parser {
         outcome = Parser::parse_text_excluding_modifiers(codex, outcome.parsed_content(), Arc::clone(&parsing_configuration), excluded_modifiers)?;
 
         Ok(outcome)
-    }
-
-    pub fn parse_chapter(codex: &Codex, chapter: &Chapter, parsing_configuration: Arc<ParsingConfiguration>) -> Result<ParsingOutcome, ParsingError> {
-        // TODO
-
-        let parsing_outcome = ParsingOutcome::new(codex.parse_text(&self.heading, Arc::clone(&parsing_configuration))?.parsed_content());
-
-
-        log::debug!("parsing chapter:\n{:#?}", self);
-
-        if parsing_configuration.parallelization() {
-
-            //! TODO: not in order!!!!!
-
-            let maybe_failed = self.paragraphs.par_iter_mut()
-                .map(|paragraph| {
-                    let result = paragraph.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration));
-
-                    if let Ok(result) = result {
-                        parsing_outcome.append_parsed_content(&result.parsed_content())
-                    }
-
-                    result.map(|r| ())
-                })
-                .find_any(|result| result.is_err());
-    
-            if let Some(result) = maybe_failed {
-                return Err(result.err().unwrap());
-            }
-
-        } else {
-            
-            let maybe_failed = self.paragraphs.iter_mut()
-                .map(|paragraph| {
-                    let result = paragraph.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration));
-
-                    if let Ok(result) = result {
-                        parsing_outcome.append_parsed_content(&result.parsed_content())
-                    }
-
-                    result.map(|r| ())
-                })
-                .find(|result| result.is_err());
-    
-            if let Some(result) = maybe_failed {
-                return Err(result.err().unwrap());
-            }
-        }
-
-        Ok(parsing_outcome)
     }
 }

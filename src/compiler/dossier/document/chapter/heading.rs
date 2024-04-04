@@ -1,4 +1,6 @@
-use std::{num::ParseIntError, str::FromStr};
+use std::{num::ParseIntError, str::FromStr, sync::Arc};
+
+use crate::compiler::{codex::Codex, parser::{parsable::Parsable, parsed_content_accessor::ParsedContentAccessor, parsing_rule::{parsing_configuration::ParsingConfiguration, parsing_error::ParsingError, parsing_outcome::ParsingOutcome}, Parser}};
 
 use super::chapter_builder::ChapterBuilderError;
 
@@ -32,24 +34,43 @@ impl FromStr for HeadingLevel {
 
 #[derive(Debug, Clone)]
 pub struct Heading {
-    level: HeadingLevel,
-    title: String
+    // level: HeadingLevel,
+    // title: String,
+
+    raw_content: String,
+    parsed_content: Option<ParsingOutcome>
 }
 
 impl Heading {
-    pub fn new(level: HeadingLevel, title: String) -> Self {
+    pub fn new(raw_content: String) -> Self {
         Self {
-            level,
-            title
+            raw_content,
+            parsed_content: None
         }
     }
 
-    pub fn level(&self) -> &HeadingLevel {
-        &self.level
-    }
+    // pub fn level(&self) -> &HeadingLevel {
+    //     &self.level
+    // }
 
-    pub fn title(&self) -> &String {
-        &self.title
+    // pub fn title(&self) -> &String {
+    //     &self.title
+    // }
+}
+
+impl Parsable for Heading {
+    fn parse(&mut self, codex: Arc<Codex>, parsing_configuration: Arc<ParsingConfiguration>) -> Result<(), ParsingError> {
+        let parsing_outcome = Parser::parse_text(&codex, &self.raw_content, &parsing_configuration)?;
+
+        self.parsed_content = Some(parsing_outcome.parsed_content());
+
+        Ok(())
     }
 }
 
+
+impl ParsedContentAccessor for Heading {
+    fn parsed_content(&self) -> &Option<ParsingOutcome> {
+        &self.parsed_content
+    }
+}

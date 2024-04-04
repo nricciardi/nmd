@@ -7,11 +7,12 @@ pub mod html_image_rule;
 pub mod html_list_rule;
 pub mod html_extended_block_quote_rule;
 
-use super::modifier::{Modifier, modifiers_bucket::ModifiersBucket};
 use std::{fmt::Debug, sync::Arc};
 use regex::Regex;
-use crate::compiler::parsable::ParsingConfiguration;
-use self::parsing_outcome::{ParsingOutcome, ParsingError};
+
+use crate::compiler::codex::modifier::modifiers_bucket::ModifiersBucket;
+
+use self::{parsing_configuration::ParsingConfiguration, parsing_error::ParsingError, parsing_outcome::ParsingOutcome};
 
 
 pub trait ParsingRule: Send + Sync {
@@ -41,7 +42,7 @@ impl Debug for dyn ParsingRule {
 
 #[cfg(test)]
 mod test {
-    use super::*;
+    use crate::compiler::codex::Modifier;
 
     #[test]
     fn is_heading() {
