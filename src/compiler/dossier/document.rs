@@ -100,12 +100,20 @@ impl Parsable for Document {
 
         log::info!("parsing {} chapters of document: '{}'", self.chapters().len(), self.name);
 
-        if let Some(p) = &mut self.preamble {
-            p.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration))?;
-        }
-
-
         if parsing_configuration.parallelization() {
+
+            // p.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration))?;
+
+            let maybe_one_failed: Option<Result<(), ParsingError>> = self.preamble.par_iter_mut()
+                .map(|paragraph| {
+
+                    paragraph.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration))
+                
+                }).find_any(|result| result.is_err());
+
+            if let Some(result) = maybe_one_failed {
+                return result;
+            }
 
             let maybe_one_failed: Option<Result<(), ParsingError>> = self.chapters.par_iter_mut()
                 .map(|chapter| {
@@ -119,6 +127,17 @@ impl Parsable for Document {
             }
         
         } else {
+
+            let maybe_one_failed: Option<Result<(), ParsingError>> = self.preamble.iter_mut()
+                .map(|paragraph| {
+
+                    paragraph.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration))
+                
+                }).find(|result| result.is_err());
+
+            if let Some(result) = maybe_one_failed {
+                return result;
+            }
             
             let maybe_one_failed: Option<Result<(), ParsingError>> = self.chapters.iter_mut()
                 .map(|chapter| {
@@ -224,22 +243,22 @@ impl Parsable for Document {
 //     }
 // }
 
-impl Display for Document {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+// impl Display for Document {
+//     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
 
-        let mut s = String::new();
+//         let mut s = String::new();
 
-        for paragraph in &self.preamble {
-            s.push_str(paragraph.to_string().as_str());
-        }
+//         for paragraph in &self.preamble {
+//             s.push_str(paragraph.to_string().as_str());
+//         }
 
-        for chapter in &self.chapters {
-            s.push_str(chapter.to_string().as_str());
-        }
+//         for chapter in &self.chapters {
+//             s.push_str(chapter.to_string().as_str());
+//         }
 
-        write!(f, "{}", s)
-    }
-}
+//         write!(f, "{}", s)
+//     }
+// }
 
 
 #[cfg(test)]

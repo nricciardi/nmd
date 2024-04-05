@@ -60,9 +60,9 @@ impl Heading {
 
 impl Parsable for Heading {
     fn parse(&mut self, codex: Arc<Codex>, parsing_configuration: Arc<ParsingConfiguration>) -> Result<(), ParsingError> {
-        let parsing_outcome = Parser::parse_text(&codex, &self.raw_content, &parsing_configuration)?;
+        let parsing_outcome = Parser::parse_text(&codex, &self.raw_content, Arc::clone(&parsing_configuration))?;
 
-        self.parsed_content = Some(parsing_outcome.parsed_content());
+        self.parsed_content = Some(parsing_outcome);
 
         Ok(())
     }

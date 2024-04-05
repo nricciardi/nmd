@@ -11,6 +11,9 @@ pub enum ParsingError {
     #[error("'{0}' is an invalid source")]
     InvalidSource(String),
 
+    #[error("failed during parsing elaboration")]
+    ElaborationError,
+
     #[error("unknown error occurs")]
-    Unknown
+    Unknown,
 }

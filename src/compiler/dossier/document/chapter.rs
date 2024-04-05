@@ -5,6 +5,7 @@ pub mod chapter_options;
 
 use std::fmt::Display;
 use std::sync::Arc;
+use std::thread;
 
 use rayon::iter::{IntoParallelRefMutIterator, ParallelIterator};
 
@@ -22,7 +23,7 @@ pub use self::paragraph::Paragraph;
 pub struct Chapter {
     // heading: Heading,
     // options: ChapterOptions,
-    heading: String,
+    heading: Heading,
     paragraphs: Vec<Paragraph>,
 
 
@@ -34,7 +35,7 @@ pub struct Chapter {
 #[allow(dead_code)]
 impl Chapter {
 
-    pub fn new(heading: String /*: Heading, options: ChapterOptions*/, paragraphs: Vec<Paragraph>) -> Self {
+    pub fn new(heading: Heading /*: Heading, options: ChapterOptions*/, paragraphs: Vec<Paragraph>) -> Self {
         Self {
             heading,
             // options,
@@ -42,11 +43,11 @@ impl Chapter {
         }
     }
 
-    pub fn heading(&self) -> &String /*&Heading*/ {
+    pub fn heading(&self) -> &Heading {
         &self.heading
     }
 
-    pub fn set_heading(&mut self, heading: String /*Heading*/) -> () {
+    pub fn set_heading(&mut self, heading: Heading) -> () {
         self.heading = heading
     }
 
@@ -72,7 +73,10 @@ impl Clone for Chapter {
 
 impl Parsable for Chapter {
     fn parse(&mut self, codex: Arc<Codex>, parsing_configuration: Arc<ParsingConfiguration>) -> Result<(), ParsingError> {
-        self.heading = String::from(codex.parse_content(&self.heading, Arc::clone(&parsing_configuration))?.parsed_content());
+
+        let heading_parse_thread = thread::spawn(|| {
+            self.heading.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration))
+        });
 
         log::debug!("parsing chapter:\n{:#?}", self);
 
@@ -101,22 +105,29 @@ impl Parsable for Chapter {
             }
         }
 
-        Ok(())
-    }
-}
 
-impl Display for Chapter {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let heading_parse_result = heading_parse_thread.join();
 
-        let mut s: String = String::from(&self.heading);
-
-        for paragraph in &self.paragraphs {
-            s.push_str(paragraph.to_string().as_str());
+        if heading_parse_result.is_err() {
+            return Err(ParsingError::ElaborationError)
         }
 
-        write!(f, "{}", s)
+        Ok(heading_parse_result.unwrap()?)
     }
 }
+
+// impl Display for Chapter {
+//     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+
+//         let mut s: String = String::from(&self.heading);
+
+//         for paragraph in &self.paragraphs {
+//             s.push_str(paragraph.to_string().as_str());
+//         }
+
+//         write!(f, "{}", s)
+//     }
+// }
 
 /* impl ToString for Chapter {
     fn to_string(&self) -> String {

@@ -1,6 +1,6 @@
 
 
-
+#[derive(Debug, Clone)]
 pub struct ParsingOutcome {
     parsed_content: String
 }
