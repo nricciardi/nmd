@@ -12,13 +12,17 @@ use self::modifier::chapter_modifier::ChapterModifier;
 use self::modifier::modifiers_bucket::ModifiersBucket;
 use self::modifier::paragraph_modifier::{self, ParagraphModifier};
 use self::modifier::text_modifier::TextModifier;
-use self::modifier::ModifierIdentifier;
+use self::modifier::{Mod, ModifierIdentifier};
 pub use self::modifier::{MAX_HEADING_LEVEL, Modifier};
 use crate::compiler::dossier::document::chapter::heading::{Heading, HeadingLevel};
 use crate::compiler::dossier::{Document, DocumentError};
 use crate::compiler::output_format::OutputFormat;
 use self::codex_configuration::CodexConfiguration;
 
+use super::parser::parsing_rule::html_extended_block_quote_rule::HtmlExtendedBlockQuoteRule;
+use super::parser::parsing_rule::html_image_rule::HtmlImageRule;
+use super::parser::parsing_rule::html_list_rule::HtmlListRule;
+use super::parser::parsing_rule::replacement_rule::ReplacementRule;
 use super::parser::parsing_rule::ParsingRule;
 
 pub const PARAGRAPH_SEPARATOR: &str = r"(?m:^\n[ \t]*){1}";
@@ -365,7 +369,7 @@ mod test {
 
     use std::sync::Arc;
 
-    use crate::compiler::parser::parsing_rule::parsing_configuration::ParsingConfiguration;
+    use crate::compiler::{loader::Loader, parser::{parsing_rule::parsing_configuration::ParsingConfiguration, Parser}};
 
     use super::*;
 
@@ -379,7 +383,7 @@ mod test {
         let parsing_configuration = Arc::new(ParsingConfiguration::default());
 
         for rule in codex.text_rules() {
-            let result = rule.parse(parsing_result.as_str(), Arc::clone(&parsing_configuration)).unwrap();
+            let result = rule.1.parse(parsing_result.as_str(), Arc::clone(&parsing_configuration)).unwrap();
 
             parsing_result = result.parsed_content().clone()
         }
@@ -391,7 +395,7 @@ mod test {
         let mut parsing_result = String::from(nmd_text);
 
         for rule in codex.text_rules() {
-            let result = rule.parse(parsing_result.as_str(), Arc::clone(&parsing_configuration)).unwrap();
+            let result = rule.1.parse(parsing_result.as_str(), Arc::clone(&parsing_configuration)).unwrap();
 
             parsing_result = result.parsed_content().clone()
         }
@@ -420,7 +424,7 @@ r#"
         let parsing_configuration = Arc::new(ParsingConfiguration::default());
 
         for rule in codex.text_rules() {
-            let result = rule.parse(parsing_result.as_str(), Arc::clone(&parsing_configuration)).unwrap();
+            let result = rule.1.parse(parsing_result.as_str(), Arc::clone(&parsing_configuration)).unwrap();
 
             parsing_result = result.parsed_content().clone()
         }
@@ -444,7 +448,7 @@ print("hello world")
 `print("hello world)`
 "#.trim();
 
-        let paragraphs = codex.str_to_paragraphs(nmd_text).unwrap();
+        let paragraphs = Loader::load_paragraphs_from_str(&codex, nmd_text).unwrap();
 
         assert_eq!(paragraphs.len(), 2)
     }

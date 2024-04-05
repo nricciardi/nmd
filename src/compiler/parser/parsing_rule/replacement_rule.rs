@@ -121,7 +121,7 @@ where F: 'static + Sync + Send + Fn(&Captures) -> String {
 #[cfg(test)]
 mod test {
 
-    use crate::compiler::codex::modifier::{chapter_modifier::ChapterModifier, paragraph_modifier::ParagraphModifier, text_modifier::TextModifier};
+    use crate::compiler::codex::modifier::{chapter_modifier::ChapterModifier, paragraph_modifier::ParagraphModifier, text_modifier::TextModifier, Mod};
 
     use super::*;
 

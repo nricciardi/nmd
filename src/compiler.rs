@@ -12,7 +12,7 @@ pub mod codex;
 use std::sync::Arc;
 
 use thiserror::Error;
-use crate::compiler::{dossier::Dossier, dumpable::{DumpError, Dumpable}, loader::Loader};
+use crate::compiler::{dossier::Dossier, dumpable::{DumpError, Dumpable}, loader::Loader, parser::parsable::Parsable};
 use self::{assembler::{assembler_configuration::AssemblerConfiguration, AssemblerError}, compilation_configuration::CompilationConfiguration, dossier::dossier_configuration, loader::LoadError, parser::parsing_rule::parsing_error::ParsingError};
 
 
@@ -81,7 +81,7 @@ impl Compiler {
 
         let assembler = assembler::from(compilation_configuration.format().clone(), assembler_configuration);
 
-        let mut artifact = assembler.assemble(codex.into(), *dossier)?;
+        let mut artifact = assembler.assemble_dossier(/*&*codex,*/ &dossier)?;
 
         artifact.dump()?;
 

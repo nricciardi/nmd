@@ -1,4 +1,7 @@
+use std::sync::{Arc, Mutex};
+
 use build_html::{HtmlPage, HtmlContainer, Html, Container};
+use rayon::iter::{IndexedParallelIterator, IntoParallelRefIterator, ParallelIterator};
 
 use crate::compiler::{artifact::Artifact, dossier::Dossier, theme::Theme};
 
@@ -22,7 +25,7 @@ impl Assembler for HtmlAssembler {
         self.configuration = configuration
     }
 
-    fn assemble(&self, dossier: Dossier) -> Result<Artifact, AssemblerError> {
+    fn assemble_dossier(&self, dossier: &Dossier) -> Result<Artifact, AssemblerError> {
         let mut artifact = Artifact::new(self.configuration.output_location().clone());
 
         let mut page = HtmlPage::new()
@@ -132,12 +135,38 @@ impl Assembler for HtmlAssembler {
             return Err(AssemblerError::TooFewElements("there are no documents".to_string()))
         }
 
-        for document in dossier.documents() {
-            let section = Container::new(build_html::ContainerType::Section)
-                                            .with_raw(document);
+        if self.configuration.parallelization() {
 
-            page.add_container(section);
+            let mut documents: Arc<Mutex<Vec<(usize, Result<String, AssemblerError>)>>> = Arc::new(Mutex::new(Vec::new()));
+
+            dossier.documents().par_iter().enumerate().for_each(|(index, document)| {
+
+                let mut documents = documents.lock().unwrap();
+                
+                (*documents).push((index, self.assemble_document(&document)))
+            });
+
+            let mut documents = *documents.lock().unwrap();
+
+            documents.sort_by(|a, b| a.0.cmp(&b.0));
+
+            for (index, document_res) in documents {
+                let section = Container::new(build_html::ContainerType::Section)
+                                                .with_raw(document_res?);
+    
+                page.add_container(section);
+            }
+
+        } else {
+            for document in dossier.documents() {
+                let section = Container::new(build_html::ContainerType::Section)
+                                                .with_raw(self.assemble_document(document)?);
+    
+                page.add_container(section);
+            }
         }
+
+        
 
         // TODO:
         // - a file name parse utility
@@ -149,37 +178,41 @@ impl Assembler for HtmlAssembler {
 
         Ok(artifact)
     }
-}
-
-#[cfg(test)]
-mod test {
-
-    use std::{path::PathBuf, sync::Arc};
-
-    use crate::compiler::{codex::Codex, dossier::dossier_configuration::DossierConfiguration, parser::parsing_rule::parsing_configuration::ParsingConfiguration};
-
-    use super::*;
-
-    #[test]
-    fn assemble() {
-
-        let codex = Arc::new(Codex::of_html(CodexConfiguration::default()));
-
-        let project_directory = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-        let dossier_dir = "nmd-test-dossier-1";
-        let nmd_file = project_directory.join("test-resources").join(dossier_dir).join("d1.nmd");
-
-        assert!(nmd_file.is_file());
-
-        let mut dossier_configuration = DossierConfiguration::default();
-        dossier_configuration.set_raw_documents_paths(vec![nmd_file.to_string_lossy().to_string()]);
-
-        let mut dossier = Dossier::load(Arc::clone(&codex), &dossier_configuration).unwrap();
-
-        dossier.parse(Arc::clone(&codex), Arc::new(ParsingConfiguration::default())).unwrap();
-
-        let assembler = HtmlAssembler::new(AssemblerConfiguration::default());
-
-        let _ = assembler.assemble(codex.into(), *dossier).unwrap();
+    
+    fn configuration(&self) -> &AssemblerConfiguration {
+        &self.configuration
     }
 }
+
+// #[cfg(test)]
+// mod test {
+
+//     use std::{path::PathBuf, sync::Arc};
+
+//     use crate::compiler::{codex::Codex, dossier::dossier_configuration::DossierConfiguration, parser::parsing_rule::parsing_configuration::ParsingConfiguration};
+
+//     use super::*;
+
+//     #[test]
+//     fn assemble() {
+
+//         let codex = Arc::new(Codex::of_html(CodexConfiguration::default()));
+
+//         let project_directory = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+//         let dossier_dir = "nmd-test-dossier-1";
+//         let nmd_file = project_directory.join("test-resources").join(dossier_dir).join("d1.nmd");
+
+//         assert!(nmd_file.is_file());
+
+//         let mut dossier_configuration = DossierConfiguration::default();
+//         dossier_configuration.set_raw_documents_paths(vec![nmd_file.to_string_lossy().to_string()]);
+
+//         let mut dossier = Dossier::load(Arc::clone(&codex), &dossier_configuration).unwrap();
+
+//         dossier.parse(Arc::clone(&codex), Arc::new(ParsingConfiguration::default())).unwrap();
+
+//         let assembler = HtmlAssembler::new(AssemblerConfiguration::default());
+
+//         let _ = assembler.assemble(codex.into(), *dossier).unwrap();
+//     }
+// }

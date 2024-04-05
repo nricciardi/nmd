@@ -6,16 +6,20 @@ use crate::compiler::{dossier::dossier_configuration::{self, DossierConfiguratio
 pub struct AssemblerConfiguration {
     output_location: PathBuf,
     theme: Theme,
-    use_remote_addons: bool
+    use_remote_addons: bool,
+
+    parallelization: bool,
+
 }
 
 impl AssemblerConfiguration {
     
-    pub fn new(output_location: PathBuf, theme: Theme, use_remote_addons: bool) -> Self {
+    pub fn new(output_location: PathBuf, theme: Theme, use_remote_addons: bool, parallelization: bool) -> Self {
         Self {
             output_location,
             theme,
-            use_remote_addons
+            use_remote_addons,
+            parallelization
         }
     }
 
@@ -29,6 +33,10 @@ impl AssemblerConfiguration {
     
     pub fn use_remote_addons(&self) -> bool {
         self.use_remote_addons
+    }
+
+    pub fn parallelization(&self) -> bool {
+        self.parallelization
     }
 
     pub fn set_output_location(&mut self, value: PathBuf) {
@@ -49,7 +57,8 @@ impl Default for AssemblerConfiguration {
         Self {
             output_location: Default::default(),
             theme: Theme::default(),
-            use_remote_addons: false
+            use_remote_addons: false,
+            parallelization: false
         }
     }
 }
@@ -59,6 +68,7 @@ impl From<DossierConfiguration> for AssemblerConfiguration {
         Self {
             theme: dossier_configuration.style().theme().clone(),
             use_remote_addons: dossier_configuration.compilation().use_remote_addons(),
+            parallelization: dossier_configuration.compilation().parallelization(),
             ..Default::default()
         }
     }

@@ -101,7 +101,11 @@ impl Loader {
 
             let start = chapter_borders[index].0;
             let end = chapter_borders[index].1;
-            let heading = chapter_borders[index].2;
+            let heading = Self::load_heading_from_str(codex, &chapter_borders[index].2);
+
+            if heading.is_none() {
+                return Err(DocumentError::Load(ResourceError::ResourceNotFound("heading".to_string())))
+            }
 
             let mut next_start: usize = content.len();
 
@@ -113,7 +117,7 @@ impl Loader {
 
             let paragraphs = Self::load_paragraphs_from_str(codex, content)?;
 
-            document_chapters.push(Chapter::new(heading, paragraphs));
+            document_chapters.push(Chapter::new(heading.unwrap(), paragraphs));
         }
 
 
@@ -217,7 +221,7 @@ impl Loader {
                 let level = HeadingLevel::from_str(matched.get(1).unwrap().as_str()).unwrap();
                 let title = matched.get(2).unwrap().as_str();
 
-                return Some(Heading::new(level, title.to_string()))
+                return Some(Heading::new(title.to_string()))
             }
         }
 

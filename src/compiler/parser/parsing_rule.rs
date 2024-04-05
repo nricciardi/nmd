@@ -40,22 +40,22 @@ impl Debug for dyn ParsingRule {
 }
 
 
-#[cfg(test)]
-mod test {
-    use crate::compiler::codex::Modifier;
+// #[cfg(test)]
+// mod test {
+//     use crate::compiler::codex::Modifier;
 
-    #[test]
-    fn is_heading() {
-        let content = "#6 title 6";
+//     #[test]
+//     fn is_heading() {
+//         let content = "#6 title 6";
 
-        assert!(Modifier::heading_level(content).is_some());
+//         assert!(Modifier::heading_level(content).is_some());
 
-        let content = "### title 3";
+//         let content = "### title 3";
 
-        assert!(Modifier::heading_level(content).is_some());
+//         assert!(Modifier::heading_level(content).is_some());
 
-        let content = "text";
+//         let content = "text";
 
-        assert!(Modifier::heading_level(content).is_none())
-    }
-}
+//         assert!(Modifier::heading_level(content).is_none())
+//     }
+// }

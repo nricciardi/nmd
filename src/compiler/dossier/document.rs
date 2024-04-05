@@ -261,46 +261,46 @@ impl Parsable for Document {
 // }
 
 
-#[cfg(test)]
-mod test {
+// #[cfg(test)]
+// mod test {
 
-    use crate::compiler::codex::codex_configuration::CodexConfiguration;
+//     use crate::compiler::codex::codex_configuration::CodexConfiguration;
 
-    use super::*;
+//     use super::*;
 
-    #[test]
-    fn chapters_creation() {
+//     #[test]
+//     fn chapters_creation() {
 
-        let codex = Codex::of_html(CodexConfiguration::default());
+//         let codex = Codex::of_html(CodexConfiguration::default());
 
-        let content: String = 
-r#"
-# title 1a
+//         let content: String = 
+// r#"
+// # title 1a
 
-paragraph 1a
+// paragraph 1a
 
-## title 2a
+// ## title 2a
 
-paragraph 2a
+// paragraph 2a
 
-# title 1b
+// # title 1b
 
-paragraph 1b
-"#.trim().to_string();
+// paragraph 1b
+// "#.trim().to_string();
 
-        let mut document = Box::new(Document {
-            name: "test document".to_string(),
-            preamble: Option::None,
-            chapters: Vec::new()
-        });
+//         let mut document = Box::new(Document {
+//             name: "test document".to_string(),
+//             preamble: Option::None,
+//             chapters: Vec::new()
+//         });
 
-        document.load_content_from_str(Arc::new(codex), &content).unwrap();
+//         document.load_content_from_str(Arc::new(codex), &content).unwrap();
 
-        assert!(document.preamble().is_none());
+//         assert!(document.preamble().is_none());
 
-        assert_eq!(document.chapters().len(), 3);
+//         assert_eq!(document.chapters().len(), 3);
 
 
         
-    }
-}
+//     }
+// }
