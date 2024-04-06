@@ -18,6 +18,9 @@ pub enum AssemblerError {
 
     #[error(transparent)]
     ParseError(#[from] ParsingError),
+
+    #[error("expected parsed content not found")]
+    ParsedContentNotFound,
 }
 
 pub trait Assembler {
@@ -33,15 +36,34 @@ pub trait Assembler {
         let mut result = String::new();
 
         for paragraph in document.preamble() {
-            result.push_str(paragraph.parsed_content().unwrap().parsed_content());
+
+            if let Some(parsed_content) = paragraph.parsed_content().as_ref() {
+
+                result.push_str(parsed_content.parsed_content());
+
+            } else {
+                return Err(AssemblerError::ParsedContentNotFound)
+            }
         }
 
         for chapter in document.chapters() {
 
-            result.push_str(chapter.heading().parsed_content().unwrap().parsed_content());
+            if let Some(parsed_content) = chapter.heading().parsed_content().as_ref() {
+
+                result.push_str(parsed_content.parsed_content());
+
+            } else {
+                return Err(AssemblerError::ParsedContentNotFound)
+            }
 
             for paragraph in chapter.paragraphs() {
-                result.push_str(paragraph.parsed_content().unwrap().parsed_content());
+                if let Some(parsed_content) = paragraph.parsed_content().as_ref() {
+
+                    result.push_str(parsed_content.parsed_content());
+    
+                } else {
+                    return Err(AssemblerError::ParsedContentNotFound)
+                }
             }
         }
 

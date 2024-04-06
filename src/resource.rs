@@ -32,7 +32,20 @@ pub enum ResourceError {
 
     #[error(transparent)]
     ImageError(#[from] ImageError),
+    
+    #[error("elaboration error: {0}")]
+    ElaborationError(String),
 }
+
+impl Clone for ResourceError {
+    fn clone(&self) -> Self {
+        match self {
+            Self::IoError(e) => Self::ElaborationError(e.to_string()),
+            other => other.clone()
+        }
+    }
+}
+
 
 pub trait Resource: FromStr {
 

@@ -1,8 +1,9 @@
+use std::borrow::Borrow;
 use std::io;
 use std::path::PathBuf;
 use std::str::FromStr;
 
-use rayon::iter::{IntoParallelIterator, IntoParallelRefIterator, ParallelBridge, ParallelIterator};
+use rayon::iter::{IndexedParallelIterator, IntoParallelIterator, IntoParallelRefIterator, ParallelBridge, ParallelIterator};
 use rayon::slice::ParallelSliceMut;
 use regex::Regex;
 use thiserror::Error;
@@ -28,6 +29,15 @@ pub enum LoadError {
     
     #[error(transparent)]
     IoError(#[from] io::Error)
+}
+
+impl Clone for LoadError {
+    fn clone(&self) -> Self {
+        match self {
+            Self::IoError(e) => Self::ElaborationError(e.to_string()),
+            other => other.clone()
+        }
+    }
 }
 
 
@@ -249,23 +259,21 @@ impl Loader {
 
         if dossier_configuration.compilation().parallelization() {
 
-            let mut documents: Vec<(usize, Document)> = Vec::new();
+            let mut documents_res: Vec<Result<Document, LoadError>> = Vec::new();
 
-            let error = dossier_configuration.raw_documents_paths().iter().enumerate().par_bridge().map(|(index, document_path)| -> Result<(), LoadError> {
-                Ok(documents.push((
-                    index,
-                    Loader::load_document_from_path(codex, &PathBuf::from(document_path))?
-                )))
-            }).find_any(|result| result.is_err());
+            dossier_configuration.raw_documents_paths().par_iter()
+            .map(|document_path| {
+                Loader::load_document_from_path(codex, &PathBuf::from(document_path))
+            }).collect_into_vec(&mut documents_res);
+            
+            let error = documents_res.par_iter().find_any(|result| result.is_err());
 
             // handle errors
-            if let Some(err) = error {
-                return Err(err.err().unwrap())
+            if let Some(Err(err)) = error.as_ref() {
+                return Err(err.clone())
             }
 
-            documents.par_sort_by(|a, b| a.0.cmp(&b.0));
-
-            let documents = documents.into_iter().map(|d| d.1).collect();
+            let documents = documents_res.into_iter().map(|d| d.unwrap()).collect();
 
             return Ok(Dossier::new(dossier_configuration.clone(), documents))
 

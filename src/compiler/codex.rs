@@ -308,7 +308,7 @@ impl Codex {
             ),
         ]);
 
-        let chapter_rules: HashMap<ModifierIdentifier, Box<dyn ParsingRule>> = HashMap::new();
+        let mut chapter_rules: HashMap<ModifierIdentifier, Box<dyn ParsingRule>> = HashMap::new();
 
         for i in (1..=MAX_HEADING_LEVEL).rev() {
             chapter_rules.insert(ChapterModifier::HeadingGeneralExtendedVersion(i).identifier().clone(), 

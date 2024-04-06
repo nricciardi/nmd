@@ -137,22 +137,15 @@ impl Assembler for HtmlAssembler {
 
         if self.configuration.parallelization() {
 
-            let mut documents: Arc<Mutex<Vec<(usize, Result<String, AssemblerError>)>>> = Arc::new(Mutex::new(Vec::new()));
+            let mut assembled_documents: Vec<Result<String, AssemblerError>> = Vec::new();
 
-            dossier.documents().par_iter().enumerate().for_each(|(index, document)| {
+            dossier.documents().par_iter().map(|document| {
+                self.assemble_document(document)
+            }).collect_into_vec(&mut assembled_documents);
 
-                let mut documents = documents.lock().unwrap();
-                
-                (*documents).push((index, self.assemble_document(&document)))
-            });
-
-            let mut documents = *documents.lock().unwrap();
-
-            documents.sort_by(|a, b| a.0.cmp(&b.0));
-
-            for (index, document_res) in documents {
+            for assembled_document in assembled_documents {
                 let section = Container::new(build_html::ContainerType::Section)
-                                                .with_raw(document_res?);
+                                                .with_raw(assembled_document?);
     
                 page.add_container(section);
             }
