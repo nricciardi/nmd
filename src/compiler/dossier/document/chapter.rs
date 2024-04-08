@@ -74,9 +74,8 @@ impl Clone for Chapter {
 impl Parsable for Chapter {
     fn parse(&mut self, codex: Arc<Codex>, parsing_configuration: Arc<ParsingConfiguration>) -> Result<(), ParsingError> {
 
-        let heading_parse_thread = thread::spawn(|| {
-            self.heading.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration))
-        });
+        // TODO: in other thread
+        self.heading.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration))?;
 
         log::debug!("parsing chapter:\n{:#?}", self);
 
@@ -105,14 +104,7 @@ impl Parsable for Chapter {
             }
         }
 
-
-        let heading_parse_result = heading_parse_thread.join();
-
-        if heading_parse_result.is_err() {
-            return Err(ParsingError::ElaborationError)
-        }
-
-        Ok(heading_parse_result.unwrap()?)
+        Ok(())
     }
 }
 

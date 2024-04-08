@@ -2,12 +2,11 @@ pub mod paragraph_modifier;
 pub mod modifiers_bucket;
 pub mod text_modifier;
 pub mod chapter_modifier;
+pub mod base_modifier;
 
 use std::fmt;
 
-use regex::Regex;
-
-use self::modifiers_bucket::ModifiersBucket;
+use self::{base_modifier::BaseModifier, modifiers_bucket::ModifiersBucket};
 
 
 pub const MAX_HEADING_LEVEL: u32 = 6; 
@@ -29,7 +28,7 @@ pub trait Mod: Sync + Send {
 
 impl fmt::Debug for dyn Mod {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{:?}", self.search_pattern())
+        write!(f, "{}: {}", self.identifier(), self.search_pattern())
     }
 }
 
@@ -41,7 +40,7 @@ impl PartialEq for dyn Mod {
 
 impl Clone for Box<dyn Mod> {
     fn clone(&self) -> Self {
-        self.clone()
+        Box::new(BaseModifier::new(self.identifier().clone(), self.search_pattern().clone(), self.incompatible_modifiers().clone()))
     }
 }
 
