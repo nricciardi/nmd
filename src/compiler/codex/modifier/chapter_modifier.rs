@@ -1,7 +1,8 @@
 use regex::Regex;
 
-use super::{modifiers_bucket::ModifiersBucket, Mod};
-use super::MAX_HEADING_LEVEL;
+use super::base_modifier::BaseModifier;
+use super::{modifiers_bucket::ModifiersBucket, Modifier};
+use super::{ModifierIdentifier, MAX_HEADING_LEVEL};
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum ChapterModifier {
@@ -44,11 +45,30 @@ impl ChapterModifier {
     pub fn str_is_heading(content: &str) -> bool {
         Self::heading_level(content).is_some()
     }
-}
 
-impl Mod for ChapterModifier {
-    fn search_pattern(&self) -> &String {
-        &match *self {
+    pub fn identifier(&self) -> ModifierIdentifier {
+        match *self {
+            Self::HeadingGeneralExtendedVersion(level) => {
+
+                if level == 0 || level > MAX_HEADING_LEVEL {
+                    panic!("{level} is an invalid heading level.")
+                }
+
+                format!(r"heading-{}-extended-version", level)
+            },
+            Self::HeadingGeneralCompactVersion(level) => {
+
+                if level == 0 || level > MAX_HEADING_LEVEL {
+                    panic!("{level} is an invalid heading level.")
+                }
+
+                format!(r"heading-{}-compact-version", level)
+            },
+        }
+    }
+    
+    pub fn search_pattern(&self) -> String {
+        match *self {
             Self::HeadingGeneralExtendedVersion(level) => {
 
                 if level == 0 || level > MAX_HEADING_LEVEL {
@@ -66,5 +86,15 @@ impl Mod for ChapterModifier {
                 format!(r"(?m:^#({})\s+(.*))", level)
             },
         }
+    }
+
+    pub fn incompatible_modifiers(&self) -> ModifiersBucket {
+        ModifiersBucket::None
+    }
+}
+
+impl Into<BaseModifier> for ChapterModifier {
+    fn into(self) -> BaseModifier {
+        BaseModifier::new(self.identifier(), self.search_pattern(), self.incompatible_modifiers())
     }
 }

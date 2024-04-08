@@ -1,16 +1,16 @@
 use std::ops::Add;
 
-use super::{Mod, Modifier};
+use super::Modifier;
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum ModifiersBucket {
     All,
-    List(Vec<Box<dyn Mod>>),
+    List(Vec<Box<dyn Modifier>>),
     None
 }
 
 impl ModifiersBucket {
-    pub fn contains(&self, searched_modifier: &Box<dyn Mod>) -> bool {
+    pub fn contains(&self, searched_modifier: &Box<dyn Modifier>) -> bool {
         match self {
             Self::All => true,
             Self::List(modifiers_list) => modifiers_list.contains(searched_modifier),

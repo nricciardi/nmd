@@ -1,4 +1,4 @@
-use super::{modifiers_bucket::ModifiersBucket, Mod};
+use super::{base_modifier::BaseModifier, modifiers_bucket::ModifiersBucket, Modifier, ModifierIdentifier};
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum TextModifier {
@@ -71,13 +71,42 @@ impl TextModifier {
             Self::Emoji,
         ]
     }
-}
 
+    pub fn identifier(&self) -> ModifierIdentifier {
+        match self {
+            Self::AbridgedBookmark => String::from("abridged-bookmark"),
+            Self::AbridgedBookmarkWithId => String::from("abridged-bookmark-with-id"),
+            Self::Bookmark => String::from("bookmark"),
+            Self::BookmarkWithId => String::from("bookmark-with-id"),
+            Self::Todo => String::from("todo"),
+            Self::AbridgedEmbeddedStyle => String::from("abridged-embedded-style"),
+            Self::AbridgedEmbeddedStyleWithId => String::from("abridged-embedded-style-with-id"),
+            Self::Identifier => String::from("identifier"),
+            Self::EmbeddedStyleWithId => String::from("embedded-style-with-id"),
+            Self::EmbeddedStyle => String::from("embedded-style"),
+            Self::Highlight => String::from("highlight"),
+            Self::Comment => String::from("comment"),
+            Self::Emoji => String::from("emoji"),
+            Self::Checkbox => String::from("checkbox"),
+            Self::CheckboxChecked => String::from("checkbox-checked"),
+            Self::Superscript => String::from("superscript"),
+            Self::Subscript => String::from("subscript"),
+            Self::BoldStarVersion => String::from("bold-star-version"),
+            Self::BoldUnderscoreVersion => String::from("bold-underscore-version"),
+            Self::ItalicStarVersion => String::from("italic-star-version"),
+            Self::ItalicUnderscoreVersion => String::from("italic-underscore-version"),
+            Self::Strikethrough => String::from("strikethrough"),
+            Self::Underlined => String::from("underlined"),
+            Self::Link => String::from("link"),
+            Self::InlineCode => String::from("inline-code"),
+            Self::InlineMath => String::from("inline-math"),
 
-impl Mod for TextModifier {
+            _ => String::from("#@§rule-todo#@§"),
+        }
+    }
     
-    fn search_pattern(&self) -> &String {
-        &match *self {
+    pub fn search_pattern(&self) -> String {
+        match *self {
             Self::AbridgedBookmark => String::from(r"@\[([^\]]*?)\]"),
             Self::AbridgedBookmarkWithId => String::from(r"@\[([^\]]*?)\]#([\w-]*)"),
             Self::Bookmark => String::from(r"@\[([^\]]*?)\]\((?s:(.*?))\)"),
@@ -109,13 +138,20 @@ impl Mod for TextModifier {
         }
     }
 
-    fn incompatible_modifiers(&self) -> &ModifiersBucket {
-        &match self {
+    pub fn incompatible_modifiers(&self) -> ModifiersBucket {
+        match self {
 
             Self::InlineCode => ModifiersBucket::All,
             Self::InlineMath => ModifiersBucket::All,
             Self::Emoji => ModifiersBucket::All,
             _ => ModifiersBucket::None
         }
+    }
+}
+
+
+impl Into<BaseModifier> for TextModifier {
+    fn into(self) -> BaseModifier {
+        BaseModifier::new(self.identifier(), self.search_pattern(), self.incompatible_modifiers())
     }
 }

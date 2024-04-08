@@ -1,4 +1,4 @@
-use super::{modifiers_bucket::ModifiersBucket, Mod, ModifierIdentifier};
+use super::{modifiers_bucket::ModifiersBucket, Modifier, ModifierIdentifier};
 
 
 
@@ -18,7 +18,7 @@ impl BaseModifier {
     }
 }
 
-impl Mod for BaseModifier {
+impl Modifier for BaseModifier {
     fn identifier(&self) -> &ModifierIdentifier {
         &self.identifier
     }

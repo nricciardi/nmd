@@ -2,18 +2,20 @@ use std::sync::Arc;
 
 use regex::Regex;
 
-use crate::compiler::codex::modifier::{modifiers_bucket::ModifiersBucket, paragraph_modifier::ParagraphModifier, Mod};
+use crate::compiler::codex::modifier::{modifiers_bucket::ModifiersBucket, paragraph_modifier::ParagraphModifier, Modifier};
 
 use super::{parsing_configuration::ParsingConfiguration, parsing_error::ParsingError, parsing_outcome::ParsingOutcome, ParsingRule};
 
 pub struct HtmlExtendedBlockQuoteRule {
-
+    search_pattern: String,
+    incompatible_modifiers: ModifiersBucket
 }
 
 impl HtmlExtendedBlockQuoteRule {
     pub fn new() -> Self {
         Self {
-            
+            search_pattern: ParagraphModifier::ExtendedBlockQuote.search_pattern(),
+            incompatible_modifiers: ParagraphModifier::ExtendedBlockQuote.incompatible_modifiers()
         }
     }
 }
@@ -21,11 +23,11 @@ impl HtmlExtendedBlockQuoteRule {
 impl ParsingRule for HtmlExtendedBlockQuoteRule {
 
     fn search_pattern(&self) -> &String {
-        &ParagraphModifier::ExtendedBlockQuote.search_pattern()
+        &self.search_pattern
     }
     
     fn incompatible_modifiers(&self) -> &ModifiersBucket {
-        &ParagraphModifier::ExtendedBlockQuote.incompatible_modifiers()
+        &self.incompatible_modifiers
     }
 
     fn parse(&self, content: &str, parsing_configuration: Arc<ParsingConfiguration>) -> Result<ParsingOutcome, ParsingError> {

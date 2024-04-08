@@ -5,7 +5,7 @@ use regex::{Regex, Captures};
 
 use crate::compiler::codex::modifier::modifiers_bucket::ModifiersBucket;
 use crate::compiler::codex::modifier::paragraph_modifier::ParagraphModifier;
-use crate::compiler::codex::modifier::Mod;
+use crate::compiler::codex::modifier::Modifier;
 use crate::compiler::codex::Codex;
 use crate::compiler::dossier;
 use crate::resource::{image::Image, remote_resource::RemoteResource};
@@ -18,12 +18,17 @@ use super::ParsingRule;
 
 /// Rule to replace a NMD text based on a specific pattern matching rule
 pub struct HtmlImageRule {
+    search_pattern: String,
+    incompatible_modifiers: ModifiersBucket
 }
 
 impl HtmlImageRule {
     
     pub fn new() -> Self {
-        Self {}
+        Self {
+            search_pattern: ParagraphModifier::Image.search_pattern(),
+            incompatible_modifiers: ParagraphModifier::Image.incompatible_modifiers()
+        }
     }
 
     fn create_img_tag(src: &str, label: &str) -> String {
@@ -38,6 +43,14 @@ impl HtmlImageRule {
 }
 
 impl ParsingRule for HtmlImageRule {
+
+    fn search_pattern(&self) -> &String {
+        &self.search_pattern
+    }
+    
+    fn incompatible_modifiers(&self) -> &ModifiersBucket {
+        &self.incompatible_modifiers
+    }
 
     /// Parse the content using internal search and replacement pattern
     fn parse(&self, content: &str, parsing_configuration: Arc<ParsingConfiguration>) -> Result<ParsingOutcome, ParsingError> {
@@ -112,14 +125,6 @@ impl ParsingRule for HtmlImageRule {
         }).to_string();
         
         Ok(ParsingOutcome::new(parsed_content))
-    }
-
-    fn search_pattern(&self) -> &String {
-        &ParagraphModifier::Image.search_pattern()
-    }
-    
-    fn incompatible_modifiers(&self) -> &ModifiersBucket {
-        &ParagraphModifier::Image.incompatible_modifiers()
     }
 }
 

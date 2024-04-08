@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use regex::Regex;
 
-use crate::compiler::codex::modifier::{modifiers_bucket::ModifiersBucket, paragraph_modifier::ParagraphModifier, Mod};
+use crate::compiler::codex::modifier::{modifiers_bucket::ModifiersBucket, paragraph_modifier::ParagraphModifier, Modifier};
 
 use super::{parsing_configuration::{list_bullet_configuration_record::{self, ListBulletConfigurationRecord}, ParsingConfiguration}, parsing_error::ParsingError, parsing_outcome::ParsingOutcome, ParsingRule};
 
@@ -11,13 +11,15 @@ const INDENTATION: &str = r#"<span class="list-item-indentation"></span>"#;
 
 
 pub struct HtmlListRule {
-
+    search_pattern: String,
+    incompatible_modifiers: ModifiersBucket
 }
 
 impl HtmlListRule {
     pub fn new() -> Self {
         Self {
-            
+            search_pattern: ParagraphModifier::ListItem.search_pattern(),
+            incompatible_modifiers: ParagraphModifier::List.incompatible_modifiers()
         }
     }
 }
@@ -58,11 +60,11 @@ impl HtmlListRule {
 
 impl ParsingRule for HtmlListRule {
     fn search_pattern(&self) -> &String {
-        &ParagraphModifier::ListItem.search_pattern()
+        &self.search_pattern
     }
     
     fn incompatible_modifiers(&self) -> &ModifiersBucket {
-        &ParagraphModifier::List.incompatible_modifiers()
+        &self.incompatible_modifiers
     }
 
     fn parse(&self, content: &str, parsing_configuration: Arc<ParsingConfiguration>) -> Result<ParsingOutcome, ParsingError> {
