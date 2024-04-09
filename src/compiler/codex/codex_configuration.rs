@@ -1,4 +1,6 @@
-use super::modifier::{base_modifier::BaseModifier, chapter_modifier::ChapterModifier, paragraph_modifier::ParagraphModifier, text_modifier::TextModifier, Modifier};
+use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
+
+use super::modifier::{base_modifier::BaseModifier, chapter_modifier::ChapterModifier, paragraph_modifier::ParagraphModifier, text_modifier::TextModifier, Modifier, ModifierIdentifier};
 
 #[derive(Debug)]
 pub struct CodexConfiguration {
@@ -17,12 +19,23 @@ impl CodexConfiguration {
         }
     }
 
+
     pub fn ordered_text_modifiers(&self) -> &Vec<Box<dyn Modifier>> {
         &self.ordered_text_modifiers
     }
 
+    pub fn text_modifier(&self, identifier: &ModifierIdentifier) -> Option<&Box<dyn Modifier>> {
+        self.ordered_text_modifiers().par_iter()
+            .find_any(|paragraph_modifier| identifier.eq(paragraph_modifier.identifier()))
+    }
+
     pub fn ordered_paragraph_modifiers(&self) -> &Vec<Box<dyn Modifier>> {
         &self.ordered_paragraph_modifiers
+    }
+
+    pub fn paragraph_modifier(&self, identifier: &ModifierIdentifier) -> Option<&Box<dyn Modifier>> {
+        self.ordered_paragraph_modifiers().par_iter()
+            .find_any(|paragraph_modifier| identifier.eq(paragraph_modifier.identifier()))
     }
 
     pub fn ordered_chapter_modifier(&self) -> &Vec<Box<dyn Modifier>> {

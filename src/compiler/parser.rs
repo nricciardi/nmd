@@ -5,6 +5,10 @@ pub mod parsed_content_accessor;
 use std::sync::Arc;
 
 
+use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
+
+use crate::compiler::codex::modifier::paragraph_modifier;
+
 use self::parsing_rule::{parsing_configuration::ParsingConfiguration, parsing_error::ParsingError, parsing_outcome::ParsingOutcome};
 
 use super::{codex::{modifier::modifiers_bucket::ModifiersBucket, Codex}, dossier::document::Paragraph};
@@ -59,7 +63,7 @@ impl Parser {
 
                 outcome = text_rule.parse(outcome.parsed_content(), Arc::clone(&parsing_configuration))?;
     
-                excluded_modifiers = excluded_modifiers + text_rule.incompatible_modifiers().clone();
+                excluded_modifiers = excluded_modifiers + text_modifier.incompatible_modifiers().clone();
 
                 if excluded_modifiers == ModifiersBucket::All {
                     log::debug!("all next modifiers will be skipped because {:?} is found", ModifiersBucket::All);
@@ -91,7 +95,9 @@ impl Parser {
             return Ok(outcome)
         }
 
-        let paragraph_rule = codex.paragraph_rules().get(paragraph.paragraph_type());
+        let paragraph_modifier = codex.configuration().paragraph_modifier(paragraph.paragraph_type()).unwrap();
+
+        let paragraph_rule = codex.paragraph_rules().get(paragraph_modifier.identifier());
 
         if let Some(paragraph_rule) = paragraph_rule {
             let search_pattern = paragraph_rule.search_pattern();
@@ -100,7 +106,7 @@ impl Parser {
 
             outcome = paragraph_rule.parse(outcome.parsed_content(), Arc::clone(&parsing_configuration))?;
 
-            excluded_modifiers = excluded_modifiers + paragraph_rule.incompatible_modifiers().clone();
+            excluded_modifiers = excluded_modifiers + paragraph_modifier.incompatible_modifiers().clone();
 
         } else {
 

@@ -10,8 +10,6 @@ pub mod html_extended_block_quote_rule;
 use std::{fmt::Debug, sync::Arc};
 use regex::Regex;
 
-use crate::compiler::codex::modifier::modifiers_bucket::ModifiersBucket;
-
 use self::{parsing_configuration::ParsingConfiguration, parsing_error::ParsingError, parsing_outcome::ParsingOutcome};
 
 
@@ -30,7 +28,6 @@ pub trait ParsingRule: Send + Sync {
 
     fn parse(&self, content: &str, parsing_configuration: Arc<ParsingConfiguration>) -> Result<ParsingOutcome, ParsingError>;
 
-    fn incompatible_modifiers(&self) -> &ModifiersBucket;
 }
 
 impl Debug for dyn ParsingRule {

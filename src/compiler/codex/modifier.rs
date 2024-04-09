@@ -21,6 +21,10 @@ pub trait Modifier: Sync + Send {
 
     fn search_pattern(&self) -> &String;
 
+    fn parse_pattern(&self) -> &String {
+        self.search_pattern()
+    }
+
     fn incompatible_modifiers(&self) -> &ModifiersBucket {
         &ModifiersBucket::None
     }
