@@ -15,11 +15,13 @@ use self::{parsing_configuration::ParsingConfiguration, parsing_error::ParsingEr
 
 pub trait ParsingRule: Send + Sync {
 
-    fn search_pattern(&self) -> &String;
+    fn parsing_pattern(&self) -> &String;
+
+    // TODO?: fn replacing_pattern(&self) -> &R;         // Replacer
 
     fn is_match(&self, content: &str) -> bool {
 
-        let pattern = self.search_pattern();
+        let pattern = self.parsing_pattern();
 
         let regex = Regex::new(&pattern).unwrap();
 
@@ -32,7 +34,7 @@ pub trait ParsingRule: Send + Sync {
 
 impl Debug for dyn ParsingRule {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{:?}", self.search_pattern())
+        write!(f, "{:?}", self.parsing_pattern())
     }
 }
 

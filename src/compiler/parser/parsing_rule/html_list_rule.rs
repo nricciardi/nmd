@@ -11,15 +11,13 @@ const INDENTATION: &str = r#"<span class="list-item-indentation"></span>"#;
 
 
 pub struct HtmlListRule {
-    search_pattern: String,
-    incompatible_modifiers: ModifiersBucket
+    searching_pattern: String
 }
 
 impl HtmlListRule {
     pub fn new() -> Self {
         Self {
-            search_pattern: ParagraphModifier::ListItem.search_pattern(),
-            incompatible_modifiers: ParagraphModifier::List.incompatible_modifiers()
+            searching_pattern: ParagraphModifier::ListItem.searching_pattern(),
         }
     }
 }
@@ -59,12 +57,8 @@ impl HtmlListRule {
 }
 
 impl ParsingRule for HtmlListRule {
-    fn search_pattern(&self) -> &String {
-        &self.search_pattern
-    }
-    
-    fn incompatible_modifiers(&self) -> &ModifiersBucket {
-        &self.incompatible_modifiers
+    fn parsing_pattern(&self) -> &String {
+        &self.searching_pattern
     }
 
     fn parse(&self, content: &str, parsing_configuration: Arc<ParsingConfiguration>) -> Result<ParsingOutcome, ParsingError> {
@@ -73,7 +67,7 @@ impl ParsingRule for HtmlListRule {
 
         parsed_content.push_str(r#"<ul class="list">"#);
 
-        let search_patter = self.search_pattern();
+        let search_patter = self.parsing_pattern();
 
         let regex = Regex::new(&search_patter).unwrap();
 
@@ -154,7 +148,7 @@ mod test {
        
        let rule = HtmlListRule::new();
 
-       let regex = Regex::new(rule.search_pattern()).unwrap();
+       let regex = Regex::new(rule.parsing_pattern()).unwrap();
 
        let outcome = rule.parse(nmd_text, Arc::new(ParsingConfiguration::default())).unwrap();
 

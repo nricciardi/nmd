@@ -105,7 +105,7 @@ impl TextModifier {
         }
     }
     
-    pub fn search_pattern(&self) -> String {
+    pub fn searching_pattern(&self) -> String {
         match *self {
             Self::AbridgedBookmark => String::from(r"@\[([^\]]*?)\]"),
             Self::AbridgedBookmarkWithId => String::from(r"@\[([^\]]*?)\]#([\w-]*)"),
@@ -152,6 +152,6 @@ impl TextModifier {
 
 impl Into<BaseModifier> for TextModifier {
     fn into(self) -> BaseModifier {
-        BaseModifier::new(self.identifier(), self.search_pattern(), self.incompatible_modifiers())
+        BaseModifier::new(self.identifier(), self.searching_pattern(), self.incompatible_modifiers())
     }
 }

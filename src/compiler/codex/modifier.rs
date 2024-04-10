@@ -16,14 +16,10 @@ pub type ModifierIdentifier = String;
 pub trait Modifier: Sync + Send {
 
     fn identifier(&self) -> &ModifierIdentifier {
-        &self.search_pattern()
+        &self.searching_pattern()
     }
 
-    fn search_pattern(&self) -> &String;
-
-    fn parse_pattern(&self) -> &String {
-        self.search_pattern()
-    }
+    fn searching_pattern(&self) -> &String;
 
     fn incompatible_modifiers(&self) -> &ModifiersBucket {
         &ModifiersBucket::None
@@ -32,19 +28,19 @@ pub trait Modifier: Sync + Send {
 
 impl fmt::Debug for dyn Modifier {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}: {}", self.identifier(), self.search_pattern())
+        write!(f, "{}: {}", self.identifier(), self.searching_pattern())
     }
 }
 
 impl PartialEq for dyn Modifier {
     fn eq(&self, other: &Self) -> bool {
-        self.search_pattern().eq(other.search_pattern())
+        self.searching_pattern().eq(other.searching_pattern())
     }
 }
 
 impl Clone for Box<dyn Modifier> {
     fn clone(&self) -> Self {
-        Box::new(BaseModifier::new(self.identifier().clone(), self.search_pattern().clone(), self.incompatible_modifiers().clone()))
+        Box::new(BaseModifier::new(self.identifier().clone(), self.searching_pattern().clone(), self.incompatible_modifiers().clone()))
     }
 }
 

@@ -14,8 +14,7 @@ use super::ParsingRule;
 
 /// Rule to replace a NMD text based on a specific pattern matching rule
 pub struct ReplacementRule<R: Replacer> {
-    search_pattern: String,
-    incompatible_modifiers: ModifiersBucket,
+    searching_pattern: String,
     replacer: R,
     newline_fix: bool,
     newline_fix_pattern: Option<String>
@@ -29,13 +28,12 @@ impl<R: Replacer> ReplacementRule<R> {
     /// * `pattern_type` - PatternType which represent the pattern used to search in text 
     /// * `replacement_pattern` - A string slice which represent the pattern used to replace the text
     ///
-    pub fn new(search_pattern: String, incompatible_modifiers: ModifiersBucket, replacer: R) -> Self {
+    pub fn new(searching_pattern: String, replacer: R) -> Self {
 
-        log::debug!("created new parsing rule with search_pattern: '{}'", search_pattern);
+        log::debug!("created new parsing rule with search_pattern: '{}'", searching_pattern);
 
         Self {
-            search_pattern,
-            incompatible_modifiers,
+            searching_pattern,
             replacer,
             newline_fix: false,
             newline_fix_pattern: None
@@ -55,12 +53,12 @@ impl ParsingRule for ReplacementRule<String> {
     /// Parse the content using internal search and replacement pattern
     fn parse(&self, content: &str, parsing_configuration: Arc<ParsingConfiguration>) -> Result<ParsingOutcome, ParsingError> {
 
-        let regex = match Regex::new(&self.search_pattern()) {
+        let regex = match Regex::new(&self.parsing_pattern()) {
           Ok(r) => r,
-          Err(_) => return Err(ParsingError::InvalidPattern(self.search_pattern().clone()))  
+          Err(_) => return Err(ParsingError::InvalidPattern(self.parsing_pattern().clone()))  
         };
 
-        log::debug!("parsing:\n{}\nusing '{}'->'{}' (newline fix: {})", content, self.search_pattern(), self.replacer, self.newline_fix);
+        log::debug!("parsing:\n{}\nusing '{}'->'{}' (newline fix: {})", content, self.parsing_pattern(), self.replacer, self.newline_fix);
 
         let mut parsed_content = regex.replace_all(content, self.replacer.as_str()).to_string();
 
@@ -74,12 +72,8 @@ impl ParsingRule for ReplacementRule<String> {
         Ok(ParsingOutcome::new(parsed_content))
     }
     
-    fn search_pattern(&self) -> &String {
-        &self.search_pattern
-    }
-    
-    fn incompatible_modifiers(&self) -> &ModifiersBucket {
-        &self.incompatible_modifiers
+    fn parsing_pattern(&self) -> &String {
+        &self.searching_pattern
     }
 }
 
@@ -89,9 +83,9 @@ where F: 'static + Sync + Send + Fn(&Captures) -> String {
     /// Parse the content using internal search and replacement pattern
     fn parse(&self, content: &str, parsing_configuration: Arc<ParsingConfiguration>) -> Result<ParsingOutcome, ParsingError> {
 
-        let regex = match Regex::new(&self.search_pattern()) {
+        let regex = match Regex::new(&self.parsing_pattern()) {
           Ok(r) => r,
-          Err(_) => return Err(ParsingError::InvalidPattern(self.search_pattern().clone()))  
+          Err(_) => return Err(ParsingError::InvalidPattern(self.parsing_pattern().clone()))  
         };
 
         // log::debug!("parsing:\n{}\nusing '{}'->'{}' (newline fix: {})", content, self.modifier().search_pattern(), self.replacer, self.newline_fix);
@@ -108,12 +102,8 @@ where F: 'static + Sync + Send + Fn(&Captures) -> String {
         Ok(ParsingOutcome::new(parsed_content))
     }
 
-    fn search_pattern(&self) -> &String {
-        &self.search_pattern
-    }
-    
-    fn incompatible_modifiers(&self) -> &ModifiersBucket {
-        &self.incompatible_modifiers
+    fn parsing_pattern(&self) -> &String {
+        &self.searching_pattern
     }
 }
 
@@ -128,7 +118,7 @@ mod test {
     #[test]
     fn bold_parsing() {
         // valid pattern with a valid text modifier
-        let parsing_rule = ReplacementRule::new(TextModifier::BoldStarVersion.search_pattern().clone(), TextModifier::BoldStarVersion.incompatible_modifiers().clone(), String::from("<strong>$1</strong>"));
+        let parsing_rule = ReplacementRule::new(TextModifier::BoldStarVersion.searching_pattern().clone(), String::from("<strong>$1</strong>"));
 
         let text_to_parse = r"A piece of **bold text**";
         let parsing_configuration = Arc::new(ParsingConfiguration::default());
@@ -151,7 +141,7 @@ mod test {
     fn heading_parsing() {
         let parsing_configuration = Arc::new(ParsingConfiguration::default());
 
-        let parsing_rule = ReplacementRule::new(ChapterModifier::HeadingGeneralExtendedVersion(6).search_pattern().clone(), ChapterModifier::HeadingGeneralExtendedVersion(6).incompatible_modifiers().clone(), String::from("<h6>$1</h6>"));
+        let parsing_rule = ReplacementRule::new(ChapterModifier::HeadingGeneralExtendedVersion(6).searching_pattern().clone(), String::from("<h6>$1</h6>"));
 
         let text_to_parse = r"###### title 6";
 
@@ -164,7 +154,7 @@ mod test {
     fn paragraph_parsing() {
         let parsing_configuration = Arc::new(ParsingConfiguration::default());
 
-        let parsing_rule = ReplacementRule::new(ParagraphModifier::CommonParagraph.search_pattern().clone(), ParagraphModifier::CommonParagraph.incompatible_modifiers().clone(), String::from("<p>$1</p>"));
+        let parsing_rule = ReplacementRule::new(ParagraphModifier::CommonParagraph.searching_pattern().clone(), String::from("<p>$1</p>"));
 
         let text_to_parse = r#"
 paragraph 2a.
@@ -186,7 +176,7 @@ paragraph
     fn code_block() {
         let parsing_configuration = Arc::new(ParsingConfiguration::default());
 
-        let parsing_rule = ReplacementRule::new(ParagraphModifier::CodeBlock.search_pattern().clone(), ParagraphModifier::CodeBlock.incompatible_modifiers().clone(), String::from(r#"<pre><code class="language-$1 codeblock">$2</code></pre>"#));
+        let parsing_rule = ReplacementRule::new(ParagraphModifier::CodeBlock.searching_pattern().clone(), String::from(r#"<pre><code class="language-$1 codeblock">$2</code></pre>"#));
 
         let text_to_parse = r#"
 ```python
@@ -205,7 +195,7 @@ print("hello world")
     fn focus_block() {
         let parsing_configuration = Arc::new(ParsingConfiguration::default());
 
-        let parsing_rule = ReplacementRule::new(ParagraphModifier::FocusBlock.search_pattern().clone(), ParagraphModifier::FocusBlock.incompatible_modifiers().clone(), String::from(r#"<div class="focus-block focus-block-$1">$2</div>"#)).with_newline_fix(r"<br>".to_string());
+        let parsing_rule = ReplacementRule::new(ParagraphModifier::FocusBlock.searching_pattern().clone(), String::from(r#"<div class="focus-block focus-block-$1">$2</div>"#)).with_newline_fix(r"<br>".to_string());
 
         let text_to_parse = r#"
 # title 1

@@ -7,29 +7,22 @@ use crate::compiler::codex::modifier::{modifiers_bucket::ModifiersBucket, paragr
 use super::{parsing_configuration::ParsingConfiguration, parsing_error::ParsingError, parsing_outcome::ParsingOutcome, ParsingRule};
 
 pub struct HtmlExtendedBlockQuoteRule {
-    search_pattern: String,
-    incompatible_modifiers: ModifiersBucket
+    searching_pattern: String
 }
 
 impl HtmlExtendedBlockQuoteRule {
     pub fn new() -> Self {
         Self {
-            search_pattern: ParagraphModifier::ExtendedBlockQuote.search_pattern(),
-            incompatible_modifiers: ParagraphModifier::ExtendedBlockQuote.incompatible_modifiers()
+            searching_pattern: ParagraphModifier::ExtendedBlockQuote.searching_pattern()
         }
     }
 }
 
 impl ParsingRule for HtmlExtendedBlockQuoteRule {
 
-    fn search_pattern(&self) -> &String {
-        &self.search_pattern
+    fn parsing_pattern(&self) -> &String {
+        &self.searching_pattern
     }
-    
-    fn incompatible_modifiers(&self) -> &ModifiersBucket {
-        &self.incompatible_modifiers
-    }
-
     fn parse(&self, content: &str, parsing_configuration: Arc<ParsingConfiguration>) -> Result<ParsingOutcome, ParsingError> {
 
         let mut lines: Vec<&str> = content.lines().collect();

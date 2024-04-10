@@ -68,7 +68,7 @@ impl Loader {
 
         for chapter_modifier in codex.configuration().ordered_chapter_modifier() {
             
-            let search_pattern = chapter_modifier.search_pattern();
+            let search_pattern = chapter_modifier.searching_pattern();
 
             log::debug!("test {}", search_pattern);
 
@@ -176,7 +176,7 @@ impl Loader {
 
         for paragraph_modifier in codex.configuration().ordered_paragraph_modifiers() {
 
-            let search_pattern = format!(r"{}{}{}", PARAGRAPH_SEPARATOR, paragraph_modifier.search_pattern(), PARAGRAPH_SEPARATOR);
+            let search_pattern = format!(r"{}{}{}", PARAGRAPH_SEPARATOR, paragraph_modifier.searching_pattern(), PARAGRAPH_SEPARATOR);
 
             log::debug!("test {}", search_pattern);
 
@@ -223,7 +223,7 @@ impl Loader {
         let chapter_modifiers = codex.configuration().ordered_chapter_modifier();
 
         for chapter_modifier in chapter_modifiers {
-            let regex = Regex::new(&chapter_modifier.search_pattern()).unwrap();
+            let regex = Regex::new(&chapter_modifier.searching_pattern()).unwrap();
 
             if regex.is_match(content) {
                 let matched = regex.captures(content).unwrap();

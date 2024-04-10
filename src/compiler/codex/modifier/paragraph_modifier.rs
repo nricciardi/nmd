@@ -61,9 +61,9 @@ impl ParagraphModifier {
             Self::CodeBlock => String::from(r"```(\w+)\n+(.*?)\n+```"),
             Self::MathBlock => String::from(r#"\$\$((?s:.+?))\$\$"#),
             Self::ListItem => String::from(r#"(?m:^([\t ]*)(-\[\]|-\[ \]|-\[x\]|-\[X\]|-|->|\||\*|\+|--|\d[\.)]?|[a-zA-Z]{1,8}[\.)]|&[^;]+;) (.*)\n)"#),
-            Self::List => format!(r#"((?:{}+)+)"#, Self::ListItem.search_pattern()),
+            Self::List => format!(r#"((?:{}+)+)"#, Self::ListItem.searching_pattern()),
             Self::ExtendedBlockQuoteLine => String::from(r"(?m:^> (.*))"),
-            Self::ExtendedBlockQuote => format!(r"({}){}({})?", Self::ExtendedBlockQuoteLine.search_pattern(), String::from(r"\n(?:(?mx:^> .*\n)*)"), Self::ExtendedBlockQuoteLine.search_pattern()),
+            Self::ExtendedBlockQuote => format!(r"({}){}({})?", Self::ExtendedBlockQuoteLine.searching_pattern(), String::from(r"\n(?:(?mx:^> .*\n)*)"), Self::ExtendedBlockQuoteLine.searching_pattern()),
             Self::LineBreakDash => String::from(r"(?m:^-{3,})"),
             Self::LineBreakStar => String::from(r"(?m:^\*{3,})"),
             Self::LineBreakPlus => String::from(r"(?m:^\+{3,})"),
@@ -80,7 +80,7 @@ impl ParagraphModifier {
         }
     }
     
-    pub fn search_pattern(&self) -> String {
+    pub fn searching_pattern(&self) -> String {
         match *self {
             Self::Image => String::from(r"!\[([^\]]+)\]\(([^)]+)\)"),
 
@@ -89,9 +89,9 @@ impl ParagraphModifier {
             Self::MathBlock => String::from(r#"\$\$((?s:.+?))\$\$"#),
 
             Self::ListItem => String::from(r#"(?m:^([\t ]*)(-\[\]|-\[ \]|-\[x\]|-\[X\]|-|->|\||\*|\+|--|\d[\.)]?|[a-zA-Z]{1,8}[\.)]|&[^;]+;) (.*)\n)"#),
-            Self::List => format!(r#"((?:{}+)+)"#, Self::ListItem.search_pattern()),
+            Self::List => format!(r#"((?:{}+)+)"#, Self::ListItem.searching_pattern()),
             Self::ExtendedBlockQuoteLine => String::from(r"(?m:^> (.*))"),
-            Self::ExtendedBlockQuote => format!(r"({}){}({})?", Self::ExtendedBlockQuoteLine.search_pattern(), String::from(r"\n(?:(?mx:^> .*\n)*)"), Self::ExtendedBlockQuoteLine.search_pattern()),
+            Self::ExtendedBlockQuote => format!(r"({}){}({})?", Self::ExtendedBlockQuoteLine.searching_pattern(), String::from(r"\n(?:(?mx:^> .*\n)*)"), Self::ExtendedBlockQuoteLine.searching_pattern()),
             Self::LineBreakDash => String::from(r"(?m:^-{3,})"),
             Self::LineBreakStar => String::from(r"(?m:^\*{3,})"),
             Self::LineBreakPlus => String::from(r"(?m:^\+{3,})"),
@@ -121,6 +121,6 @@ impl ParagraphModifier {
 
 impl Into<BaseModifier> for ParagraphModifier {
     fn into(self) -> BaseModifier {
-        BaseModifier::new(self.identifier(), self.search_pattern(), self.incompatible_modifiers())
+        BaseModifier::new(self.identifier(), self.searching_pattern(), self.incompatible_modifiers())
     }
 }

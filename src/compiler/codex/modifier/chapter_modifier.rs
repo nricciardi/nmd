@@ -28,7 +28,7 @@ impl ChapterModifier {
         let heading_modifiers = Self::ordered();
 
         for heading_modifier in heading_modifiers {
-            let regex = Regex::new(&heading_modifier.search_pattern()).unwrap();
+            let regex = Regex::new(&heading_modifier.searching_pattern()).unwrap();
 
             if regex.is_match(content) {
                 match heading_modifier {
@@ -67,7 +67,7 @@ impl ChapterModifier {
         }
     }
     
-    pub fn search_pattern(&self) -> String {
+    pub fn searching_pattern(&self) -> String {
         match *self {
             Self::HeadingGeneralExtendedVersion(level) => {
 
@@ -95,6 +95,6 @@ impl ChapterModifier {
 
 impl Into<BaseModifier> for ChapterModifier {
     fn into(self) -> BaseModifier {
-        BaseModifier::new(self.identifier(), self.search_pattern(), self.incompatible_modifiers())
+        BaseModifier::new(self.identifier(), self.searching_pattern(), self.incompatible_modifiers())
     }
 }

@@ -18,16 +18,14 @@ use super::ParsingRule;
 
 /// Rule to replace a NMD text based on a specific pattern matching rule
 pub struct HtmlImageRule {
-    search_pattern: String,
-    incompatible_modifiers: ModifiersBucket
+    searching_pattern: String
 }
 
 impl HtmlImageRule {
     
     pub fn new() -> Self {
         Self {
-            search_pattern: ParagraphModifier::Image.search_pattern(),
-            incompatible_modifiers: ParagraphModifier::Image.incompatible_modifiers()
+            searching_pattern: ParagraphModifier::Image.searching_pattern()
         }
     }
 
@@ -44,20 +42,16 @@ impl HtmlImageRule {
 
 impl ParsingRule for HtmlImageRule {
 
-    fn search_pattern(&self) -> &String {
-        &self.search_pattern
-    }
-    
-    fn incompatible_modifiers(&self) -> &ModifiersBucket {
-        &self.incompatible_modifiers
+    fn parsing_pattern(&self) -> &String {
+        &self.searching_pattern
     }
 
     /// Parse the content using internal search and replacement pattern
     fn parse(&self, content: &str, parsing_configuration: Arc<ParsingConfiguration>) -> Result<ParsingOutcome, ParsingError> {
 
-        let regex = match Regex::new(&self.search_pattern()) {
+        let regex = match Regex::new(&self.parsing_pattern()) {
             Ok(r) => r,
-            Err(_) => return Err(ParsingError::InvalidPattern(self.search_pattern().clone()))  
+            Err(_) => return Err(ParsingError::InvalidPattern(self.parsing_pattern().clone()))  
         };
 
         let parsed_content = regex.replace_all(content, |captures: &Captures| {
