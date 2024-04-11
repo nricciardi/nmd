@@ -95,22 +95,32 @@ impl Loader {
 
                 log::debug!("found chapter between {} and {}:\n{}\nusing {:?}", start, end, matched_str, &chapter_modifier);
 
-                chapter_borders.push((
+                let cb = (
                     start,
                     end,
                     matched_str
-                ));
+                );
+
+                log::debug!("push in chapter_borders: {:?}", cb);
+
+                chapter_borders.push(cb);
 
             });
         }
 
         chapter_borders.par_sort_by(|a, b| a.0.cmp(&b.0));
 
+        log::debug!("start to load chapters...");
+
         for index in 0..chapter_borders.len() {
+
+            log::debug!("load chapter {:?}", chapter_borders[index]);
 
             let start = chapter_borders[index].0;
             let end = chapter_borders[index].1;
-            let heading = Self::load_heading_from_str(codex, &chapter_borders[index].2);
+            let raw_content = &chapter_borders[index].2;
+
+            let heading = Self::load_heading_from_str(codex, raw_content);
 
             if heading.is_none() {
                 return Err(DocumentError::Load(ResourceError::ResourceNotFound("heading".to_string())))
@@ -226,7 +236,10 @@ impl Loader {
 
             if regex.is_match(content) {
                 let matched = regex.captures(content).unwrap();
+
+                log::debug!("{:#?}", matched);
                 
+                // TODO: missed heading search (different way to parse heading... not always 1 or 2)
                 let level = HeadingLevel::from_str(matched.get(1).unwrap().as_str()).unwrap();
                 let title = matched.get(2).unwrap().as_str();
 
