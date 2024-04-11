@@ -4,7 +4,7 @@ use log;
 use regex::{Regex, Captures};
 
 use crate::compiler::codex::modifier::modifiers_bucket::ModifiersBucket;
-use crate::compiler::codex::modifier::paragraph_modifier::ParagraphModifier;
+use crate::compiler::codex::modifier::standard_paragraph_modifier::StandardParagraphModifier;
 use crate::compiler::codex::modifier::Modifier;
 use crate::compiler::codex::Codex;
 use crate::compiler::dossier;
@@ -15,7 +15,7 @@ use super::parsing_error::ParsingError;
 use super::parsing_outcome::ParsingOutcome;
 use super::ParsingRule;
 
-
+#[derive(Debug)]
 /// Rule to replace a NMD text based on a specific pattern matching rule
 pub struct HtmlImageRule {
     searching_pattern: String
@@ -25,7 +25,7 @@ impl HtmlImageRule {
     
     pub fn new() -> Self {
         Self {
-            searching_pattern: ParagraphModifier::Image.searching_pattern()
+            searching_pattern: StandardParagraphModifier::Image.searching_pattern()
         }
     }
 
@@ -42,16 +42,16 @@ impl HtmlImageRule {
 
 impl ParsingRule for HtmlImageRule {
 
-    fn parsing_pattern(&self) -> &String {
+    fn searching_pattern(&self) -> &String {
         &self.searching_pattern
     }
 
     /// Parse the content using internal search and replacement pattern
     fn parse(&self, content: &str, parsing_configuration: Arc<ParsingConfiguration>) -> Result<ParsingOutcome, ParsingError> {
 
-        let regex = match Regex::new(&self.parsing_pattern()) {
+        let regex = match Regex::new(&self.searching_pattern()) {
             Ok(r) => r,
-            Err(_) => return Err(ParsingError::InvalidPattern(self.parsing_pattern().clone()))  
+            Err(_) => return Err(ParsingError::InvalidPattern(self.searching_pattern().clone()))  
         };
 
         let parsed_content = regex.replace_all(content, |captures: &Captures| {

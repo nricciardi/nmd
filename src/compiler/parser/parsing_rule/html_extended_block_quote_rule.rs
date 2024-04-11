@@ -2,10 +2,12 @@ use std::sync::Arc;
 
 use regex::Regex;
 
-use crate::compiler::codex::modifier::{modifiers_bucket::ModifiersBucket, paragraph_modifier::ParagraphModifier, Modifier};
+use crate::compiler::codex::modifier::{modifiers_bucket::ModifiersBucket, standard_paragraph_modifier::StandardParagraphModifier, Modifier};
 
 use super::{parsing_configuration::ParsingConfiguration, parsing_error::ParsingError, parsing_outcome::ParsingOutcome, ParsingRule};
 
+
+#[derive(Debug)]
 pub struct HtmlExtendedBlockQuoteRule {
     searching_pattern: String
 }
@@ -13,14 +15,14 @@ pub struct HtmlExtendedBlockQuoteRule {
 impl HtmlExtendedBlockQuoteRule {
     pub fn new() -> Self {
         Self {
-            searching_pattern: ParagraphModifier::ExtendedBlockQuote.searching_pattern()
+            searching_pattern: StandardParagraphModifier::ExtendedBlockQuote.searching_pattern()
         }
     }
 }
 
 impl ParsingRule for HtmlExtendedBlockQuoteRule {
 
-    fn parsing_pattern(&self) -> &String {
+    fn searching_pattern(&self) -> &String {
         &self.searching_pattern
     }
     fn parse(&self, content: &str, parsing_configuration: Arc<ParsingConfiguration>) -> Result<ParsingOutcome, ParsingError> {

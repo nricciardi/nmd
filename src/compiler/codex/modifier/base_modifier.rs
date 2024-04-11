@@ -1,18 +1,18 @@
-use super::{modifiers_bucket::ModifiersBucket, Modifier, ModifierIdentifier};
+use super::{modifiers_bucket::ModifiersBucket, Modifier, ModifierIdentifier, ModifierPattern};
 
 
 
 pub struct BaseModifier {
     identifier: ModifierIdentifier,
-    searching_pattern: String,
+    modifier_pattern: ModifierPattern,
     incompatible_modifiers: ModifiersBucket,
 }
 
 impl BaseModifier {
-    pub fn new(identifier: ModifierIdentifier, searching_pattern: String, incompatible_modifiers: ModifiersBucket) -> Self {
+    pub fn new(identifier: ModifierIdentifier, modifier_pattern: ModifierPattern, incompatible_modifiers: ModifiersBucket) -> Self {
         Self {
             identifier,
-            searching_pattern,
+            modifier_pattern,
             incompatible_modifiers
         }
     }
@@ -23,8 +23,8 @@ impl Modifier for BaseModifier {
         &self.identifier
     }
 
-    fn searching_pattern(&self) -> &String {
-        &self.searching_pattern
+    fn modifier_pattern(&self) -> &ModifierPattern {
+        &self.modifier_pattern
     }
 
     fn incompatible_modifiers(&self) -> &ModifiersBucket {

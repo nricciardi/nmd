@@ -1,7 +1,7 @@
-pub mod paragraph_modifier;
+pub mod standard_paragraph_modifier;
 pub mod modifiers_bucket;
-pub mod text_modifier;
-pub mod chapter_modifier;
+pub mod standard_text_modifier;
+pub mod standard_chapter_modifier;
 pub mod base_modifier;
 
 use std::fmt;
@@ -12,14 +12,15 @@ use self::{base_modifier::BaseModifier, modifiers_bucket::ModifiersBucket};
 pub const MAX_HEADING_LEVEL: u32 = 6; 
 
 pub type ModifierIdentifier = String;
+pub type ModifierPattern = String;
 
 pub trait Modifier: Sync + Send {
 
     fn identifier(&self) -> &ModifierIdentifier {
-        &self.searching_pattern()
+        &self.modifier_pattern()
     }
 
-    fn searching_pattern(&self) -> &String;
+    fn modifier_pattern(&self) -> &ModifierPattern;
 
     fn incompatible_modifiers(&self) -> &ModifiersBucket {
         &ModifiersBucket::None
@@ -28,19 +29,19 @@ pub trait Modifier: Sync + Send {
 
 impl fmt::Debug for dyn Modifier {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}: {}", self.identifier(), self.searching_pattern())
+        write!(f, "{}: {}", self.identifier(), self.modifier_pattern())
     }
 }
 
 impl PartialEq for dyn Modifier {
     fn eq(&self, other: &Self) -> bool {
-        self.searching_pattern().eq(other.searching_pattern())
+        self.modifier_pattern().eq(other.modifier_pattern())
     }
 }
 
 impl Clone for Box<dyn Modifier> {
     fn clone(&self) -> Self {
-        Box::new(BaseModifier::new(self.identifier().clone(), self.searching_pattern().clone(), self.incompatible_modifiers().clone()))
+        Box::new(BaseModifier::new(self.identifier().clone(), self.modifier_pattern().clone(), self.incompatible_modifiers().clone()))
     }
 }
 

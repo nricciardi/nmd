@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use regex::Regex;
 
-use crate::compiler::codex::modifier::{modifiers_bucket::ModifiersBucket, paragraph_modifier::ParagraphModifier, Modifier};
+use crate::compiler::codex::modifier::{modifiers_bucket::ModifiersBucket, standard_paragraph_modifier::StandardParagraphModifier, Modifier};
 
 use super::{parsing_configuration::{list_bullet_configuration_record::{self, ListBulletConfigurationRecord}, ParsingConfiguration}, parsing_error::ParsingError, parsing_outcome::ParsingOutcome, ParsingRule};
 
@@ -10,6 +10,7 @@ const SPACE_TAB_EQUIVALENCE: &str = r"   ";
 const INDENTATION: &str = r#"<span class="list-item-indentation"></span>"#;
 
 
+#[derive(Debug)]
 pub struct HtmlListRule {
     searching_pattern: String
 }
@@ -17,7 +18,7 @@ pub struct HtmlListRule {
 impl HtmlListRule {
     pub fn new() -> Self {
         Self {
-            searching_pattern: ParagraphModifier::ListItem.searching_pattern(),
+            searching_pattern: StandardParagraphModifier::ListItem.searching_pattern(),
         }
     }
 }
@@ -57,7 +58,7 @@ impl HtmlListRule {
 }
 
 impl ParsingRule for HtmlListRule {
-    fn parsing_pattern(&self) -> &String {
+    fn searching_pattern(&self) -> &String {
         &self.searching_pattern
     }
 
@@ -67,7 +68,7 @@ impl ParsingRule for HtmlListRule {
 
         parsed_content.push_str(r#"<ul class="list">"#);
 
-        let search_patter = self.parsing_pattern();
+        let search_patter = self.searching_pattern();
 
         let regex = Regex::new(&search_patter).unwrap();
 
@@ -148,7 +149,7 @@ mod test {
        
        let rule = HtmlListRule::new();
 
-       let regex = Regex::new(rule.parsing_pattern()).unwrap();
+       let regex = Regex::new(rule.searching_pattern()).unwrap();
 
        let outcome = rule.parse(nmd_text, Arc::new(ParsingConfiguration::default())).unwrap();
 

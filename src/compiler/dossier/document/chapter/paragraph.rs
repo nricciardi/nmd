@@ -15,16 +15,18 @@ pub enum ParagraphError {
     Empty
 }
 
+pub type ParagraphType = ModifierIdentifier;
+
 #[derive(Debug, Clone)]
 pub struct Paragraph {
     content: String,
     parsed_content: Option<ParsingOutcome>,
-    paragraph_type: ModifierIdentifier,
+    paragraph_type: ParagraphType,
 }
 
 impl Paragraph {
 
-    pub fn new(content: String, paragraph_type: ModifierIdentifier) -> Self {
+    pub fn new(content: String, paragraph_type: ParagraphType) -> Self {
         Self {
             content,
             paragraph_type,
@@ -40,7 +42,7 @@ impl Paragraph {
         self.content.chars().all(|c| c == '\n')
     }
 
-    pub fn paragraph_type(&self) -> &ModifierIdentifier {
+    pub fn paragraph_type(&self) -> &ParagraphType {
         &self.paragraph_type
     }
 }

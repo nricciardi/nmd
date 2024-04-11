@@ -8,10 +8,10 @@ use std::sync::Arc;
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use rayon::slice::ParallelSliceMut;
 use regex::{Captures, Regex};
-use self::modifier::chapter_modifier::ChapterModifier;
+use self::modifier::standard_chapter_modifier::StandardChapterModifier;
 use self::modifier::modifiers_bucket::ModifiersBucket;
-use self::modifier::paragraph_modifier::{self, ParagraphModifier};
-use self::modifier::text_modifier::TextModifier;
+use self::modifier::standard_paragraph_modifier::{self, StandardParagraphModifier};
+use self::modifier::standard_text_modifier::StandardTextModifier;
 use self::modifier::{Modifier, ModifierIdentifier};
 pub use self::modifier::MAX_HEADING_LEVEL;
 use crate::compiler::dossier::document::chapter::heading::{Heading, HeadingLevel};
@@ -25,7 +25,6 @@ use super::parser::parsing_rule::html_list_rule::HtmlListRule;
 use super::parser::parsing_rule::replacement_rule::ReplacementRule;
 use super::parser::parsing_rule::ParsingRule;
 
-pub const PARAGRAPH_SEPARATOR: &str = r"(?m:^\n[ \t]*){1}";
 
 /// Ordered collection of rules
 /// A **rule** is defined as the actual text transformation
@@ -102,112 +101,112 @@ impl Codex {
 
         let text_rules: HashMap<ModifierIdentifier, Box<dyn ParsingRule>> = HashMap::from([
             (
-                TextModifier::Todo.identifier().clone(),
-                Box::new(ReplacementRule::new(TextModifier::Todo.searching_pattern().clone(), TextModifier::Todo.incompatible_modifiers().clone(), String::from(r#"<div class="todo"><div class="todo-title"></div><div class="todo-description">$1</div></div>"#))) as Box<dyn ParsingRule>,
+                StandardTextModifier::Todo.identifier().clone(),
+                Box::new(ReplacementRule::new(StandardTextModifier::Todo.modifier_pattern().clone(), String::from(r#"<div class="todo"><div class="todo-title"></div><div class="todo-description">$1</div></div>"#))) as Box<dyn ParsingRule>,
             ),
             (
-                TextModifier::AbridgedTodo.identifier().clone(),
-                Box::new(ReplacementRule::new(TextModifier::AbridgedTodo.searching_pattern().clone(), TextModifier::AbridgedTodo.incompatible_modifiers().clone(), String::from(r#"<div class="todo"><div class="todo-title"></div><div class="todo-description">$1</div></div>"#))),
+                StandardTextModifier::AbridgedTodo.identifier().clone(),
+                Box::new(ReplacementRule::new(StandardTextModifier::AbridgedTodo.modifier_pattern().clone(), String::from(r#"<div class="todo"><div class="todo-title"></div><div class="todo-description">$1</div></div>"#))),
             ),
             (
-                TextModifier::BookmarkWithId.identifier().clone(),
-                Box::new(ReplacementRule::new(TextModifier::BookmarkWithId.searching_pattern().clone(), TextModifier::BookmarkWithId.incompatible_modifiers().clone(), String::from(r#"<div class="bookmark" id="$2"><div class="bookmark-title">$1</div><div class="bookmark-description">$3</div></div>"#))),
+                StandardTextModifier::BookmarkWithId.identifier().clone(),
+                Box::new(ReplacementRule::new(StandardTextModifier::BookmarkWithId.modifier_pattern().clone(), String::from(r#"<div class="bookmark" id="$2"><div class="bookmark-title">$1</div><div class="bookmark-description">$3</div></div>"#))),
             ),
             (
-                TextModifier::Bookmark.identifier().clone(),
-                Box::new(ReplacementRule::new(TextModifier::Bookmark.searching_pattern().clone(), TextModifier::Bookmark.incompatible_modifiers().clone(), String::from(r#"<div class="bookmark"><div class="bookmark-title">$1</div><div class="bookmark-description">$2</div></div>"#))),
+                StandardTextModifier::Bookmark.identifier().clone(),
+                Box::new(ReplacementRule::new(StandardTextModifier::Bookmark.modifier_pattern().clone(), String::from(r#"<div class="bookmark"><div class="bookmark-title">$1</div><div class="bookmark-description">$2</div></div>"#))),
             ),
             (
-                TextModifier::AbridgedBookmarkWithId.identifier().clone(),
-                Box::new(ReplacementRule::new(TextModifier::AbridgedBookmarkWithId.searching_pattern().clone(), TextModifier::AbridgedBookmarkWithId.incompatible_modifiers().clone(), String::from(r#"<div class="abridged-bookmark" id="$2"><div class="abridged-bookmark-title">$1</div></div>"#))),
+                StandardTextModifier::AbridgedBookmarkWithId.identifier().clone(),
+                Box::new(ReplacementRule::new(StandardTextModifier::AbridgedBookmarkWithId.modifier_pattern().clone(), String::from(r#"<div class="abridged-bookmark" id="$2"><div class="abridged-bookmark-title">$1</div></div>"#))),
             ),
             (
-                TextModifier::AbridgedBookmark.identifier().clone(),
-                Box::new(ReplacementRule::new(TextModifier::AbridgedBookmark.searching_pattern().clone(), TextModifier::AbridgedBookmark.incompatible_modifiers().clone(), String::from(r#"<div class="abridged-bookmark"><div class="abridged-bookmark-title">$1</div></div>"#))),
+                StandardTextModifier::AbridgedBookmark.identifier().clone(),
+                Box::new(ReplacementRule::new(StandardTextModifier::AbridgedBookmark.modifier_pattern().clone(), String::from(r#"<div class="abridged-bookmark"><div class="abridged-bookmark-title">$1</div></div>"#))),
             ),
             (
-                TextModifier::EmbeddedStyleWithId.identifier().clone(),
-                Box::new(ReplacementRule::new(TextModifier::EmbeddedStyleWithId.searching_pattern().clone(), TextModifier::EmbeddedStyleWithId.incompatible_modifiers().clone(), String::from(r#"<span class="identifier embedded-style" id="$2" style="$3">$1</span>"#))),
+                StandardTextModifier::EmbeddedStyleWithId.identifier().clone(),
+                Box::new(ReplacementRule::new(StandardTextModifier::EmbeddedStyleWithId.modifier_pattern().clone(), String::from(r#"<span class="identifier embedded-style" id="$2" style="$3">$1</span>"#))),
             ),
             (
-                TextModifier::EmbeddedStyle.identifier().clone(),
-                Box::new(ReplacementRule::new(TextModifier::EmbeddedStyle.searching_pattern().clone(), TextModifier::EmbeddedStyle.incompatible_modifiers().clone(), String::from(r#"<span class="embedded-style" style="$2">$1</span>"#))),
+                StandardTextModifier::EmbeddedStyle.identifier().clone(),
+                Box::new(ReplacementRule::new(StandardTextModifier::EmbeddedStyle.modifier_pattern().clone(), String::from(r#"<span class="embedded-style" style="$2">$1</span>"#))),
             ),
             (
-                TextModifier::AbridgedEmbeddedStyleWithId.identifier().clone(),
-                Box::new(ReplacementRule::new(TextModifier::AbridgedEmbeddedStyleWithId.searching_pattern().clone(), TextModifier::AbridgedEmbeddedStyleWithId.incompatible_modifiers().clone(), String::from(r#"<span class="identifier abridged-embedded-style" id="$2" style="color: $3; background-color: $4; font-family: $5;">$1</span>"#))),
+                StandardTextModifier::AbridgedEmbeddedStyleWithId.identifier().clone(),
+                Box::new(ReplacementRule::new(StandardTextModifier::AbridgedEmbeddedStyleWithId.modifier_pattern().clone(), String::from(r#"<span class="identifier abridged-embedded-style" id="$2" style="color: $3; background-color: $4; font-family: $5;">$1</span>"#))),
             ),
             (
-                TextModifier::AbridgedEmbeddedStyle.identifier().clone(),
-                Box::new(ReplacementRule::new(TextModifier::AbridgedEmbeddedStyle.searching_pattern().clone(), TextModifier::AbridgedEmbeddedStyle.incompatible_modifiers().clone(), String::from(r#"<span class="abridged-embedded-style" style="color: $2; background-color: $3; font-family: $4;">$1</span>"#))),
+                StandardTextModifier::AbridgedEmbeddedStyle.identifier().clone(),
+                Box::new(ReplacementRule::new(StandardTextModifier::AbridgedEmbeddedStyle.modifier_pattern().clone(), String::from(r#"<span class="abridged-embedded-style" style="color: $2; background-color: $3; font-family: $4;">$1</span>"#))),
             ),
             (
-                TextModifier::Identifier.identifier().clone(),
-                Box::new(ReplacementRule::new(TextModifier::Identifier.searching_pattern().clone(), TextModifier::Identifier.incompatible_modifiers().clone(), String::from(r#"<span class="identifier" id="$2">$1</span>"#))),
+                StandardTextModifier::Identifier.identifier().clone(),
+                Box::new(ReplacementRule::new(StandardTextModifier::Identifier.modifier_pattern().clone(), String::from(r#"<span class="identifier" id="$2">$1</span>"#))),
             ),
             (
-                TextModifier::Highlight.identifier().clone(),
-                Box::new(ReplacementRule::new(TextModifier::Highlight.searching_pattern().clone(), TextModifier::Highlight.incompatible_modifiers().clone(), String::from(r#"<mark class="highlight">$1</mark>"#))),
+                StandardTextModifier::Highlight.identifier().clone(),
+                Box::new(ReplacementRule::new(StandardTextModifier::Highlight.modifier_pattern().clone(), String::from(r#"<mark class="highlight">$1</mark>"#))),
             ),
             (
-                TextModifier::InlineMath.identifier().clone(),
-                Box::new(ReplacementRule::new(TextModifier::InlineMath.searching_pattern().clone(), TextModifier::InlineMath.incompatible_modifiers().clone(), String::from(r#"<span class="inline-math">$$${1}$$</span>"#))),
+                StandardTextModifier::InlineMath.identifier().clone(),
+                Box::new(ReplacementRule::new(StandardTextModifier::InlineMath.modifier_pattern().clone(), String::from(r#"<span class="inline-math">$$${1}$$</span>"#))),
             ),
             (
-                TextModifier::InlineCode.identifier().clone(),
-                Box::new(ReplacementRule::new(TextModifier::InlineCode.searching_pattern().clone(), TextModifier::InlineCode.incompatible_modifiers().clone(), String::from(r#"<code class="language-markup inline-code">${1}</code>"#))),
+                StandardTextModifier::InlineCode.identifier().clone(),
+                Box::new(ReplacementRule::new(StandardTextModifier::InlineCode.modifier_pattern().clone(), String::from(r#"<code class="language-markup inline-code">${1}</code>"#))),
             ),
             (
-                TextModifier::BoldStarVersion.identifier().clone(),
-                Box::new(ReplacementRule::new(TextModifier::BoldStarVersion.searching_pattern().clone(), TextModifier::BoldStarVersion.incompatible_modifiers().clone(), String::from(r#"<strong class="bold">${1}</strong>"#))),
+                StandardTextModifier::BoldStarVersion.identifier().clone(),
+                Box::new(ReplacementRule::new(StandardTextModifier::BoldStarVersion.modifier_pattern().clone(), String::from(r#"<strong class="bold">${1}</strong>"#))),
             ),
             (
-                TextModifier::BoldUnderscoreVersion.identifier().clone(),
-                Box::new(ReplacementRule::new(TextModifier::BoldUnderscoreVersion.searching_pattern().clone(), TextModifier::BoldUnderscoreVersion.incompatible_modifiers().clone(), String::from(r#"<strong class="bold">${1}</strong>"#))),
+                StandardTextModifier::BoldUnderscoreVersion.identifier().clone(),
+                Box::new(ReplacementRule::new(StandardTextModifier::BoldUnderscoreVersion.modifier_pattern().clone(), String::from(r#"<strong class="bold">${1}</strong>"#))),
             ),
             (
-                TextModifier::ItalicStarVersion.identifier().clone(),
-                Box::new(ReplacementRule::new(TextModifier::ItalicStarVersion.searching_pattern().clone(), TextModifier::ItalicStarVersion.incompatible_modifiers().clone(), String::from(r#"<em class="italic">${1}</em>"#))),
+                StandardTextModifier::ItalicStarVersion.identifier().clone(),
+                Box::new(ReplacementRule::new(StandardTextModifier::ItalicStarVersion.modifier_pattern().clone(), String::from(r#"<em class="italic">${1}</em>"#))),
             ),
             (
-                TextModifier::ItalicUnderscoreVersion.identifier().clone(),
-                Box::new(ReplacementRule::new(TextModifier::ItalicUnderscoreVersion.searching_pattern().clone(), TextModifier::ItalicUnderscoreVersion.incompatible_modifiers().clone(), String::from(r#"<em class="italic">${1}</em>"#))),
+                StandardTextModifier::ItalicUnderscoreVersion.identifier().clone(),
+                Box::new(ReplacementRule::new(StandardTextModifier::ItalicUnderscoreVersion.modifier_pattern().clone(), String::from(r#"<em class="italic">${1}</em>"#))),
             ),
             (
-                TextModifier::Strikethrough.identifier().clone(),
-                Box::new(ReplacementRule::new(TextModifier::Strikethrough.searching_pattern().clone(), TextModifier::Strikethrough.incompatible_modifiers().clone(), String::from(r#"<del class="strikethrough">${1}</del>"#))),
+                StandardTextModifier::Strikethrough.identifier().clone(),
+                Box::new(ReplacementRule::new(StandardTextModifier::Strikethrough.modifier_pattern().clone(), String::from(r#"<del class="strikethrough">${1}</del>"#))),
             ),
             (
-                TextModifier::Underlined.identifier().clone(),
-                Box::new(ReplacementRule::new(TextModifier::Underlined.searching_pattern().clone(), TextModifier::Underlined.incompatible_modifiers().clone(), String::from(r#"<u class="underlined">${1}</u>"#))),
+                StandardTextModifier::Underlined.identifier().clone(),
+                Box::new(ReplacementRule::new(StandardTextModifier::Underlined.modifier_pattern().clone(), String::from(r#"<u class="underlined">${1}</u>"#))),
             ),
             (
-                TextModifier::Superscript.identifier().clone(),
-                Box::new(ReplacementRule::new(TextModifier::Superscript.searching_pattern().clone(), TextModifier::Superscript.incompatible_modifiers().clone(), String::from(r#"<sup class="superscript">${1}</sup>"#))),
+                StandardTextModifier::Superscript.identifier().clone(),
+                Box::new(ReplacementRule::new(StandardTextModifier::Superscript.modifier_pattern().clone(), String::from(r#"<sup class="superscript">${1}</sup>"#))),
             ),
             (
-                TextModifier::Subscript.identifier().clone(),
-                Box::new(ReplacementRule::new(TextModifier::Subscript.searching_pattern().clone(), TextModifier::Subscript.incompatible_modifiers().clone(), String::from(r#"<sub class="subscript">${1}</sub>"#))),
+                StandardTextModifier::Subscript.identifier().clone(),
+                Box::new(ReplacementRule::new(StandardTextModifier::Subscript.modifier_pattern().clone(), String::from(r#"<sub class="subscript">${1}</sub>"#))),
             ),
             (
-                TextModifier::Link.identifier().clone(),
-                Box::new(ReplacementRule::new(TextModifier::Link.searching_pattern().clone(), TextModifier::Link.incompatible_modifiers().clone(), String::from(r#"<a href=\"$2\" class="link">${1}</a>"#))),
+                StandardTextModifier::Link.identifier().clone(),
+                Box::new(ReplacementRule::new(StandardTextModifier::Link.modifier_pattern().clone(), String::from(r#"<a href=\"$2\" class="link">${1}</a>"#))),
             ),
             (
-                TextModifier::Comment.identifier().clone(),
-                Box::new(ReplacementRule::new(TextModifier::Comment.searching_pattern().clone(), TextModifier::Comment.incompatible_modifiers().clone(), String::from(r#"<div class="checkbox checkbox-unchecked"></div>"#))),
+                StandardTextModifier::Comment.identifier().clone(),
+                Box::new(ReplacementRule::new(StandardTextModifier::Comment.modifier_pattern().clone(), String::from(r#"<div class="checkbox checkbox-unchecked"></div>"#))),
             ),
             (
-                TextModifier::Checkbox.identifier().clone(),
-                Box::new(ReplacementRule::new(TextModifier::Checkbox.searching_pattern().clone(), TextModifier::Checkbox.incompatible_modifiers().clone(), String::from(r#"<div class="todo"><div class="todo-title"></div><div class="todo-description">$1</div></div>"#))) as Box<dyn ParsingRule>,
+                StandardTextModifier::Checkbox.identifier().clone(),
+                Box::new(ReplacementRule::new(StandardTextModifier::Checkbox.modifier_pattern().clone(), String::from(r#"<div class="todo"><div class="todo-title"></div><div class="todo-description">$1</div></div>"#))) as Box<dyn ParsingRule>,
             ),
             (
-                TextModifier::CheckboxChecked.identifier().clone(),
-                Box::new(ReplacementRule::new(TextModifier::CheckboxChecked.searching_pattern().clone(), TextModifier::CheckboxChecked.incompatible_modifiers().clone(), String::from(r#"<div class="checkbox checkbox-checked"></div>"#))),
+                StandardTextModifier::CheckboxChecked.identifier().clone(),
+                Box::new(ReplacementRule::new(StandardTextModifier::CheckboxChecked.modifier_pattern().clone(), String::from(r#"<div class="checkbox checkbox-checked"></div>"#))),
             ),
             (
-                TextModifier::Emoji.identifier().clone(),
-                Box::new(ReplacementRule::new(TextModifier::Emoji.searching_pattern().clone(), TextModifier::Emoji.incompatible_modifiers().clone(), String::from(r#"<i class="em-svg em-${1}" aria-role="presentation"></i>"#))),
+                StandardTextModifier::Emoji.identifier().clone(),
+                Box::new(ReplacementRule::new(StandardTextModifier::Emoji.modifier_pattern().clone(), String::from(r#"<i class="em-svg em-${1}" aria-role="presentation"></i>"#))),
             ),
         ]);
 
@@ -243,76 +242,76 @@ impl Codex {
 
         let paragraph_rules: HashMap<ModifierIdentifier, Box<dyn ParsingRule>> = HashMap::from([
             (
-                ParagraphModifier::PageBreak.identifier().clone(),
-                Box::new(ReplacementRule::new(ParagraphModifier::PageBreak.searching_pattern().clone(), ParagraphModifier::PageBreak.incompatible_modifiers().clone(), String::from(r#"<div class="page-break"></div>"#))) as Box<dyn ParsingRule>
+                StandardParagraphModifier::PageBreak.identifier().clone(),
+                Box::new(ReplacementRule::new(StandardParagraphModifier::PageBreak.searching_pattern().clone(), String::from(r#"<div class="page-break"></div>"#))) as Box<dyn ParsingRule>
             ),
             (
-                ParagraphModifier::EmbeddedParagraphStyleWithId.identifier().clone(),
-                Box::new(ReplacementRule::new(ParagraphModifier::EmbeddedParagraphStyleWithId.searching_pattern().clone(), ParagraphModifier::EmbeddedParagraphStyleWithId.incompatible_modifiers().clone(), String::from(r#"<div class="identifier embedded-paragraph-style" id="$2" style="$3">$1</div>"#)).with_newline_fix(r"<br>".to_string())),
+                StandardParagraphModifier::EmbeddedParagraphStyleWithId.identifier().clone(),
+                Box::new(ReplacementRule::new(StandardParagraphModifier::EmbeddedParagraphStyleWithId.searching_pattern().clone(), String::from(r#"<div class="identifier embedded-paragraph-style" id="$2" style="$3">$1</div>"#)).with_newline_fix(r"<br>".to_string())),
             ),
             (
-                ParagraphModifier::EmbeddedParagraphStyle.identifier().clone(),
-                Box::new(ReplacementRule::new(ParagraphModifier::EmbeddedParagraphStyle.searching_pattern().clone(),  ParagraphModifier::EmbeddedParagraphStyle.incompatible_modifiers().clone(), String::from(r#"<div class="embedded-paragraph-style" style="$2">$1</div>"#)).with_newline_fix(r"<br>".to_string())),
+                StandardParagraphModifier::EmbeddedParagraphStyle.identifier().clone(),
+                Box::new(ReplacementRule::new(StandardParagraphModifier::EmbeddedParagraphStyle.searching_pattern().clone(), String::from(r#"<div class="embedded-paragraph-style" style="$2">$1</div>"#)).with_newline_fix(r"<br>".to_string())),
             ),
             (
-                ParagraphModifier::AbridgedEmbeddedParagraphStyleWithId.identifier().clone(),
-                Box::new(ReplacementRule::new(ParagraphModifier::AbridgedEmbeddedParagraphStyleWithId.searching_pattern().clone(),  ParagraphModifier::AbridgedEmbeddedParagraphStyleWithId.incompatible_modifiers().clone(), String::from(r#"<div class="identifier abridged-embedded-paragraph-style" id="$2" style="color: $3; background-color: $4; font-family: $5;">$1</div>"#)).with_newline_fix(r"<br>".to_string())),
+                StandardParagraphModifier::AbridgedEmbeddedParagraphStyleWithId.identifier().clone(),
+                Box::new(ReplacementRule::new(StandardParagraphModifier::AbridgedEmbeddedParagraphStyleWithId.searching_pattern().clone(),  String::from(r#"<div class="identifier abridged-embedded-paragraph-style" id="$2" style="color: $3; background-color: $4; font-family: $5;">$1</div>"#)).with_newline_fix(r"<br>".to_string())),
             ),
             (
-                ParagraphModifier::AbridgedEmbeddedParagraphStyle.identifier().clone(),
-                Box::new(ReplacementRule::new(ParagraphModifier::AbridgedEmbeddedParagraphStyle.searching_pattern().clone(),  ParagraphModifier::AbridgedEmbeddedParagraphStyle.incompatible_modifiers().clone(), String::from(r#"<div class="abridged-embedded-paragraph-style" style="color: $2; background-color: $3; font-family: $4;">$1</div>"#)).with_newline_fix(r"<br>".to_string())),
+                StandardParagraphModifier::AbridgedEmbeddedParagraphStyle.identifier().clone(),
+                Box::new(ReplacementRule::new(StandardParagraphModifier::AbridgedEmbeddedParagraphStyle.searching_pattern().clone(), String::from(r#"<div class="abridged-embedded-paragraph-style" style="color: $2; background-color: $3; font-family: $4;">$1</div>"#)).with_newline_fix(r"<br>".to_string())),
             ),
             (
-                ParagraphModifier::ParagraphIdentifier.identifier().clone(),
-                Box::new(ReplacementRule::new(ParagraphModifier::ParagraphIdentifier.searching_pattern().clone(),  ParagraphModifier::ParagraphIdentifier.incompatible_modifiers().clone(), String::from(r#"<span class="identifier" id="$2">$1</span>"#)).with_newline_fix(r"<br>".to_string())),
+                StandardParagraphModifier::ParagraphIdentifier.identifier().clone(),
+                Box::new(ReplacementRule::new(StandardParagraphModifier::ParagraphIdentifier.searching_pattern().clone(), String::from(r#"<span class="identifier" id="$2">$1</span>"#)).with_newline_fix(r"<br>".to_string())),
             ),
             (
-                ParagraphModifier::ExtendedBlockQuote.identifier().clone(),
+                StandardParagraphModifier::ExtendedBlockQuote.identifier().clone(),
                 Box::new(HtmlExtendedBlockQuoteRule::new()),
             ),
             (
-                ParagraphModifier::MathBlock.identifier().clone(),
-                Box::new(ReplacementRule::new(ParagraphModifier::MathBlock.searching_pattern().clone(),  ParagraphModifier::MathBlock.incompatible_modifiers().clone(), String::from(r#"<p class="math-block">$$$$${1}$$$$</p>"#))),
+                StandardParagraphModifier::MathBlock.identifier().clone(),
+                Box::new(ReplacementRule::new(StandardParagraphModifier::MathBlock.searching_pattern().clone(), String::from(r#"<p class="math-block">$$$$${1}$$$$</p>"#))),
             ),
             (
-                ParagraphModifier::Image.identifier().clone(),
+                StandardParagraphModifier::Image.identifier().clone(),
                 Box::new(HtmlImageRule::new())
             ),
             (
-                ParagraphModifier::CodeBlock.identifier().clone(),
-                Box::new(ReplacementRule::new(ParagraphModifier::CodeBlock.searching_pattern().clone(),  ParagraphModifier::CodeBlock.incompatible_modifiers().clone(), String::from(r#"<pre><code class="language-${1} code-block">$2</code></pre>"#))),
+                StandardParagraphModifier::CodeBlock.identifier().clone(),
+                Box::new(ReplacementRule::new(StandardParagraphModifier::CodeBlock.searching_pattern().clone(),  String::from(r#"<pre><code class="language-${1} code-block">$2</code></pre>"#))),
             ),
             (
-                ParagraphModifier::List.identifier().clone(),
+                StandardParagraphModifier::List.identifier().clone(),
                 Box::new(HtmlListRule::new()),
             ),
             (
-                ParagraphModifier::FocusBlock.identifier().clone(),
-                Box::new(ReplacementRule::new(ParagraphModifier::FocusBlock.searching_pattern().clone(),  ParagraphModifier::FocusBlock.incompatible_modifiers().clone(), String::from(r#"<div class="focus-block focus-block-$1"><div class="focus-block-title focus-block-$1-title"></div><div class="focus-block-description focus-block-$1-description"">$2</div></div>"#)).with_newline_fix(r"<br>".to_string()))
+                StandardParagraphModifier::FocusBlock.identifier().clone(),
+                Box::new(ReplacementRule::new(StandardParagraphModifier::FocusBlock.searching_pattern().clone(), String::from(r#"<div class="focus-block focus-block-$1"><div class="focus-block-title focus-block-$1-title"></div><div class="focus-block-description focus-block-$1-description"">$2</div></div>"#)).with_newline_fix(r"<br>".to_string()))
             ),
             (
-                ParagraphModifier::LineBreakDash.identifier().clone(),
-                Box::new(ReplacementRule::new(ParagraphModifier::LineBreakDash.searching_pattern().clone(),  ParagraphModifier::LineBreakDash.incompatible_modifiers().clone(), String::from(r#"<hr class="line-break line-break-dash">"#)))
+                StandardParagraphModifier::LineBreakDash.identifier().clone(),
+                Box::new(ReplacementRule::new(StandardParagraphModifier::LineBreakDash.searching_pattern().clone(), String::from(r#"<hr class="line-break line-break-dash">"#)))
             ),
             (
-                ParagraphModifier::LineBreakStar.identifier().clone(),
-                Box::new(ReplacementRule::new(ParagraphModifier::LineBreakStar.searching_pattern().clone(),  ParagraphModifier::LineBreakStar.incompatible_modifiers().clone(), String::from(r#"<hr class="line-break line-break-star">"#)))
+                StandardParagraphModifier::LineBreakStar.identifier().clone(),
+                Box::new(ReplacementRule::new(StandardParagraphModifier::LineBreakStar.searching_pattern().clone(), String::from(r#"<hr class="line-break line-break-star">"#)))
             ),
             (
-                ParagraphModifier::LineBreakPlus.identifier().clone(),
-                Box::new(ReplacementRule::new(ParagraphModifier::LineBreakPlus.searching_pattern().clone(),  ParagraphModifier::LineBreakPlus.incompatible_modifiers().clone(), String::from(r#"<hr class="line-break line-break-plus">"#)))
+                StandardParagraphModifier::LineBreakPlus.identifier().clone(),
+                Box::new(ReplacementRule::new(StandardParagraphModifier::LineBreakPlus.searching_pattern().clone(), String::from(r#"<hr class="line-break line-break-plus">"#)))
             ),
             (
-                ParagraphModifier::CommonParagraph.identifier().clone(),
-                Box::new(ReplacementRule::new(ParagraphModifier::CommonParagraph.searching_pattern().clone(),  ParagraphModifier::CommonParagraph.incompatible_modifiers().clone(), String::from(r#"<p class="paragraph">${1}</p>"#)))
+                StandardParagraphModifier::CommonParagraph.identifier().clone(),
+                Box::new(ReplacementRule::new(StandardParagraphModifier::CommonParagraph.searching_pattern().clone(), String::from(r#"<p class="paragraph">${1}</p>"#)))
             ),
         ]);
 
         let mut chapter_rules: HashMap<ModifierIdentifier, Box<dyn ParsingRule>> = HashMap::new();
 
         for i in (1..=MAX_HEADING_LEVEL).rev() {
-            chapter_rules.insert(ChapterModifier::HeadingGeneralExtendedVersion(i).identifier().clone(), 
-            Box::new(ReplacementRule::new(ChapterModifier::HeadingGeneralExtendedVersion(i).searching_pattern().clone(), ChapterModifier::HeadingGeneralExtendedVersion(i).incompatible_modifiers().clone(), move |caps: &Captures| {
+            chapter_rules.insert(StandardChapterModifier::HeadingGeneralExtendedVersion(i).identifier().clone(), 
+            Box::new(ReplacementRule::new(StandardChapterModifier::HeadingGeneralExtendedVersion(i).modifier_pattern().clone(), move |caps: &Captures| {
                 let title = &caps[1];
 
                 let id = Self::create_id(title);
@@ -320,8 +319,8 @@ impl Codex {
                 format!(r#"<h{} class="heading-{}" id="{}">{}</h{}>"#, i, i, id, title, i)
             })));
 
-            chapter_rules.insert(ChapterModifier::HeadingGeneralCompactVersion(i).identifier().clone(), 
-            Box::new(ReplacementRule::new(ChapterModifier::HeadingGeneralCompactVersion(i).searching_pattern().clone(), ChapterModifier::HeadingGeneralCompactVersion(i).incompatible_modifiers().clone(), |caps: &Captures| {
+            chapter_rules.insert(StandardChapterModifier::HeadingGeneralCompactVersion(i).identifier().clone(), 
+            Box::new(ReplacementRule::new(StandardChapterModifier::HeadingGeneralCompactVersion(i).modifier_pattern().clone(), |caps: &Captures| {
                 let heading_lv = &caps[1];
                 let title = &caps[2];
 

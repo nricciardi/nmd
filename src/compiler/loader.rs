@@ -8,7 +8,6 @@ use rayon::slice::ParallelSliceMut;
 use regex::Regex;
 use thiserror::Error;
 
-use crate::compiler::codex::PARAGRAPH_SEPARATOR;
 use crate::resource::disk_resource::DiskResource;
 use crate::resource::{Resource, ResourceError};
 
@@ -58,7 +57,7 @@ impl Loader {
 
     pub fn load_document_from_str(codex: &Codex, document_name: &str, content: &str) -> Result<Document, DocumentError> {
 
-        let mut content = String::from(content);
+        let content = String::from(content);
 
         let mut document_chapters: Vec<Chapter> = Vec::new();
 
@@ -68,11 +67,11 @@ impl Loader {
 
         for chapter_modifier in codex.configuration().ordered_chapter_modifier() {
             
-            let search_pattern = chapter_modifier.searching_pattern();
+            let modifier_pattern = chapter_modifier.modifier_pattern();
 
-            log::debug!("test {}", search_pattern);
+            log::debug!("test {}", modifier_pattern);
 
-            let regex = Regex::new(&search_pattern).unwrap();
+            let regex = Regex::new(&modifier_pattern).unwrap();
 
             regex.find_iter(content.as_str()).for_each(|m| {
 
@@ -90,7 +89,7 @@ impl Loader {
                 });
 
                 if let Some(p) = overlap_chapter {     // => overlap
-                    log::debug!("discarded chapter:\n{}\nbecause there is an overlap between {} and {} using pattern {:?}:\n{:#?}\n", m.as_str(), start, end, search_pattern, p);
+                    log::debug!("discarded chapter:\n{}\nbecause there is an overlap between {} and {} using pattern {:?}:\n{:#?}\n", m.as_str(), start, end, modifier_pattern, p);
                     return
                 }
 
@@ -176,7 +175,7 @@ impl Loader {
 
         for paragraph_modifier in codex.configuration().ordered_paragraph_modifiers() {
 
-            let search_pattern = format!(r"{}{}{}", PARAGRAPH_SEPARATOR, paragraph_modifier.searching_pattern(), PARAGRAPH_SEPARATOR);
+            let search_pattern = paragraph_modifier.modifier_pattern();
 
             log::debug!("test {}", search_pattern);
 
@@ -223,7 +222,7 @@ impl Loader {
         let chapter_modifiers = codex.configuration().ordered_chapter_modifier();
 
         for chapter_modifier in chapter_modifiers {
-            let regex = Regex::new(&chapter_modifier.searching_pattern()).unwrap();
+            let regex = Regex::new(&chapter_modifier.modifier_pattern()).unwrap();
 
             if regex.is_match(content) {
                 let matched = regex.captures(content).unwrap();

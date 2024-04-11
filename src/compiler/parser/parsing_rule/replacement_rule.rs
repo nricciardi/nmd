@@ -48,17 +48,23 @@ impl<R: Replacer> ReplacementRule<R> {
     }
 }
 
+impl Debug for ReplacementRule<String> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("ReplacementRule").field("searching_pattern", &self.searching_pattern).field("replacer", &self.replacer).field("newline_fix", &self.newline_fix).field("newline_fix_pattern", &self.newline_fix_pattern).finish()
+    }
+}
+
 impl ParsingRule for ReplacementRule<String> {
 
     /// Parse the content using internal search and replacement pattern
     fn parse(&self, content: &str, parsing_configuration: Arc<ParsingConfiguration>) -> Result<ParsingOutcome, ParsingError> {
 
-        let regex = match Regex::new(&self.parsing_pattern()) {
+        let regex = match Regex::new(&self.searching_pattern()) {
           Ok(r) => r,
-          Err(_) => return Err(ParsingError::InvalidPattern(self.parsing_pattern().clone()))  
+          Err(_) => return Err(ParsingError::InvalidPattern(self.searching_pattern().clone()))  
         };
 
-        log::debug!("parsing:\n{}\nusing '{}'->'{}' (newline fix: {})", content, self.parsing_pattern(), self.replacer, self.newline_fix);
+        log::debug!("parsing:\n{}\nusing '{}'->'{}' (newline fix: {})", content, self.searching_pattern(), self.replacer, self.newline_fix);
 
         let mut parsed_content = regex.replace_all(content, self.replacer.as_str()).to_string();
 
@@ -72,8 +78,16 @@ impl ParsingRule for ReplacementRule<String> {
         Ok(ParsingOutcome::new(parsed_content))
     }
     
-    fn parsing_pattern(&self) -> &String {
+    fn searching_pattern(&self) -> &String {
         &self.searching_pattern
+    }
+}
+
+
+impl<F> Debug for ReplacementRule<F>
+where F: 'static + Sync + Send + Fn(&Captures) -> String {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("ReplacementRule").field("searching_pattern", &self.searching_pattern).field("replacer", &"lambda function".to_string()).field("newline_fix", &self.newline_fix).field("newline_fix_pattern", &self.newline_fix_pattern).finish()
     }
 }
 
@@ -83,9 +97,9 @@ where F: 'static + Sync + Send + Fn(&Captures) -> String {
     /// Parse the content using internal search and replacement pattern
     fn parse(&self, content: &str, parsing_configuration: Arc<ParsingConfiguration>) -> Result<ParsingOutcome, ParsingError> {
 
-        let regex = match Regex::new(&self.parsing_pattern()) {
+        let regex = match Regex::new(&self.searching_pattern()) {
           Ok(r) => r,
-          Err(_) => return Err(ParsingError::InvalidPattern(self.parsing_pattern().clone()))  
+          Err(_) => return Err(ParsingError::InvalidPattern(self.searching_pattern().clone()))  
         };
 
         // log::debug!("parsing:\n{}\nusing '{}'->'{}' (newline fix: {})", content, self.modifier().search_pattern(), self.replacer, self.newline_fix);
@@ -102,7 +116,7 @@ where F: 'static + Sync + Send + Fn(&Captures) -> String {
         Ok(ParsingOutcome::new(parsed_content))
     }
 
-    fn parsing_pattern(&self) -> &String {
+    fn searching_pattern(&self) -> &String {
         &self.searching_pattern
     }
 }
@@ -111,14 +125,14 @@ where F: 'static + Sync + Send + Fn(&Captures) -> String {
 #[cfg(test)]
 mod test {
 
-    use crate::compiler::codex::modifier::{chapter_modifier::ChapterModifier, paragraph_modifier::ParagraphModifier, text_modifier::TextModifier, Modifier};
+    use crate::compiler::codex::modifier::{standard_chapter_modifier::StandardChapterModifier, standard_paragraph_modifier::StandardParagraphModifier, standard_text_modifier::StandardTextModifier, Modifier};
 
     use super::*;
 
     #[test]
     fn bold_parsing() {
         // valid pattern with a valid text modifier
-        let parsing_rule = ReplacementRule::new(TextModifier::BoldStarVersion.searching_pattern().clone(), String::from("<strong>$1</strong>"));
+        let parsing_rule = ReplacementRule::new(StandardTextModifier::BoldStarVersion.modifier_pattern().clone(), String::from("<strong>$1</strong>"));
 
         let text_to_parse = r"A piece of **bold text**";
         let parsing_configuration = Arc::new(ParsingConfiguration::default());
@@ -141,7 +155,7 @@ mod test {
     fn heading_parsing() {
         let parsing_configuration = Arc::new(ParsingConfiguration::default());
 
-        let parsing_rule = ReplacementRule::new(ChapterModifier::HeadingGeneralExtendedVersion(6).searching_pattern().clone(), String::from("<h6>$1</h6>"));
+        let parsing_rule = ReplacementRule::new(StandardChapterModifier::HeadingGeneralExtendedVersion(6).modifier_pattern().clone(), String::from("<h6>$1</h6>"));
 
         let text_to_parse = r"###### title 6";
 
@@ -154,7 +168,7 @@ mod test {
     fn paragraph_parsing() {
         let parsing_configuration = Arc::new(ParsingConfiguration::default());
 
-        let parsing_rule = ReplacementRule::new(ParagraphModifier::CommonParagraph.searching_pattern().clone(), String::from("<p>$1</p>"));
+        let parsing_rule = ReplacementRule::new(StandardParagraphModifier::CommonParagraph.searching_pattern().clone(), String::from("<p>$1</p>"));
 
         let text_to_parse = r#"
 paragraph 2a.
@@ -176,7 +190,7 @@ paragraph
     fn code_block() {
         let parsing_configuration = Arc::new(ParsingConfiguration::default());
 
-        let parsing_rule = ReplacementRule::new(ParagraphModifier::CodeBlock.searching_pattern().clone(), String::from(r#"<pre><code class="language-$1 codeblock">$2</code></pre>"#));
+        let parsing_rule = ReplacementRule::new(StandardParagraphModifier::CodeBlock.searching_pattern().clone(), String::from(r#"<pre><code class="language-$1 codeblock">$2</code></pre>"#));
 
         let text_to_parse = r#"
 ```python
@@ -195,7 +209,7 @@ print("hello world")
     fn focus_block() {
         let parsing_configuration = Arc::new(ParsingConfiguration::default());
 
-        let parsing_rule = ReplacementRule::new(ParagraphModifier::FocusBlock.searching_pattern().clone(), String::from(r#"<div class="focus-block focus-block-$1">$2</div>"#)).with_newline_fix(r"<br>".to_string());
+        let parsing_rule = ReplacementRule::new(StandardParagraphModifier::FocusBlock.searching_pattern().clone(), String::from(r#"<div class="focus-block focus-block-$1">$2</div>"#)).with_newline_fix(r"<br>".to_string());
 
         let text_to_parse = r#"
 # title 1

@@ -1,7 +1,7 @@
 use super::{base_modifier::BaseModifier, modifiers_bucket::ModifiersBucket, Modifier, ModifierIdentifier};
 
 #[derive(Debug, PartialEq, Clone)]
-pub enum TextModifier {
+pub enum StandardTextModifier {
 
     // CONTENT MODIFIERs
     BoldStarVersion,
@@ -36,7 +36,7 @@ pub enum TextModifier {
     HeadingGeneralExtendedVersion(u32),
 }
 
-impl TextModifier {
+impl StandardTextModifier {
 
     pub fn ordered() -> Vec<Self> {
 
@@ -105,7 +105,7 @@ impl TextModifier {
         }
     }
     
-    pub fn searching_pattern(&self) -> String {
+    pub fn modifier_pattern(&self) -> String {
         match *self {
             Self::AbridgedBookmark => String::from(r"@\[([^\]]*?)\]"),
             Self::AbridgedBookmarkWithId => String::from(r"@\[([^\]]*?)\]#([\w-]*)"),
@@ -150,8 +150,8 @@ impl TextModifier {
 }
 
 
-impl Into<BaseModifier> for TextModifier {
+impl Into<BaseModifier> for StandardTextModifier {
     fn into(self) -> BaseModifier {
-        BaseModifier::new(self.identifier(), self.searching_pattern(), self.incompatible_modifiers())
+        BaseModifier::new(self.identifier(), self.modifier_pattern(), self.incompatible_modifiers())
     }
 }

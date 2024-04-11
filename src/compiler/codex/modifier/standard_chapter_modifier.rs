@@ -1,18 +1,18 @@
 use regex::Regex;
 
 use super::base_modifier::BaseModifier;
-use super::{modifiers_bucket::ModifiersBucket, Modifier};
+use super::modifiers_bucket::ModifiersBucket;
 use super::{ModifierIdentifier, MAX_HEADING_LEVEL};
 
 #[derive(Debug, PartialEq, Clone)]
-pub enum ChapterModifier {
+pub enum StandardChapterModifier {
 
     HeadingGeneralCompactVersion(u32),
     HeadingGeneralExtendedVersion(u32),
 
 }
 
-impl ChapterModifier {
+impl StandardChapterModifier {
     pub fn ordered() -> Vec<Self> {
         let mut heading_modifiers: Vec<Self> = Vec::new();
 
@@ -28,7 +28,7 @@ impl ChapterModifier {
         let heading_modifiers = Self::ordered();
 
         for heading_modifier in heading_modifiers {
-            let regex = Regex::new(&heading_modifier.searching_pattern()).unwrap();
+            let regex = Regex::new(&heading_modifier.modifier_pattern()).unwrap();
 
             if regex.is_match(content) {
                 match heading_modifier {
@@ -67,7 +67,7 @@ impl ChapterModifier {
         }
     }
     
-    pub fn searching_pattern(&self) -> String {
+    pub fn modifier_pattern(&self) -> String {
         match *self {
             Self::HeadingGeneralExtendedVersion(level) => {
 
@@ -93,8 +93,8 @@ impl ChapterModifier {
     }
 }
 
-impl Into<BaseModifier> for ChapterModifier {
+impl Into<BaseModifier> for StandardChapterModifier {
     fn into(self) -> BaseModifier {
-        BaseModifier::new(self.identifier(), self.searching_pattern(), self.incompatible_modifiers())
+        BaseModifier::new(self.identifier(), self.modifier_pattern(), self.incompatible_modifiers())
     }
 }

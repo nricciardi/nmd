@@ -7,7 +7,7 @@ use std::sync::Arc;
 
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 
-use crate::compiler::codex::modifier::paragraph_modifier;
+use crate::compiler::codex::modifier::standard_paragraph_modifier;
 
 use self::parsing_rule::{parsing_configuration::ParsingConfiguration, parsing_error::ParsingError, parsing_outcome::ParsingOutcome};
 
@@ -100,9 +100,8 @@ impl Parser {
         let paragraph_rule = codex.paragraph_rules().get(paragraph_modifier.identifier());
 
         if let Some(paragraph_rule) = paragraph_rule {
-            let search_pattern = paragraph_rule.parsing_pattern();
 
-            log::debug!("'{}' paragraph search pattern that is about to be tested", search_pattern);
+            log::debug!("'{:#?}' paragraph search pattern that is about to be tested", paragraph_rule);
 
             outcome = paragraph_rule.parse(outcome.parsed_content(), Arc::clone(&parsing_configuration))?;
 

@@ -1,6 +1,6 @@
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 
-use super::modifier::{base_modifier::BaseModifier, chapter_modifier::ChapterModifier, paragraph_modifier::ParagraphModifier, text_modifier::TextModifier, Modifier, ModifierIdentifier};
+use super::modifier::{base_modifier::BaseModifier, standard_chapter_modifier::StandardChapterModifier, standard_paragraph_modifier::StandardParagraphModifier, standard_text_modifier::StandardTextModifier, Modifier, ModifierIdentifier};
 
 #[derive(Debug)]
 pub struct CodexConfiguration {
@@ -46,9 +46,9 @@ impl CodexConfiguration {
 impl Default for CodexConfiguration {
     fn default() -> Self {
         Self {
-            ordered_text_modifiers: Vec::from_iter(TextModifier::ordered().into_iter().map(|m| Box::new(Into::<BaseModifier>::into(m)) as Box<dyn Modifier>)),
-            ordered_paragraph_modifiers: Vec::from_iter(ParagraphModifier::ordered().into_iter().map(|m| Box::new(Into::<BaseModifier>::into(m)) as Box<dyn Modifier>)),
-            ordered_chapter_modifier: Vec::from_iter(ChapterModifier::ordered().into_iter().map(|m| Box::new(Into::<BaseModifier>::into(m)) as Box<dyn Modifier>)),
+            ordered_text_modifiers: Vec::from_iter(StandardTextModifier::ordered().into_iter().map(|m| Box::new(Into::<BaseModifier>::into(m)) as Box<dyn Modifier>)),
+            ordered_paragraph_modifiers: Vec::from_iter(StandardParagraphModifier::ordered().into_iter().map(|m| Box::new(Into::<BaseModifier>::into(m)) as Box<dyn Modifier>)),
+            ordered_chapter_modifier: Vec::from_iter(StandardChapterModifier::ordered().into_iter().map(|m| Box::new(Into::<BaseModifier>::into(m)) as Box<dyn Modifier>)),
         }
     }
 }
