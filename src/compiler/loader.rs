@@ -55,7 +55,7 @@ impl Loader {
         s.bytes().rev().take_while(|&b| b == b'\n').count()
     }
 
-    pub fn load_document_from_str(codex: &Codex, document_name: &str, content: &str) -> Result<Document, DocumentError> {
+    pub fn load_document_from_str(codex: &Codex, document_name: &str, content: &str) -> Result<Document, LoadError> {
 
         let content = String::from(content);
 
@@ -112,6 +112,9 @@ impl Loader {
 
         log::debug!("start to load chapters...");
 
+        let mut last_heading_level: HeadingLevel = 0;
+
+        // build chapters
         for index in 0..chapter_borders.len() {
 
             log::debug!("load chapter {:?}", chapter_borders[index]);
@@ -120,11 +123,15 @@ impl Loader {
             let end = chapter_borders[index].1;
             let raw_content = &chapter_borders[index].2;
 
-            let heading = Self::load_heading_from_raw_str(codex, raw_content);
+            let heading = Self::load_heading_from_raw_str(codex, raw_content, last_heading_level);
 
             if heading.is_none() {
-                return Err(DocumentError::Load(ResourceError::ResourceNotFound("heading".to_string())))
+                return Err(LoadError::ResourceError(ResourceError::ResourceNotFound("heading".to_string())))
             }
+
+            let heading = heading.unwrap();
+
+            last_heading_level = heading.level();
 
             let mut next_start: usize = content.len();
 
@@ -132,11 +139,11 @@ impl Loader {
                 next_start = chapter_borders[index + 1].0;
             }
 
-            let content = content.get(end..next_start).unwrap();     // exclude heading
+            let sub_content = content.get(end..next_start).unwrap();     // exclude heading
 
-            let paragraphs = Self::load_paragraphs_from_str(codex, content)?;
+            let paragraphs = Self::load_paragraphs_from_str(codex, sub_content)?;
 
-            document_chapters.push(Chapter::new(heading.unwrap(), paragraphs));
+            document_chapters.push(Chapter::new(heading, paragraphs));
         }
 
 
@@ -171,7 +178,7 @@ impl Loader {
 
 
     /// Split a string in the corresponding vector of paragraphs
-    pub fn load_paragraphs_from_str(codex: &Codex, content: &str) -> Result<Vec<Paragraph>, ParagraphError> {
+    pub fn load_paragraphs_from_str(codex: &Codex, content: &str) -> Result<Vec<Paragraph>, LoadError> {
 
         let mut paragraphs: Vec<(usize, usize, Paragraph)> = Vec::new();
         let mut content = String::from(content);
@@ -228,25 +235,45 @@ impl Loader {
     }
 
 
-    pub fn load_heading_from_raw_str(codex: &Codex, content: &str) -> Option<Heading> {
+    fn load_heading_from_raw_str(codex: &Codex, content: &str, last_heading_level: HeadingLevel) -> Option<Heading> {
+
+        log::debug!("load heading from (last heading level: {}):\n{}", last_heading_level, content);
+
         let chapter_modifiers = codex.configuration().ordered_chapter_modifier();
 
-        log::debug!("{}", content);
-
         for chapter_modifier in chapter_modifiers {
-            let regex = Regex::new(&chapter_modifier.modifier_pattern()).unwrap();
 
-            if regex.is_match(content) {
-                let matched = regex.captures(content).unwrap();
-                
-                // TODO: missed heading search (different way to parse heading... not always 1 or 2)
-                let level = HeadingLevel::from_str(matched.get(1).unwrap().as_str()).unwrap();
+            let modifier_regex = Regex::new(chapter_modifier.modifier_pattern()).unwrap();
+
+            if !modifier_regex.is_match(content) {
+                continue
+            }
+
+            let regex_to_find_extended_version = Regex::new(r"heading-[[:digit:]]+-extended-version").unwrap();
+            let regex_to_find_compact_version = Regex::new(r"heading-[[:digit:]]+-compact-version").unwrap();
+
+            if regex_to_find_extended_version.is_match(chapter_modifier.identifier()) {
+
+                let level: u32 = content.chars().take_while(|&c| c == '#').count() as u32;
+
+                let matched = modifier_regex.captures(content).unwrap();
+
+                let title = matched.get(1).unwrap().as_str();
+
+                return Some(Heading::new(level, String::from(title)));
+            }
+
+            if regex_to_find_compact_version.is_match(chapter_modifier.identifier()) {
+                let matched = modifier_regex.captures(content).unwrap();
+
+                let level: HeadingLevel = matched.get(1).unwrap().as_str().parse().unwrap();
                 let title = matched.get(2).unwrap().as_str();
 
-                // return Some(Heading::new(title.to_string()))
-
-                todo!()
+                return Some(Heading::new(level, String::from(title)));
             }
+
+            // TODO: others modifiers (e.g. #+, #=, #-)
+
         }
 
         Option::None

@@ -5,36 +5,38 @@ use crate::compiler::{codex::Codex, parser::{parsable::Parsable, parsed_content_
 use super::chapter_builder::ChapterBuilderError;
 
 
-#[derive(Debug, Clone)]
-pub enum HeadingLevel {
-    PreviousPlusOne,
-    PreviousMinusOne,
-    Numerical(u32)
-}
+// #[derive(Debug, Clone)]
+// pub enum HeadingLevel {
+//     PreviousPlusOne,
+//     PreviousMinusOne,
+//     Numerical(u32)
+// }
 
-impl FromStr for HeadingLevel {
-    type Err = ParseIntError;     // TODO
+// impl FromStr for HeadingLevel {
+//     type Err = ParseIntError;     // TODO
 
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        if s.eq("+") {
-            return Ok(Self::PreviousPlusOne)
-        }
+//     fn from_str(s: &str) -> Result<Self, Self::Err> {
+//         if s.eq("+") {
+//             return Ok(Self::PreviousPlusOne)
+//         }
 
-        if s.eq("-") {
-            return Ok(Self::PreviousMinusOne)
-        }
+//         if s.eq("-") {
+//             return Ok(Self::PreviousMinusOne)
+//         }
 
-        match s.parse::<u32>() {
-            Ok(n) => Ok(Self::Numerical(n)),
-            Err(e) => Err(e)
-        }
-    }
-}
+//         match s.parse::<u32>() {
+//             Ok(n) => Ok(Self::Numerical(n)),
+//             Err(e) => Err(e)
+//         }
+//     }
+// }
+
+pub type HeadingLevel = u32;
 
 
 #[derive(Debug, Clone)]
 pub struct Heading {
-    level: u32,
+    level: HeadingLevel,
     title: String,
 
     // raw_content: String,
@@ -42,7 +44,7 @@ pub struct Heading {
 }
 
 impl Heading {
-    pub fn new(level: u32, title: String) -> Self {
+    pub fn new(level: HeadingLevel, title: String) -> Self {
 
         Self {
             level,
@@ -51,7 +53,7 @@ impl Heading {
         }
     }
 
-    pub fn level(&self) -> u32 {
+    pub fn level(&self) -> HeadingLevel {
         self.level
     }
 

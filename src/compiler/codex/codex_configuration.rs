@@ -41,6 +41,11 @@ impl CodexConfiguration {
     pub fn ordered_chapter_modifier(&self) -> &Vec<Box<dyn Modifier>> {
         &self.ordered_chapter_modifier
     }
+
+    pub fn chapter_modifier(&self, identifier: &ModifierIdentifier) -> Option<&Box<dyn Modifier>> {
+        self.ordered_chapter_modifier().par_iter()
+            .find_any(|paragraph_modifier| identifier.eq(paragraph_modifier.identifier()))
+    }
 }
 
 impl Default for CodexConfiguration {
