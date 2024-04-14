@@ -7,8 +7,8 @@ use super::chapter_builder::ChapterBuilderError;
 
 #[derive(Debug, Clone)]
 pub enum HeadingLevel {
-    PrecedentePlusOne,
-    PrecedenteMinusOne,
+    PreviousPlusOne,
+    PreviousMinusOne,
     Numerical(u32)
 }
 
@@ -17,11 +17,11 @@ impl FromStr for HeadingLevel {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         if s.eq("+") {
-            return Ok(Self::PrecedentePlusOne)
+            return Ok(Self::PreviousPlusOne)
         }
 
         if s.eq("-") {
-            return Ok(Self::PrecedenteMinusOne)
+            return Ok(Self::PreviousMinusOne)
         }
 
         match s.parse::<u32>() {
@@ -34,33 +34,35 @@ impl FromStr for HeadingLevel {
 
 #[derive(Debug, Clone)]
 pub struct Heading {
-    // level: HeadingLevel,
-    // title: String,
+    level: u32,
+    title: String,
 
-    raw_content: String,
+    // raw_content: String,
     parsed_content: Option<ParsingOutcome>
 }
 
 impl Heading {
-    pub fn new(raw_content: String) -> Self {
+    pub fn new(level: u32, title: String) -> Self {
+
         Self {
-            raw_content,
+            level,
+            title,
             parsed_content: None
         }
     }
 
-    // pub fn level(&self) -> &HeadingLevel {
-    //     &self.level
-    // }
+    pub fn level(&self) -> u32 {
+        self.level
+    }
 
-    // pub fn title(&self) -> &String {
-    //     &self.title
-    // }
+    pub fn title(&self) -> &String {
+        &self.title
+    }
 }
 
 impl Parsable for Heading {
     fn parse(&mut self, codex: Arc<Codex>, parsing_configuration: Arc<ParsingConfiguration>) -> Result<(), ParsingError> {
-        let parsing_outcome = Parser::parse_text(&codex, &self.raw_content, Arc::clone(&parsing_configuration))?;
+        let parsing_outcome = Parser::parse_text(&codex, &self.title, Arc::clone(&parsing_configuration))?;
 
         self.parsed_content = Some(parsing_outcome);
 

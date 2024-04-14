@@ -120,7 +120,7 @@ impl Loader {
             let end = chapter_borders[index].1;
             let raw_content = &chapter_borders[index].2;
 
-            let heading = Self::load_heading_from_str(codex, raw_content);
+            let heading = Self::load_heading_from_raw_str(codex, raw_content);
 
             if heading.is_none() {
                 return Err(DocumentError::Load(ResourceError::ResourceNotFound("heading".to_string())))
@@ -228,22 +228,24 @@ impl Loader {
     }
 
 
-    pub fn load_heading_from_str(codex: &Codex, content: &str) -> Option<Heading> {
+    pub fn load_heading_from_raw_str(codex: &Codex, content: &str) -> Option<Heading> {
         let chapter_modifiers = codex.configuration().ordered_chapter_modifier();
+
+        log::debug!("{}", content);
 
         for chapter_modifier in chapter_modifiers {
             let regex = Regex::new(&chapter_modifier.modifier_pattern()).unwrap();
 
             if regex.is_match(content) {
                 let matched = regex.captures(content).unwrap();
-
-                log::debug!("{:#?}", matched);
                 
                 // TODO: missed heading search (different way to parse heading... not always 1 or 2)
                 let level = HeadingLevel::from_str(matched.get(1).unwrap().as_str()).unwrap();
                 let title = matched.get(2).unwrap().as_str();
 
-                return Some(Heading::new(title.to_string()))
+                // return Some(Heading::new(title.to_string()))
+
+                todo!()
             }
         }
 
