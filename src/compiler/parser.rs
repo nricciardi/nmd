@@ -71,7 +71,7 @@ impl Parser {
                 }
 
             } else {
-                log::debug!("no matches with {:#?}", text_rule);
+                log::debug!("no matches with {:?}", text_rule);
             }
             
         }
@@ -85,7 +85,7 @@ impl Parser {
 
     pub fn parse_paragraph_excluding_modifiers(codex: &Codex, paragraph: &Paragraph, parsing_configuration: Arc<ParsingConfiguration>, mut excluded_modifiers: ModifiersBucket) -> Result<ParsingOutcome, ParsingError> {
 
-        log::debug!("start to parse paragraph:\n'{}'\nexcluding: {:?}", paragraph, excluded_modifiers);
+        log::debug!("start to parse paragraph:\n{}\nexcluding: {:?}", paragraph, excluded_modifiers);
 
         let mut outcome = ParsingOutcome::new(String::from(paragraph.content()));
 

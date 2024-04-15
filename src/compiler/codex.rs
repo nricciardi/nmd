@@ -309,29 +309,29 @@ impl Codex {
 
         let mut chapter_rules: HashMap<ModifierIdentifier, Box<dyn ParsingRule>> = HashMap::new();
 
-        for i in (1..=MAX_HEADING_LEVEL).rev() {
-            chapter_rules.insert(StandardChapterModifier::HeadingGeneralExtendedVersion(i).identifier().clone(), 
-            Box::new(ReplacementRule::new(StandardChapterModifier::HeadingGeneralExtendedVersion(i).modifier_pattern().clone(), move |caps: &Captures| {
-                let title = &caps[1];
+        // for i in (1..=MAX_HEADING_LEVEL).rev() {
+        //     chapter_rules.insert(StandardChapterModifier::HeadingGeneralExtendedVersion(i).identifier().clone(), 
+        //     Box::new(ReplacementRule::new(StandardChapterModifier::HeadingGeneralExtendedVersion(i).modifier_pattern().clone(), move |caps: &Captures| {
+        //         let title = &caps[1];
 
-                let id = Self::create_id(title);
+        //         let id = Self::create_id(title);
 
-                format!(r#"<h{} class="heading-{}" id="{}">{}</h{}>"#, i, i, id, title, i)
-            })));
+        //         format!(r#"<h{} class="heading-{}" id="{}">{}</h{}>"#, i, i, id, title, i)
+        //     })));
 
-            chapter_rules.insert(StandardChapterModifier::HeadingGeneralCompactVersion(i).identifier().clone(), 
-            Box::new(ReplacementRule::new(StandardChapterModifier::HeadingGeneralCompactVersion(i).modifier_pattern().clone(), |caps: &Captures| {
-                let heading_lv = &caps[1];
-                let title = &caps[2];
+        //     chapter_rules.insert(StandardChapterModifier::HeadingGeneralCompactVersion(i).identifier().clone(), 
+        //     Box::new(ReplacementRule::new(StandardChapterModifier::HeadingGeneralCompactVersion(i).modifier_pattern().clone(), |caps: &Captures| {
+        //         let heading_lv = &caps[1];
+        //         let title = &caps[2];
 
-                let id = Self::create_id(title);
+        //         let id = Self::create_id(title);
 
-                format!(r#"<h{} class="heading-{}" id="{}">{}</h>"#, heading_lv, heading_lv, id, title)
-            })));
+        //         format!(r#"<h{} class="heading-{}" id="{}">{}</h>"#, heading_lv, heading_lv, id, title)
+        //     })));
 
-            // content_rules.push(Box::new(ReplacementRule::new(Modifier::HeadingGeneralExtendedVersion(i), format!(r#"<h{} class="heading-{}">$1</h{}>"#, i, i, i))));
-            // content_rules.push(Box::new(ReplacementRule::new(Modifier::HeadingGeneralCompactVersion(i), String::from(r#"<h${1} class="heading-${1}">$2</h$>"#))));
-        }
+        //     // content_rules.push(Box::new(ReplacementRule::new(Modifier::HeadingGeneralExtendedVersion(i), format!(r#"<h{} class="heading-{}">$1</h{}>"#, i, i, i))));
+        //     // content_rules.push(Box::new(ReplacementRule::new(Modifier::HeadingGeneralCompactVersion(i), String::from(r#"<h${1} class="heading-${1}">$2</h$>"#))));
+        // }
 
         // let paragraph_rules: Vec<Box<dyn ParsingRule>> = vec![
         //     Box::new(ReplacementRule::new(Modifier::PageBreak, String::from(r#"<div class="page-break"></div>"#))),

@@ -18,7 +18,7 @@ pub struct HtmlListRule {
 impl HtmlListRule {
     pub fn new() -> Self {
         Self {
-            searching_pattern: StandardParagraphModifier::ListItem.searching_pattern(),
+            searching_pattern: StandardParagraphModifier::List.searching_pattern(),
         }
     }
 }
@@ -68,11 +68,13 @@ impl ParsingRule for HtmlListRule {
 
         parsed_content.push_str(r#"<ul class="list">"#);
 
-        let search_patter = self.searching_pattern();
+        let modifier_pattern = StandardParagraphModifier::ListItem.modifier_pattern();
 
-        let regex = Regex::new(&search_patter).unwrap();
+        let regex = Regex::new(&modifier_pattern).unwrap();
 
         let mut items_found = 0;
+
+        let mut parsed_lines: Vec<(&str, &str)> = Vec::new();
 
         for captures in regex.captures_iter(content) {
             if let Some(indentation) = captures.get(1) {
@@ -84,6 +86,8 @@ impl ParsingRule for HtmlListRule {
                         let mut indentation = String::from(indentation.as_str());
                         let bullet = bullet.as_str();
                         let content = content.as_str();
+
+                        parsed_lines.push((bullet, content));
                         
                         indentation = indentation.replace("\t", SPACE_TAB_EQUIVALENCE);
 
@@ -105,7 +109,6 @@ impl ParsingRule for HtmlListRule {
                                 {}
                             </span>
                         </li>"#, INDENTATION.repeat(indentation_level), bullet, content).trim());
-
                     }
                 }
             }
@@ -116,10 +119,10 @@ impl ParsingRule for HtmlListRule {
         if items_found != total_valid_lines {
 
             if parsing_configuration.strict_list_check() {
-                log::error!("the following list has incorrect items (parsed {} on {}):\n{}", items_found, total_valid_lines, content);
+                log::error!("the following list has incorrect items (parsed {} on {}):\n{}\n-----\nparsed:\n{:#?}", items_found, total_valid_lines, content, parsed_lines);
                 panic!("incorrect list item(s)")
             } else {
-                log::warn!("the following list has incorrect items (parsed {} on {}):\n{}\n", items_found, total_valid_lines, content);
+                log::warn!("the following list has incorrect items (parsed {} on {}):\n{}\n-----\nparsed:\n{:#?}", items_found, total_valid_lines, content, parsed_lines);
             }
         }
 

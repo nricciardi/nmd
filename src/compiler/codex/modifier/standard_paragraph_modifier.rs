@@ -1,7 +1,8 @@
 use super::{base_modifier::BaseModifier, modifiers_bucket::ModifiersBucket, Modifier, ModifierIdentifier, ModifierPattern};
 
 
-pub const PARAGRAPH_SEPARATOR: &str = r"(?m:^\n[ \t]*){1}";
+pub const PARAGRAPH_SEPARATOR_START: &str = r"(?m:^[ \t]*\n)+";
+pub const PARAGRAPH_SEPARATOR_END: &str = r"(?m:^[ \t]*\n){1}";
 
 
 #[derive(Debug, PartialEq, Clone)]
@@ -85,14 +86,14 @@ impl StandardParagraphModifier {
         match *self {
             Self::Image => String::from(r"!\[([^\]]+)\]\(([^)]+)\)"),
 
-            Self::CommonParagraph => String::from(r#"([\s\S]*?)"#),       // TODO
+            Self::CommonParagraph => String::from(r#"(?s:(.*?))"#),       // TODO
             Self::CodeBlock => String::from(r"```(\w+)\n+(.*?)\n+```"),
             Self::MathBlock => String::from(r#"\$\$((?s:.+?))\$\$"#),
 
             Self::ListItem => String::from(r#"(?m:^([\t ]*)(-\[\]|-\[ \]|-\[x\]|-\[X\]|-|->|\||\*|\+|--|\d[\.)]?|[a-zA-Z]{1,8}[\.)]|&[^;]+;) (.*)\n)"#),
-            Self::List => format!(r#"((?:{}+)+)"#, Self::ListItem.searching_pattern()),
+            Self::List => format!(r#"((?:{}+)+)"#, Self::ListItem.modifier_pattern()),
             Self::ExtendedBlockQuoteLine => String::from(r"(?m:^> (.*))"),
-            Self::ExtendedBlockQuote => format!(r"({}){}({})?", Self::ExtendedBlockQuoteLine.searching_pattern(), String::from(r"\n(?:(?mx:^> .*\n)*)"), Self::ExtendedBlockQuoteLine.searching_pattern()),
+            Self::ExtendedBlockQuote => format!(r"({}){}({})?", Self::ExtendedBlockQuoteLine.modifier_pattern(), String::from(r"\n(?:(?mx:^> .*\n)*)"), Self::ExtendedBlockQuoteLine.modifier_pattern()),
             Self::LineBreakDash => String::from(r"(?m:^-{3,})"),
             Self::LineBreakStar => String::from(r"(?m:^\*{3,})"),
             Self::LineBreakPlus => String::from(r"(?m:^\+{3,})"),
@@ -112,7 +113,7 @@ impl StandardParagraphModifier {
     pub fn searching_pattern(&self) -> String {
         let mp = self.modifier_pattern();
 
-        format!(r"{}{}{}", PARAGRAPH_SEPARATOR, mp, PARAGRAPH_SEPARATOR)
+        format!(r"{}{}{}", PARAGRAPH_SEPARATOR_START, mp, PARAGRAPH_SEPARATOR_END)
     }
 
     pub fn incompatible_modifiers(&self) -> ModifiersBucket {

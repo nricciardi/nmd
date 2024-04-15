@@ -64,9 +64,11 @@ impl Heading {
 
 impl Parsable for Heading {
     fn parse(&mut self, codex: Arc<Codex>, parsing_configuration: Arc<ParsingConfiguration>) -> Result<(), ParsingError> {
-        let parsing_outcome = Parser::parse_text(&codex, &self.title, Arc::clone(&parsing_configuration))?;
+        let id = Codex::create_id(&self.title);
 
-        self.parsed_content = Some(parsing_outcome);
+        let parsed_title = Parser::parse_text(&codex, &self.title, Arc::clone(&parsing_configuration))?;
+
+        self.parsed_content = Some(ParsingOutcome::new(format!(r#"<h{} class="heading-{}" id="{}">{}</h{}>"#, self.level, self.level, id, parsed_title.parsed_content(), self.level)));
 
         Ok(())
     }

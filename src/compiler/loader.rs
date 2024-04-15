@@ -93,7 +93,7 @@ impl Loader {
                     return
                 }
 
-                log::debug!("found chapter between {} and {}:\n{}\nusing {:?}", start, end, matched_str, &chapter_modifier);
+                log::debug!("found chapter border between {} and {}:\n{}\nusing {:?}", start, end, matched_str, &chapter_modifier);
 
                 let cb = (
                     start,
@@ -183,6 +183,7 @@ impl Loader {
         let mut paragraphs: Vec<(usize, usize, Paragraph)> = Vec::new();
         let mut content = String::from(content);
 
+        content = content.trim_end_matches('\n').to_string();
         content = content.replace("\n\n", "\n\n\n");
 
         // work-around to fix paragraph matching end line
@@ -194,17 +195,23 @@ impl Loader {
 
             let search_pattern = paragraph_modifier.modifier_pattern();
 
-            log::debug!("test {}", search_pattern);
+            log::debug!("test '{}': {}", paragraph_modifier.identifier(), search_pattern);
 
             let regex = Regex::new(&search_pattern).unwrap();
 
             regex.find_iter(content.clone().as_str()).for_each(|m| {
 
-                let matched_str = m.as_str().to_string();
+                let matched_str = String::from(&content[m.start()..m.end()]);
 
-                // TODO: remove count_newlines?
                 let start = m.start() + Self::count_newlines_at_start(&matched_str);
-                let end = m.end() - Self::count_newlines_at_end(&matched_str) - 1;
+                let mut end = m.end() - 1;
+
+                let nl_at_end = Self::count_newlines_at_end(&matched_str);
+                if end > nl_at_end {
+                    end -= nl_at_end;
+                }
+
+                log::debug!("found paragraph using {:?} between {} and {}:\n{}", &paragraph_modifier, start, end, matched_str);
 
                 let overlap_paragraph = paragraphs.par_iter().find_any(|p| {
                     (p.0 >= start && p.1 <= end) ||     // current paragraph contains p
@@ -214,15 +221,15 @@ impl Loader {
                 });
 
                 if let Some(p) = overlap_paragraph {     // => overlap
-                    log::debug!("discarded paragraph:\n{}\nbecause there is an overlap between {} and {} using pattern {:?}:\n{:#?}\n", m.as_str(), start, end, search_pattern, p);
+                    log::debug!("paragraph discarded because there is an overlap between {} and {} using pattern {:?}:\n{:#?}\n", start, end, search_pattern, p);
                     return
                 }
-
-                log::debug!("found paragraph between {} and {}:\n{}\nusing {:?}", start, end, matched_str, &paragraph_modifier);
 
                 let paragraph = Paragraph::new(matched_str, paragraph_modifier.identifier().clone());
 
                 if !paragraph.contains_only_newlines() {
+                    log::debug!("added paragraph to paragraphs list:\n{:#?}", paragraph);
+                    
                     paragraphs.push((start, end, paragraph));
                 }
 

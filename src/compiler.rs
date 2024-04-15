@@ -55,6 +55,7 @@ impl Compiler {
 
         log::info!("dossier loaded");
 
+
         let dossier_configuration = dossier.configuration();
 
         compilation_configuration.merge_dossier_configuration(dossier_configuration);
