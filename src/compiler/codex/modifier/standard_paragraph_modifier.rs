@@ -2,7 +2,7 @@ use super::{base_modifier::BaseModifier, modifiers_bucket::ModifiersBucket, Modi
 
 
 pub const PARAGRAPH_SEPARATOR_START: &str = r"(?m:^[ \t]*\n)+";
-pub const PARAGRAPH_SEPARATOR_END: &str = r"(?m:^[ \t]*\n){1}";
+pub const PARAGRAPH_SEPARATOR_END: &str = r"(?m:[ \t]*\n){1}";
 
 
 #[derive(Debug, PartialEq, Clone)]
@@ -82,11 +82,12 @@ impl StandardParagraphModifier {
         }
     }
 
+    // Return the modifier pattern
     pub fn modifier_pattern(&self) -> ModifierPattern {
         match *self {
             Self::Image => String::from(r"!\[([^\]]+)\]\(([^)]+)\)"),
 
-            Self::CommonParagraph => String::from(r#"(?s:(.*?))"#),       // TODO
+            Self::CommonParagraph => String::from(r#"(?s:(.*?))"#),
             Self::CodeBlock => String::from(r"```(\w+)\n+(.*?)\n+```"),
             Self::MathBlock => String::from(r#"\$\$((?s:.+?))\$\$"#),
 
@@ -109,8 +110,8 @@ impl StandardParagraphModifier {
             _ => String::from(r"RULE TODO")                                               // TODO
         }
     }
-    
-    pub fn searching_pattern(&self) -> String {
+
+    pub fn modifier_pattern_with_paragraph_separator(&self) -> String {
         let mp = self.modifier_pattern();
 
         format!(r"{}{}{}", PARAGRAPH_SEPARATOR_START, mp, PARAGRAPH_SEPARATOR_END)
@@ -129,6 +130,6 @@ impl StandardParagraphModifier {
 
 impl Into<BaseModifier> for StandardParagraphModifier {
     fn into(self) -> BaseModifier {
-        BaseModifier::new(self.identifier(), self.searching_pattern(), self.incompatible_modifiers())
+        BaseModifier::new(self.identifier(), self.modifier_pattern_with_paragraph_separator(), self.incompatible_modifiers())
     }
 }

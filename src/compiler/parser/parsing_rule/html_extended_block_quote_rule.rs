@@ -15,7 +15,7 @@ pub struct HtmlExtendedBlockQuoteRule {
 impl HtmlExtendedBlockQuoteRule {
     pub fn new() -> Self {
         Self {
-            searching_pattern: StandardParagraphModifier::ExtendedBlockQuote.searching_pattern()
+            searching_pattern: StandardParagraphModifier::ExtendedBlockQuote.modifier_pattern_with_paragraph_separator()
         }
     }
 }
@@ -27,12 +27,14 @@ impl ParsingRule for HtmlExtendedBlockQuoteRule {
     }
     fn parse(&self, content: &str, parsing_configuration: Arc<ParsingConfiguration>) -> Result<ParsingOutcome, ParsingError> {
 
+        let content = content.trim();
         let mut lines: Vec<&str> = content.lines().collect();
+
         let check_extended_block_quote_regex = Regex::new(r"(?:^(?m:^> \[!(.*)\]))").unwrap();
-        let not_quote_type = check_extended_block_quote_regex.is_match(content);
+        let there_is_quote_type = check_extended_block_quote_regex.is_match(content);
         let mut quote_type: String = String::from("quote");
 
-        if not_quote_type {
+        if there_is_quote_type {
 
             quote_type = check_extended_block_quote_regex.captures(content).unwrap().get(1).unwrap().as_str().to_string().to_lowercase();
 

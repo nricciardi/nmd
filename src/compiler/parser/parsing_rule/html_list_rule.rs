@@ -18,7 +18,7 @@ pub struct HtmlListRule {
 impl HtmlListRule {
     pub fn new() -> Self {
         Self {
-            searching_pattern: StandardParagraphModifier::List.searching_pattern(),
+            searching_pattern: StandardParagraphModifier::List.modifier_pattern_with_paragraph_separator(),
         }
     }
 }

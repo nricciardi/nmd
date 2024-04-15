@@ -1,19 +1,23 @@
 use std::{fs::File, io::{Cursor, Read}, path::PathBuf};
 
 use base64::{engine::general_purpose::STANDARD, Engine};
-use image::{codecs::jpeg, io::Reader, DynamicImage, ImageOutputFormat};
+use image::{codecs::jpeg, DynamicImage, ImageOutputFormat};
 
 use super::ResourceError;
 use jpeg::JpegEncoder;
 
+
+
+use image::io::Reader as ImageReader;
+
 const COMPRESSION_QUALITY: u8 = 75;
 
 
-pub struct Image {
+pub struct ImageResource {
     image: DynamicImage
 }
 
-impl Image {
+impl ImageResource {
     pub fn to_base64(self) -> Result<String, ResourceError> {
 
         let mut buffer: Vec<u8> = Vec::new();
@@ -25,7 +29,7 @@ impl Image {
 
     pub fn is_image(file_path: &PathBuf) -> bool {
 
-        if let Ok(img) = Reader::open(file_path) {
+        if let Ok(img) = ImageReader::open(file_path) {
             if let Ok(_) = img.with_guessed_format() {
                 return true;
             }
@@ -55,17 +59,24 @@ impl Image {
     }
 }
 
-impl TryFrom<PathBuf> for Image {
+impl TryFrom<PathBuf> for ImageResource {
     type Error = ResourceError;
 
     fn try_from(path: PathBuf) -> Result<Self, Self::Error> {
-        let image = image::open(path)?;
+
+        let image = ImageReader::open(path).unwrap().decode();
+
+        if image.is_err() {
+            panic!("{:#?}", image)
+        }
+
+        let image = image?;
 
         Ok(Self { image })
     }
 }
 
-impl TryFrom<String> for Image {
+impl TryFrom<String> for ImageResource {
     type Error = ResourceError;
 
     fn try_from(path: String) -> Result<Self, Self::Error> {

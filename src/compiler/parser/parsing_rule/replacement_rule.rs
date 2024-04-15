@@ -168,7 +168,7 @@ mod test {
     fn paragraph_parsing() {
         let parsing_configuration = Arc::new(ParsingConfiguration::default());
 
-        let parsing_rule = ReplacementRule::new(StandardParagraphModifier::CommonParagraph.searching_pattern().clone(), String::from("<p>$1</p>"));
+        let parsing_rule = ReplacementRule::new(StandardParagraphModifier::CommonParagraph.modifier_pattern_with_paragraph_separator().clone(), String::from("<p>$1</p>"));
 
         let text_to_parse = r#"
 paragraph 2a.
@@ -190,7 +190,7 @@ paragraph
     fn code_block() {
         let parsing_configuration = Arc::new(ParsingConfiguration::default());
 
-        let parsing_rule = ReplacementRule::new(StandardParagraphModifier::CodeBlock.searching_pattern().clone(), String::from(r#"<pre><code class="language-$1 codeblock">$2</code></pre>"#));
+        let parsing_rule = ReplacementRule::new(StandardParagraphModifier::CodeBlock.modifier_pattern_with_paragraph_separator().clone(), String::from(r#"<pre><code class="language-$1 codeblock">$2</code></pre>"#));
 
         let text_to_parse = r#"
 ```python
@@ -209,7 +209,7 @@ print("hello world")
     fn focus_block() {
         let parsing_configuration = Arc::new(ParsingConfiguration::default());
 
-        let parsing_rule = ReplacementRule::new(StandardParagraphModifier::FocusBlock.searching_pattern().clone(), String::from(r#"<div class="focus-block focus-block-$1">$2</div>"#)).with_newline_fix(r"<br>".to_string());
+        let parsing_rule = ReplacementRule::new(StandardParagraphModifier::FocusBlock.modifier_pattern_with_paragraph_separator().clone(), String::from(r#"<div class="focus-block focus-block-$1">$2</div>"#)).with_newline_fix(r"<br>".to_string());
 
         let text_to_parse = r#"
 # title 1

@@ -243,27 +243,27 @@ impl Codex {
         let paragraph_rules: HashMap<ModifierIdentifier, Box<dyn ParsingRule>> = HashMap::from([
             (
                 StandardParagraphModifier::PageBreak.identifier().clone(),
-                Box::new(ReplacementRule::new(StandardParagraphModifier::PageBreak.searching_pattern().clone(), String::from(r#"<div class="page-break"></div>"#))) as Box<dyn ParsingRule>
+                Box::new(ReplacementRule::new(StandardParagraphModifier::PageBreak.modifier_pattern().clone(), String::from(r#"<div class="page-break"></div>"#))) as Box<dyn ParsingRule>
             ),
             (
                 StandardParagraphModifier::EmbeddedParagraphStyleWithId.identifier().clone(),
-                Box::new(ReplacementRule::new(StandardParagraphModifier::EmbeddedParagraphStyleWithId.searching_pattern().clone(), String::from(r#"<div class="identifier embedded-paragraph-style" id="$2" style="$3">$1</div>"#)).with_newline_fix(r"<br>".to_string())),
+                Box::new(ReplacementRule::new(StandardParagraphModifier::EmbeddedParagraphStyleWithId.modifier_pattern().clone(), String::from(r#"<div class="identifier embedded-paragraph-style" id="$2" style="$3">$1</div>"#)).with_newline_fix(r"<br>".to_string())),
             ),
             (
                 StandardParagraphModifier::EmbeddedParagraphStyle.identifier().clone(),
-                Box::new(ReplacementRule::new(StandardParagraphModifier::EmbeddedParagraphStyle.searching_pattern().clone(), String::from(r#"<div class="embedded-paragraph-style" style="$2">$1</div>"#)).with_newline_fix(r"<br>".to_string())),
+                Box::new(ReplacementRule::new(StandardParagraphModifier::EmbeddedParagraphStyle.modifier_pattern().clone(), String::from(r#"<div class="embedded-paragraph-style" style="$2">$1</div>"#)).with_newline_fix(r"<br>".to_string())),
             ),
             (
                 StandardParagraphModifier::AbridgedEmbeddedParagraphStyleWithId.identifier().clone(),
-                Box::new(ReplacementRule::new(StandardParagraphModifier::AbridgedEmbeddedParagraphStyleWithId.searching_pattern().clone(),  String::from(r#"<div class="identifier abridged-embedded-paragraph-style" id="$2" style="color: $3; background-color: $4; font-family: $5;">$1</div>"#)).with_newline_fix(r"<br>".to_string())),
+                Box::new(ReplacementRule::new(StandardParagraphModifier::AbridgedEmbeddedParagraphStyleWithId.modifier_pattern().clone(),  String::from(r#"<div class="identifier abridged-embedded-paragraph-style" id="$2" style="color: $3; background-color: $4; font-family: $5;">$1</div>"#)).with_newline_fix(r"<br>".to_string())),
             ),
             (
                 StandardParagraphModifier::AbridgedEmbeddedParagraphStyle.identifier().clone(),
-                Box::new(ReplacementRule::new(StandardParagraphModifier::AbridgedEmbeddedParagraphStyle.searching_pattern().clone(), String::from(r#"<div class="abridged-embedded-paragraph-style" style="color: $2; background-color: $3; font-family: $4;">$1</div>"#)).with_newline_fix(r"<br>".to_string())),
+                Box::new(ReplacementRule::new(StandardParagraphModifier::AbridgedEmbeddedParagraphStyle.modifier_pattern().clone(), String::from(r#"<div class="abridged-embedded-paragraph-style" style="color: $2; background-color: $3; font-family: $4;">$1</div>"#)).with_newline_fix(r"<br>".to_string())),
             ),
             (
                 StandardParagraphModifier::ParagraphIdentifier.identifier().clone(),
-                Box::new(ReplacementRule::new(StandardParagraphModifier::ParagraphIdentifier.searching_pattern().clone(), String::from(r#"<span class="identifier" id="$2">$1</span>"#)).with_newline_fix(r"<br>".to_string())),
+                Box::new(ReplacementRule::new(StandardParagraphModifier::ParagraphIdentifier.modifier_pattern().clone(), String::from(r#"<span class="identifier" id="$2">$1</span>"#)).with_newline_fix(r"<br>".to_string())),
             ),
             (
                 StandardParagraphModifier::ExtendedBlockQuote.identifier().clone(),
@@ -271,7 +271,7 @@ impl Codex {
             ),
             (
                 StandardParagraphModifier::MathBlock.identifier().clone(),
-                Box::new(ReplacementRule::new(StandardParagraphModifier::MathBlock.searching_pattern().clone(), String::from(r#"<p class="math-block">$$$$${1}$$$$</p>"#))),
+                Box::new(ReplacementRule::new(StandardParagraphModifier::MathBlock.modifier_pattern().clone(), String::from(r#"<p class="math-block">$$$$${1}$$$$</p>"#))),
             ),
             (
                 StandardParagraphModifier::Image.identifier().clone(),
@@ -279,7 +279,7 @@ impl Codex {
             ),
             (
                 StandardParagraphModifier::CodeBlock.identifier().clone(),
-                Box::new(ReplacementRule::new(StandardParagraphModifier::CodeBlock.searching_pattern().clone(),  String::from(r#"<pre><code class="language-${1} code-block">$2</code></pre>"#))),
+                Box::new(ReplacementRule::new(StandardParagraphModifier::CodeBlock.modifier_pattern().clone(),  String::from(r#"<pre><code class="language-${1} code-block">$2</code></pre>"#))),
             ),
             (
                 StandardParagraphModifier::List.identifier().clone(),
@@ -287,27 +287,27 @@ impl Codex {
             ),
             (
                 StandardParagraphModifier::FocusBlock.identifier().clone(),
-                Box::new(ReplacementRule::new(StandardParagraphModifier::FocusBlock.searching_pattern().clone(), String::from(r#"<div class="focus-block focus-block-$1"><div class="focus-block-title focus-block-$1-title"></div><div class="focus-block-description focus-block-$1-description"">$2</div></div>"#)).with_newline_fix(r"<br>".to_string()))
+                Box::new(ReplacementRule::new(StandardParagraphModifier::FocusBlock.modifier_pattern().clone(), String::from(r#"<div class="focus-block focus-block-$1"><div class="focus-block-title focus-block-$1-title"></div><div class="focus-block-description focus-block-$1-description"">$2</div></div>"#)).with_newline_fix(r"<br>".to_string()))
             ),
             (
                 StandardParagraphModifier::LineBreakDash.identifier().clone(),
-                Box::new(ReplacementRule::new(StandardParagraphModifier::LineBreakDash.searching_pattern().clone(), String::from(r#"<hr class="line-break line-break-dash">"#)))
+                Box::new(ReplacementRule::new(StandardParagraphModifier::LineBreakDash.modifier_pattern().clone(), String::from(r#"<hr class="line-break line-break-dash">"#)))
             ),
             (
                 StandardParagraphModifier::LineBreakStar.identifier().clone(),
-                Box::new(ReplacementRule::new(StandardParagraphModifier::LineBreakStar.searching_pattern().clone(), String::from(r#"<hr class="line-break line-break-star">"#)))
+                Box::new(ReplacementRule::new(StandardParagraphModifier::LineBreakStar.modifier_pattern().clone(), String::from(r#"<hr class="line-break line-break-star">"#)))
             ),
             (
                 StandardParagraphModifier::LineBreakPlus.identifier().clone(),
-                Box::new(ReplacementRule::new(StandardParagraphModifier::LineBreakPlus.searching_pattern().clone(), String::from(r#"<hr class="line-break line-break-plus">"#)))
+                Box::new(ReplacementRule::new(StandardParagraphModifier::LineBreakPlus.modifier_pattern().clone(), String::from(r#"<hr class="line-break line-break-plus">"#)))
             ),
             (
                 StandardParagraphModifier::CommonParagraph.identifier().clone(),
-                Box::new(ReplacementRule::new(StandardParagraphModifier::CommonParagraph.searching_pattern().clone(), String::from(r#"<p class="paragraph">${1}</p>"#)))
+                Box::new(ReplacementRule::new(StandardParagraphModifier::CommonParagraph.modifier_pattern_with_paragraph_separator().clone(), String::from(r#"<p class="paragraph">${1}</p>"#)))
             ),
         ]);
 
-        let mut chapter_rules: HashMap<ModifierIdentifier, Box<dyn ParsingRule>> = HashMap::new();
+        let chapter_rules: HashMap<ModifierIdentifier, Box<dyn ParsingRule>> = HashMap::new();
 
         // for i in (1..=MAX_HEADING_LEVEL).rev() {
         //     chapter_rules.insert(StandardChapterModifier::HeadingGeneralExtendedVersion(i).identifier().clone(), 
@@ -368,7 +368,7 @@ mod test {
 
     use std::sync::Arc;
 
-    use crate::compiler::{loader::Loader, parser::{parsing_rule::parsing_configuration::ParsingConfiguration, Parser}};
+    use crate::compiler::{loader::Loader, parser::parsing_rule::parsing_configuration::ParsingConfiguration};
 
     use super::*;
 

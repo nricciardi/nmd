@@ -8,7 +8,7 @@ use crate::compiler::codex::modifier::standard_paragraph_modifier::StandardParag
 use crate::compiler::codex::modifier::Modifier;
 use crate::compiler::codex::Codex;
 use crate::compiler::dossier;
-use crate::resource::{image::Image, remote_resource::RemoteResource};
+use crate::resource::{image_resource::ImageResource, remote_resource::RemoteResource};
 
 use super::parsing_configuration::ParsingConfiguration;
 use super::parsing_error::ParsingError;
@@ -25,7 +25,7 @@ impl HtmlImageRule {
     
     pub fn new() -> Self {
         Self {
-            searching_pattern: StandardParagraphModifier::Image.searching_pattern()
+            searching_pattern: StandardParagraphModifier::Image.modifier_pattern_with_paragraph_separator()
         }
     }
 
@@ -88,7 +88,7 @@ impl ParsingRule for HtmlImageRule {
 
                         if src_path_buf.exists() {
                         
-                            let mut image = Image::try_from(src_path_buf).unwrap();
+                            let mut image = ImageResource::try_from(src_path_buf).unwrap();
 
                             if parsing_configuration.compress_embed_image() {
                                 image.compress().unwrap();
