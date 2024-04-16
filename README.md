@@ -3,6 +3,10 @@
 [![License](https://img.shields.io/badge/license-GPL3-green.svg)](LICENSE)
 [![Version](https://img.shields.io/badge/version-v0.11.0-blue.svg)](CHANGELOG.md)
 
+**NMD**: a new way to write in markdown.
+
+NMD stands for **New MarkDown**, or for friends, *Nicola MarkDown* (if Stephen Bourne can name a shell, why can't I name mine NMD?)
+
 
 - [New MarkDown \[BETA\]](#new-markdown-beta)
   - [Overview](#overview)
@@ -78,8 +82,6 @@
 
 
 ## Overview
-
-**New MarkDown** NMD, a new way to write in markdown.
 
 NMD is a custom Markdown dialect designed to enhance the classic Markdown syntax with additional features for styling and enriching text. With NMD, you can effortlessly create beautifully formatted text for your projects while enjoying some unique features tailored to modern needs.
 
@@ -328,7 +330,6 @@ In `compilation` section you can specified the default values to use during comp
 
 - [ ] `nmd dossier add` transform relative paths to absolute paths
 - [ ] `nmd dossier add` save only 2 paths
-- [ ] unsupported images except PNG
 
 ## NMD Syntax
 

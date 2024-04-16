@@ -76,13 +76,16 @@ impl ParsingRule for HtmlImageRule {
                         let mut src_path_buf = PathBuf::from(src);
 
                         if src_path_buf.is_relative() {
-                            src_path_buf = parsing_configuration.input_location().clone().join(src_path_buf);
+
+                            let image_file_name = src;
+
+                            src_path_buf = parsing_configuration.input_location().clone().join(image_file_name);
 
                             if !src_path_buf.exists() {
 
                                 log::debug!("'{}' not found, try adding images directory path", src_path_buf.to_string_lossy());
 
-                                src_path_buf = parsing_configuration.input_location().clone().join(dossier::ASSETS_DIR).join(dossier::IMAGES_DIR);
+                                src_path_buf = parsing_configuration.input_location().clone().join(dossier::ASSETS_DIR).join(dossier::IMAGES_DIR).join(image_file_name);
                             }
                         }
 
@@ -105,7 +108,7 @@ impl ParsingRule for HtmlImageRule {
                             panic!("invalid src")
 
                         } else {
-                            return Self::create_img_tag(src, label.as_str())
+                            return Self::create_img_tag(src, label.as_str())        // create image tag of invalid image instead of panic
                         }
 
                     }

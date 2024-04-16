@@ -67,7 +67,7 @@ impl TryFrom<PathBuf> for ImageResource {
         let image = ImageReader::open(path).unwrap().decode();
 
         if image.is_err() {
-            panic!("{:#?}", image)
+            return Err(ResourceError::ImageError(image.err().unwrap()))
         }
 
         let image = image?;

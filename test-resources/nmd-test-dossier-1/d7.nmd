@@ -2,8 +2,15 @@
 
 @[todo](this is a todo) text @[TODO](this is a todo)
 
+text between
+todo
+
 TODO: abridged todo
 
 @[abridged bookmark] text @[abridged bookmark]#the-id
+
+text
+between
+todo
 
 @[bookmark](this is a bookmark) text @[bookmark]#the-id(this is a bookmark)

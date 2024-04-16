@@ -29,7 +29,6 @@ pub enum StandardTextModifier {
     AbridgedBookmarkWithId,
     BookmarkWithId,
     Todo,
-    AbridgedTodo,
     Checkbox,
     CheckboxChecked,
     HeadingGeneralCompactVersion(u32),
@@ -43,7 +42,6 @@ impl StandardTextModifier {
         //! they must have the compatibility order
         vec![
             Self::Todo,
-            Self::AbridgedTodo,
             Self::BookmarkWithId,
             Self::Bookmark,
             Self::AbridgedBookmarkWithId,
@@ -101,7 +99,11 @@ impl StandardTextModifier {
             Self::InlineCode => String::from("inline-code"),
             Self::InlineMath => String::from("inline-math"),
 
-            _ => String::from("#@§rule-todo#@§"),
+            _ => {
+
+                log::warn!("there is NOT a identifier for {:#?}", self);
+                String::from("#@§rule-todo#@§")
+            }
         }
     }
     
@@ -134,7 +136,10 @@ impl StandardTextModifier {
             Self::InlineCode => String::from(r"`(.*?)`"),
             Self::InlineMath => String::from(r#"\$([^$\n]+)\$"#),
             
-            _ => String::from(r"RULE TODO")                                               // TODO
+            _ => {
+                log::warn!("there is NOT a modifier pattern for {:#?}", self);
+                String::from(r"RULE TODO")
+            }                                               // TODO
         }
     }
 

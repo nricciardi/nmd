@@ -2,7 +2,7 @@ use super::{base_modifier::BaseModifier, modifiers_bucket::ModifiersBucket, Modi
 
 
 pub const PARAGRAPH_SEPARATOR_START: &str = r"(?m:^[ \t]*\n)+";
-pub const PARAGRAPH_SEPARATOR_END: &str = r"(?m:[ \t]*\n){1}";
+pub const PARAGRAPH_SEPARATOR_END: &str = r"(?m:[ \t]*\n){2}";
 
 
 #[derive(Debug, PartialEq, Clone)]
@@ -78,7 +78,11 @@ impl StandardParagraphModifier {
             Self::AbridgedTodo => String::from("abridged-todo"),
 
 
-            _ => String::from("#@§rule-todo#@§"),
+            _ => {
+
+                log::warn!("there is NOT a identifier for {:#?}", self);
+                String::from("#@§rule-todo#@§")
+            }
         }
     }
 
@@ -107,7 +111,10 @@ impl StandardParagraphModifier {
             Self::PageBreak => String::from(r"(?m:^#{3,}$)"),
             Self::AbridgedTodo => String::from(r"(?m:^(?i:TODO):\s(?:(.*?))$)"),
             
-            _ => String::from(r"RULE TODO")                                               // TODO
+            _ => {                                                                  // TODO
+                log::warn!("there is NOT a modifier pattern for {:#?}", self);
+                String::from(r"RULE TODO")
+            }
         }
     }
 

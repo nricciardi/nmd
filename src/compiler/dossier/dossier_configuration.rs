@@ -16,6 +16,7 @@ use self::{dossier_configuration_compilation::DossierConfigurationCompilation, d
 
 pub const YAML_FILE_NAME: &str = "nmd.yml";
 pub const JSON_FILE_NAME: &str = "nmd.json";
+pub const PATH_START_FOR_RELATIVE: &str = r"./";
 
 
 #[allow(dead_code)]
@@ -26,6 +27,12 @@ pub struct DossierConfiguration {
 
     #[serde(rename = "documents")]
     raw_documents_paths: Vec<String>,
+
+    #[serde(skip_serializing, skip_deserializing)]
+    root_path: PathBuf,
+
+    #[serde(skip_serializing, skip_deserializing)]
+    absolute_documents_paths: Option<Vec<PathBuf>>,
 
     #[serde(default = "default_style")]
     style: DossierConfigurationStyle,
@@ -57,13 +64,15 @@ fn default_compilation() -> DossierConfigurationCompilation {
 #[allow(dead_code)]
 impl DossierConfiguration {
 
-    pub fn new(name: String, raw_documents_paths: Vec<String>, style: DossierConfigurationStyle, metadata: DossierConfigurationMetadata, compilation: DossierConfigurationCompilation) -> Self {
+    pub fn new(root_path: PathBuf, name: String, raw_documents_paths: Vec<String>, style: DossierConfigurationStyle, metadata: DossierConfigurationMetadata, compilation: DossierConfigurationCompilation) -> Self {
         Self {
+            root_path,
             name,
             raw_documents_paths,
             style,
             metadata,
-            compilation
+            compilation,
+            absolute_documents_paths: None
         }
     }
 
@@ -71,12 +80,16 @@ impl DossierConfiguration {
         &self.raw_documents_paths
     }
 
+    pub fn absolute_documents_paths(&self) -> &Option<Vec<PathBuf>> {
+        &self.absolute_documents_paths
+    }
+
     pub fn set_raw_documents_paths(&mut self, documents: Vec<String>) -> () {
         self.raw_documents_paths = documents
     }
 
-    pub fn append_raw_document_path(&mut self, mut document_path: String) -> () {
-        self.raw_documents_paths.push(document_path)
+    pub fn append_raw_document_path(&mut self, raw_document_path: String) -> () {
+        self.raw_documents_paths.push(raw_document_path)
     }
 
     pub fn name(&self) -> &String {
@@ -91,7 +104,11 @@ impl DossierConfiguration {
         &self.compilation
     }
 
-    pub fn apply_root_path(&mut self, root_path: &PathBuf) -> () {
+    pub fn set_root_path(&mut self, root_path: PathBuf) {
+        self.root_path = root_path
+    }
+
+    pub fn generate_absolute_documents_paths_from_root_path(&mut self) -> () {
 
         log::info!("apply dossier root path to specified documents file. OS directory separator found: {}", MAIN_SEPARATOR_STR);
 
@@ -105,9 +122,7 @@ impl DossierConfiguration {
             not_unix_like_os = true;
         }
 
-        let replacement_pattern: String = String::from(r"./");
-
-        let mut new_raw_documents_paths: Vec<String> = Vec::new();
+        let mut absolute_documents_paths: Vec<PathBuf> = Vec::new();
 
         for raw_document_path in self.raw_documents_paths.iter() {
 
@@ -117,29 +132,26 @@ impl DossierConfiguration {
                 raw_document_path = raw_document_path.replace(format!(".{}", MAIN_SEPARATOR_STR).as_str(), r"./")
             }
 
-            if raw_document_path.starts_with(replacement_pattern.as_str()) {
+            if raw_document_path.starts_with(PATH_START_FOR_RELATIVE) {
 
                 log::debug!("apply root path to '{}'", raw_document_path);
     
                 // remove ./
-                for _ in 0..replacement_pattern.len() {
+                for _ in 0..PATH_START_FOR_RELATIVE.len() {
                     raw_document_path.remove(0);
                 }
 
-                let new_path = root_path.join(&raw_document_path);
+                let abs_path = self.root_path.join(&raw_document_path);
 
-                raw_document_path.clear();
-                
-                raw_document_path.push_str(new_path.to_string_lossy().to_string().as_str());
-
-                new_raw_documents_paths.push(raw_document_path)
+                absolute_documents_paths.push(abs_path)
 
             } else {
                 log::debug!("'{}' skipped from apply", raw_document_path);
+                absolute_documents_paths.push(PathBuf::from(raw_document_path));
             }
         }
 
-        self.raw_documents_paths = new_raw_documents_paths
+        self.absolute_documents_paths = Some(absolute_documents_paths)
     }
 
     pub fn dump_as_yaml(&self, complete_output_path: PathBuf) -> Result<(), ResourceError> {
@@ -163,7 +175,9 @@ impl Default for DossierConfiguration {
             raw_documents_paths: vec![],          // TODO: all .nmd file in running directory
             style: DossierConfigurationStyle::default(),
             metadata: DossierConfigurationMetadata::default(),
-            compilation: DossierConfigurationCompilation::default()
+            compilation: DossierConfigurationCompilation::default(),
+            absolute_documents_paths: None,
+            root_path: PathBuf::from(".")
         }
     }
 }
@@ -217,7 +231,8 @@ impl TryFrom<&PathBuf> for DossierConfiguration {
 
                     let mut config = Self::try_from_as_yaml(file_content)?;
 
-                    config.apply_root_path(path_buf);
+                    config.set_root_path(path_buf.clone());
+                    config.generate_absolute_documents_paths_from_root_path();
 
                     return Ok(config)
                 }
@@ -228,7 +243,8 @@ impl TryFrom<&PathBuf> for DossierConfiguration {
 
                     let mut config = Self::try_from_as_json(file_content)?;
 
-                    config.apply_root_path(path_buf);
+                    config.set_root_path(path_buf.clone());
+                    config.generate_absolute_documents_paths_from_root_path();
 
                     return Ok(config)
                 }
@@ -245,7 +261,8 @@ impl TryFrom<&PathBuf> for DossierConfiguration {
 
                 let mut config = Self::try_from_as_yaml(file_content)?;
 
-                config.apply_root_path(path_buf);
+                config.set_root_path(path_buf.clone());
+                config.generate_absolute_documents_paths_from_root_path();
 
                 return Ok(config)
             }
@@ -258,7 +275,8 @@ impl TryFrom<&PathBuf> for DossierConfiguration {
                 
                 let mut config = Self::try_from_as_json(file_content)?;
 
-                config.apply_root_path(path_buf);
+                config.set_root_path(path_buf.clone());
+                config.generate_absolute_documents_paths_from_root_path();
 
                 return Ok(config)
             }
