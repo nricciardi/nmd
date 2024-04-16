@@ -110,7 +110,7 @@ impl Loader {
 
         chapter_borders.par_sort_by(|a, b| a.0.cmp(&b.0));
 
-        log::debug!("start to load chapters...");
+        log::debug!("start to load chapters of document: '{}'...", document_name);
 
         let mut last_heading_level: HeadingLevel = 0;
 
@@ -149,7 +149,12 @@ impl Loader {
 
         let mut preamble = String::new();
 
-        let first_start = chapter_borders[0].0;
+        let mut first_start = 0;
+
+        if chapter_borders.len() > 0 {
+            first_start = chapter_borders[0].0;
+        }
+
         if first_start != 0 {      // => there is a preamble
             preamble = String::from(content.get(0..first_start).unwrap())
         }

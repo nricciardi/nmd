@@ -3,6 +3,7 @@ pub mod resource;
 pub mod generator;
 pub mod dossier_manager;
 mod utility;
+mod config;
 
 use std::{path::PathBuf, str::FromStr};
 
@@ -18,7 +19,7 @@ use simple_logger::SimpleLogger;
 
 use crate::compiler::{compilation_configuration::CompilationConfiguration, output_format::OutputFormat};
 
-pub const VERSION: &str = "0.11.0";
+pub const VERSION: &str = "0.20.0";
 
 #[derive(Error, Debug)]
 pub enum NmdCliError {
@@ -329,9 +330,9 @@ impl NmdCli {
                                 return Err(NmdCliError::MoreThanOneValue("dossier-path".to_string()));
                             }
 
-                            if let Some(mut document_name) = add_dossier_matches.get_many::<String>("document-name") {
+                            if let Some(document_names) = add_dossier_matches.get_many::<String>("document-name") {
                             
-                                if document_name.len() != 1 {
+                                if document_names.len() < 1 {
                                     return Err(NmdCliError::MoreThanOneValue("document-name".to_string()));
                                 }
 
@@ -341,9 +342,11 @@ impl NmdCli {
 
                                 let dossier_manager = DossierManager::new(dossier_manager_configuration);
 
-                                let file_name = document_name.nth(0).unwrap();
+                                for file_name in document_names {
+                                    dossier_manager.add_document(&file_name)?;
+                                }
 
-                                return Ok(dossier_manager.add_document(&file_name)?)
+                                return Ok(())
                             }
                             
                         }

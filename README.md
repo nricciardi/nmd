@@ -1,7 +1,7 @@
 # New MarkDown [BETA]
 
 [![License](https://img.shields.io/badge/license-GPL3-green.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v0.11.0-blue.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-v0.20.0-blue.svg)](CHANGELOG.md)
 
 **NMD**: a new way to write in markdown.
 
@@ -310,7 +310,7 @@ In `compilation` section you can specified the default values to use during comp
 - [ ] Image URL fix meta-characters
 - [ ] Multiple image in a single row
 - [ ] Image compression
-- [ ] Image in dossier: default path to `assets/images` (TESTING)
+- [x] Image in dossier: default path to `assets/images`
 - [x] Focus block
 - [x] Light base page style
 - [ ] Paper format support (A4, A5, ...)
@@ -319,17 +319,17 @@ In `compilation` section you can specified the default values to use during comp
 - [ ] Embedded chapter style
 - [ ] Custom style files
 - [ ] Tables
-- [ ] Fix single list item
-- [ ] Todo modifier with only `todo` or `TODO`
+- [x] Fix single list item
+- [x] Todo modifier with only `todo` or `TODO`
 - [ ] Todo modifier with text between `TODO:` and `:TODO`
 - [ ] Relative header (e.g. `#+` to indicate precedent header level + 1, `#=` to indicate same header level of precedente header)
-- [ ] `nmd dossier add` auto-add `.nmd`
-- [ ] `nmd dossier add` accept more than one file
+- [x] `nmd dossier add` auto-add `.nmd`
+- [x] `nmd dossier add` accept more than one file
 
 ### Known issues
 
-- [ ] `nmd dossier add` transform relative paths to absolute paths
-- [ ] `nmd dossier add` save only 2 paths
+- [x] `nmd dossier add` transform relative paths to absolute paths
+- [x] `nmd dossier add` save only 2 paths
 
 ## NMD Syntax
 

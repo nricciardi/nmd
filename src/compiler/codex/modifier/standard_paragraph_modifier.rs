@@ -98,7 +98,7 @@ impl StandardParagraphModifier {
             Self::ListItem => String::from(r#"(?m:^([\t ]*)(-\[\]|-\[ \]|-\[x\]|-\[X\]|-|->|\||\*|\+|--|\d[\.)]?|[a-zA-Z]{1,8}[\.)]|&[^;]+;) (.*)\n)"#),
             Self::List => format!(r#"((?:{}+)+)"#, Self::ListItem.modifier_pattern()),
             Self::ExtendedBlockQuoteLine => String::from(r"(?m:^> (.*))"),
-            Self::ExtendedBlockQuote => format!(r"({}){}({})?", Self::ExtendedBlockQuoteLine.modifier_pattern(), String::from(r"\n(?:(?mx:^> .*\n)*)"), Self::ExtendedBlockQuoteLine.modifier_pattern()),
+            Self::ExtendedBlockQuote => format!(r"(?ms:^> .*?)"),
             Self::LineBreakDash => String::from(r"(?m:^-{3,})"),
             Self::LineBreakStar => String::from(r"(?m:^\*{3,})"),
             Self::LineBreakPlus => String::from(r"(?m:^\+{3,})"),
@@ -109,7 +109,7 @@ impl StandardParagraphModifier {
             Self::EmbeddedParagraphStyleWithId => String::from(r"\[\[(?sx:(.*?))\]\]\n?#([\w-]*)\n?\{\{(?xs:((?:.*?:.*?;?)))\}\}"),
             Self::EmbeddedParagraphStyle => String::from(r"\[\[(?sx:(.*?))\]\]\{\{(?xs:((?:.*?:.*?;?)))\}\}"),
             Self::PageBreak => String::from(r"(?m:^#{3,}$)"),
-            Self::AbridgedTodo => String::from(r"(?m:^(?i:TODO):\s(?:(.*?))$)"),
+            Self::AbridgedTodo => String::from(r"(?m:^(?i:TODO):?\s(?:(.*?))$)"),
             
             _ => {                                                                  // TODO
                 log::warn!("there is NOT a modifier pattern for {:#?}", self);

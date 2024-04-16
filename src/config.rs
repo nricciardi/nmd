@@ -1,0 +1,1 @@
+pub const NMD_EXTENSION: &str = "nmd";

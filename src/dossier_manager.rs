@@ -3,7 +3,7 @@ use std::{io, path::PathBuf};
 use clap::error;
 use thiserror::Error;
 
-use crate::{compiler::dossier::{dossier_configuration::{self, DossierConfiguration}, Dossier}, resource::ResourceError, utility::file_utility};
+use crate::{compiler::dossier::{dossier_configuration::{self, DossierConfiguration}, Dossier}, config::NMD_EXTENSION, resource::ResourceError, utility::file_utility};
 
 use self::dossier_manager_configuration::DossierManagerConfiguration;
 
@@ -36,9 +36,15 @@ impl DossierManager {
 
     pub fn add_document(&self, filename: &String) -> Result<(), DossierManagerError> {
 
+        let mut filename = String::from(filename);
+
+        if !filename.ends_with(&format!(".{}", NMD_EXTENSION)) {
+            filename.push_str(&format!(".{}", NMD_EXTENSION));
+        }
+
         let mut dossier_configuration = DossierConfiguration::try_from(self.configuration.dossier_path())?;
 
-        let abs_file_path = self.configuration.dossier_path().clone().join(filename);
+        let abs_file_path = self.configuration.dossier_path().clone().join(&filename);
         let rel_file_path = format!(r"./{}", filename);
 
         file_utility::create_empty_file(&abs_file_path)?;
