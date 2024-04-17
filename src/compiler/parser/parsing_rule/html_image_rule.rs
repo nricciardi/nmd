@@ -2,6 +2,7 @@ use std::{path::PathBuf, sync::Arc};
 
 use log;
 use regex::{Regex, Captures};
+use url::Url;
 
 use crate::compiler::codex::modifier::modifiers_bucket::ModifiersBucket;
 use crate::compiler::codex::modifier::standard_paragraph_modifier::StandardParagraphModifier;
@@ -68,7 +69,10 @@ impl ParsingRule for HtmlImageRule {
                             todo!()
 
                         } else {
-                            return Self::create_img_tag(src, label.as_str())
+                            
+                            let src = Url::parse(src).unwrap();
+
+                            return Self::create_img_tag(src.as_str(), label.as_str())
                         }
 
                     } else {

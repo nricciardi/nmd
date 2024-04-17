@@ -305,9 +305,10 @@ In `compilation` section you can specified the default values to use during comp
 - [x] List
 - [x] List creation check
 - [ ] Link with identifier
+- [ ] Link to chapters
 - [x] Quote
 - [x] Image caption
-- [ ] Image URL fix meta-characters
+- [x] Image URL fix meta-characters
 - [ ] Multiple image in a single row
 - [ ] Image compression
 - [x] Image in dossier: default path to `assets/images`

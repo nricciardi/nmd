@@ -51,8 +51,6 @@ impl Compiler {
 
         let mut dossier = Loader::load_dossier_from_path_buf(&codex, compilation_configuration.input_location())?;
 
-        // let mut dossier = Dossier::load(Arc::clone(&codex), compilation_configuration.input_location())?;
-
         log::info!("dossier loaded");
 
 
