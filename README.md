@@ -164,6 +164,13 @@ To **add a new document** you can use the following command:
 nmd dossier add -p dossier/input/path -d new-document.nmd
 ```
 
+If the document name doesn't have `nmd` extension, it will be added automatically.
+
+You can add more than one document at the same time:
+
+```shell
+nmd dossier add -p dossier/input/path -d new-document-1.nmd -d new-document-2.nmd -d new-document-3.nmd
+```
 
 #### Compile dossier
 
@@ -310,6 +317,7 @@ In `compilation` section you can specified the default values to use during comp
 - [x] Image caption
 - [x] Image URL fix meta-characters
 - [ ] Multiple image in a single row
+- [ ] Set image dimensions
 - [ ] Image compression
 - [x] Image in dossier: default path to `assets/images`
 - [x] Focus block
