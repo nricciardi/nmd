@@ -58,6 +58,12 @@ impl Parsable for Dossier {
 
         log::info!("parse dossier {} with {} document(s) (parallelization: {})", self.name(), self.documents().len(), parsing_configuration.parallelization());
 
+        let mut parsing_metadata = parsing_metadata.as_ref().clone();
+
+        parsing_metadata.set_dossier_name(Some(self.name().clone()));
+
+        let parsing_metadata = Arc::new(parsing_metadata);
+
         if parsing_configuration.parallelization() {
 
             let maybe_fails = self.documents.par_iter_mut()
@@ -65,11 +71,7 @@ impl Parsable for Dossier {
 
                     let parse_time = Instant::now();
 
-                    let mut parsing_metadata = parsing_metadata.as_ref().clone();
-
-                    parsing_metadata.set_dossier_name(Some(self.name().clone()));
-
-                    let res = document.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration), Arc::new(parsing_metadata));
+                    let res = document.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration), Arc::clone(&parsing_metadata));
 
                     log::info!("document '{}' parsed in {} ms", document.name(), parse_time.elapsed().as_millis());
 
@@ -86,11 +88,7 @@ impl Parsable for Dossier {
                 .map(|document| {
                     let parse_time = Instant::now();
 
-                    let mut parsing_metadata = parsing_metadata.as_ref().clone();
-
-                    parsing_metadata.set_dossier_name(Some(self.name().clone()));
-
-                    let res = document.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration), Arc::new(parsing_metadata));
+                    let res = document.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration), Arc::clone(&parsing_metadata));
 
                     log::info!("document '{}' parsed in {} ms", document.name(), parse_time.elapsed().as_millis());
 
