@@ -1,8 +1,8 @@
-use std::sync::Arc;
+use std::sync::{Arc, RwLock};
 
 use regex::Regex;
 
-use crate::compiler::{codex::modifier::{modifiers_bucket::ModifiersBucket, standard_paragraph_modifier::StandardParagraphModifier, Modifier}, parsing::{parsing_configuration::{list_bullet_configuration_record::{self, ListBulletConfigurationRecord}, ParsingConfiguration}, parsing_error::ParsingError, parsing_outcome::ParsingOutcome}};
+use crate::compiler::{codex::modifier::{modifiers_bucket::ModifiersBucket, standard_paragraph_modifier::StandardParagraphModifier, Modifier}, parsing::{parsing_configuration::{list_bullet_configuration_record::{self, ListBulletConfigurationRecord}, ParsingConfiguration}, parsing_error::ParsingError, parsing_metadata::ParsingMetadata, parsing_outcome::ParsingOutcome}};
 
 use super::ParsingRule;
 
@@ -62,7 +62,7 @@ impl ParsingRule for HtmlListRule {
         &self.searching_pattern
     }
 
-    fn parse(&self, content: &str, parsing_configuration: Arc<ParsingConfiguration>) -> Result<ParsingOutcome, ParsingError> {
+    fn parse(&self, content: &str, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError> {
         
         let mut parsed_content = String::new();
 
@@ -97,7 +97,7 @@ impl ParsingRule for HtmlListRule {
                             indentation_level += 1;
                         }
 
-                        let bullet = Self::bullet_transform(bullet, indentation_level, parsing_configuration.list_bullets_configuration());
+                        let bullet = Self::bullet_transform(bullet, indentation_level, parsing_configuration.read().unwrap().list_bullets_configuration());
 
                         parsed_content.push_str(format!(r#"
                         <li class="list-item">
@@ -118,7 +118,7 @@ impl ParsingRule for HtmlListRule {
 
         if items_found != total_valid_lines {
 
-            if parsing_configuration.strict_list_check() {
+            if parsing_configuration.read().unwrap().strict_list_check() {
                 log::error!("the following list has incorrect items (parsed {} on {}):\n{}\n-----\nparsed:\n{:#?}", items_found, total_valid_lines, content, parsed_lines);
                 panic!("incorrect list item(s)")
             } else {
@@ -154,7 +154,7 @@ mod test {
 
        let regex = Regex::new(rule.searching_pattern()).unwrap();
 
-       let outcome = rule.parse(nmd_text, Arc::new(ParsingConfiguration::default())).unwrap();
+       let outcome = rule.parse(nmd_text, Arc::new(RwLock::new(ParsingConfiguration::default()))).unwrap();
 
     }
 }

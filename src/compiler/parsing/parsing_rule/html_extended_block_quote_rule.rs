@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::sync::{Arc, RwLock};
 
 use regex::Regex;
 
@@ -25,7 +25,7 @@ impl ParsingRule for HtmlExtendedBlockQuoteRule {
     fn searching_pattern(&self) -> &String {
         &self.searching_pattern
     }
-    fn parse(&self, content: &str, parsing_configuration: Arc<ParsingConfiguration>) -> Result<ParsingOutcome, ParsingError> {
+    fn parse(&self, content: &str, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError> {
 
         let content = content.trim();
         let mut lines: Vec<&str> = content.lines().collect();
@@ -45,7 +45,7 @@ impl ParsingRule for HtmlExtendedBlockQuoteRule {
 
         for line in lines {
             if !line.starts_with(">") {
-                if parsing_configuration.strict_focus_block_check() {
+                if parsing_configuration.read().unwrap().strict_focus_block_check() {
                     log::warn!("invalid line in focus (quote) block: {}", line);
                     continue;
                 } else {

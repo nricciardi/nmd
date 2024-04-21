@@ -73,18 +73,18 @@ impl Clone for Chapter {
 
 
 impl Parsable for Chapter {
-    fn parse(&mut self, codex: Arc<Codex>, parsing_configuration: Arc<ParsingConfiguration>, parsing_metadata: Arc<ParsingMetadata>) -> Result<(), ParsingError> {
+    fn parse(&mut self, codex: Arc<Codex>, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<(), ParsingError> {
 
         // TODO: in other thread
-        self.heading.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration), Arc::clone(&parsing_metadata))?;
+        self.heading.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration))?;
 
         log::debug!("parsing chapter:\n{:#?}", self);
 
-        if parsing_configuration.parallelization() {
+        if parsing_configuration.read().unwrap().parallelization() {
 
             let maybe_failed = self.paragraphs.par_iter_mut()
                 .map(|paragraph| {
-                    paragraph.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration), Arc::clone(&parsing_metadata))
+                    paragraph.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration))
                 })
                 .find_any(|result| result.is_err());
     
@@ -96,7 +96,7 @@ impl Parsable for Chapter {
             
             let maybe_failed = self.paragraphs.iter_mut()
                 .map(|paragraph| {
-                    paragraph.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration), Arc::clone(&parsing_metadata))
+                    paragraph.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration))
                 })
                 .find(|result| result.is_err());
     

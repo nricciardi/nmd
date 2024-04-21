@@ -1,5 +1,5 @@
 use std::fmt::{Display, Debug};
-use std::sync::Arc;
+use std::sync::{Arc, RwLock};
 
 use log;
 use regex::{Captures, Regex, Replacer};
@@ -7,6 +7,7 @@ use regex::{Captures, Regex, Replacer};
 use crate::compiler::codex::modifier::modifiers_bucket::ModifiersBucket;
 use crate::compiler::parsing::parsing_configuration::ParsingConfiguration;
 use crate::compiler::parsing::parsing_error::ParsingError;
+use crate::compiler::parsing::parsing_metadata::ParsingMetadata;
 use crate::compiler::parsing::parsing_outcome::ParsingOutcome;
 
 use super::ParsingRule;
@@ -57,7 +58,7 @@ impl Debug for ReplacementRule<String> {
 impl ParsingRule for ReplacementRule<String> {
 
     /// Parse the content using internal search and replacement pattern
-    fn parse(&self, content: &str, parsing_configuration: Arc<ParsingConfiguration>) -> Result<ParsingOutcome, ParsingError> {
+    fn parse(&self, content: &str, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError> {
 
         let regex = match Regex::new(&self.searching_pattern()) {
           Ok(r) => r,
@@ -95,7 +96,7 @@ impl<F> ParsingRule for ReplacementRule<F>
 where F: 'static + Sync + Send + Fn(&Captures) -> String {
 
     /// Parse the content using internal search and replacement pattern
-    fn parse(&self, content: &str, parsing_configuration: Arc<ParsingConfiguration>) -> Result<ParsingOutcome, ParsingError> {
+    fn parse(&self, content: &str, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError> {
 
         let regex = match Regex::new(&self.searching_pattern()) {
           Ok(r) => r,
@@ -135,7 +136,7 @@ mod test {
         let parsing_rule = ReplacementRule::new(StandardTextModifier::BoldStarVersion.modifier_pattern().clone(), String::from("<strong>$1</strong>"));
 
         let text_to_parse = r"A piece of **bold text**";
-        let parsing_configuration = Arc::new(ParsingConfiguration::default());
+        let parsing_configuration = Arc::new(RwLock::new(ParsingConfiguration::default()));
 
         let parsed_text = parsing_rule.parse(text_to_parse, Arc::clone(&parsing_configuration)).unwrap();
 
@@ -153,7 +154,7 @@ mod test {
 
     #[test]
     fn heading_parsing() {
-        let parsing_configuration = Arc::new(ParsingConfiguration::default());
+        let parsing_configuration = Arc::new(RwLock::new(ParsingConfiguration::default()));
 
         let parsing_rule = ReplacementRule::new(StandardChapterModifier::HeadingGeneralExtendedVersion(6).modifier_pattern().clone(), String::from("<h6>$1</h6>"));
 
@@ -166,7 +167,7 @@ mod test {
 
     #[test]
     fn paragraph_parsing() {
-        let parsing_configuration = Arc::new(ParsingConfiguration::default());
+        let parsing_configuration = Arc::new(RwLock::new(ParsingConfiguration::default()));
 
         let parsing_rule = ReplacementRule::new(StandardParagraphModifier::CommonParagraph.modifier_pattern_with_paragraph_separator().clone(), String::from("<p>$1</p>"));
 
@@ -188,7 +189,7 @@ paragraph
 
     #[test]
     fn code_block() {
-        let parsing_configuration = Arc::new(ParsingConfiguration::default());
+        let parsing_configuration = Arc::new(RwLock::new(ParsingConfiguration::default()));
 
         let parsing_rule = ReplacementRule::new(StandardParagraphModifier::CodeBlock.modifier_pattern_with_paragraph_separator().clone(), String::from(r#"<pre><code class="language-$1 codeblock">$2</code></pre>"#));
 
@@ -207,7 +208,7 @@ print("hello world")
 
     #[test]
     fn focus_block() {
-        let parsing_configuration = Arc::new(ParsingConfiguration::default());
+        let parsing_configuration = Arc::new(RwLock::new(ParsingConfiguration::default()));
 
         let parsing_rule = ReplacementRule::new(StandardParagraphModifier::FocusBlock.modifier_pattern_with_paragraph_separator().clone(), String::from(r#"<div class="focus-block focus-block-$1">$2</div>"#)).with_newline_fix(r"<br>".to_string());
 

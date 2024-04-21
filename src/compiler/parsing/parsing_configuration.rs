@@ -8,9 +8,8 @@ use self::list_bullet_configuration_record::ListBulletConfigurationRecord;
 
 use crate::compiler::codex::modifier::modifiers_bucket::ModifiersBucket;
 
+use super::parsing_metadata::ParsingMetadata;
 
-#[derive(Clone, Default, Debug)]
-pub struct ParsingConfigurationMetadata {}
 
 #[derive(Clone, Debug)]
 pub struct ParsingConfiguration {
@@ -23,7 +22,7 @@ pub struct ParsingConfiguration {
     compress_embed_image: bool,
     strict_image_src_check: bool,
 
-    metadata: ParsingConfigurationMetadata,
+    metadata: ParsingMetadata,
 
     excluded_modifiers: ModifiersBucket,
 
@@ -37,7 +36,7 @@ pub struct ParsingConfiguration {
 
 impl ParsingConfiguration {
 
-    pub fn new(input_location: PathBuf, output_location: PathBuf, embed_local_image: bool, embed_remote_image: bool, compress_embed_image: bool, strict_image_src_check: bool, metadata: ParsingConfigurationMetadata, excluded_modifiers: ModifiersBucket, parallelization: bool, list_bullets_configuration: Vec<ListBulletConfigurationRecord>, strict_list_check: bool, strict_focus_block_check: bool) -> Self {
+    pub fn new(input_location: PathBuf, output_location: PathBuf, embed_local_image: bool, embed_remote_image: bool, compress_embed_image: bool, strict_image_src_check: bool, metadata: ParsingMetadata, excluded_modifiers: ModifiersBucket, parallelization: bool, list_bullets_configuration: Vec<ListBulletConfigurationRecord>, strict_list_check: bool, strict_focus_block_check: bool) -> Self {
         Self {
             input_location,
             output_location,
@@ -78,8 +77,12 @@ impl ParsingConfiguration {
         self.strict_image_src_check
     }
 
-    pub fn metadata(&self) -> &ParsingConfigurationMetadata {
+    pub fn metadata(&self) -> &ParsingMetadata {
         &self.metadata
+    }
+
+    pub fn metadata_mut(&mut self) -> &mut ParsingMetadata {
+        &mut self.metadata
     }
 
     pub fn modifiers_excluded(&self) -> &ModifiersBucket {
@@ -127,7 +130,7 @@ impl ParsingConfiguration {
         self.strict_image_src_check = new_strict_image_src_check;
     }
 
-    pub fn set_metadata(&mut self, new_metadata: ParsingConfigurationMetadata) {
+    pub fn set_metadata(&mut self, new_metadata: ParsingMetadata) {
         self.metadata = new_metadata;
     }
 
@@ -165,7 +168,7 @@ impl Default for ParsingConfiguration {
             embed_remote_image: false,
             compress_embed_image: false,
             strict_image_src_check: false,
-            metadata: ParsingConfigurationMetadata::default(),
+            metadata: ParsingMetadata::default(),
             excluded_modifiers: ModifiersBucket::None,
             parallelization: false,
             list_bullets_configuration: list_bullet_configuration_record::default_bullets_configuration(),

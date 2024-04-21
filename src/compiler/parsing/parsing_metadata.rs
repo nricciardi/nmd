@@ -1,6 +1,6 @@
 
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub struct ParsingMetadata {
     dossier_name: Option<String>,
     document_name: Option<String>

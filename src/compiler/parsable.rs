@@ -8,5 +8,5 @@ use super::parsing::{parsing_configuration::ParsingConfiguration, parsing_error:
 
 
 pub trait Parsable {
-    fn parse(&mut self, codex: Arc<Codex>, parsing_configuration: Arc<ParsingConfiguration>, parsing_metadata: Arc<ParsingMetadata>) -> Result<(), ParsingError>;
+    fn parse(&mut self, codex: Arc<Codex>, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<(), ParsingError>;
 }

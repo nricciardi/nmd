@@ -1,6 +1,6 @@
 
 
-use std::sync::Arc;
+use std::sync::{Arc, RwLock};
 
 
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
@@ -18,14 +18,14 @@ pub struct Parser {
 impl Parser {
 
 
-    pub fn parse_text(codex: &Codex, content: &str, parsing_configuration: Arc<ParsingConfiguration>) -> Result<ParsingOutcome, ParsingError> {
+    pub fn parse_text(codex: &Codex, content: &str, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError> {
 
-        let excluded_modifiers = parsing_configuration.modifiers_excluded().clone();
+        let excluded_modifiers = parsing_configuration.read().unwrap().modifiers_excluded().clone();
 
         Parser::parse_text_excluding_modifiers(codex, content, Arc::clone(&parsing_configuration), excluded_modifiers)
     }
 
-    pub fn parse_text_excluding_modifiers(codex: &Codex, content: &str, parsing_configuration: Arc<ParsingConfiguration>, mut excluded_modifiers: ModifiersBucket) -> Result<ParsingOutcome, ParsingError> {
+    pub fn parse_text_excluding_modifiers(codex: &Codex, content: &str, parsing_configuration: Arc<RwLock<ParsingConfiguration>>, mut excluded_modifiers: ModifiersBucket) -> Result<ParsingOutcome, ParsingError> {
 
         log::debug!("start to parse content:\n{}\nexcluding: {:?}", content, excluded_modifiers);
 
@@ -75,11 +75,11 @@ impl Parser {
         Ok(outcome)
     }
 
-    pub fn parse_paragraph(codex: &Codex, paragraph: &Paragraph, parsing_configuration: Arc<ParsingConfiguration>) -> Result<ParsingOutcome, ParsingError> {
+    pub fn parse_paragraph(codex: &Codex, paragraph: &Paragraph, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError> {
         Parser::parse_paragraph_excluding_modifiers(codex, paragraph, parsing_configuration, ModifiersBucket::None)
     }
 
-    pub fn parse_paragraph_excluding_modifiers(codex: &Codex, paragraph: &Paragraph, parsing_configuration: Arc<ParsingConfiguration>, mut excluded_modifiers: ModifiersBucket) -> Result<ParsingOutcome, ParsingError> {
+    pub fn parse_paragraph_excluding_modifiers(codex: &Codex, paragraph: &Paragraph, parsing_configuration: Arc<RwLock<ParsingConfiguration>>, mut excluded_modifiers: ModifiersBucket) -> Result<ParsingOutcome, ParsingError> {
 
         log::debug!("start to parse paragraph:\n{}\nexcluding: {:?}", paragraph, excluded_modifiers);
 

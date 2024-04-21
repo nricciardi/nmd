@@ -1,5 +1,6 @@
 pub mod codex_configuration;
 pub mod modifier;
+pub mod nmd_id;
 
 use std::collections::HashMap;
 use std::str::FromStr;
@@ -55,19 +56,6 @@ impl Codex {
 
     pub fn configuration(&self) -> &CodexConfiguration {
         &self.configuration
-    }
-
-    pub fn create_id(s: &str) -> String {
-
-        let allowed_chars = s.chars().filter(|c| c.is_alphanumeric() || *c == '_' || *c == '-' || *c == ' ').map(|c| {
-            if c == ' ' {
-                return '-';
-            }
-
-            c
-        });
-
-        allowed_chars.collect()
     }
     
     fn new(configuration: CodexConfiguration, text_rules: HashMap<ModifierIdentifier, Box<dyn ParsingRule>>, paragraph_rules: HashMap<ModifierIdentifier, Box<dyn ParsingRule>>, chapter_rules: HashMap<ModifierIdentifier, Box<dyn ParsingRule>>, document_rules: HashMap<ModifierIdentifier, Box<dyn ParsingRule>>) -> Codex {
@@ -272,7 +260,9 @@ impl Codex {
 #[cfg(test)]
 mod test {
 
-    use std::sync::Arc;
+    use std::sync::{Arc, RwLock};
+
+    use test::nmd_id::NmdId;
 
     use crate::compiler::{loader::Loader, parsing::parsing_configuration::ParsingConfiguration};
 
@@ -285,7 +275,7 @@ mod test {
         let nmd_text = "This is a simple **nmd** text for test";
         let expected_result = "This is a simple <strong>nmd</strong> text for test";
         let mut parsing_result = String::from(nmd_text);
-        let parsing_configuration = Arc::new(ParsingConfiguration::default());
+        let parsing_configuration = Arc::new(RwLock::new(ParsingConfiguration::default()));
 
         for rule in codex.text_rules() {
             let result = rule.1.parse(parsing_result.as_str(), Arc::clone(&parsing_configuration)).unwrap();
@@ -326,7 +316,7 @@ r#"
 "#.trim();
 
         let mut parsing_result = String::from(nmd_text);
-        let parsing_configuration = Arc::new(ParsingConfiguration::default());
+        let parsing_configuration = Arc::new(RwLock::new(ParsingConfiguration::default()));
 
         for rule in codex.text_rules() {
             let result = rule.1.parse(parsing_result.as_str(), Arc::clone(&parsing_configuration)).unwrap();
@@ -362,7 +352,7 @@ print("hello world")
     fn id() {
         let s = "my $string<-_778ks";
 
-        let id = Codex::create_id(s);
+        let id = NmdId::new(s).build();
 
         assert_eq!(id, "my-string-_778ks");
     }

@@ -1,6 +1,6 @@
 use std::{num::ParseIntError, str::FromStr, sync::{Arc, RwLock}};
 
-use crate::compiler::{codex::Codex, parsable::{parsed_content_accessor::ParsedContentAccessor, Parsable}, parser::Parser, parsing::{parsing_configuration::ParsingConfiguration, parsing_error::ParsingError, parsing_metadata::ParsingMetadata, parsing_outcome::ParsingOutcome}};
+use crate::compiler::{codex::{nmd_id::NmdId, Codex}, parsable::{parsed_content_accessor::ParsedContentAccessor, Parsable}, parser::Parser, parsing::{parsing_configuration::ParsingConfiguration, parsing_error::ParsingError, parsing_metadata::ParsingMetadata, parsing_outcome::ParsingOutcome}};
 
 use super::chapter_builder::ChapterBuilderError;
 
@@ -63,12 +63,17 @@ impl Heading {
 }
 
 impl Parsable for Heading {
-    fn parse(&mut self, codex: Arc<Codex>, parsing_configuration: Arc<ParsingConfiguration>, parsing_metadata: Arc<ParsingMetadata>) -> Result<(), ParsingError> {
-        let id = Codex::create_id(&self.title);
+    fn parse(&mut self, codex: Arc<Codex>, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<(), ParsingError> {
+
+        let pc = parsing_configuration.read().unwrap();
+
+        let document_name = pc.metadata().document_name().as_ref().unwrap();
+
+        let id = NmdId::new_with_prefix(&document_name, &self.title);
 
         let parsed_title = Parser::parse_text(&codex, &self.title, Arc::clone(&parsing_configuration))?;
 
-        self.parsed_content = Some(ParsingOutcome::new(format!(r#"<h{} class="heading-{}" id="{}">{}</h{}>"#, self.level, self.level, id, parsed_title.parsed_content(), self.level)));
+        self.parsed_content = Some(ParsingOutcome::new(format!(r#"<h{} class="heading-{}" id="{}">{}</h{}>"#, self.level, self.level, id.build(), parsed_title.parsed_content(), self.level)));
 
         Ok(())
     }

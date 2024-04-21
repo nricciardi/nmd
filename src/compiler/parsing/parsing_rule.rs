@@ -4,10 +4,10 @@ pub mod html_image_rule;
 pub mod html_list_rule;
 pub mod html_extended_block_quote_rule;
 
-use std::{fmt::Debug, sync::Arc};
+use std::{fmt::Debug, sync::{Arc, RwLock}};
 use regex::Regex;
 
-use super::{parsing_configuration::ParsingConfiguration, parsing_error::ParsingError, parsing_outcome::ParsingOutcome};
+use super::{parsing_configuration::ParsingConfiguration, parsing_error::ParsingError, parsing_metadata::ParsingMetadata, parsing_outcome::ParsingOutcome};
 
 
 pub trait ParsingRule: Send + Sync + Debug {
@@ -25,7 +25,7 @@ pub trait ParsingRule: Send + Sync + Debug {
         regex.is_match(content)
     }
 
-    fn parse(&self, content: &str, parsing_configuration: Arc<ParsingConfiguration>) -> Result<ParsingOutcome, ParsingError>;
+    fn parse(&self, content: &str, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError>;
 
 }
 
