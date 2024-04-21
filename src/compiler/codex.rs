@@ -19,11 +19,11 @@ use crate::compiler::dossier::{Document, DocumentError};
 use crate::compiler::output_format::OutputFormat;
 use self::codex_configuration::CodexConfiguration;
 
-use super::parser::parsing_rule::html_extended_block_quote_rule::HtmlExtendedBlockQuoteRule;
-use super::parser::parsing_rule::html_image_rule::HtmlImageRule;
-use super::parser::parsing_rule::html_list_rule::HtmlListRule;
-use super::parser::parsing_rule::replacement_rule::ReplacementRule;
-use super::parser::parsing_rule::ParsingRule;
+use super::parsing::parsing_rule::html_extended_block_quote_rule::HtmlExtendedBlockQuoteRule;
+use super::parsing::parsing_rule::html_image_rule::HtmlImageRule;
+use super::parsing::parsing_rule::html_list_rule::HtmlListRule;
+use super::parsing::parsing_rule::replacement_rule::ReplacementRule;
+use super::parsing::parsing_rule::ParsingRule;
 
 
 /// Ordered collection of rules
@@ -274,7 +274,7 @@ mod test {
 
     use std::sync::Arc;
 
-    use crate::compiler::{loader::Loader, parser::parsing_rule::parsing_configuration::ParsingConfiguration};
+    use crate::compiler::{loader::Loader, parsing::parsing_configuration::ParsingConfiguration};
 
     use super::*;
 

@@ -5,10 +5,10 @@ use log;
 use regex::{Captures, Regex, Replacer};
 
 use crate::compiler::codex::modifier::modifiers_bucket::ModifiersBucket;
+use crate::compiler::parsing::parsing_configuration::ParsingConfiguration;
+use crate::compiler::parsing::parsing_error::ParsingError;
+use crate::compiler::parsing::parsing_outcome::ParsingOutcome;
 
-use super::parsing_configuration::ParsingConfiguration;
-use super::parsing_error::ParsingError;
-use super::parsing_outcome::ParsingOutcome;
 use super::ParsingRule;
 
 

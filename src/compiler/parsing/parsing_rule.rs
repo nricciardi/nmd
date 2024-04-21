@@ -1,7 +1,4 @@
 pub mod replacement_rule;
-pub mod parsing_error;
-pub mod parsing_outcome;
-pub mod parsing_configuration;
 
 pub mod html_image_rule;
 pub mod html_list_rule;
@@ -10,7 +7,7 @@ pub mod html_extended_block_quote_rule;
 use std::{fmt::Debug, sync::Arc};
 use regex::Regex;
 
-use self::{parsing_configuration::ParsingConfiguration, parsing_error::ParsingError, parsing_outcome::ParsingOutcome};
+use super::{parsing_configuration::ParsingConfiguration, parsing_error::ParsingError, parsing_outcome::ParsingOutcome};
 
 
 pub trait ParsingRule: Send + Sync + Debug {

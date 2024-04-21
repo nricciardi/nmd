@@ -2,9 +2,9 @@ use std::sync::Arc;
 
 use regex::Regex;
 
-use crate::compiler::codex::modifier::{modifiers_bucket::ModifiersBucket, standard_paragraph_modifier::StandardParagraphModifier, Modifier};
+use crate::compiler::{codex::modifier::{modifiers_bucket::ModifiersBucket, standard_paragraph_modifier::StandardParagraphModifier, Modifier}, parsing::{parsing_configuration::ParsingConfiguration, parsing_error::ParsingError, parsing_outcome::ParsingOutcome}};
 
-use super::{parsing_configuration::ParsingConfiguration, parsing_error::ParsingError, parsing_outcome::ParsingOutcome, ParsingRule};
+use super::ParsingRule;
 
 
 #[derive(Debug)]

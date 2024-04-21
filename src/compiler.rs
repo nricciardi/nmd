@@ -8,12 +8,14 @@ pub mod theme;
 pub mod parser;
 pub mod loader;
 pub mod codex;
+pub mod parsable;
+pub mod parsing;
 
-use std::{sync::Arc, time::Instant};
+use std::{sync::{Arc, RwLock}, time::Instant};
 
 use thiserror::Error;
-use crate::compiler::{dossier::Dossier, dumpable::{DumpError, Dumpable}, loader::Loader, parser::parsable::Parsable};
-use self::{assembler::{assembler_configuration::AssemblerConfiguration, AssemblerError}, compilation_configuration::CompilationConfiguration, dossier::dossier_configuration, loader::LoadError, parser::parsing_rule::parsing_error::ParsingError};
+use crate::compiler::{dossier::Dossier, dumpable::{DumpError, Dumpable}, loader::Loader, parsable::Parsable, parsing::parsing_metadata::ParsingMetadata};
+use self::{assembler::{assembler_configuration::AssemblerConfiguration, AssemblerError}, compilation_configuration::CompilationConfiguration, dossier::dossier_configuration, loader::LoadError, parsing::parsing_error::ParsingError};
 
 
 #[derive(Error, Debug)]
@@ -74,7 +76,7 @@ impl Compiler {
         log::info!("parsing...");
         log::debug!("parsing configuration:\n{:#?}\n", parsing_configuration);
 
-        dossier.parse(Arc::clone(&codex), Arc::new(parsing_configuration))?;
+        dossier.parse(Arc::clone(&codex), Arc::new(parsing_configuration), Arc::new(ParsingMetadata::new()))?;
 
         assembler_configuration.set_output_location(compilation_configuration.output_location().clone());
         assembler_configuration.set_theme(dossier_theme);

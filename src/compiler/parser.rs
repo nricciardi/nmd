@@ -1,17 +1,13 @@
-pub mod parsing_rule;
-pub mod parsable;
-pub mod parsed_content_accessor;
+
 
 use std::sync::Arc;
 
 
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 
-use crate::compiler::codex::modifier::standard_paragraph_modifier;
+use crate::compiler::{codex::modifier::standard_paragraph_modifier, parsing::parsing_outcome::ParsingOutcome};
 
-use self::parsing_rule::{parsing_configuration::ParsingConfiguration, parsing_error::ParsingError, parsing_outcome::ParsingOutcome};
-
-use super::{codex::{modifier::modifiers_bucket::ModifiersBucket, Codex}, dossier::document::Paragraph};
+use super::{codex::{modifier::modifiers_bucket::ModifiersBucket, Codex}, dossier::document::Paragraph, parsing::{parsing_configuration::ParsingConfiguration, parsing_error::ParsingError}};
 
 
 

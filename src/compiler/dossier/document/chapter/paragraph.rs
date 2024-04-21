@@ -1,9 +1,9 @@
-use std::{sync::Arc, fmt::Display};
+use std::{fmt::Display, sync::{Arc, RwLock}};
 
 use regex::Regex;
 use thiserror::Error;
 
-use crate::compiler::{codex::{modifier::ModifierIdentifier, Codex}, parser::{parsable::Parsable, parsed_content_accessor::ParsedContentAccessor, parsing_rule::{parsing_configuration::ParsingConfiguration, parsing_error::ParsingError, parsing_outcome::ParsingOutcome}, Parser}};
+use crate::compiler::{codex::{modifier::ModifierIdentifier, Codex}, parsable::{parsed_content_accessor::ParsedContentAccessor, Parsable}, parser::Parser, parsing::{parsing_configuration::ParsingConfiguration, parsing_error::ParsingError, parsing_metadata::ParsingMetadata, parsing_outcome::ParsingOutcome}};
 
 
 #[derive(Error, Debug)]
@@ -48,7 +48,7 @@ impl Paragraph {
 }
 
 impl Parsable for Paragraph {
-    fn parse(&mut self, codex: Arc<Codex>, parsing_configuration: Arc<ParsingConfiguration>) -> Result<(), ParsingError> {
+    fn parse(&mut self, codex: Arc<Codex>, parsing_configuration: Arc<ParsingConfiguration>, parsing_metadata: Arc<ParsingMetadata>) -> Result<(), ParsingError> {
 
         let parsing_outcome = Parser::parse_paragraph(&codex, self, Arc::clone(&parsing_configuration))?;
 

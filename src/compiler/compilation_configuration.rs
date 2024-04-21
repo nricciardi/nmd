@@ -1,6 +1,6 @@
 use std::{clone, path::PathBuf};
 
-use super::{codex::{codex_configuration::CodexConfiguration, Codex}, dossier::dossier_configuration::DossierConfiguration, output_format::OutputFormat, parser::parsing_rule::parsing_configuration::ParsingConfiguration};
+use super::{codex::{codex_configuration::CodexConfiguration, Codex}, dossier::dossier_configuration::DossierConfiguration, output_format::OutputFormat, parsing::parsing_configuration::ParsingConfiguration};
 
 
 

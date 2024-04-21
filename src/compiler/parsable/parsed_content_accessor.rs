@@ -1,4 +1,5 @@
-use super::parsing_rule::parsing_outcome::ParsingOutcome;
+use crate::compiler::parsing::parsing_outcome::ParsingOutcome;
+
 
 
 pub trait ParsedContentAccessor {

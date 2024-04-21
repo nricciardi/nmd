@@ -9,11 +9,11 @@ use crate::compiler::codex::modifier::standard_paragraph_modifier::StandardParag
 use crate::compiler::codex::modifier::Modifier;
 use crate::compiler::codex::Codex;
 use crate::compiler::dossier;
+use crate::compiler::parsing::parsing_configuration::ParsingConfiguration;
+use crate::compiler::parsing::parsing_error::ParsingError;
+use crate::compiler::parsing::parsing_outcome::ParsingOutcome;
 use crate::resource::{image_resource::ImageResource, remote_resource::RemoteResource};
 
-use super::parsing_configuration::ParsingConfiguration;
-use super::parsing_error::ParsingError;
-use super::parsing_outcome::ParsingOutcome;
 use super::ParsingRule;
 
 #[derive(Debug)]

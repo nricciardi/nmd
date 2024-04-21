@@ -2,7 +2,7 @@ use thiserror::Error;
 
 use self::{html_assembler::HtmlAssembler, assembler_configuration::AssemblerConfiguration};
 
-use super::{artifact::{Artifact, ArtifactError}, codex::Codex, dossier::{Document, Dossier}, output_format::OutputFormat, parser::{parsed_content_accessor::ParsedContentAccessor, parsing_rule::{parsing_error::ParsingError, parsing_outcome::ParsingOutcome}}};
+use super::{artifact::{Artifact, ArtifactError}, codex::Codex, dossier::{Document, Dossier}, output_format::OutputFormat, parsable::parsed_content_accessor::ParsedContentAccessor, parsing::parsing_error::ParsingError};
 
 pub mod html_assembler;
 pub mod assembler_configuration;

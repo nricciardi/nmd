@@ -1,7 +1,7 @@
 pub mod document;
 pub mod dossier_configuration;
 
-use std::{path::PathBuf, sync::Arc, time::Instant};
+use std::{path::PathBuf, sync::{Arc, RwLock}, time::Instant};
 
 pub use document::{Document, DocumentError};
 use rayon::{iter::{IntoParallelRefMutIterator, ParallelIterator}, slice::IterMut};
@@ -11,7 +11,7 @@ use crate::resource::ResourceError;
 
 use self::dossier_configuration::DossierConfiguration;
 
-use super::{codex::Codex, parser::{parsable::Parsable, parsing_rule::{parsing_configuration::ParsingConfiguration, parsing_error::ParsingError}}};
+use super::{codex::Codex, parsable::Parsable, parsing::{parsing_configuration::ParsingConfiguration, parsing_error::ParsingError, parsing_metadata::ParsingMetadata}};
 
 
 pub const ASSETS_DIR: &str = "assets";
@@ -52,48 +52,9 @@ impl Dossier {
     }
 }
 
-// impl Loadable<PathBuf> for Dossier {
-
-//     fn load(codex: Arc<Codex>, location: &PathBuf) -> Result<Box<Self>, LoadError> {
-
-//         let dossier_configuration = DossierConfiguration::try_from(location)?;
-
-//         Self::load(Arc::clone(&codex), &dossier_configuration)
-//     }
-
-// }
-
-// impl Loadable<DossierConfiguration> for Dossier {
-//     fn load(codex: Arc<Codex>, dossier_configuration: &DossierConfiguration) -> Result<Box<Self>, LoadError> {
-//         // TODO: are really mandatory?
-//         if dossier_configuration.raw_documents_paths().is_empty() {
-//             return Err(LoadError::ResourceError(ResourceError::InvalidResourceVerbose("there are no documents".to_string())))
-//         }
-
-//         // TODO: is really mandatory?
-//         if dossier_configuration.name().is_empty() {
-//             return Err(LoadError::ResourceError(ResourceError::InvalidResourceVerbose("there is no name".to_string())))
-//         }
-
-//         let mut documents: Vec<Document> = Vec::new();
-
-//         for document in dossier_configuration.raw_documents_paths() {
-
-//             let document = Document::load(Arc::clone(&codex), document)?;
-
-//             documents.push(*document)
-//         }
-
-//         Ok(Box::new(Self {
-//             configuration: dossier_configuration.clone(),
-//             documents: documents
-//         }))
-//     }
-// }
-
 
 impl Parsable for Dossier {
-    fn parse(&mut self, codex: Arc<Codex>, parsing_configuration: Arc<ParsingConfiguration>) -> Result<(), ParsingError> {
+    fn parse(&mut self, codex: Arc<Codex>, parsing_configuration: Arc<ParsingConfiguration>, parsing_metadata: Arc<ParsingMetadata>) -> Result<(), ParsingError> {
 
         log::info!("parse dossier {} with {} document(s) (parallelization: {})", self.name(), self.documents().len(), parsing_configuration.parallelization());
 
@@ -101,9 +62,14 @@ impl Parsable for Dossier {
 
             let maybe_fails = self.documents.par_iter_mut()
                 .map(|document| {
+
                     let parse_time = Instant::now();
 
-                    let res = document.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration));
+                    let mut parsing_metadata = parsing_metadata.as_ref().clone();
+
+                    parsing_metadata.set_dossier_name(Some(self.name().clone()));
+
+                    let res = document.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration), Arc::new(parsing_metadata));
 
                     log::info!("document '{}' parsed in {} ms", document.name(), parse_time.elapsed().as_millis());
 
@@ -120,7 +86,11 @@ impl Parsable for Dossier {
                 .map(|document| {
                     let parse_time = Instant::now();
 
-                    let res = document.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration));
+                    let mut parsing_metadata = parsing_metadata.as_ref().clone();
+
+                    parsing_metadata.set_dossier_name(Some(self.name().clone()));
+
+                    let res = document.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration), Arc::new(parsing_metadata));
 
                     log::info!("document '{}' parsed in {} ms", document.name(), parse_time.elapsed().as_millis());
 

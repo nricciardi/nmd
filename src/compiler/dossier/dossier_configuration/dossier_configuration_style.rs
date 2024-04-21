@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::compiler::{parser::parsing_rule::parsing_configuration::list_bullet_configuration_record::{self, ListBulletConfigurationRecord}, theme::Theme};
+use crate::compiler::{parsing::parsing_configuration::list_bullet_configuration_record::{self, ListBulletConfigurationRecord}, theme::Theme};
 
 
 

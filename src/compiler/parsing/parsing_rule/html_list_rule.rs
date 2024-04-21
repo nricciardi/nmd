@@ -2,9 +2,9 @@ use std::sync::Arc;
 
 use regex::Regex;
 
-use crate::compiler::codex::modifier::{modifiers_bucket::ModifiersBucket, standard_paragraph_modifier::StandardParagraphModifier, Modifier};
+use crate::compiler::{codex::modifier::{modifiers_bucket::ModifiersBucket, standard_paragraph_modifier::StandardParagraphModifier, Modifier}, parsing::{parsing_configuration::{list_bullet_configuration_record::{self, ListBulletConfigurationRecord}, ParsingConfiguration}, parsing_error::ParsingError, parsing_outcome::ParsingOutcome}};
 
-use super::{parsing_configuration::{list_bullet_configuration_record::{self, ListBulletConfigurationRecord}, ParsingConfiguration}, parsing_error::ParsingError, parsing_outcome::ParsingOutcome, ParsingRule};
+use super::ParsingRule;
 
 const SPACE_TAB_EQUIVALENCE: &str = r"   ";
 const INDENTATION: &str = r#"<span class="list-item-indentation"></span>"#;

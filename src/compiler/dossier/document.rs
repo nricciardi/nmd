@@ -3,7 +3,7 @@ pub mod chapter;
 use std::fmt::Display;
 use std::path::PathBuf;
 use std::str::FromStr;
-use std::sync::Arc;
+use std::sync::{Arc, RwLock};
 
 pub use chapter::Chapter;
 use thiserror::Error;
@@ -11,9 +11,10 @@ use log;
 use rayon::prelude::*;
 
 use crate::compiler::codex::Codex;
-use crate::compiler::parser::parsable::Parsable;
-use crate::compiler::parser::parsing_rule::parsing_configuration::ParsingConfiguration;
-use crate::compiler::parser::parsing_rule::parsing_error::ParsingError;
+use crate::compiler::parsable::Parsable;
+use crate::compiler::parsing::parsing_configuration::ParsingConfiguration;
+use crate::compiler::parsing::parsing_error::ParsingError;
+use crate::compiler::parsing::parsing_metadata::ParsingMetadata;
 use crate::resource::disk_resource::DiskResource;
 use crate::resource::{Resource, ResourceError};
 
@@ -69,49 +70,24 @@ impl Document {
     }
 }
 
-// impl Loadable<String> for Document {
-
-//     fn load(codex: Arc<Codex>, location: &String) -> Result<Box<Self>, LoadError> {
-
-//         let path_buf = PathBuf::from_str(&location).unwrap();
-
-//         let resource = DiskResource::try_from(path_buf)?;
-
-//         Self::load(Arc::clone(&codex), &resource)
-//     }
-// }
-
-// impl Loadable<DiskResource> for Document {
-
-//     fn load(codex: Arc<Codex>, resource: &DiskResource) -> Result<Box<Self>, LoadError> {
-//         let content = resource.content()?;
-
-//         let document_name = resource.name();
-
-//         match codex.load_document_from_str(document_name, &content) {
-//             Ok(document) => {
-//                 return Ok(Box::new(document))
-//             },
-//             Err(err) => return Err(LoadError::ElaborationError(err.to_string()))
-//         }
-//     }
-// }
-
-
 impl Parsable for Document {
 
-    fn parse(&mut self, codex: Arc<Codex>, parsing_configuration: Arc<ParsingConfiguration>) -> Result<(), ParsingError> {
+    fn parse(&mut self, codex: Arc<Codex>, parsing_configuration: Arc<ParsingConfiguration>, parsing_metadata: Arc<ParsingMetadata>) -> Result<(), ParsingError> {
 
         log::info!("parsing {} chapters of document: '{}'", self.chapters().len(), self.name);
 
-        if parsing_configuration.parallelization() {
+        let mut parsing_metadata = parsing_metadata.as_ref().clone(); 
 
-            // p.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration))?;
+        parsing_metadata.set_document_name(Some(self.name().clone()));
+
+        let parsing_metadata = Arc::new(parsing_metadata);
+
+        if parsing_configuration.parallelization() {
 
             let maybe_one_failed: Option<Result<(), ParsingError>> = self.preamble.par_iter_mut()
                 .map(|paragraph| {
 
-                    paragraph.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration))
+                    paragraph.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration), Arc::clone(&parsing_metadata))
                 
                 }).find_any(|result| result.is_err());
 
@@ -122,7 +98,7 @@ impl Parsable for Document {
             let maybe_one_failed: Option<Result<(), ParsingError>> = self.chapters.par_iter_mut()
                 .map(|chapter| {
 
-                    chapter.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration))
+                    chapter.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration), Arc::clone(&parsing_metadata))
                 
                 }).find_any(|result| result.is_err());
 
@@ -135,7 +111,7 @@ impl Parsable for Document {
             let maybe_one_failed: Option<Result<(), ParsingError>> = self.preamble.iter_mut()
                 .map(|paragraph| {
 
-                    paragraph.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration))
+                    paragraph.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration), Arc::clone(&parsing_metadata))
                 
                 }).find(|result| result.is_err());
 
@@ -146,7 +122,7 @@ impl Parsable for Document {
             let maybe_one_failed: Option<Result<(), ParsingError>> = self.chapters.iter_mut()
                 .map(|chapter| {
 
-                    chapter.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration))
+                    chapter.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration), Arc::clone(&parsing_metadata))
                 
                 }).find(|result| result.is_err());
 

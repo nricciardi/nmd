@@ -1,6 +1,6 @@
-use std::{num::ParseIntError, str::FromStr, sync::Arc};
+use std::{num::ParseIntError, str::FromStr, sync::{Arc, RwLock}};
 
-use crate::compiler::{codex::Codex, parser::{parsable::Parsable, parsed_content_accessor::ParsedContentAccessor, parsing_rule::{parsing_configuration::ParsingConfiguration, parsing_error::ParsingError, parsing_outcome::ParsingOutcome}, Parser}};
+use crate::compiler::{codex::Codex, parsable::{parsed_content_accessor::ParsedContentAccessor, Parsable}, parser::Parser, parsing::{parsing_configuration::ParsingConfiguration, parsing_error::ParsingError, parsing_metadata::ParsingMetadata, parsing_outcome::ParsingOutcome}};
 
 use super::chapter_builder::ChapterBuilderError;
 
@@ -63,7 +63,7 @@ impl Heading {
 }
 
 impl Parsable for Heading {
-    fn parse(&mut self, codex: Arc<Codex>, parsing_configuration: Arc<ParsingConfiguration>) -> Result<(), ParsingError> {
+    fn parse(&mut self, codex: Arc<Codex>, parsing_configuration: Arc<ParsingConfiguration>, parsing_metadata: Arc<ParsingMetadata>) -> Result<(), ParsingError> {
         let id = Codex::create_id(&self.title);
 
         let parsed_title = Parser::parse_text(&codex, &self.title, Arc::clone(&parsing_configuration))?;

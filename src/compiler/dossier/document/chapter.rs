@@ -4,15 +4,16 @@ pub mod chapter_builder;
 pub mod chapter_options;
 
 use std::fmt::Display;
-use std::sync::Arc;
+use std::sync::{Arc, RwLock};
 use std::thread;
 
 use rayon::iter::{IntoParallelRefMutIterator, ParallelIterator};
 
 use crate::compiler::codex::Codex;
-use crate::compiler::parser::parsable::Parsable;
-use crate::compiler::parser::parsing_rule::parsing_configuration::ParsingConfiguration;
-use crate::compiler::parser::parsing_rule::parsing_error::ParsingError;
+use crate::compiler::parsable::Parsable;
+use crate::compiler::parsing::parsing_configuration::ParsingConfiguration;
+use crate::compiler::parsing::parsing_error::ParsingError;
+use crate::compiler::parsing::parsing_metadata::ParsingMetadata;
 
 use self::chapter_options::ChapterOptions;
 use self::heading::Heading;
@@ -72,10 +73,10 @@ impl Clone for Chapter {
 
 
 impl Parsable for Chapter {
-    fn parse(&mut self, codex: Arc<Codex>, parsing_configuration: Arc<ParsingConfiguration>) -> Result<(), ParsingError> {
+    fn parse(&mut self, codex: Arc<Codex>, parsing_configuration: Arc<ParsingConfiguration>, parsing_metadata: Arc<ParsingMetadata>) -> Result<(), ParsingError> {
 
         // TODO: in other thread
-        self.heading.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration))?;
+        self.heading.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration), Arc::clone(&parsing_metadata))?;
 
         log::debug!("parsing chapter:\n{:#?}", self);
 
@@ -83,7 +84,7 @@ impl Parsable for Chapter {
 
             let maybe_failed = self.paragraphs.par_iter_mut()
                 .map(|paragraph| {
-                    paragraph.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration))
+                    paragraph.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration), Arc::clone(&parsing_metadata))
                 })
                 .find_any(|result| result.is_err());
     
@@ -95,7 +96,7 @@ impl Parsable for Chapter {
             
             let maybe_failed = self.paragraphs.iter_mut()
                 .map(|paragraph| {
-                    paragraph.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration))
+                    paragraph.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration), Arc::clone(&parsing_metadata))
                 })
                 .find(|result| result.is_err());
     
