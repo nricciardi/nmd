@@ -1,7 +1,7 @@
 pub mod document;
 pub mod dossier_configuration;
 
-use std::{sync::Arc, path::PathBuf};
+use std::{path::PathBuf, sync::Arc, time::Instant};
 
 pub use document::{Document, DocumentError};
 use rayon::{iter::{IntoParallelRefMutIterator, ParallelIterator}, slice::IterMut};
@@ -101,7 +101,13 @@ impl Parsable for Dossier {
 
             let maybe_fails = self.documents.par_iter_mut()
                 .map(|document| {
-                    document.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration))  
+                    let parse_time = Instant::now();
+
+                    let res = document.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration));
+
+                    log::info!("document '{}' parsed in {} ms", document.name(), parse_time.elapsed().as_millis());
+
+                    res
                 })
                 .find_any(|result| result.is_err());
 
@@ -112,7 +118,13 @@ impl Parsable for Dossier {
         } else {
             let maybe_fails = self.documents.iter_mut()
                 .map(|document| {
-                    document.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration))
+                    let parse_time = Instant::now();
+
+                    let res = document.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration));
+
+                    log::info!("document '{}' parsed in {} ms", document.name(), parse_time.elapsed().as_millis());
+
+                    res
                 })
                 .find(|result| result.is_err());
 

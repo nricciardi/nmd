@@ -56,6 +56,10 @@ impl Document {
         }
     }
 
+    pub fn name(&self) -> &String {
+        &self.name
+    } 
+
     pub fn chapters(&self) -> &Vec<Chapter> {
         &self.chapters
     }

@@ -9,7 +9,7 @@ pub mod parser;
 pub mod loader;
 pub mod codex;
 
-use std::sync::Arc;
+use std::{sync::Arc, time::Instant};
 
 use thiserror::Error;
 use crate::compiler::{dossier::Dossier, dumpable::{DumpError, Dumpable}, loader::Loader, parser::parsable::Parsable};
@@ -45,6 +45,9 @@ impl Compiler {
     pub fn compile_dossier(mut compilation_configuration: CompilationConfiguration) -> Result<(), CompilationError> {
 
         log::info!("start to compile dossier");
+
+        let compile_start = Instant::now();
+
         log::info!("compilation configuration (this will override dossier compilation configuration):\n\n{:#?}\n", compilation_configuration);
 
         let codex = Arc::new(compilation_configuration.codex());
@@ -78,13 +81,17 @@ impl Compiler {
 
         log::info!("assembling...");
 
+        let assembly_time = Instant::now();
+
         let assembler = assembler::from(compilation_configuration.format().clone(), assembler_configuration);
 
         let mut artifact = assembler.assemble_dossier(/*&*codex,*/ &dossier)?;
 
+        log::info!("end to assembly (assembly time {} ms)", assembly_time.elapsed().as_millis());
+
         artifact.dump()?;
 
-        log::info!("end to compile dossier");
+        log::info!("end to compile dossier (compile time: {} ms)", compile_start.elapsed().as_millis());
 
         Ok(())
     }
