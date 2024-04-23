@@ -1,6 +1,6 @@
 pub mod codex_configuration;
 pub mod modifier;
-pub mod nmd_id;
+pub mod reference;
 
 use std::collections::HashMap;
 use std::str::FromStr;
@@ -160,7 +160,7 @@ impl Codex {
             ),
             (
                 StandardTextModifier::Link.identifier().clone(),
-                Box::new(ReplacementRule::new(StandardTextModifier::Link.modifier_pattern().clone(), String::from(r#"<a href=\"$2\" class="link">${1}</a>"#))),
+                Box::new(ReplacementRule::new(StandardTextModifier::Link.modifier_pattern().clone(), String::from(r#"<a href="$2" class="link">${1}</a>"#)).with_id_at(2)),
             ),
             (
                 StandardTextModifier::Comment.identifier().clone(),
@@ -262,7 +262,7 @@ mod test {
 
     use std::sync::{Arc, RwLock};
 
-    use test::nmd_id::NmdId;
+    use test::reference::Reference;
 
     use crate::compiler::{loader::Loader, parsing::parsing_configuration::ParsingConfiguration};
 
@@ -352,7 +352,7 @@ print("hello world")
     fn id() {
         let s = "my $string<-_778ks";
 
-        let id = NmdId::new(s).build();
+        let id = Reference::new(s).build();
 
         assert_eq!(id, "my-string-_778ks");
     }

@@ -1,6 +1,6 @@
 use std::{num::ParseIntError, str::FromStr, sync::{Arc, RwLock}};
 
-use crate::compiler::{codex::{nmd_id::NmdId, Codex}, parsable::{parsed_content_accessor::ParsedContentAccessor, Parsable}, parser::Parser, parsing::{parsing_configuration::ParsingConfiguration, parsing_error::ParsingError, parsing_metadata::ParsingMetadata, parsing_outcome::ParsingOutcome}};
+use crate::compiler::{codex::{reference::Reference, Codex}, parsable::{parsed_content_accessor::ParsedContentAccessor, Parsable}, parser::Parser, parsing::{parsing_configuration::ParsingConfiguration, parsing_error::ParsingError, parsing_metadata::ParsingMetadata, parsing_outcome::ParsingOutcome}};
 
 use super::chapter_builder::ChapterBuilderError;
 
@@ -69,7 +69,7 @@ impl Parsable for Heading {
 
         let document_name = pc.metadata().document_name().as_ref().unwrap();
 
-        let id = NmdId::new_with_prefix(&document_name, &self.title);
+        let id = Reference::new_with_prefix(&document_name, &self.title);
 
         let parsed_title = Parser::parse_text(&codex, &self.title, Arc::clone(&parsing_configuration))?;
 

@@ -9,7 +9,7 @@ use url::Url;
 use crate::compiler::codex::modifier::modifiers_bucket::ModifiersBucket;
 use crate::compiler::codex::modifier::standard_paragraph_modifier::StandardParagraphModifier;
 use crate::compiler::codex::modifier::Modifier;
-use crate::compiler::codex::nmd_id::NmdId;
+use crate::compiler::codex::reference::Reference;
 use crate::compiler::codex::Codex;
 use crate::compiler::dossier;
 use crate::compiler::parsing::parsing_configuration::ParsingConfiguration;
@@ -34,7 +34,7 @@ impl HtmlImageRule {
         }
     }
 
-    fn create_img_tag(id: &NmdId, src: &str, label: &str) -> String {
+    fn create_img_tag(id: &Reference, src: &str, label: &str) -> String {
 
         format!(r#"<figure class="figure" id="{}">
                     <img src="{}" alt="{}" class="image" />
@@ -68,7 +68,7 @@ impl ParsingRule for HtmlImageRule {
                     let src = src.as_str();
 
                     // TODO: replace in new image feature
-                    let id = NmdId::new_with_prefix(&document_name, label.as_str());
+                    let id = Reference::new_with_prefix(&document_name, label.as_str());
 
                     if RemoteResource::is_valid_remote_resource(src) {
 

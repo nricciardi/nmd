@@ -14,6 +14,9 @@ pub enum ParsingError {
     #[error("failed during parsing elaboration")]
     ElaborationError,
 
+    #[error("'{0}' is an invalid parameter")]
+    InvalidParameter(String),
+
     #[error("unknown error occurs")]
     Unknown,
 }

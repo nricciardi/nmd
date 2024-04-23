@@ -1,10 +1,13 @@
 use std::fmt::{Display, Debug};
+use std::str::FromStr;
 use std::sync::{Arc, RwLock};
 
 use log;
+use rayon::iter::ParallelBridge;
 use regex::{Captures, Regex, Replacer};
 
 use crate::compiler::codex::modifier::modifiers_bucket::ModifiersBucket;
+use crate::compiler::codex::reference::Reference;
 use crate::compiler::parsing::parsing_configuration::ParsingConfiguration;
 use crate::compiler::parsing::parsing_error::ParsingError;
 use crate::compiler::parsing::parsing_metadata::ParsingMetadata;
@@ -17,8 +20,8 @@ use super::ParsingRule;
 pub struct ReplacementRule<R: Replacer> {
     searching_pattern: String,
     replacer: R,
-    newline_fix: bool,
-    newline_fix_pattern: Option<String>
+    newline_fix_pattern: Option<String>,
+    id_at: Option<usize>
 }
 
 impl<R: Replacer> ReplacementRule<R> {
@@ -36,14 +39,19 @@ impl<R: Replacer> ReplacementRule<R> {
         Self {
             searching_pattern,
             replacer,
-            newline_fix: false,
-            newline_fix_pattern: None
+            newline_fix_pattern: None,
+            id_at: None
         }
     }
 
     pub fn with_newline_fix(mut self, pattern: String) -> Self {
-        self.newline_fix = true;
         self.newline_fix_pattern = Some(pattern);
+
+        self
+    }
+
+    pub fn with_id_at(mut self, at: usize) -> Self {
+        self.id_at = Some(at);
 
         self
     }
@@ -51,7 +59,7 @@ impl<R: Replacer> ReplacementRule<R> {
 
 impl Debug for ReplacementRule<String> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("ReplacementRule").field("searching_pattern", &self.searching_pattern).field("replacer", &self.replacer).field("newline_fix", &self.newline_fix).field("newline_fix_pattern", &self.newline_fix_pattern).finish()
+        f.debug_struct("ReplacementRule").field("searching_pattern", &self.searching_pattern).field("replacer", &self.replacer).field("newline_fix_pattern", &self.newline_fix_pattern).finish()
     }
 }
 
@@ -60,18 +68,42 @@ impl ParsingRule for ReplacementRule<String> {
     /// Parse the content using internal search and replacement pattern
     fn parse(&self, content: &str, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError> {
 
-        let regex = match Regex::new(&self.searching_pattern()) {
+        let searching_pattern = self.searching_pattern().clone();
+        let mut replacer = self.replacer.clone();
+
+        let regex = match Regex::new(&searching_pattern) {
           Ok(r) => r,
-          Err(_) => return Err(ParsingError::InvalidPattern(self.searching_pattern().clone()))  
+          Err(_) => return Err(ParsingError::InvalidPattern(searching_pattern))  
         };
 
-        log::debug!("parsing:\n{}\nusing '{}'->'{}' (newline fix: {})", content, self.searching_pattern(), self.replacer, self.newline_fix);
+        log::debug!("parsing:\n{}\nusing '{}'->'{}' (newline fix: {}, id_at: {:?})", content, self.searching_pattern(), self.replacer, self.newline_fix_pattern.is_some(), self.id_at);
 
-        let mut parsed_content = regex.replace_all(content, self.replacer.as_str()).to_string();
+        if let Some(ref id_at) = self.id_at {
 
-        if self.newline_fix {
+            for captures in regex.captures_iter(content) {
+
+                let id = captures.get(id_at.clone()).unwrap().as_str();
+
+                let mut id = Reference::from_str(id).unwrap();
+
+                if id.prefix().is_none() {
+                    id.set_prefix(Some(parsing_configuration.read().unwrap().metadata().document_name().as_ref().unwrap().clone()));
+                }
+
+                let id = id.build();
+
+                replacer = replacer.replace(&format!("${}", id_at), &id);
+                replacer = replacer.replace(&format!("${{{}}}", id_at), &id);
+
+                log::debug!("id: '{}', new replacer: {}", id, replacer);
+            }
+        }
+
+        let mut parsed_content = regex.replace_all(content, &replacer).to_string();
+
+        if let Some(newline_fix_pattern) = self.newline_fix_pattern.as_ref() {
             let regex = Regex::new("\n\n").unwrap();
-            parsed_content = regex.replace_all(&parsed_content, self.newline_fix_pattern.clone().unwrap().as_str()).to_string();
+            parsed_content = regex.replace_all(&parsed_content, newline_fix_pattern).to_string();
         }
 
         log::debug!("result:\n{}", parsed_content);
@@ -88,7 +120,7 @@ impl ParsingRule for ReplacementRule<String> {
 impl<F> Debug for ReplacementRule<F>
 where F: 'static + Sync + Send + Fn(&Captures) -> String {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("ReplacementRule").field("searching_pattern", &self.searching_pattern).field("replacer", &"lambda function".to_string()).field("newline_fix", &self.newline_fix).field("newline_fix_pattern", &self.newline_fix_pattern).finish()
+        f.debug_struct("ReplacementRule").field("searching_pattern", &self.searching_pattern).field("replacer", &"lambda function".to_string()).field("newline_fix_pattern", &self.newline_fix_pattern).finish()
     }
 }
 
@@ -98,18 +130,22 @@ where F: 'static + Sync + Send + Fn(&Captures) -> String {
     /// Parse the content using internal search and replacement pattern
     fn parse(&self, content: &str, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError> {
 
-        let regex = match Regex::new(&self.searching_pattern()) {
-          Ok(r) => r,
-          Err(_) => return Err(ParsingError::InvalidPattern(self.searching_pattern().clone()))  
-        };
+        if self.id_at.is_some() {
+            return Err(ParsingError::InvalidParameter("id_at".to_string()))
+        }
 
-        // log::debug!("parsing:\n{}\nusing '{}'->'{}' (newline fix: {})", content, self.modifier().search_pattern(), self.replacer, self.newline_fix);
+        let searching_pattern = self.searching_pattern().clone();
+
+        let regex = match Regex::new(&searching_pattern) {
+          Ok(r) => r,
+          Err(_) => return Err(ParsingError::InvalidPattern(searching_pattern))  
+        };
 
         let mut parsed_content = regex.replace_all(content, &self.replacer).to_string();
 
-        if self.newline_fix {
+        if let Some(newline_fix_pattern) = self.newline_fix_pattern.as_ref() {
             let regex = Regex::new("\n\n").unwrap();
-            parsed_content = regex.replace_all(&parsed_content, self.newline_fix_pattern.clone().unwrap().as_str()).to_string();
+            parsed_content = regex.replace_all(&parsed_content, newline_fix_pattern).to_string();
         }
 
         log::debug!("result:\n{}", parsed_content);
