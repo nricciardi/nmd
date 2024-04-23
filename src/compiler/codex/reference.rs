@@ -1,15 +1,19 @@
 use std::str::FromStr;
 
 use regex::Regex;
+use serde::de::value;
 use thiserror::Error;
 
-const PREFIX_VALUE_SEPARATOR: &str = "-";
+use crate::{compiler::dossier::document, resource::remote_resource::RemoteResource, utility::file_utility};
+
+const VALUE_SEPARATOR: &str = "-";
 const SPACE_REPLACER: char = '-';
 
 
 #[derive(Error, Debug)]
 pub enum ReferenceError {
-
+    #[error("invalid reference")]
+    Invalid,
 }
 
 
@@ -41,31 +45,71 @@ impl Reference {
         self.value = value
     }
 
-    fn of_internal_resource(s: &str, document_name_if_missed: Option<&str>) -> Result<Self, ReferenceError> {
+    pub fn of_url(raw: &str) -> Result<Self, ReferenceError> {
 
-        // TODO: is mandatory # ??
+        if RemoteResource::is_valid_remote_resource(raw) {
+            return Err(ReferenceError::Invalid)
+        }
 
+        Ok(Self::new(raw))
+    }
+
+    pub fn of_asset(raw: &str) -> Result<Self, ReferenceError> {
+        if file_utility::is_file_path(raw) {
+            return Err(ReferenceError::Invalid)
+        }
+
+        Ok(Self::new(raw))
+    }
+
+    pub fn of_internal(raw: &str, document_name_if_missed: Option<&str>) -> Result<Self, ReferenceError> {
         let regex = Regex::new(r"(.*)?#(.*)").unwrap();
 
-        let caps = regex.captures(s);
+        let caps = regex.captures(raw);
 
         if caps.is_none() {
-            return Err(ReferenceError)
+            return Err(ReferenceError::Invalid)
         }
 
         let caps = caps.unwrap();
 
-        let prefix = caps.get(1).unwrap().as_str();
-        let value = caps.get(2).unwrap().as_str();
+        let document_name = caps.get(1);
+        let value = caps.get(2);
 
-        Ok(Self::new_with_prefix(prefix, value))
+        if value.is_none() {
+            return Err(ReferenceError::Invalid)
+        }
+        let value = value.unwrap().as_str();
+
+        if let Some(document_name) = document_name {
+            return Ok(Self::new(&format!("{}{}{}", document_name.as_str(), VALUE_SEPARATOR, value)))
+        } else {
+            return Ok(Self::new(&format!("{}{}{}", document_name_if_missed.unwrap(), VALUE_SEPARATOR, value)))
+        }
+    }
+
+    /// Create new based on string. Argument can be in the following forms:
+    /// 
+    /// - document_name#id
+    /// - #id
+    /// - url
+    /// - url#id
+    /// - asset 
+    pub fn of(raw: &str, document_name_if_missed: Option<&str>) -> Result<Self, ReferenceError> {
+
+        if RemoteResource::is_valid_remote_resource(raw) {
+            return Self::of_url(raw)
+        }
+
+        if raw.contains("#") {
+            return Self::of_internal(raw, document_name_if_missed)
+
+        } else {        // asset
+            return Self::of_asset(raw)
+        }
     }
 
     pub fn build(&self) -> String {
-
-        if let Some(prefix) = self.prefix.as_ref() {
-            return format!("{}{}{}", Self::parse_str(prefix), PREFIX_VALUE_SEPARATOR, Self::parse_str(&self.value))
-        }
 
         format!("{}", Self::parse_str(&self.value))
     }

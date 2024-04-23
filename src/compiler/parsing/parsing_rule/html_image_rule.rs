@@ -68,7 +68,7 @@ impl ParsingRule for HtmlImageRule {
                     let src = src.as_str();
 
                     // TODO: replace in new image feature
-                    let id = Reference::new_with_prefix(&document_name, label.as_str());
+                    let id = Reference::of(label.as_str(), Some(&document_name)).unwrap();
 
                     if RemoteResource::is_valid_remote_resource(src) {
 

@@ -1,7 +1,7 @@
 use clap::error;
 use thiserror::Error;
 
-use crate::resource::ResourceError;
+use crate::{compiler::codex::reference::ReferenceError, resource::ResourceError};
 
 #[derive(Error, Debug)]
 pub enum ParsingError {
@@ -16,6 +16,9 @@ pub enum ParsingError {
 
     #[error("'{0}' is an invalid parameter")]
     InvalidParameter(String),
+
+    #[error(transparent)]
+    ReferenceError(#[from] ReferenceError),
 
     #[error("unknown error occurs")]
     Unknown,

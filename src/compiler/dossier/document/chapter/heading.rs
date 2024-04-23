@@ -69,7 +69,7 @@ impl Parsable for Heading {
 
         let document_name = pc.metadata().document_name().as_ref().unwrap();
 
-        let id = Reference::new_with_prefix(&document_name, &self.title);
+        let id = Reference::of(&self.title, Some(&document_name))?;
 
         let parsed_title = Parser::parse_text(&codex, &self.title, Arc::clone(&parsing_configuration))?;
 

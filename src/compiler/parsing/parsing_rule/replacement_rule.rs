@@ -84,11 +84,8 @@ impl ParsingRule for ReplacementRule<String> {
 
                 let id = captures.get(id_at.clone()).unwrap().as_str();
 
-                let mut id = Reference::from_str(id).unwrap();
+                let mut id = Reference::of(id, Some(parsing_configuration.read().unwrap().metadata().document_name().as_ref().unwrap()))?;
 
-                if id.prefix().is_none() {
-                    id.set_prefix(Some(parsing_configuration.read().unwrap().metadata().document_name().as_ref().unwrap().clone()));
-                }
 
                 let id = id.build();
 
