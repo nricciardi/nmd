@@ -64,15 +64,15 @@ impl Reference {
     pub fn of_url(raw: &str) -> Result<Self, ReferenceError> {
 
         if RemoteResource::is_valid_remote_resource(raw) {
-            return Err(ReferenceError::Invalid)
+            return Err(ReferenceError::InvalidUrlReference)
         }
 
         Ok(Self::new(raw, ReferenceType::Url))
     }
 
     pub fn of_asset(raw: &str) -> Result<Self, ReferenceError> {
-        if file_utility::is_file_path(raw) {
-            return Err(ReferenceError::Invalid)
+        if !file_utility::is_file_path(raw) {
+            return Err(ReferenceError::InvalidAssetReference)
         }
 
         Ok(Self::new(raw, ReferenceType::Asset))
@@ -84,7 +84,7 @@ impl Reference {
         let caps = regex.captures(raw);
 
         if caps.is_none() {
-            return Err(ReferenceError::Invalid)
+            return Err(ReferenceError::InvalidInternalReference)
         }
 
         let caps = caps.unwrap();
@@ -93,7 +93,7 @@ impl Reference {
         let value = caps.get(2);
 
         if value.is_none() {
-            return Err(ReferenceError::Invalid)
+            return Err(ReferenceError::InvalidInternalReference)
         }
         let value = value.unwrap().as_str();
 

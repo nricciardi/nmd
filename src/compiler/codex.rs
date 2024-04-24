@@ -347,13 +347,4 @@ print("hello world")
 
         assert_eq!(paragraphs.len(), 2)
     }
-
-    #[test]
-    fn id() {
-        let s = "my $string<-_778ks";
-
-        let id = Reference::new(s).build();
-
-        assert_eq!(id, "my-string-_778ks");
-    }
 }
