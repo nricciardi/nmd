@@ -12,8 +12,21 @@ const SPACE_REPLACER: char = '-';
 
 #[derive(Error, Debug)]
 pub enum ReferenceError {
-    #[error("invalid reference")]
-    Invalid,
+    #[error("invalid URL reference")]
+    InvalidUrlReference,
+
+    #[error("invalid URL reference")]
+    InvalidAssetReference,
+
+    #[error("invalid URL reference")]
+    InvalidInternalReference,
+}
+
+#[derive(Debug, Clone)]
+enum ReferenceType {
+    Url,
+    Asset,
+    Internal
 }
 
 
@@ -26,14 +39,17 @@ pub enum ReferenceError {
 /// An internal resource is composed by "document name" (where there is the resource) and the resource ID.
 /// 
 /// An external resource is interpreted "as it is"
+#[derive(Debug, Clone)]
 pub struct Reference {
     value: String,
+    ref_type: ReferenceType
 }
 
 impl Reference {
-    pub fn new(value: &str) -> Self {
+    pub fn new(value: &str, ref_type: ReferenceType) -> Self {
         Self {
-            value: String::from(value)
+            value: String::from(value),
+            ref_type
         }
     }
 
@@ -51,7 +67,7 @@ impl Reference {
             return Err(ReferenceError::Invalid)
         }
 
-        Ok(Self::new(raw))
+        Ok(Self::new(raw, ReferenceType::Url))
     }
 
     pub fn of_asset(raw: &str) -> Result<Self, ReferenceError> {
@@ -59,7 +75,7 @@ impl Reference {
             return Err(ReferenceError::Invalid)
         }
 
-        Ok(Self::new(raw))
+        Ok(Self::new(raw, ReferenceType::Asset))
     }
 
     pub fn of_internal(raw: &str, document_name_if_missed: Option<&str>) -> Result<Self, ReferenceError> {
@@ -82,9 +98,9 @@ impl Reference {
         let value = value.unwrap().as_str();
 
         if let Some(document_name) = document_name {
-            return Ok(Self::new(&format!("{}{}{}", document_name.as_str(), VALUE_SEPARATOR, value)))
+            return Ok(Self::new(&format!("{}{}{}", document_name.as_str(), VALUE_SEPARATOR, value), ReferenceType::Asset))
         } else {
-            return Ok(Self::new(&format!("{}{}{}", document_name_if_missed.unwrap(), VALUE_SEPARATOR, value)))
+            return Ok(Self::new(&format!("{}{}{}", document_name_if_missed.unwrap(), VALUE_SEPARATOR, value), ReferenceType::Asset))
         }
     }
 
@@ -111,7 +127,10 @@ impl Reference {
 
     pub fn build(&self) -> String {
 
-        format!("{}", Self::parse_str(&self.value))
+        match self.ref_type {
+            ReferenceType::Url | ReferenceType::Asset => String::from(&self.value),
+            ReferenceType::Internal => format!("{}", Self::parse_str(&self.value))
+        }
     }
 
     fn parse_str(s: &str) -> String {
