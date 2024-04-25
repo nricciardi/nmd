@@ -3,6 +3,7 @@
 use std::{path::PathBuf, str::FromStr};
 
 use clap::{Arg, ArgAction, ArgMatches, Command};
+use crate::compiler::Compiler;
 use crate::compiler::{output_format::OutputFormatError, CompilationError};
 use crate::dossier_manager::{dossier_manager_configuration::DossierManagerConfiguration, DossierManager, DossierManagerError};
 use crate::generator::{generator_configuration::GeneratorConfiguration, Generator};
@@ -12,8 +13,6 @@ use thiserror::Error;
 use simple_logger::SimpleLogger;
 
 use crate::compiler::{compilation_configuration::CompilationConfiguration, output_format::OutputFormat};
-use crate::Compiler;
-
 use crate::VERSION;
 
 
