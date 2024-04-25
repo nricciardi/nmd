@@ -311,8 +311,8 @@ In `compilation` section you can specified the default values to use during comp
 - [x] Local math (no CDN)
 - [x] List
 - [x] List creation check
-- [ ] Link with identifier
-- [ ] Link to chapters
+- [x] Link with identifier
+- [x] Link to chapters
 - [x] Quote
 - [x] Image caption
 - [x] Image URL fix meta-characters
@@ -549,7 +549,7 @@ Pay attention, those are two single quote
 **Style class**: `link`
 
 ```markdown
-[Link](http://a.com)
+[Link](http://https://github.com/nricciardi/nmd.com)
 ```
 
 #### Inline code
