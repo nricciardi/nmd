@@ -52,7 +52,7 @@ NMD stands for **New MarkDown**, or for friends, *Nicola MarkDown* (if Stephen B
       - [Emoji](#emoji)
       - [Superscript](#superscript)
       - [Subscript](#subscript)
-      - [Link \[NOT FULLY SUPPORTED YET\]](#link-not-fully-supported-yet)
+      - [Link](#link)
       - [Inline code](#inline-code)
       - [Inline math](#inline-math)
       - [Inline comments](#inline-comments)
@@ -544,7 +544,7 @@ Pay attention, those are two single quote
 
 > This modifier can be placed attached on other text.
 
-#### Link [NOT FULLY SUPPORTED YET]
+#### Link
 
 **Style class**: `link`
 
