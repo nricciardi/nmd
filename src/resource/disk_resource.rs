@@ -1,5 +1,6 @@
 use std::{path::PathBuf, str::FromStr, fs::{self, OpenOptions}, io::Write};
 
+
 use super::{ResourceError, Resource};
 
 
@@ -71,6 +72,7 @@ impl Resource for DiskResource {
     }
 
     fn write(&mut self, content: &str) -> Result<(), ResourceError> {
+
         let file_path = &self.location;
 
         let mut file = OpenOptions::new()
@@ -78,6 +80,8 @@ impl Resource for DiskResource {
             .truncate(true)
             .create(true)
             .open(file_path)?;
+
+        print!("ciao");
 
         file.write_all(content.as_bytes())?;
 

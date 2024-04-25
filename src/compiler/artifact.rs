@@ -15,6 +15,10 @@ use super::dumpable::{Dumpable, DumpError};
 
 #[derive(Error, Debug)]
 pub enum ArtifactError {
+
+    #[error("the output path must be a directory")]
+    OutputPathNotDir,
+
     #[error(transparent)]
     ResourceError(#[from] ResourceError)
 }
@@ -29,12 +33,17 @@ pub struct Artifact {
 #[allow(dead_code)]
 impl Artifact {
 
-    pub fn new(output_path: PathBuf) -> Self {
-        Self {
+    pub fn new(output_path: PathBuf) -> Result<Self, ArtifactError> {
+
+        if !output_path.is_dir() {
+            return Err(ArtifactError::OutputPathNotDir)
+        }
+
+        Ok(Self {
             assets: Option::None,
             documents: Vec::new(),
             output_path
-        }
+        })
     }
 
     pub fn assets(&self) -> &Option<ArtifactAssets> {
@@ -68,11 +77,18 @@ impl Dumpable for Artifact {
 
         log::info!("dump artifact...",);
 
-        Ok(self.documents.par_iter_mut().for_each(|document| {
+        let error = self.documents.par_iter_mut().map(|document| {
 
             log::info!("dump document in {:?}", document.location());
 
-            document.dump_cached_content().unwrap()         // TODO: handle errors
-        }))
+            document.dump_cached_content()
+        })
+        .find_any(|result| result.is_err());
+
+        if let Some(error) = error {
+            return Err(DumpError::ResourceError(error.err().unwrap()));
+        }
+
+        Ok(())
     }
 }

@@ -1,4 +1,5 @@
-use nmd::{NmdCli, NmdCliError};
+use nmd::cli::{NmdCli, NmdCliError};
+
 
 
 fn main() -> Result<(), NmdCliError> {

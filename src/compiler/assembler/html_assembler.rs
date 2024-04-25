@@ -26,7 +26,7 @@ impl Assembler for HtmlAssembler {
     }
 
     fn assemble_dossier(&self, dossier: &Dossier) -> Result<Artifact, AssemblerError> {
-        let mut artifact = Artifact::new(self.configuration.output_location().clone());
+        let mut artifact = Artifact::new(self.configuration.output_location().clone())?;
 
         let mut page = HtmlPage::new()
                                 .with_title(dossier.name())
