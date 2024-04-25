@@ -63,7 +63,7 @@ impl Reference {
 
     pub fn of_url(raw: &str) -> Result<Self, ReferenceError> {
 
-        if RemoteResource::is_valid_remote_resource(raw) {
+        if !RemoteResource::is_valid_remote_resource(raw) {
             return Err(ReferenceError::InvalidUrlReference)
         }
 
@@ -78,6 +78,11 @@ impl Reference {
         Ok(Self::new(raw, ReferenceType::Asset))
     }
 
+    /// Reference from raw internal string.
+    /// 
+    /// Raw string must be in the format: <document-name>#id 
+    /// 
+    /// <document-name> can be omitted. 
     pub fn of_internal(raw: &str, document_name_if_missed: Option<&str>) -> Result<Self, ReferenceError> {
         let regex = Regex::new(r"(.*)?#(.*)").unwrap();
 
@@ -98,10 +103,24 @@ impl Reference {
         let value = value.unwrap().as_str();
 
         if let Some(document_name) = document_name {
-            return Ok(Self::new(&format!("{}{}{}", document_name.as_str(), VALUE_SEPARATOR, value), ReferenceType::Asset))
-        } else {
-            return Ok(Self::new(&format!("{}{}{}", document_name_if_missed.unwrap(), VALUE_SEPARATOR, value), ReferenceType::Asset))
+
+            let document_name = document_name.as_str().trim();
+
+            if !document_name.is_empty() {
+
+                return Ok(Self::new(&format!("{}{}{}", document_name, VALUE_SEPARATOR, value), ReferenceType::Internal))
+            }
         }
+
+        Ok(Self::new(&format!("{}{}{}", document_name_if_missed.unwrap(), VALUE_SEPARATOR, value), ReferenceType::Internal))
+        
+    }
+
+    pub fn of_internal_without_sharp(raw: &str, document_name_if_missed: Option<&str>) -> Result<Self, ReferenceError> {
+
+        let raw_with_sharp = format!("#{}", raw);
+
+        Self::of_internal(&raw_with_sharp, document_name_if_missed)
     }
 
     /// Create new based on string. Argument can be in the following forms:
@@ -129,20 +148,32 @@ impl Reference {
 
         match self.ref_type {
             ReferenceType::Url | ReferenceType::Asset => String::from(&self.value),
+            ReferenceType::Internal => format!("#{}", Self::parse_str(&self.value))
+        }
+    }
+
+    pub fn build_without_internal_sharp(&self) -> String {
+
+        match self.ref_type {
+            ReferenceType::Url | ReferenceType::Asset => String::from(&self.value),
             ReferenceType::Internal => format!("{}", Self::parse_str(&self.value))
         }
+
     }
 
     fn parse_str(s: &str) -> String {
 
-        let allowed_chars = s.chars().filter(|c| c.is_alphanumeric() || *c == '_' || *c == '-' || *c == ' ').map(|c| {
+        s.chars().map(|c| {
+
+            if c.is_alphanumeric() {
+                return c;
+            }
+
             if c == ' ' {
                 return SPACE_REPLACER;
             }
 
-            c
-        });
-
-        allowed_chars.collect()
+            '-'
+        }).collect()
     }
 }

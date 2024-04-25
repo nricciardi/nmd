@@ -75,7 +75,6 @@ impl Clone for Chapter {
 impl Parsable for Chapter {
     fn parse(&mut self, codex: Arc<Codex>, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<(), ParsingError> {
 
-        // TODO: in other thread
         self.heading.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration))?;
 
         log::debug!("parsing chapter:\n{:#?}", self);

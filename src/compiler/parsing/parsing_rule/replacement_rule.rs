@@ -21,7 +21,7 @@ pub struct ReplacementRule<R: Replacer> {
     searching_pattern: String,
     replacer: R,
     newline_fix_pattern: Option<String>,
-    id_at: Option<usize>
+    reference_at: Option<usize>
 }
 
 impl<R: Replacer> ReplacementRule<R> {
@@ -40,7 +40,7 @@ impl<R: Replacer> ReplacementRule<R> {
             searching_pattern,
             replacer,
             newline_fix_pattern: None,
-            id_at: None
+            reference_at: None
         }
     }
 
@@ -50,8 +50,8 @@ impl<R: Replacer> ReplacementRule<R> {
         self
     }
 
-    pub fn with_id_at(mut self, at: usize) -> Self {
-        self.id_at = Some(at);
+    pub fn with_reference_at(mut self, at: usize) -> Self {
+        self.reference_at = Some(at);
 
         self
     }
@@ -76,23 +76,23 @@ impl ParsingRule for ReplacementRule<String> {
           Err(_) => return Err(ParsingError::InvalidPattern(searching_pattern))  
         };
 
-        log::debug!("parsing:\n{}\nusing '{}'->'{}' (newline fix: {}, id_at: {:?})", content, self.searching_pattern(), self.replacer, self.newline_fix_pattern.is_some(), self.id_at);
+        log::debug!("parsing:\n{}\nusing '{}'->'{}' (newline fix: {}, id_at: {:?})", content, self.searching_pattern(), self.replacer, self.newline_fix_pattern.is_some(), self.reference_at);
 
-        if let Some(ref id_at) = self.id_at {
+        if let Some(ref reference_at) = self.reference_at {
 
             for captures in regex.captures_iter(content) {
 
-                let id = captures.get(id_at.clone()).unwrap().as_str();
+                let reference = captures.get(reference_at.clone()).unwrap().as_str();
 
-                let mut id = Reference::of(id, Some(parsing_configuration.read().unwrap().metadata().document_name().as_ref().unwrap()))?;
+                let reference = Reference::of(reference, Some(parsing_configuration.read().unwrap().metadata().document_name().as_ref().unwrap()))?;
 
 
-                let id = id.build();
+                let reference = reference.build();
 
-                replacer = replacer.replace(&format!("${}", id_at), &id);
-                replacer = replacer.replace(&format!("${{{}}}", id_at), &id);
+                replacer = replacer.replace(&format!("${}", reference_at), &reference);
+                replacer = replacer.replace(&format!("${{{}}}", reference_at), &reference);
 
-                log::debug!("id: '{}', new replacer: {}", id, replacer);
+                log::debug!("id: '{}', new replacer: {}", reference, replacer);
             }
         }
 
@@ -127,7 +127,7 @@ where F: 'static + Sync + Send + Fn(&Captures) -> String {
     /// Parse the content using internal search and replacement pattern
     fn parse(&self, content: &str, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError> {
 
-        if self.id_at.is_some() {
+        if self.reference_at.is_some() {
             return Err(ParsingError::InvalidParameter("id_at".to_string()))
         }
 

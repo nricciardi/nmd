@@ -1,6 +1,13 @@
 name: new-dossier
 documents:
-- ./d8.nmd
+  - "./d1.nmd"
+  - "./d2.nmd"
+  - "./d3.nmd"
+  - "./d4.nmd"
+  - "./d5.nmd"
+  - "./d6.nmd"
+  - "./d7.nmd"
+  - ./d8.nmd
 style:
   theme: Light
   addons: []
@@ -59,6 +66,6 @@ compilation:
   embed_remote_image: true
   compress_embed_image: false
   strict_image_src_check: true
-  parallelization: true
+  parallelization: false
   use_remote_addons: false
   strict_list_check: false

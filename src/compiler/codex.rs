@@ -160,7 +160,7 @@ impl Codex {
             ),
             (
                 StandardTextModifier::Link.identifier().clone(),
-                Box::new(ReplacementRule::new(StandardTextModifier::Link.modifier_pattern().clone(), String::from(r#"<a href="$2" class="link">${1}</a>"#)).with_id_at(2)),
+                Box::new(ReplacementRule::new(StandardTextModifier::Link.modifier_pattern().clone(), String::from(r#"<a href="$2" class="link">${1}</a>"#)).with_reference_at(2)),
             ),
             (
                 StandardTextModifier::Comment.identifier().clone(),

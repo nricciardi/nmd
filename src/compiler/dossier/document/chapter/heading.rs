@@ -69,11 +69,11 @@ impl Parsable for Heading {
 
         let document_name = pc.metadata().document_name().as_ref().unwrap();
 
-        let id = Reference::of(&self.title, Some(&document_name))?;
+        let id = Reference::of_internal_without_sharp(&self.title, Some(&document_name))?;
 
         let parsed_title = Parser::parse_text(&codex, &self.title, Arc::clone(&parsing_configuration))?;
 
-        self.parsed_content = Some(ParsingOutcome::new(format!(r#"<h{} class="heading-{}" id="{}">{}</h{}>"#, self.level, self.level, id.build(), parsed_title.parsed_content(), self.level)));
+        self.parsed_content = Some(ParsingOutcome::new(format!(r#"<h{} class="heading-{}" id="{}">{}</h{}>"#, self.level, self.level, id.build_without_internal_sharp(), parsed_title.parsed_content(), self.level)));
 
         Ok(())
     }
