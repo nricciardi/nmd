@@ -27,22 +27,6 @@ impl AssemblerConfiguration {
         &self.output_location
     }
 
-    pub fn output_dir_location(&self) -> PathBuf {
-        if self.output_location.is_dir() {
-            return self.output_location.clone()
-        }
-
-        self.output_location.parent().unwrap().into()
-    }
-
-    pub fn output_filename_location(&self) -> Option<&OsStr> {
-        if self.output_location.is_file() {
-            return self.output_location.file_name()
-        }
-
-        None
-    }
-
     pub fn theme(&self) -> &Theme {
         &self.theme
     }

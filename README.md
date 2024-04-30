@@ -1,7 +1,7 @@
 # New MarkDown [BETA]
 
 [![License](https://img.shields.io/badge/license-GPL3-green.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v0.22.0-blue.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-v0.22.1-blue.svg)](CHANGELOG.md)
 
 **NMD**: a new way to write in markdown.
 

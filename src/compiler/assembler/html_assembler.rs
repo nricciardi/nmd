@@ -26,7 +26,7 @@ impl Assembler for HtmlAssembler {
     }
 
     fn assemble_dossier(&self, dossier: &Dossier) -> Result<Artifact, AssemblerError> {
-        let mut artifact = Artifact::new(self.configuration.output_dir_location())?;
+        let mut artifact = Artifact::new(self.configuration.output_location().clone())?;
 
         let mut page = HtmlPage::new()
                                 .with_title(dossier.name())
@@ -159,22 +159,7 @@ impl Assembler for HtmlAssembler {
             }
         }
 
-        
-
-        // TODO:
-        // - a file name parse utility
-        // - name from output path if it isn't directory
-
-        let output_filename_location = self.configuration.output_filename_location();
-        let base: &str;
-
-        if let Some(output_filename_location) = output_filename_location {
-            base = output_filename_location.to_str().unwrap();
-        } else {
-            base = dossier.name();
-        }
-
-        let document_name = file_utility::build_output_file_name(base, "html");
+        let document_name = file_utility::build_output_file_name(dossier.name(), "html");
 
         artifact.add_document(&document_name, &page.to_html_string())?;
 

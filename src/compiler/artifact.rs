@@ -16,7 +16,7 @@ use super::dumpable::{Dumpable, DumpError};
 #[derive(Error, Debug)]
 pub enum ArtifactError {
 
-    #[error("the output path must be a directory")]
+    #[error("the output path must be an existing directory")]
     OutputPathNotDir,
 
     #[error(transparent)]
@@ -79,7 +79,7 @@ impl Dumpable for Artifact {
 
         let error = self.documents.par_iter_mut().map(|document| {
 
-            log::info!("dump document in {:?}", document.location());
+            log::info!("dumping document in {:?}", document.location());
 
             document.dump_cached_content()
         })
