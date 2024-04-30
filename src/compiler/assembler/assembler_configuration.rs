@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::{ffi::OsStr, path::PathBuf};
 
 use crate::compiler::{dossier::dossier_configuration::{self, DossierConfiguration}, theme::Theme};
 
@@ -25,6 +25,22 @@ impl AssemblerConfiguration {
 
     pub fn output_location(&self) -> &PathBuf {
         &self.output_location
+    }
+
+    pub fn output_dir_location(&self) -> PathBuf {
+        if self.output_location.is_dir() {
+            return self.output_location.clone()
+        }
+
+        self.output_location.parent().unwrap().into()
+    }
+
+    pub fn output_filename_location(&self) -> Option<&OsStr> {
+        if self.output_location.is_file() {
+            return self.output_location.file_name()
+        }
+
+        None
     }
 
     pub fn theme(&self) -> &Theme {

@@ -3,7 +3,7 @@ use std::sync::{Arc, Mutex};
 use build_html::{HtmlPage, HtmlContainer, Html, Container};
 use rayon::iter::{IndexedParallelIterator, IntoParallelRefIterator, ParallelIterator};
 
-use crate::compiler::{artifact::Artifact, dossier::Dossier, theme::Theme};
+use crate::{compiler::{artifact::Artifact, dossier::Dossier, theme::Theme}, utility::file_utility};
 
 use super::{Assembler, AssemblerError, assembler_configuration::AssemblerConfiguration};
 
@@ -26,7 +26,7 @@ impl Assembler for HtmlAssembler {
     }
 
     fn assemble_dossier(&self, dossier: &Dossier) -> Result<Artifact, AssemblerError> {
-        let mut artifact = Artifact::new(self.configuration.output_location().clone())?;
+        let mut artifact = Artifact::new(self.configuration.output_dir_location())?;
 
         let mut page = HtmlPage::new()
                                 .with_title(dossier.name())
@@ -163,10 +163,20 @@ impl Assembler for HtmlAssembler {
 
         // TODO:
         // - a file name parse utility
+        // - name from output path if it isn't directory
 
-        let document_name = &format!("{}.html", dossier.name()).replace(" ", "-").to_ascii_lowercase();
+        let output_filename_location = self.configuration.output_filename_location();
+        let base: &str;
 
-        artifact.add_document(document_name, &page.to_html_string())?;
+        if let Some(output_filename_location) = output_filename_location {
+            base = output_filename_location.to_str().unwrap();
+        } else {
+            base = dossier.name();
+        }
+
+        let document_name = file_utility::build_output_file_name(base, "html");
+
+        artifact.add_document(&document_name, &page.to_html_string())?;
 
 
         Ok(artifact)

@@ -30,3 +30,7 @@ pub fn create_empty_file(file_path: &PathBuf) -> Result<(), io::Error> {
 
     file.write_all(b"")
 }
+
+pub fn build_output_file_name(base: &str, ext: &str) -> String {
+    format!("{}.{}", base, ext).replace(" ", "-").to_ascii_lowercase()
+}
