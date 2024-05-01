@@ -1,9 +1,9 @@
-use std::sync::{Arc, Mutex};
+use std::{str::FromStr, sync::{Arc, Mutex}};
 
 use build_html::{HtmlPage, HtmlContainer, Html, Container};
 use rayon::iter::{IndexedParallelIterator, IntoParallelRefIterator, ParallelIterator};
 
-use crate::{compiler::{artifact::Artifact, dossier::Dossier, theme::Theme}, utility::file_utility};
+use crate::{compiler::{artifact::Artifact, dossier::Dossier, theme::Theme}, resource::{dynamic_resource::DynamicResource, ResourceError}, utility::file_utility};
 
 use super::{Assembler, AssemblerError, assembler_configuration::AssemblerConfiguration};
 
@@ -158,6 +158,15 @@ impl Assembler for HtmlAssembler {
         }
 
         // TODO: apply custom styles
+        for addons in dossier.configuration().style().raw_addons() {
+            let resource = DynamicResource::from_str(addons)?;
+
+            match resource {
+                DynamicResource::DiskResource(_) => todo!(),
+                DynamicResource::ImageResource(_) => return Err(AssemblerError::ResourceError(ResourceError::InvalidResourceVerbose("image cannot be an addons".to_string())));
+                DynamicResource::RemoteResource(_) => todo!(),
+            }
+        }
 
         if self.configuration.parallelization() {
 

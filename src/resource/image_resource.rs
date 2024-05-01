@@ -1,4 +1,4 @@
-use std::{fs::File, io::{Cursor, Read}, path::PathBuf};
+use std::{fs::File, io::{Cursor, Read}, path::PathBuf, str::FromStr};
 
 use base64::{engine::general_purpose::STANDARD, Engine};
 use image::{codecs::jpeg, DynamicImage, ImageOutputFormat};
@@ -27,7 +27,7 @@ impl ImageResource {
         Ok(STANDARD.encode(buffer))
     }
 
-    pub fn is_image(file_path: &PathBuf) -> bool {
+    pub fn pathbuf_is_image(file_path: &PathBuf) -> bool {
 
         if let Ok(img) = ImageReader::open(file_path) {
             if let Ok(_) = img.with_guessed_format() {
@@ -83,6 +83,14 @@ impl TryFrom<String> for ImageResource {
         let path = PathBuf::from(path);
 
         Self::try_from(path)
+    }
+}
+
+impl FromStr for ImageResource {
+    type Err = ResourceError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Self::try_from(String::from(s))
     }
 }
 

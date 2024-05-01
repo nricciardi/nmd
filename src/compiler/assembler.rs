@@ -1,5 +1,7 @@
 use thiserror::Error;
 
+use crate::resource::ResourceError;
+
 use self::{html_assembler::HtmlAssembler, assembler_configuration::AssemblerConfiguration};
 
 use super::{artifact::{Artifact, ArtifactError}, codex::Codex, dossier::{Document, Dossier}, output_format::OutputFormat, parsable::parsed_content_accessor::ParsedContentAccessor, parsing::parsing_error::ParsingError};
@@ -21,6 +23,9 @@ pub enum AssemblerError {
 
     #[error("expected parsed content not found")]
     ParsedContentNotFound,
+
+    #[error(transparent)]
+    ResourceError(#[from] ResourceError),
 }
 
 pub trait Assembler {

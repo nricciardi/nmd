@@ -30,6 +30,10 @@ impl DossierConfigurationStyle {
     pub fn list_bullets_configuration(&self) -> &Vec<ListBulletConfigurationRecord> {
         &self.list_bullets_configuration
     }
+
+    pub fn raw_addons(&self) -> &Vec<String> {
+        &self.addons
+    }
 }
 
 impl Default for DossierConfigurationStyle {

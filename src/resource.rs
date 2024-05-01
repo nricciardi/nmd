@@ -2,6 +2,7 @@ pub mod disk_resource;
 pub mod cached_disk_resource;
 pub mod image_resource;
 pub mod remote_resource;
+pub mod dynamic_resource;
 
 use std::{path::PathBuf, str::FromStr, fs::{File, self, OpenOptions}, io::{self, Write}};
 use ::image::ImageError;
