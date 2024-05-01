@@ -5,6 +5,9 @@ use serde::{Deserialize, Serialize};
 pub enum Theme {
     Light,
     Dark,
+    Scientific,
+    Vintage,
+    None,
 }
 
 impl Default for Theme {

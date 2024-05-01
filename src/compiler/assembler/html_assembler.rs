@@ -17,82 +17,74 @@ impl HtmlAssembler {
             configuration,
         }
     }
-}
 
-impl Assembler for HtmlAssembler {
 
-    fn set_configuration(&mut self, configuration: AssemblerConfiguration) {
-        self.configuration = configuration
+    fn apply_remote_addons(&self, mut page: HtmlPage) -> HtmlPage {
+        // add code block js/css
+        match self.configuration.theme() {
+            Theme::Light => {
+                page = page
+
+                    .with_script_link_attr("https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js", [
+                        ("crossorigin", "anonymous"),
+                    ])
+                    .with_script_link_attr("https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js", [
+                        ("crossorigin", "anonymous"),
+                    ])
+                    .with_head_link("https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.css", "stylesheet")
+                    .with_head_link("https://emoji-css.afeld.me/emoji.css", "stylesheet");
+                
+            },
+            Theme::Dark => {
+                page = page
+
+                    .with_script_link_attr("https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js", [
+                        ("crossorigin", "anonymous"),
+                    ])
+                    .with_script_link_attr("https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js", [
+                        ("crossorigin", "anonymous"),
+                    ])
+                    .with_head_link("https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-okaidia.css", "stylesheet")
+                    .with_head_link("https://emoji-css.afeld.me/emoji.css", "stylesheet");
+            },
+            Theme::Scientific => todo!(),
+            Theme::Vintage => todo!(),
+            Theme::None => todo!(),
+        };
+
+        page = page
+                // add math block js/css
+                .with_head_link_attr("https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css", "stylesheet", [
+                    ("integrity", "sha384-n8MVd4RsNIU0tAv4ct0nTaAbDJwPJzDEaqSD1odI+WdtXRGWt2kTvGFasHpSy3SV"),
+                    ("crossorigin", "anonymous")
+                ])
+                .with_script_link_attr("https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js", [
+                    ("integrity", "sha384-XjKyOOlGwcjNTAIQHIpgOno0Hl1YQqzUOEleOLALmuqehneUG+vnGctmUb0ZY0l8"),
+                    ("crossorigin", "anonymous")
+                ])
+                .with_script_link_attr("https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js", [
+                    ("integrity", "sha384-+VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4+/RRE05"),
+                    ("crossorigin", "anonymous")
+                ]);
+
+        page.add_script_literal(r#"
+                document.addEventListener("DOMContentLoaded", function() {
+                    renderMathInElement(document.body, {
+                        
+                        delimiters: [
+                            {left: '$$', right: '$$', display: true},
+                            {left: '$', right: '$', display: false},
+                        ],
+                        
+                        throwOnError : false
+                    });
+                });"#);
+
+        page
     }
 
-    fn assemble_dossier(&self, dossier: &Dossier) -> Result<Artifact, AssemblerError> {
-        let mut artifact = Artifact::new(self.configuration.output_location().clone())?;
+    fn apply_local_addons(&self, mut page: HtmlPage) -> HtmlPage {
 
-        let mut page = HtmlPage::new()
-                                .with_title(dossier.name())
-                                .with_meta(vec![("charset", "utf-8")]);
-
-        if self.configuration.use_remote_addons() {
-
-            // add code block js/css
-            match self.configuration.theme() {
-                Theme::Light => {
-                    page = page
-                        // .with_script_link("https://cdn.tailwindcss.com")
-
-                        .with_script_link_attr("https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js", [
-                            ("crossorigin", "anonymous"),
-                        ])
-                        .with_script_link_attr("https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js", [
-                            ("crossorigin", "anonymous"),
-                        ])
-                        .with_head_link("https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.css", "stylesheet")
-                        .with_head_link("https://emoji-css.afeld.me/emoji.css", "stylesheet");
-                    
-                },
-                Theme::Dark => {
-                    page = page
-                        // .with_script_link("https://cdn.tailwindcss.com")
-
-                        .with_script_link_attr("https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js", [
-                            ("crossorigin", "anonymous"),
-                        ])
-                        .with_script_link_attr("https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js", [
-                            ("crossorigin", "anonymous"),
-                        ])
-                        .with_head_link("https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-okaidia.css", "stylesheet")
-                        .with_head_link("https://emoji-css.afeld.me/emoji.css", "stylesheet");
-                },
-            }
-
-            page = page
-                    // add math block js/css
-                    .with_head_link_attr("https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css", "stylesheet", [
-                        ("integrity", "sha384-n8MVd4RsNIU0tAv4ct0nTaAbDJwPJzDEaqSD1odI+WdtXRGWt2kTvGFasHpSy3SV"),
-                        ("crossorigin", "anonymous")
-                    ])
-                    .with_script_link_attr("https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js", [
-                        ("integrity", "sha384-XjKyOOlGwcjNTAIQHIpgOno0Hl1YQqzUOEleOLALmuqehneUG+vnGctmUb0ZY0l8"),
-                        ("crossorigin", "anonymous")
-                    ])
-                    .with_script_link_attr("https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js", [
-                        ("integrity", "sha384-+VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4+/RRE05"),
-                        ("crossorigin", "anonymous")
-                    ]);
-
-            page.add_script_literal(r#"
-                    document.addEventListener("DOMContentLoaded", function() {
-                        renderMathInElement(document.body, {
-                            
-                            delimiters: [
-                                {left: '$$', right: '$$', display: true},
-                                {left: '$', right: '$', display: false},
-                            ],
-                            
-                            throwOnError : false
-                        });
-                    });"#);
-        } else {
 
             // page.add_script_literal(include_str!("html_assembler/lib/tailwind.js"));
 
@@ -122,18 +114,50 @@ impl Assembler for HtmlAssembler {
                     page.add_style(include_str!("html_assembler/code_block/dark_theme/prismjs.min.css"));
                     page.add_script_literal(include_str!("html_assembler/code_block/dark_theme/prismjs.min.js"));
                 },
-            }
-        }
+                Theme::Scientific => todo!(),
+                Theme::Vintage => todo!(),
+                Theme::None => todo!(),
+            };
 
-        match self.configuration.theme() {
-            Theme::Light => page.add_style(include_str!("html_assembler/default_style/light_theme.css")),
-            Theme::Dark => page.add_style(include_str!("html_assembler/default_style/dark_theme.css")),
-        }                        
-        
+            page
+    }
+}
 
+impl Assembler for HtmlAssembler {
+
+    fn set_configuration(&mut self, configuration: AssemblerConfiguration) {
+        self.configuration = configuration
+    }
+
+    fn assemble_dossier(&self, dossier: &Dossier) -> Result<Artifact, AssemblerError> {
+                        
         if dossier.documents().is_empty() {
             return Err(AssemblerError::TooFewElements("there are no documents".to_string()))
         }
+
+        let mut artifact = Artifact::new(self.configuration.output_location().clone())?;
+
+        let mut page = HtmlPage::new()
+                                .with_title(dossier.name())
+                                .with_meta(vec![("charset", "utf-8")]);
+
+        if self.configuration.use_remote_addons() {
+            page = self.apply_remote_addons(page);
+            
+        } else {
+            page = self.apply_local_addons(page);
+        }
+
+        // apply embedded styles
+        match self.configuration.theme() {
+            Theme::Light => page.add_style(include_str!("html_assembler/default_style/light_theme.css")),
+            Theme::Dark => page.add_style(include_str!("html_assembler/default_style/dark_theme.css")),
+            Theme::Scientific => todo!(),
+            Theme::Vintage => todo!(),
+            Theme::None => todo!(),
+        }
+
+        // TODO: apply custom styles
 
         if self.configuration.parallelization() {
 
