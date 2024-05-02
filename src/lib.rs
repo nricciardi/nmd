@@ -7,4 +7,4 @@ mod config;
 pub mod cli;
 
 
-pub const VERSION: &str = "0.22.1";
+pub const VERSION: &str = "0.23.0";

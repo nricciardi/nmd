@@ -1,1 +1,0 @@
-pub type DossierConfigurationRawReference = String;

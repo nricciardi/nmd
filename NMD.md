@@ -105,7 +105,7 @@ documents:
 
 style:
   theme: Light
-  addons: []
+  styles: []
   list_bullets_configuration: []
 
 metadata: {}
@@ -137,7 +137,7 @@ compilation:
 - `Dark`
 - `Vintage` is work in progress now 
 
-`addons` is **not** used now. **[WIP]**
+`styles` refers to CSS files. They can be URLs or local files (if only file name is used, it is inferred `assets/styles/` as prefix) 
 
 `list_bullets_configuration` is described in [list section](#list)
 

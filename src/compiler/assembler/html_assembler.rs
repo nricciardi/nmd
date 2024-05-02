@@ -157,9 +157,9 @@ impl Assembler for HtmlAssembler {
         let styles_references = dossier.configuration().style().styles_references();
         log::info!("appending {} custom styles", styles_references.len());
 
-        for style_ref in styles_references {
+        for ref style_ref in styles_references {
 
-            log::debug!("appending style (reference): {}", style_ref);
+            log::info!("appending style (reference): {:?}", style_ref);
 
             let resource = DynamicResource::from_str(style_ref)?;
 

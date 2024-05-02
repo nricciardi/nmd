@@ -301,7 +301,7 @@ impl Loader {
     pub fn load_dossier_from_dossier_configuration(codex: &Codex, dossier_configuration: &DossierConfiguration) -> Result<Dossier, LoadError> {
 
         // TODO: are really mandatory?
-        if dossier_configuration.absolute_documents_paths().as_ref().unwrap().is_empty() {
+        if dossier_configuration.documents_paths().is_empty() {
             return Err(LoadError::ResourceError(ResourceError::InvalidResourceVerbose("there are no documents".to_string())))
         }
 
@@ -314,7 +314,7 @@ impl Loader {
 
             let mut documents_res: Vec<Result<Document, LoadError>> = Vec::new();
 
-            dossier_configuration.absolute_documents_paths().as_ref().unwrap().par_iter()
+            dossier_configuration.documents_paths().par_iter()
             .map(|document_path| {
                 Loader::load_document_from_path(codex, &PathBuf::from(document_path))
             }).collect_into_vec(&mut documents_res);
@@ -335,7 +335,7 @@ impl Loader {
 
             let mut documents: Vec<Document> = Vec::new();
 
-            for document_path in dossier_configuration.absolute_documents_paths().as_ref().unwrap() {
+            for document_path in dossier_configuration.documents_paths() {
     
                 let document = Loader::load_document_from_path(codex, &PathBuf::from(document_path))?;
     

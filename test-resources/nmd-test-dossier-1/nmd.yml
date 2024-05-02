@@ -1,9 +1,10 @@
 name: new-dossier
 documents:
-  - ./d8.nmd
+  - "./d1.nmd"
 style:
   theme: Light
-  addons: []
+  styles:
+    - "custom.css"
   list_bullets_configuration:
   - from: '|'
     to: '&#8205;'

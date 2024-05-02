@@ -64,7 +64,7 @@ impl TryFrom<PathBuf> for ImageResource {
 
     fn try_from(path: PathBuf) -> Result<Self, Self::Error> {
 
-        let image = ImageReader::open(path).unwrap().decode();
+        let image = ImageReader::open(path)?.decode();
 
         if image.is_err() {
             return Err(ResourceError::ImageError(image.err().unwrap()))
