@@ -30,6 +30,15 @@ impl DossierConfigurationRawReferenceManager {
 
     pub fn manage_raw_reference(&self, raw_reference: &DossierConfigurationRawReference) -> DossierConfigurationRawReference {
         // TODO
+
+        let mut raw_reference = raw_reference.clone();
+
+        if self.not_unix_like_os {
+            raw_reference = raw_reference.replace(format!(".{}", MAIN_SEPARATOR_STR).as_str(), r"./");
+        }
+
+
+        todo!()
     }
 }
 
