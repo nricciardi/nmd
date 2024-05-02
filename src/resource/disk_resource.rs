@@ -81,8 +81,6 @@ impl Resource for DiskResource {
             .create(true)
             .open(file_path)?;
 
-        print!("ciao");
-
         file.write_all(content.as_bytes())?;
 
         file.flush()?;

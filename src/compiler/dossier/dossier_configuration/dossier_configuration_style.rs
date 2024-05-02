@@ -2,6 +2,8 @@ use serde::{Deserialize, Serialize};
 
 use crate::compiler::{parsing::parsing_configuration::list_bullet_configuration_record::{self, ListBulletConfigurationRecord}, theme::Theme};
 
+use super::dossier_configuration_raw_reference::DossierConfigurationRawReference;
+
 
 
 #[allow(dead_code)]
@@ -12,7 +14,7 @@ pub struct DossierConfigurationStyle {
     theme: Theme,
 
     #[serde(default)]
-    addons: Vec<String>,
+    styles: Vec<DossierConfigurationRawReference>,
 
     #[serde(default = "default_list_bullets")]
     list_bullets_configuration: Vec<ListBulletConfigurationRecord> 
@@ -31,8 +33,8 @@ impl DossierConfigurationStyle {
         &self.list_bullets_configuration
     }
 
-    pub fn raw_addons(&self) -> &Vec<String> {
-        &self.addons
+    pub fn styles_references(&self) -> &Vec<String> {
+        &self.styles
     }
 }
 
@@ -40,7 +42,7 @@ impl Default for DossierConfigurationStyle {
     fn default() -> Self {
         Self {
             theme: Default::default(),
-            addons: Default::default(),
+            styles: Default::default(),
             list_bullets_configuration: default_list_bullets()
         }
     }

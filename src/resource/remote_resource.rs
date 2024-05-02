@@ -62,7 +62,7 @@ impl Resource for RemoteResource {
     }
 
     fn location(&self) -> &Self::LocationType {
-        todo!()
+        &self.url
     }
 
     fn erase(&mut self) -> Result<(), ResourceError> {

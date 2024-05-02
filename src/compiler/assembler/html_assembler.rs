@@ -3,7 +3,7 @@ use std::{str::FromStr, sync::{Arc, Mutex}};
 use build_html::{HtmlPage, HtmlContainer, Html, Container};
 use rayon::iter::{IndexedParallelIterator, IntoParallelRefIterator, ParallelIterator};
 
-use crate::{compiler::{artifact::Artifact, dossier::Dossier, theme::Theme}, resource::{dynamic_resource::DynamicResource, ResourceError}, utility::file_utility};
+use crate::{compiler::{artifact::Artifact, dossier::Dossier, theme::Theme}, resource::{disk_resource, dynamic_resource::DynamicResource, remote_resource, Resource, ResourceError}, utility::file_utility};
 
 use super::{Assembler, AssemblerError, assembler_configuration::AssemblerConfiguration};
 
@@ -85,41 +85,38 @@ impl HtmlAssembler {
 
     fn apply_local_addons(&self, mut page: HtmlPage) -> HtmlPage {
 
+        page.add_style(include_str!("html_assembler/emoji/emoji.min.css"));
+        
+        page.add_style(include_str!("html_assembler/math_block/katex.css"));
+        page.add_style(include_str!("html_assembler/math_block/katex-fonts.css"));
+        page.add_script_literal(include_str!("html_assembler/math_block/katex.min.js"));
+        page.add_script_literal(include_str!("html_assembler/math_block/auto-render.min.js"));
+        page.add_script_literal(r#"window.onload = function() {
+            renderMathInElement(document.body, {
+                delimiters: [
+                    {left: '$$', right: '$$', display: true},
+                    {left: '$', right: '$', display: false},
+                ],
+                throwOnError : false
+                });
+        }"#);
 
-            // page.add_script_literal(include_str!("html_assembler/lib/tailwind.js"));
+        // add code block js/css                        
+        match self.configuration.theme() {
+            Theme::Light => {
+                page.add_style(include_str!("html_assembler/code_block/light_theme/prismjs.min.css"));
+                page.add_script_literal(include_str!("html_assembler/code_block/light_theme/prismjs.min.js"));
+            },
+            Theme::Dark => {
+                page.add_style(include_str!("html_assembler/code_block/dark_theme/prismjs.min.css"));
+                page.add_script_literal(include_str!("html_assembler/code_block/dark_theme/prismjs.min.js"));
+            },
+            Theme::Scientific => todo!(),
+            Theme::Vintage => todo!(),
+            Theme::None => todo!(),
+        };
 
-            page.add_style(include_str!("html_assembler/emoji/emoji.min.css"));
-            
-            page.add_style(include_str!("html_assembler/math_block/katex.css"));
-            page.add_style(include_str!("html_assembler/math_block/katex-fonts.css"));
-            page.add_script_literal(include_str!("html_assembler/math_block/katex.min.js"));
-            page.add_script_literal(include_str!("html_assembler/math_block/auto-render.min.js"));
-            page.add_script_literal(r#"window.onload = function() {
-                renderMathInElement(document.body, {
-                    delimiters: [
-                        {left: '$$', right: '$$', display: true},
-                        {left: '$', right: '$', display: false},
-                    ],
-                    throwOnError : false
-                  });
-            }"#);
-
-            // add code block js/css                        
-            match self.configuration.theme() {
-                Theme::Light => {
-                    page.add_style(include_str!("html_assembler/code_block/light_theme/prismjs.min.css"));
-                    page.add_script_literal(include_str!("html_assembler/code_block/light_theme/prismjs.min.js"));
-                },
-                Theme::Dark => {
-                    page.add_style(include_str!("html_assembler/code_block/dark_theme/prismjs.min.css"));
-                    page.add_script_literal(include_str!("html_assembler/code_block/dark_theme/prismjs.min.js"));
-                },
-                Theme::Scientific => todo!(),
-                Theme::Vintage => todo!(),
-                Theme::None => todo!(),
-            };
-
-            page
+        page
     }
 }
 
@@ -157,14 +154,23 @@ impl Assembler for HtmlAssembler {
             Theme::None => todo!(),
         }
 
-        // TODO: apply custom styles
-        for addons in dossier.configuration().style().raw_addons() {
-            let resource = DynamicResource::from_str(addons)?;
+        let styles_references = dossier.configuration().style().styles_references();
+        log::info!("appending {} custom styles", styles_references.len());
+
+        for style_ref in styles_references {
+
+            log::debug!("appending style (reference): {}", style_ref);
+
+            let resource = DynamicResource::from_str(style_ref)?;
 
             match resource {
-                DynamicResource::DiskResource(_) => todo!(),
-                DynamicResource::ImageResource(_) => return Err(AssemblerError::ResourceError(ResourceError::InvalidResourceVerbose("image cannot be an addons".to_string())));
-                DynamicResource::RemoteResource(_) => todo!(),
+                DynamicResource::DiskResource(disk_resource) => page.add_style(disk_resource.read()?),
+                DynamicResource::ImageResource(_) => return Err(AssemblerError::ResourceError(ResourceError::InvalidResourceVerbose("image cannot be an addons".to_string()))),
+                DynamicResource::RemoteResource(remote_resource) => {
+                    page = page.with_script_link_attr(remote_resource.location().to_string(), [
+                        ("crossorigin", "anonymous"),
+                    ])
+                },
             }
         }
 

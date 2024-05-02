@@ -1,6 +1,8 @@
 mod dossier_configuration_style;
 mod dossier_configuration_metadata;
 mod dossier_configuration_compilation;
+mod dossier_configuration_raw_reference;
+mod dossier_configuration_raw_reference_manager;
 
 use std::path::{PathBuf, MAIN_SEPARATOR_STR};
 
@@ -11,6 +13,7 @@ use crate::resource::Resource;
 use crate::resource::{disk_resource::DiskResource, ResourceError};
 use crate::utility::file_utility;
 
+use self::dossier_configuration_raw_reference::DossierConfigurationRawReference;
 use self::{dossier_configuration_compilation::DossierConfigurationCompilation, dossier_configuration_metadata::DossierConfigurationMetadata, dossier_configuration_style::DossierConfigurationStyle};
 
 
@@ -26,7 +29,7 @@ pub struct DossierConfiguration {
     name: String,
 
     #[serde(rename = "documents")]
-    raw_documents_paths: Vec<String>,
+    raw_documents_paths: Vec<DossierConfigurationRawReference>,
 
     #[serde(skip_serializing, skip_deserializing)]
     root_path: PathBuf,

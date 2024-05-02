@@ -52,19 +52,26 @@ pub trait Resource: FromStr {
 
     type LocationType;
 
+    /// write resource content
     fn write(&mut self, content: &str) -> Result<(), ResourceError>;
 
+    /// erase content resource
     fn erase(&mut self) -> Result<(), ResourceError>;
 
+    /// append resource content
     fn append(&mut self, content: &str) -> Result<(), ResourceError>;
 
+    /// read resource content
     fn read(&self) -> Result<String, ResourceError>;
 
+    /// return resource content
     fn content(&self) -> Result<String, ResourceError> {
         self.read()        
     }
 
+    /// return resource name
     fn name(&self) -> &String;
 
+    /// return embedded location type (e.g. PathBuf for files)
     fn location(&self) -> &Self::LocationType;
 }
