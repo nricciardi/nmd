@@ -3,7 +3,7 @@ use std::{io, path::PathBuf};
 use clap::error;
 use thiserror::Error;
 
-use crate::{compiler::dossier::{dossier_configuration::{self, DossierConfiguration}, Dossier}, config::NMD_EXTENSION, resource::ResourceError, utility::file_utility};
+use crate::{compiler::dossier::{dossier_configuration::{self, DossierConfiguration}, Dossier}, constants::{DOSSIER_CONFIGURATION_YAML_FILE_NAME, NMD_EXTENSION}, resource::ResourceError, utility::file_utility};
 
 use self::dossier_manager_configuration::DossierManagerConfiguration;
 
@@ -53,7 +53,7 @@ impl DossierManager {
 
         dossier_configuration.append_raw_document_path(rel_file_path);
 
-        dossier_configuration.dump_as_yaml(self.configuration.dossier_path().clone().join(dossier_configuration::YAML_FILE_NAME))?;
+        dossier_configuration.dump_as_yaml(self.configuration.dossier_path().clone().join(DOSSIER_CONFIGURATION_YAML_FILE_NAME))?;
 
         Ok(())
     }

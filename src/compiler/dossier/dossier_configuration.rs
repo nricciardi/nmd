@@ -10,6 +10,7 @@ use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use serde::{Deserialize, Serialize};
 use log;
 
+use crate::constants::{DOSSIER_CONFIGURATION_JSON_FILE_NAME, DOSSIER_CONFIGURATION_YAML_FILE_NAME};
 use crate::resource::Resource;
 use crate::resource::{disk_resource::DiskResource, ResourceError};
 use crate::utility::file_utility;
@@ -19,8 +20,6 @@ use self::dossier_configuration_path_reference_manager::{DossierConfigurationRaw
 use self::{dossier_configuration_compilation::DossierConfigurationCompilation, dossier_configuration_metadata::DossierConfigurationMetadata, dossier_configuration_style::DossierConfigurationStyle};
 
 
-pub const YAML_FILE_NAME: &str = "nmd.yml";
-pub const JSON_FILE_NAME: &str = "nmd.json";
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct DossierConfiguration {
@@ -188,9 +187,9 @@ impl TryFrom<&PathBuf> for DossierConfiguration {
 
                 let file_content = file_utility::read_file_content(path_buf)?;
 
-                if file_name.to_string_lossy().eq(YAML_FILE_NAME) {
+                if file_name.to_string_lossy().eq(DOSSIER_CONFIGURATION_YAML_FILE_NAME) {
 
-                    log::info!("{} found", YAML_FILE_NAME);
+                    log::info!("{} found", DOSSIER_CONFIGURATION_YAML_FILE_NAME);
 
                     let mut config = Self::try_from_as_yaml(file_content)?;
 
@@ -199,9 +198,9 @@ impl TryFrom<&PathBuf> for DossierConfiguration {
                     return Ok(config)
                 }
 
-                if file_name.to_string_lossy().eq(JSON_FILE_NAME) {
+                if file_name.to_string_lossy().eq(DOSSIER_CONFIGURATION_JSON_FILE_NAME) {
 
-                    log::info!("{} found", JSON_FILE_NAME);
+                    log::info!("{} found", DOSSIER_CONFIGURATION_JSON_FILE_NAME);
 
                     let mut config = Self::try_from_as_json(file_content)?;
 
@@ -214,7 +213,7 @@ impl TryFrom<&PathBuf> for DossierConfiguration {
 
         if path_buf.is_dir() {
 
-            let yaml_path_buf = path_buf.join(YAML_FILE_NAME);
+            let yaml_path_buf = path_buf.join(DOSSIER_CONFIGURATION_YAML_FILE_NAME);
 
             if yaml_path_buf.exists() {
 
@@ -227,7 +226,7 @@ impl TryFrom<&PathBuf> for DossierConfiguration {
                 return Ok(config)
             }
 
-            let json_path_buf = path_buf.join(JSON_FILE_NAME);
+            let json_path_buf = path_buf.join(DOSSIER_CONFIGURATION_JSON_FILE_NAME);
 
             if json_path_buf.exists() {
                 

@@ -2,7 +2,7 @@ pub mod generator_configuration;
 
 use std::{fs, path::PathBuf};
 use self::generator_configuration::GeneratorConfiguration;
-use crate::{compiler::dossier::{self, dossier_configuration::{self, DossierConfiguration}}, resource::{disk_resource::DiskResource, Resource, ResourceError}, utility::file_utility};
+use crate::{compiler::dossier::{self, dossier_configuration::{self, DossierConfiguration}}, constants::DOSSIER_CONFIGURATION_YAML_FILE_NAME, resource::{disk_resource::DiskResource, Resource, ResourceError}, utility::file_utility};
 
 pub const WELCOME_FILE_NAME: &str = "welcome.nmd";
 
@@ -90,9 +90,9 @@ impl Generator {
             dossier_configuration.set_raw_documents_paths(vec![path]);
         }
 
-        dossier_configuration.dump_as_yaml(configuration.path().join(dossier_configuration::YAML_FILE_NAME))?;
+        dossier_configuration.dump_as_yaml(configuration.path().join(DOSSIER_CONFIGURATION_YAML_FILE_NAME))?;
 
-        log::info!("added dossier configuration file: '{}'", dossier_configuration::YAML_FILE_NAME);
+        log::info!("added dossier configuration file: '{}'", DOSSIER_CONFIGURATION_YAML_FILE_NAME);
 
         Ok(())
     }
