@@ -27,6 +27,7 @@ pub enum StandardParagraphModifier {
     ParagraphIdentifier,
     PageBreak,
     AbridgedTodo,
+    MultilineTodo,
 }
 
 impl StandardParagraphModifier {
@@ -34,6 +35,7 @@ impl StandardParagraphModifier {
 
         //! they must have the compatibility order
         vec![
+            Self::MultilineTodo,
             Self::AbridgedTodo,
             Self::PageBreak,
             Self::ParagraphIdentifier,
@@ -76,6 +78,7 @@ impl StandardParagraphModifier {
             Self::EmbeddedParagraphStyle => String::from("embedded-paragraph-style"),
             Self::PageBreak => String::from("page-break"),
             Self::AbridgedTodo => String::from("abridged-todo"),
+            Self::MultilineTodo => String::from("multiline-todo"),
 
 
             _ => {
@@ -110,6 +113,7 @@ impl StandardParagraphModifier {
             Self::EmbeddedParagraphStyle => String::from(r"\[\[(?sx:(.*?))\]\]\{\{(?xs:((?:.*?:.*?;?)))\}\}"),
             Self::PageBreak => String::from(r"(?m:^#{3,}$)"),
             Self::AbridgedTodo => String::from(r"(?m:^(?i:TODO):?\s(?:(.*?))$)"),
+            Self::MultilineTodo => String::from(r"(?i:TODO):(?s:(.*?)):(?i:TODO)"),
             
             _ => {                                                                  // TODO
                 log::warn!("there is NOT a modifier pattern for {:#?}", self);

@@ -199,7 +199,11 @@ impl Codex {
             ),
             (
                 StandardParagraphModifier::AbridgedTodo.identifier().clone(),
-                Box::new(ReplacementRule::new(StandardParagraphModifier::AbridgedTodo.modifier_pattern().clone(), String::from(r#"<div class="todo"><div class="todo-title"></div><div class="todo-description">$1</div></div>"#))),
+                Box::new(ReplacementRule::new(StandardParagraphModifier::AbridgedTodo.modifier_pattern().clone(), String::from(r#"<div class="todo abridged-todo"><div class="todo-title"></div><div class="todo-description">$1</div></div>"#))),
+            ),
+            (
+                StandardParagraphModifier::MultilineTodo.identifier().clone(),
+                Box::new(ReplacementRule::new(StandardParagraphModifier::MultilineTodo.modifier_pattern().clone(), String::from(r#"<div class="todo multiline-todo"><div class="todo-title"></div><div class="todo-description">$1</div></div>"#))),
             ),
             (
                 StandardParagraphModifier::AbridgedEmbeddedParagraphStyle.identifier().clone(),

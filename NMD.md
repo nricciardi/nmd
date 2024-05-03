@@ -424,7 +424,7 @@ Description can be multi-lines.
 
 ##### Todo
 
-**Style class**: `todo`, `todo-title`, `todo-description`
+**Style class**: `todo`, `todo-title`, `todo-description`, `abridged-todo`, `multiline-todo`
 
 Todo is a special tag to insert... TODOs
 
@@ -440,6 +440,13 @@ TODO: description
 todo: description
 ```
 
+Multiline todo:
+
+```
+TODO:
+this is a multiline todo
+:TODO
+```
 
 
 

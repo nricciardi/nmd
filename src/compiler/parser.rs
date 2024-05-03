@@ -1,6 +1,6 @@
 
 
-use std::sync::{Arc, RwLock};
+use std::{any::Any, sync::{Arc, RwLock}};
 
 
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
@@ -81,12 +81,12 @@ impl Parser {
 
     pub fn parse_paragraph_excluding_modifiers(codex: &Codex, paragraph: &Paragraph, parsing_configuration: Arc<RwLock<ParsingConfiguration>>, mut excluded_modifiers: ModifiersBucket) -> Result<ParsingOutcome, ParsingError> {
 
-        log::debug!("start to parse paragraph:\n{}\nexcluding: {:?}", paragraph, excluded_modifiers);
+        log::debug!("start to parse paragraph ({:?}):\n{}\nexcluding: {:?}", paragraph.paragraph_type(), paragraph, excluded_modifiers);
 
         let mut outcome = ParsingOutcome::new(String::from(paragraph.content()));
 
         if excluded_modifiers == ModifiersBucket::All {
-            log::debug!("parsing of paragraph:\n{} is skipped are excluded all modifiers", paragraph);
+            log::debug!("parsing of paragraph:\n{:#?} is skipped are excluded all modifiers", paragraph);
             
             return Ok(outcome)
         }
@@ -97,7 +97,7 @@ impl Parser {
 
         if let Some(paragraph_rule) = paragraph_rule {
 
-            log::debug!("'{:#?}' paragraph search pattern that is about to be tested", paragraph_rule);
+            log::debug!("paragraph rule {:#?} is found, it is about to be applied to parse paragraph", paragraph_rule);
 
             outcome = paragraph_rule.parse(outcome.parsed_content(), Arc::clone(&parsing_configuration))?;
 
