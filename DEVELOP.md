@@ -36,7 +36,7 @@
 - [ ] Footer with page counter
 - [x] Embedded style
 - [ ] Embedded chapter style
-- [ ] Custom style files
+- [x] Custom style files
 - [ ] Tables
 - [ ] Embedded Greek letters
 - [x] Fix single list item
