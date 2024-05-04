@@ -1,5 +1,5 @@
 use std::borrow::Borrow;
-use std::io;
+use std::{cmp, io};
 use std::path::PathBuf;
 use std::str::FromStr;
 
@@ -265,7 +265,17 @@ impl Loader {
             if chapter_modifier.identifier().eq(&StandardChapterModifier::MinorHeading.identifier()) {
                 let matched = modifier_regex.captures(content).unwrap();
 
-                let level: HeadingLevel = last_heading_level - 1;
+                let level: HeadingLevel;
+
+                if last_heading_level < 1 {
+                    log::warn!("{} found, but last heading has level {}, so it is set as 1", StandardChapterModifier::MinorHeading.identifier(), last_heading_level);
+                    level = 1;
+
+                } else {
+
+                    level = last_heading_level - 1;
+                }
+
                 let title = matched.get(1).unwrap().as_str();
 
                 return Some(Heading::new(level, String::from(title)));
@@ -274,7 +284,13 @@ impl Loader {
             if chapter_modifier.identifier().eq(&StandardChapterModifier::MajorHeading.identifier()) {
                 let matched = modifier_regex.captures(content).unwrap();
 
-                let level: HeadingLevel = last_heading_level + 1;
+                let mut level: HeadingLevel = last_heading_level + 1;
+
+                if level < 1 {
+                    log::warn!("level {} < 0, so it is set as 1", level);
+                    level = 1;
+                }
+
                 let title = matched.get(1).unwrap().as_str();
 
                 return Some(Heading::new(level, String::from(title)));
@@ -283,7 +299,16 @@ impl Loader {
             if chapter_modifier.identifier().eq(&StandardChapterModifier::SameHeading.identifier()) {
                 let matched = modifier_regex.captures(content).unwrap();
 
-                let level: HeadingLevel = last_heading_level;
+                let level: HeadingLevel;
+                if last_heading_level < 1 {
+                    log::warn!("{} found, but last heading has level {}, so it is set as 1", StandardChapterModifier::MinorHeading.identifier(), last_heading_level);
+                    level = 1;
+
+                } else {
+
+                    level = last_heading_level;
+                }
+                
                 let title = matched.get(1).unwrap().as_str();
 
                 return Some(Heading::new(level, String::from(title)));
@@ -312,8 +337,6 @@ impl Loader {
 
                 return Some(Heading::new(level, String::from(title)));
             }
-
-            // TODO: others modifiers (e.g. #+, #=, #-)
 
         }
 
