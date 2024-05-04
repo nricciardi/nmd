@@ -11,6 +11,8 @@
         - [compilation](#compilation)
 - [NMD Syntax](#nmd-syntax)
   - [Heading (Title of a chapter)](#heading-title-of-a-chapter)
+    - [Compact heading](#compact-heading)
+    - [Relative heading](#relative-heading)
   - [Inline modifier](#inline-modifier)
     - [Escape \[NOT SUPPORTED YET\]](#escape-not-supported-yet)
     - [Metadata \[NOT SUPPORTED YET\]](#metadata-not-supported-yet)
@@ -179,18 +181,48 @@ Create headings using `#` (up to 6 levels). `#` must be separated from text usin
 
 ```markdown
 # Heading 1
+
 ## Heading 2
+
 ...
+
 ###### Heading 6
 ```
+
+#### Compact heading
 
 It's possible to use this alternative format:
 
 ```
 #1 Heading 1
+
 #2 Heading 2
+
 ...
+
 #6 Heading 6
+```
+
+#### Relative heading
+
+It's possible to use this alternative format to refer previous heading level:
+
+- `#-` $= \text{last heading level} - 1$
+- `#+` $= \text{last heading level} + 1$
+- `#=` $= \text{last heading level}$
+
+For example:
+
+```
+#1 Heading 1
+
+#+ Heading 2
+
+#+ Heading 3
+
+#- Heading 2
+
+#= Heading 2
 ```
 
 ### Inline modifier

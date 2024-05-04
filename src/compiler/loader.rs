@@ -8,6 +8,7 @@ use rayon::slice::ParallelSliceMut;
 use regex::Regex;
 use thiserror::Error;
 
+use crate::compiler::codex::modifier::standard_chapter_modifier::StandardChapterModifier;
 use crate::resource::disk_resource::DiskResource;
 use crate::resource::{Resource, ResourceError};
 
@@ -260,6 +261,34 @@ impl Loader {
             if !modifier_regex.is_match(content) {
                 continue
             }
+
+            if chapter_modifier.identifier().eq(&StandardChapterModifier::MinorHeading.identifier()) {
+                let matched = modifier_regex.captures(content).unwrap();
+
+                let level: HeadingLevel = last_heading_level - 1;
+                let title = matched.get(1).unwrap().as_str();
+
+                return Some(Heading::new(level, String::from(title)));
+            }
+
+            if chapter_modifier.identifier().eq(&StandardChapterModifier::MajorHeading.identifier()) {
+                let matched = modifier_regex.captures(content).unwrap();
+
+                let level: HeadingLevel = last_heading_level + 1;
+                let title = matched.get(1).unwrap().as_str();
+
+                return Some(Heading::new(level, String::from(title)));
+            }
+
+            if chapter_modifier.identifier().eq(&StandardChapterModifier::SameHeading.identifier()) {
+                let matched = modifier_regex.captures(content).unwrap();
+
+                let level: HeadingLevel = last_heading_level;
+                let title = matched.get(1).unwrap().as_str();
+
+                return Some(Heading::new(level, String::from(title)));
+            }
+
 
             let regex_to_find_extended_version = Regex::new(r"heading-[[:digit:]]+-extended-version").unwrap();
             let regex_to_find_compact_version = Regex::new(r"heading-[[:digit:]]+-compact-version").unwrap();

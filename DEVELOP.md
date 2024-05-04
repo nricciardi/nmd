@@ -42,8 +42,8 @@
 - [ ] Embedded Greek letters
 - [x] Fix single list item
 - [x] Todo modifier with only `todo` or `TODO`
-- [ ] Todo modifier with text between `TODO:` and `:TODO`
-- [ ] Relative header (e.g. `#+` to indicate precedent header level + 1, `#=` to indicate same header level of precedente header)
+- [x] Todo modifier with text between `TODO:` and `:TODO`
+- [x] Relative header (e.g. `#+` to indicate precedent header level + 1, `#=` to indicate same header level of precedente header)
 - [ ] Short image modifier (without alt)
 - [x] `nmd dossier add` auto-add `.nmd`
 - [x] `nmd dossier add` accept more than one file

@@ -9,12 +9,15 @@ pub enum StandardChapterModifier {
 
     HeadingGeneralCompactVersion(u32),
     HeadingGeneralExtendedVersion(u32),
+    MinorHeading,
+    MajorHeading,
+    SameHeading,
 
 }
 
 impl StandardChapterModifier {
     pub fn ordered() -> Vec<Self> {
-        let mut heading_modifiers: Vec<Self> = Vec::new();
+        let mut heading_modifiers: Vec<Self> = vec![Self::MinorHeading, Self::MajorHeading, Self::SameHeading];
 
         for i in (1..=MAX_HEADING_LEVEL).rev() {
             heading_modifiers.push(Self::HeadingGeneralExtendedVersion(i));
@@ -64,6 +67,9 @@ impl StandardChapterModifier {
 
                 format!(r"heading-{}-compact-version", level)
             },
+            StandardChapterModifier::MinorHeading => String::from("minor-heading"),
+            StandardChapterModifier::MajorHeading => String::from("major-heading"),
+            StandardChapterModifier::SameHeading => String::from("same-heading"),
         }
     }
     
@@ -85,6 +91,9 @@ impl StandardChapterModifier {
 
                 format!(r"(?m:^#({})\s+(.*))", level)
             },
+            StandardChapterModifier::MinorHeading => String::from(r"(?m:^#-\s+(.*))"),
+            StandardChapterModifier::MajorHeading => String::from(r"(?m:^#\+\s+(.*))"),
+            StandardChapterModifier::SameHeading => String::from(r"(?m:^#=\s+(.*))"),
         }
     }
 
