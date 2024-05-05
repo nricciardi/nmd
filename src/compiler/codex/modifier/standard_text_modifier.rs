@@ -31,8 +31,7 @@ pub enum StandardTextModifier {
     Todo,
     Checkbox,
     CheckboxChecked,
-    HeadingGeneralCompactVersion(u32),
-    HeadingGeneralExtendedVersion(u32),
+    GreekLetter,
 }
 
 impl StandardTextModifier {
@@ -41,6 +40,7 @@ impl StandardTextModifier {
 
         //! they must have the compatibility order
         vec![
+            Self::GreekLetter,
             Self::Todo,
             Self::BookmarkWithId,
             Self::Bookmark,
@@ -98,6 +98,7 @@ impl StandardTextModifier {
             Self::Link => String::from("link"),
             Self::InlineCode => String::from("inline-code"),
             Self::InlineMath => String::from("inline-math"),
+            Self::GreekLetter => String::from("greek-letter"),
 
             _ => {
 
@@ -135,6 +136,7 @@ impl StandardTextModifier {
             Self::Link => String::from(r"\[([^\]]+)\]\(([^)]+)\)"),
             Self::InlineCode => String::from(r"`(.*?)`"),
             Self::InlineMath => String::from(r#"\$([^$\n]+)\$"#),
+            Self::GreekLetter => String::from(r"\\(.*?)\\"),
             
             _ => {
                 log::warn!("there is NOT a modifier pattern for {:#?}", self);
@@ -149,6 +151,7 @@ impl StandardTextModifier {
             Self::InlineCode => ModifiersBucket::All,
             Self::InlineMath => ModifiersBucket::All,
             Self::Emoji => ModifiersBucket::All,
+            Self::GreekLetter => ModifiersBucket::All,
             _ => ModifiersBucket::None
         }
     }

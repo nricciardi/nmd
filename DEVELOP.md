@@ -14,6 +14,7 @@
 - [ ] Scientific style
 - [ ] Linkify (convert URL-like strings in links)
 - [ ] Fast draft (prevent to parse time consuming parts)
+- [ ] Dynamics addons (e.g. katex iff math is used)
 
 ### Features in Progress for current version
 
@@ -39,7 +40,7 @@
 - [ ] Embedded chapter style
 - [x] Custom style files
 - [ ] Tables
-- [ ] Embedded Greek letters
+- [x] Embedded Greek letters
 - [x] Fix single list item
 - [x] Todo modifier with only `todo` or `TODO`
 - [x] Todo modifier with text between `TODO:` and `:TODO`

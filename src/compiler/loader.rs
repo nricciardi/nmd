@@ -58,9 +58,13 @@ impl Loader {
 
     pub fn load_document_from_str(codex: &Codex, document_name: &str, content: &str) -> Result<Document, LoadError> {
 
+        log::info!("loading document '{}' from its content...", document_name);
+
         let content = String::from(content);
 
         let mut document_chapters: Vec<Chapter> = Vec::new();
+
+        log::debug!("start to find chapter borders in document '{}'", document_name);
 
         // usize: chapter start/end position
         // String: chapter heading + options found
@@ -70,7 +74,7 @@ impl Loader {
             
             let modifier_pattern = chapter_modifier.modifier_pattern();
 
-            log::debug!("test {}", modifier_pattern);
+            log::debug!("find chapter borders using chapter modifier: {:#?}", chapter_modifier);
 
             let regex = Regex::new(&modifier_pattern).unwrap();
 
@@ -111,7 +115,7 @@ impl Loader {
 
         chapter_borders.par_sort_by(|a, b| a.0.cmp(&b.0));
 
-        log::debug!("start to load chapters of document: '{}'...", document_name);
+        log::info!("loading {} chapters of document '{}'...", chapter_borders.len(), document_name);
 
         let mut last_heading_level: HeadingLevel = 0;
 
@@ -147,20 +151,30 @@ impl Loader {
             document_chapters.push(Chapter::new(heading, paragraphs));
         }
 
-
-        let mut preamble = String::new();
-
-        let mut first_start = 0;
+        let mut preamble_end = content.len();
 
         if chapter_borders.len() > 0 {
-            first_start = chapter_borders[0].0;
+            preamble_end = chapter_borders[0].0;
         }
 
-        if first_start != 0 {      // => there is a preamble
-            preamble = String::from(content.get(0..first_start).unwrap())
+        let preamble: Vec<Paragraph>;
+        
+        if preamble_end > 0 {      // => there is a preamble
+            
+            log::debug!("preamble found in document '{}'", document_name);
+
+            let s = String::from(content.get(0..preamble_end).unwrap());
+
+            preamble = Self::load_paragraphs_from_str(codex, &s)?;
+        
+        } else {
+
+            log::debug!("preamble not found in document '{}'", document_name);
+
+            preamble = Vec::new();
         }
 
-        let preamble = Self::load_paragraphs_from_str(codex, &preamble)?;
+        log::info!("document '{}' loaded", document_name);
 
         Ok(Document::new(document_name.to_string(), preamble, document_chapters))
 

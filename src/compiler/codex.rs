@@ -21,6 +21,7 @@ use crate::compiler::output_format::OutputFormat;
 use self::codex_configuration::CodexConfiguration;
 
 use super::parsing::parsing_rule::html_extended_block_quote_rule::HtmlExtendedBlockQuoteRule;
+use super::parsing::parsing_rule::html_greek_letter_rule::HtmlGreekLettersRule;
 use super::parsing::parsing_rule::html_image_rule::HtmlImageRule;
 use super::parsing::parsing_rule::html_list_rule::HtmlListRule;
 use super::parsing::parsing_rule::replacement_rule::ReplacementRule;
@@ -85,6 +86,10 @@ impl Codex {
             (
                 StandardTextModifier::Bookmark.identifier().clone(),
                 Box::new(ReplacementRule::new(StandardTextModifier::Bookmark.modifier_pattern().clone(), String::from(r#"<div class="bookmark"><div class="bookmark-title">$1</div><div class="bookmark-description">$2</div></div>"#))),
+            ),
+            (
+                StandardTextModifier::GreekLetter.identifier().clone(),
+                Box::new(HtmlGreekLettersRule::new()),
             ),
             (
                 StandardTextModifier::AbridgedBookmarkWithId.identifier().clone(),

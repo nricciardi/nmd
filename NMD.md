@@ -33,6 +33,7 @@
     - [Inline code](#inline-code)
     - [Inline math](#inline-math)
     - [Inline comments](#inline-comments)
+    - [Greek letters](#greek-letters)
     - [Bookmark](#bookmark)
       - [Abridged bookmark](#abridged-bookmark)
       - [Bookmark](#bookmark-1)
@@ -427,6 +428,72 @@ $inline math$
 
 ```
 // this is a comment
+```
+
+#### Greek letters
+
+**Style class**: `greek`
+
+```
+\a\
+
+\b\
+
+...
+```
+
+```rust
+HashMap::from([
+    ("a", r"alpha"),
+    ("b", r"beta"),
+    ("g", r"gamma"),
+    ("d", r"delta"),
+    ("e", r"epsilon"),
+    ("z", r"zeta"),
+    ("n", r"eta"),
+    ("th", r"theta"),
+    ("i", r"iota"),
+    ("k", r"kappa"),
+    ("l", r"lambda"),
+    ("m", r"mu"),
+    ("nu", r"nu"),
+    ("x", r"xi"),
+    ("o", r"omicron"),
+    ("p", r"pi"),
+    ("r", r"rho"),
+    ("s", r"sigma"),
+    ("t", r"tau"),
+    ("u", r"upsilon"),
+    ("phi", r"phi"),
+    ("chi", r"chi"),
+    ("psi", r"psi"),
+    ("w", r"omega"),
+
+    ("A", r"Alpha"),
+    ("B", r"Beta"),
+    ("G", r"Gamma"),
+    ("D", r"Delta"),
+    ("E", r"Epsilon"),
+    ("Z", r"Zeta"),
+    ("N", r"Eta"),
+    ("Th", r"Theta"),
+    ("I", r"Iota"),
+    ("K", r"Kappa"),
+    ("L", r"Lambda"),
+    ("M", r"Mu"),
+    ("Nu", r"Nu"),
+    ("X", r"Xi"),
+    ("O", r"Omicron"),
+    ("P", r"Pi"),
+    ("R", r"Rho"),
+    ("S", r"Sigma"),
+    ("T", r"Tau"),
+    ("U", r"Upsilon"),
+    ("Phi", r"Phi"),
+    ("Chi", r"Chi"),
+    ("Psi", r"Psi"),
+    ("W", r"Omega"),
+])
 ```
 
 #### Bookmark

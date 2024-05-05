@@ -1,6 +1,6 @@
 name: new-dossier
 documents:
-  - ./d9.nmd
+  - ./d10.nmd
 style:
   theme: Light
   styles:
