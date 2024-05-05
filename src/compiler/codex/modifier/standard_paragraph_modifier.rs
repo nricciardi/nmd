@@ -10,6 +10,7 @@ pub enum StandardParagraphModifier {
     List,
     ListItem,
     Image,
+    AbridgedImage,
     CodeBlock,
     CommentBlock,
     ExtendedBlockQuote,
@@ -47,6 +48,7 @@ impl StandardParagraphModifier {
             Self::LineBreakStar,
             Self::LineBreakPlus,
             Self::List,
+            Self::AbridgedImage,
             Self::Image,
             Self::CodeBlock,
             Self::CommentBlock,
@@ -79,6 +81,7 @@ impl StandardParagraphModifier {
             Self::PageBreak => String::from("page-break"),
             Self::AbridgedTodo => String::from("abridged-todo"),
             Self::MultilineTodo => String::from("multiline-todo"),
+            // TODO: Self::AbridgedImage => 
 
 
             _ => {
@@ -114,6 +117,7 @@ impl StandardParagraphModifier {
             Self::PageBreak => String::from(r"(?m:^#{3,}$)"),
             Self::AbridgedTodo => String::from(r"(?m:^(?i:TODO):?\s(?:(.*?))$)"),
             Self::MultilineTodo => String::from(r"(?i:TODO):(?s:(.*?)):(?i:TODO)"),
+            // TODO: Self::AbridgedImage => 
             
             _ => {                                                                  // TODO
                 log::warn!("there is NOT a modifier pattern for {:#?}", self);
@@ -131,7 +135,8 @@ impl StandardParagraphModifier {
     pub fn incompatible_modifiers(&self) -> ModifiersBucket {
         match self {
 
-            Self::Image => ModifiersBucket::All,
+            Self::Image => ModifiersBucket::All,            // TODO: fake... consider alt
+            Self::AbridgedImage => ModifiersBucket::All,    // TODO: fake... consider alt
             Self::CodeBlock => ModifiersBucket::All,
             Self::MathBlock => ModifiersBucket::All,
             _ => ModifiersBucket::None
