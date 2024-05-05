@@ -43,11 +43,11 @@ NMD introduces new modifiers and components to elevate your document styling.
 
 For example, you can't emphasize section "work in progress" in common mark, but in NMD you can!
 
-You can use [TODO](#todo) modifier to emphasize a missed section:
+You can use [TODO](NMD.md#todo) modifier to emphasize a missed section:
 
 ![TODO modifier](docs/assets/images/todo-modifier.png)
 
-Alternatively, do you want emphasize a section where you wrote a tip or warning comment? You can use [Focus Block](#focus-block)
+Alternatively, do you want emphasize a section where you wrote a tip or warning comment? You can use [Focus Block](NMD.md#focus-block)
 
 ![Focus Block modifier](docs/assets/images/focus-block-modifier.png)
 
