@@ -1,11 +1,11 @@
 [package]
 name = "nmd"
-version = "0.11.0"
+version = "0.24.0"
 authors = ["Nicola Ricciardi"]
 edition = "2021"
 description = "Official NMD CLI"
 readme = "README.md"
-repository = "https://github.com/nricciardi/nmd-compiler"
+repository = "https://github.com/nricciardi/nmd"
 license-file = "LICENSE"
 keywords = ["compiler", "nmd", "markdown"]
 
