@@ -101,7 +101,7 @@ impl ParsingRule for HtmlGreekLettersRule {
 
             log::warn!("no greek letters found in '{}'", content);
 
-            capture.get(1).unwrap().as_str().to_string()
+            format!(r"\{}\", capture.get(1).unwrap().as_str())
         });
 
         

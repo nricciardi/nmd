@@ -200,6 +200,8 @@ impl Loader {
     /// Split a string in the corresponding vector of paragraphs
     pub fn load_paragraphs_from_str(codex: &Codex, content: &str) -> Result<Vec<Paragraph>, LoadError> {
 
+        log::debug!("loading paragraph:\n{}", content);
+
         let mut paragraphs: Vec<(usize, usize, Paragraph)> = Vec::new();
         let mut content = String::from(content);
 
@@ -215,7 +217,7 @@ impl Loader {
 
             let search_pattern = paragraph_modifier.modifier_pattern();
 
-            log::debug!("test '{}': {}", paragraph_modifier.identifier(), search_pattern);
+            log::debug!("test paragraph modifier '{:?}'", paragraph_modifier);
 
             let regex = Regex::new(&search_pattern).unwrap();
 
@@ -256,7 +258,7 @@ impl Loader {
             });
         }
 
-        paragraphs.par_sort_by(|a, b| a.0.cmp(&b.0));           // TODO: maybe b.1
+        paragraphs.par_sort_by(|a, b| a.0.cmp(&b.1));
 
         Ok(paragraphs.iter().map(|p| p.2.to_owned()).collect())
     }

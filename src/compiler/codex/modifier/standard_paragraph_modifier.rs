@@ -1,8 +1,8 @@
 use super::{base_modifier::BaseModifier, modifiers_bucket::ModifiersBucket, Modifier, ModifierIdentifier, ModifierPattern};
 
 
-pub const PARAGRAPH_SEPARATOR_START: &str = r"(?m:^[ \t]*\n)+";
-pub const PARAGRAPH_SEPARATOR_END: &str = r"(?m:[ \t]*\n){2}";
+pub const PARAGRAPH_SEPARATOR_START: &str = r"(?m:^[ \t]*\r*\n)+";
+pub const PARAGRAPH_SEPARATOR_END: &str = r"(?m:[ \t]*\r*\n){2}";
 
 
 #[derive(Debug, PartialEq, Clone)]
