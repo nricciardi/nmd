@@ -48,6 +48,9 @@
 - [ ] Short image modifier (without alt)
 - [x] `nmd dossier add` auto-add `.nmd`
 - [x] `nmd dossier add` accept more than one file
+- [ ] Escape
+- [ ] Metadata
+- [ ] Reference
 
 ### Known issues
 

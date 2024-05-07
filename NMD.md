@@ -13,6 +13,7 @@
   - [Heading (Title of a chapter)](#heading-title-of-a-chapter)
     - [Compact heading](#compact-heading)
     - [Relative heading](#relative-heading)
+    - [Annotations](#annotations)
   - [Inline modifier](#inline-modifier)
     - [Escape \[NOT SUPPORTED YET\]](#escape-not-supported-yet)
     - [Metadata \[NOT SUPPORTED YET\]](#metadata-not-supported-yet)
@@ -226,6 +227,21 @@ For example:
 #= Heading 2
 ```
 
+#### Annotations
+
+```
+@key value1;value2
+```
+
+- `id`
+- `author`
+- `date` of creation
+- `intent`
+- `style`
+
+
+
+
 ### Inline modifier
 
 TODO
@@ -259,7 +275,7 @@ References must be set in `nmd.json`.
 The syntax is below.
 
 ```
-&reference
+&reference&
 ```
 
 #### Bold

@@ -14,7 +14,6 @@ use self::modifier::modifiers_bucket::ModifiersBucket;
 use self::modifier::standard_paragraph_modifier::{self, StandardParagraphModifier};
 use self::modifier::standard_text_modifier::StandardTextModifier;
 use self::modifier::{Modifier, ModifierIdentifier};
-pub use self::modifier::MAX_HEADING_LEVEL;
 use crate::compiler::dossier::document::chapter::heading::{Heading, HeadingLevel};
 use crate::compiler::dossier::{Document, DocumentError};
 use crate::compiler::output_format::OutputFormat;

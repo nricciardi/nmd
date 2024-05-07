@@ -1,8 +1,11 @@
 use regex::Regex;
 
+use crate::compiler::codex::modifier::constants::HEADING_ANNOTATIONS_PATTERN;
+
 use super::base_modifier::BaseModifier;
+use super::constants::MAX_HEADING_LEVEL;
 use super::modifiers_bucket::ModifiersBucket;
-use super::{ModifierIdentifier, MAX_HEADING_LEVEL};
+use super::ModifierIdentifier;
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum StandardChapterModifier {
@@ -74,7 +77,7 @@ impl StandardChapterModifier {
     }
     
     pub fn modifier_pattern(&self) -> String {
-        match *self {
+        let specific_pattern = match *self {
             Self::HeadingGeneralExtendedVersion(level) => {
 
                 if level == 0 || level > MAX_HEADING_LEVEL {
@@ -94,7 +97,9 @@ impl StandardChapterModifier {
             StandardChapterModifier::MinorHeading => String::from(r"(?m:^#-\s+(.*))"),
             StandardChapterModifier::MajorHeading => String::from(r"(?m:^#\+\s+(.*))"),
             StandardChapterModifier::SameHeading => String::from(r"(?m:^#=\s+(.*))"),
-        }
+        };
+
+        format!("{}{}", specific_pattern, HEADING_ANNOTATIONS_PATTERN)
     }
 
     pub fn incompatible_modifiers(&self) -> ModifiersBucket {

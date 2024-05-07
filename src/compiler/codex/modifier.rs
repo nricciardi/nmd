@@ -3,13 +3,13 @@ pub mod modifiers_bucket;
 pub mod standard_text_modifier;
 pub mod standard_chapter_modifier;
 pub mod base_modifier;
+pub mod constants;
 
 use std::fmt;
 
 use self::{base_modifier::BaseModifier, modifiers_bucket::ModifiersBucket};
 
 
-pub const MAX_HEADING_LEVEL: u32 = 6; 
 
 pub type ModifierIdentifier = String;
 pub type ModifierPattern = String;
