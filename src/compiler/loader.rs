@@ -82,9 +82,8 @@ impl Loader {
 
                 let matched_str = m.as_str().to_string();
 
-                // TODO: remove count_newlines?
-                let start = m.start() + Self::count_newlines_at_start(&matched_str);
-                let end = m.end() - Self::count_newlines_at_end(&matched_str) - 1;
+                let start = m.start();
+                let end = m.end();
 
                 let overlap_chapter = chapter_borders.par_iter().find_any(|c| {
                     (c.0 >= start && c.1 <= end) ||     // current paragraph contains p

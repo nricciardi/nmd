@@ -53,4 +53,4 @@
 
 - [x] `nmd dossier add` transform relative paths to absolute paths
 - [x] `nmd dossier add` save only 2 paths
-- [ ] Chapter body are not parsed on Windows
+- [x] Chapter body are not parsed on Windows
