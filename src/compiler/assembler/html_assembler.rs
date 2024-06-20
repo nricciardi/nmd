@@ -3,7 +3,7 @@ use std::{str::FromStr, sync::{Arc, Mutex}};
 use build_html::{HtmlPage, HtmlContainer, Html, Container};
 use rayon::iter::{IndexedParallelIterator, IntoParallelRefIterator, ParallelIterator};
 
-use crate::{compiler::{artifact::Artifact, dossier::Dossier, theme::Theme}, resource::{disk_resource, dynamic_resource::DynamicResource, remote_resource, Resource, ResourceError}, utility::file_utility};
+use crate::{compiler::{artifact::Artifact, dossier::{document::chapter::chapter_tag::ChapterTagKey, Dossier}, parsable::parsed_content_accessor::ParsedContentAccessor, theme::Theme}, resource::{disk_resource, dynamic_resource::DynamicResource, remote_resource, Resource, ResourceError}, utility::file_utility};
 
 use super::{Assembler, AssemblerError, assembler_configuration::AssemblerConfiguration};
 
@@ -206,6 +206,69 @@ impl Assembler for HtmlAssembler {
         Ok(artifact)
     }
     
+    fn assemble_document(&self, document: &crate::compiler::dossier::Document) -> Result<String, AssemblerError> {
+        let mut result = String::new();
+
+        for paragraph in document.preamble() {
+
+            if let Some(parsed_content) = paragraph.parsed_content().as_ref() {
+
+                result.push_str(parsed_content.parsed_content());
+
+            } else {
+                return Err(AssemblerError::ParsedContentNotFound)
+            }
+        }
+
+        for chapter in document.chapters() {
+
+            let mut div_chapter = Container::new(build_html::ContainerType::Div);
+            let mut style = String::new();
+
+            for tag in chapter.tags() {
+
+                match tag.key() {
+                    ChapterTagKey::Id => {
+                        div_chapter = div_chapter.with_attributes(vec![("id", tag.value().as_ref().unwrap().as_str())])
+                    }
+                    ChapterTagKey::Style => {
+                        style.push_str(format!("{};", tag.value().as_ref().unwrap().as_str()).as_str())
+                    },
+                    ChapterTagKey::StyleClass => {
+                        div_chapter = div_chapter.with_attributes(vec![("class", tag.value().as_ref().unwrap().as_str())])
+                    },
+
+                    _ => ()
+                }
+            }
+
+            div_chapter = div_chapter.with_attributes(vec![("style", style.as_str())]);
+            let mut div_chapter_content = String::new();
+
+            if let Some(parsed_content) = chapter.heading().parsed_content().as_ref() {
+
+                div_chapter_content.push_str(parsed_content.parsed_content());
+
+            } else {
+                return Err(AssemblerError::ParsedContentNotFound)
+            }
+
+            for paragraph in chapter.paragraphs() {
+                if let Some(parsed_content) = paragraph.parsed_content().as_ref() {
+
+                    div_chapter_content.push_str(parsed_content.parsed_content());
+    
+                } else {
+                    return Err(AssemblerError::ParsedContentNotFound)
+                }
+            }
+
+            result.push_str(div_chapter.with_raw(div_chapter_content).to_html_string().as_str());
+        }
+
+        Ok(result)
+    }
+
     fn configuration(&self) -> &AssemblerConfiguration {
         &self.configuration
     }

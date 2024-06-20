@@ -1,45 +1,40 @@
 pub mod paragraph;
 pub mod heading;
 pub mod chapter_builder;
-pub mod chapter_options;
+pub mod chapter_tag;
 
 use std::fmt::Display;
 use std::sync::{Arc, RwLock};
 use std::thread;
 
+use chapter_tag::ChapterTag;
 use rayon::iter::{IntoParallelRefMutIterator, ParallelIterator};
 
 use crate::compiler::codex::Codex;
 use crate::compiler::parsable::Parsable;
+use crate::compiler::parsing::parsing_configuration::parsing_configuration_overlay::ParsingConfigurationOverLay;
 use crate::compiler::parsing::parsing_configuration::ParsingConfiguration;
 use crate::compiler::parsing::parsing_error::ParsingError;
 use crate::compiler::parsing::parsing_metadata::ParsingMetadata;
 
-use self::chapter_options::ChapterOptions;
 use self::heading::Heading;
 pub use self::paragraph::Paragraph;
 
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Chapter {
-    // heading: Heading,
-    // options: ChapterOptions,
     heading: Heading,
+    tags: Vec<ChapterTag>,
     paragraphs: Vec<Paragraph>,
-
-
-    // TODO: maybe in another version
-    /* subchapters: Option<Vec<Arc<Chapter>>>,
-    superchapter: Option<Arc<Chapter>> */
 }
 
 #[allow(dead_code)]
 impl Chapter {
 
-    pub fn new(heading: Heading /*: Heading, options: ChapterOptions*/, paragraphs: Vec<Paragraph>) -> Self {
+    pub fn new(heading: Heading, tags: Vec<ChapterTag>, paragraphs: Vec<Paragraph>) -> Self {
         Self {
             heading,
-            // options,
+            tags,
             paragraphs
         }
     }
@@ -59,23 +54,22 @@ impl Chapter {
     pub fn set_paragraphs(&mut self, paragraphs: Vec<Paragraph>) {
         self.paragraphs = paragraphs
     }
-}
 
-impl Clone for Chapter {
-    fn clone(&self) -> Self {
-        Self {
-            heading: self.heading.clone(),
-            // options: self.options.clone(),
-            paragraphs: self.paragraphs.clone()
-        }
+    pub fn tags(&self) -> &Vec<ChapterTag> {
+        &self.tags
     }
+
+    pub fn set_tags(&mut self, tags: Vec<ChapterTag>) -> () {
+        self.tags = tags
+    }
+
 }
 
 
 impl Parsable for Chapter {
-    fn parse(&mut self, codex: Arc<Codex>, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<(), ParsingError> {
+    fn parse(&mut self, codex: Arc<Codex>, parsing_configuration: Arc<RwLock<ParsingConfiguration>>, parsing_configuration_overlay: Arc<Option<ParsingConfigurationOverLay>>) -> Result<(), ParsingError> {
 
-        self.heading.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration))?;
+        self.heading.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration), Arc::clone(&parsing_configuration_overlay))?;
 
         log::debug!("parsing chapter:\n{:#?}", self);
 
@@ -83,7 +77,7 @@ impl Parsable for Chapter {
 
             let maybe_failed = self.paragraphs.par_iter_mut()
                 .map(|paragraph| {
-                    paragraph.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration))
+                    paragraph.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration), Arc::clone(&parsing_configuration_overlay))
                 })
                 .find_any(|result| result.is_err());
     
@@ -95,7 +89,7 @@ impl Parsable for Chapter {
             
             let maybe_failed = self.paragraphs.iter_mut()
                 .map(|paragraph| {
-                    paragraph.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration))
+                    paragraph.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration), Arc::clone(&parsing_configuration_overlay))
                 })
                 .find(|result| result.is_err());
     

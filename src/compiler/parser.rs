@@ -7,7 +7,7 @@ use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 
 use crate::compiler::{codex::modifier::standard_paragraph_modifier, parsing::parsing_outcome::ParsingOutcome};
 
-use super::{codex::{modifier::modifiers_bucket::ModifiersBucket, Codex}, dossier::document::Paragraph, parsing::{parsing_configuration::ParsingConfiguration, parsing_error::ParsingError}};
+use super::{codex::{modifier::modifiers_bucket::ModifiersBucket, Codex}, dossier::document::Paragraph, parsing::{parsing_configuration::{parsing_configuration_overlay::ParsingConfigurationOverLay, ParsingConfiguration}, parsing_error::ParsingError}};
 
 
 
@@ -18,14 +18,15 @@ pub struct Parser {
 impl Parser {
 
 
-    pub fn parse_text(codex: &Codex, content: &str, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError> {
+    pub fn parse_text(codex: &Codex, content: &str, parsing_configuration: Arc<RwLock<ParsingConfiguration>>, parsing_configuration_overlay: Arc<Option<ParsingConfigurationOverLay>>) -> Result<ParsingOutcome, ParsingError> {
 
         let excluded_modifiers = parsing_configuration.read().unwrap().modifiers_excluded().clone();
 
-        Parser::parse_text_excluding_modifiers(codex, content, Arc::clone(&parsing_configuration), excluded_modifiers)
+        Parser::parse_text_excluding_modifiers(codex, content, Arc::clone(&parsing_configuration), excluded_modifiers, parsing_configuration_overlay)
     }
 
-    pub fn parse_text_excluding_modifiers(codex: &Codex, content: &str, parsing_configuration: Arc<RwLock<ParsingConfiguration>>, mut excluded_modifiers: ModifiersBucket) -> Result<ParsingOutcome, ParsingError> {
+    pub fn parse_text_excluding_modifiers(codex: &Codex, content: &str, parsing_configuration: Arc<RwLock<ParsingConfiguration>>,
+        mut excluded_modifiers: ModifiersBucket, parsing_configuration_overlay: Arc<Option<ParsingConfigurationOverLay>>) -> Result<ParsingOutcome, ParsingError> {
 
         log::debug!("start to parse content:\n{}\nexcluding: {:?}", content, excluded_modifiers);
 
@@ -75,11 +76,12 @@ impl Parser {
         Ok(outcome)
     }
 
-    pub fn parse_paragraph(codex: &Codex, paragraph: &Paragraph, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError> {
-        Parser::parse_paragraph_excluding_modifiers(codex, paragraph, parsing_configuration, ModifiersBucket::None)
+    pub fn parse_paragraph(codex: &Codex, paragraph: &Paragraph, parsing_configuration: Arc<RwLock<ParsingConfiguration>>, parsing_configuration_overlay: Arc<Option<ParsingConfigurationOverLay>>) -> Result<ParsingOutcome, ParsingError> {
+        Parser::parse_paragraph_excluding_modifiers(codex, paragraph, parsing_configuration, ModifiersBucket::None, parsing_configuration_overlay)
     }
 
-    pub fn parse_paragraph_excluding_modifiers(codex: &Codex, paragraph: &Paragraph, parsing_configuration: Arc<RwLock<ParsingConfiguration>>, mut excluded_modifiers: ModifiersBucket) -> Result<ParsingOutcome, ParsingError> {
+    pub fn parse_paragraph_excluding_modifiers(codex: &Codex, paragraph: &Paragraph, parsing_configuration: Arc<RwLock<ParsingConfiguration>>,
+        mut excluded_modifiers: ModifiersBucket, parsing_configuration_overlay: Arc<Option<ParsingConfigurationOverLay>>) -> Result<ParsingOutcome, ParsingError> {
 
         log::debug!("start to parse paragraph ({:?}):\n{}\nexcluding: {:?}", paragraph.paragraph_type(), paragraph, excluded_modifiers);
 
@@ -107,29 +109,8 @@ impl Parser {
 
             log::warn!("there is NOT a paragraph rule for '{}' in codex", paragraph.paragraph_type());
         }
-
-        // for paragraph_rule in self.paragraph_rules() {
-
-        //     let search_pattern = paragraph_rule.modifier().search_pattern();
-
-        //     log::debug!("{:?}: '{}' paragraph search pattern that is about to be tested", paragraph_rule.modifier(), search_pattern);
-
-        //     if paragraph_rule.is_match(outcome.parsed_content()) {
-
-        //         log::debug!("there is a match with '{}'", search_pattern);
-
-        //         outcome = paragraph_rule.parse(outcome.parsed_content(), Arc::clone(&parsing_configuration))?;
-
-        //         excluded_modifiers = excluded_modifiers + paragraph_rule.incompatible_modifiers().clone();
-
-        //         break;      // ONLY ONE paragraph modifier
-        //     } else {
-
-        //         log::debug!("there is NOT a match with '{}'", search_pattern);
-        //     }
-        // }
-
-        outcome = Parser::parse_text_excluding_modifiers(codex, outcome.parsed_content(), Arc::clone(&parsing_configuration), excluded_modifiers)?;
+        
+        outcome = Parser::parse_text_excluding_modifiers(codex, outcome.parsed_content(), Arc::clone(&parsing_configuration), excluded_modifiers, parsing_configuration_overlay)?;
 
         Ok(outcome)
     }

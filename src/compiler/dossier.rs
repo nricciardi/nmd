@@ -11,7 +11,7 @@ use crate::resource::ResourceError;
 
 use self::dossier_configuration::DossierConfiguration;
 
-use super::{codex::Codex, parsable::Parsable, parsing::{parsing_configuration::ParsingConfiguration, parsing_error::ParsingError, parsing_metadata::ParsingMetadata}};
+use super::{codex::Codex, parsable::Parsable, parsing::{parsing_configuration::{parsing_configuration_overlay::ParsingConfigurationOverLay, ParsingConfiguration}, parsing_error::ParsingError, parsing_metadata::ParsingMetadata}};
 
 
 pub const ASSETS_DIR: &str = "assets";
@@ -54,7 +54,7 @@ impl Dossier {
 
 
 impl Parsable for Dossier {
-    fn parse(&mut self, codex: Arc<Codex>, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<(), ParsingError> {
+    fn parse(&mut self, codex: Arc<Codex>, parsing_configuration: Arc<RwLock<ParsingConfiguration>>, parsing_configuration_overlay: Arc<Option<ParsingConfigurationOverLay>>) -> Result<(), ParsingError> {
 
         let parallelization = parsing_configuration.read().unwrap().parallelization();
 
@@ -72,7 +72,7 @@ impl Parsable for Dossier {
                     let new_parsing_configuration: Arc<RwLock<ParsingConfiguration>> = Arc::new(RwLock::new(parsing_configuration.read().unwrap().clone()));
 
                     // Arc::new because parallelization on (may be override during multi-thread operations)
-                    let res = document.parse(Arc::clone(&codex), new_parsing_configuration);
+                    let res = document.parse(Arc::clone(&codex), new_parsing_configuration, Arc::clone(&parsing_configuration_overlay));
 
                     log::info!("document '{}' parsed in {} ms", document.name(), parse_time.elapsed().as_millis());
 
@@ -89,7 +89,7 @@ impl Parsable for Dossier {
                 .map(|document| {
                     let parse_time = Instant::now();
 
-                    let res = document.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration));
+                    let res = document.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration), Arc::clone(&parsing_configuration_overlay));
 
                     log::info!("document '{}' parsed in {} ms", document.name(), parse_time.elapsed().as_millis());
 

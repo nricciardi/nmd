@@ -1,6 +1,6 @@
 use regex::Regex;
 
-use crate::compiler::codex::modifier::constants::HEADING_ANNOTATIONS_PATTERN;
+use crate::compiler::codex::modifier::constants::{CHAPTER_STYLE_PATTERN, CHAPTER_TAGS_PATTERN};
 
 use super::base_modifier::BaseModifier;
 use super::constants::MAX_HEADING_LEVEL;
@@ -99,7 +99,7 @@ impl StandardChapterModifier {
             StandardChapterModifier::SameHeading => String::from(r"(?m:^#=\s+(.*))"),
         };
 
-        format!("{}{}", specific_pattern, HEADING_ANNOTATIONS_PATTERN)
+        format!("{}{}{}", specific_pattern, CHAPTER_TAGS_PATTERN, CHAPTER_STYLE_PATTERN)
     }
 
     pub fn incompatible_modifiers(&self) -> ModifiersBucket {

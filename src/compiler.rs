@@ -77,7 +77,7 @@ impl Compiler {
         log::info!("parsing...");
         log::debug!("parsing configuration:\n{:#?}\n", parsing_configuration);
 
-        dossier.parse(Arc::clone(&codex), Arc::new(RwLock::new(parsing_configuration)))?;
+        dossier.parse(Arc::clone(&codex), Arc::new(RwLock::new(parsing_configuration)), Arc::new(None))?;
 
         assembler_configuration.set_output_location(compilation_configuration.output_location().clone());
         assembler_configuration.set_theme(dossier_theme);

@@ -1,8 +1,12 @@
 # title
+@key value
+@key
+@style color:red
+@class .class
 
-\a\
+%aphib%
 
-this is * a test to show star * issue *.
+this is ** a test to show star ** issue **.
 
 *test
 test*

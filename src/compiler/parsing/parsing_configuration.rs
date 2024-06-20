@@ -1,4 +1,5 @@
 pub mod list_bullet_configuration_record;
+pub mod parsing_configuration_overlay;
 
 use std::{ops::Add, path::PathBuf};
 
@@ -36,7 +37,11 @@ pub struct ParsingConfiguration {
 
 impl ParsingConfiguration {
 
-    pub fn new(input_location: PathBuf, output_location: PathBuf, embed_local_image: bool, embed_remote_image: bool, compress_embed_image: bool, strict_image_src_check: bool, metadata: ParsingMetadata, excluded_modifiers: ModifiersBucket, parallelization: bool, list_bullets_configuration: Vec<ListBulletConfigurationRecord>, strict_list_check: bool, strict_focus_block_check: bool) -> Self {
+    pub fn new(input_location: PathBuf, output_location: PathBuf, embed_local_image: bool, embed_remote_image: bool, 
+                compress_embed_image: bool, strict_image_src_check: bool, metadata: ParsingMetadata, excluded_modifiers: ModifiersBucket, 
+                parallelization: bool, list_bullets_configuration: Vec<ListBulletConfigurationRecord>, strict_list_check: bool, 
+                strict_focus_block_check: bool) -> Self {
+
         Self {
             input_location,
             output_location,
@@ -49,7 +54,7 @@ impl ParsingConfiguration {
             parallelization,
             list_bullets_configuration,
             strict_list_check,
-            strict_focus_block_check,
+            strict_focus_block_check
         }
     }
 
@@ -100,7 +105,6 @@ impl ParsingConfiguration {
     pub fn strict_list_check(&self) -> bool {
         self.strict_list_check
     }
-
 
     pub fn strict_focus_block_check(&self) -> bool {
         self.strict_focus_block_check

@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use thiserror::Error;
 
-use super::{chapter_options::ChapterOptions, heading::Heading, paragraph::ParagraphError, Chapter, Paragraph};
+use super::{heading::Heading, paragraph::ParagraphError, Chapter, Paragraph};
 
 #[derive(Error, Debug)]
 pub enum ChapterBuilderError {
@@ -16,7 +16,6 @@ pub enum ChapterBuilderError {
 
 pub struct ChapterBuilder {
     heading: Option<Heading>,
-    options: ChapterOptions,
     paragraphs: Vec<Paragraph>,
 }
 
@@ -27,17 +26,12 @@ impl ChapterBuilder {
     pub fn new() -> Self {
         Self {
             heading: Option::None,
-            options: ChapterOptions::default(),
             paragraphs: Vec::new()
         }
     }
 
     pub fn set_heading(&mut self, heading: Heading) -> () {
         self.heading = Option::Some(heading)
-    }
-
-    pub fn set_options(&mut self, options: ChapterOptions) -> () {
-        self.options = options
     }
 
     pub fn build(self) -> Result<Chapter, ChapterBuilderError> {

@@ -1,35 +1,9 @@
 use std::{num::ParseIntError, str::FromStr, sync::{Arc, RwLock}};
 
-use crate::compiler::{codex::{reference::Reference, Codex}, parsable::{parsed_content_accessor::ParsedContentAccessor, Parsable}, parser::Parser, parsing::{parsing_configuration::ParsingConfiguration, parsing_error::ParsingError, parsing_metadata::ParsingMetadata, parsing_outcome::ParsingOutcome}};
+use crate::compiler::{codex::{reference::Reference, Codex}, parsable::{parsed_content_accessor::ParsedContentAccessor, Parsable}, parser::Parser, parsing::{parsing_configuration::{parsing_configuration_overlay::ParsingConfigurationOverLay, ParsingConfiguration}, parsing_error::ParsingError, parsing_metadata::ParsingMetadata, parsing_outcome::ParsingOutcome}};
 
 use super::chapter_builder::ChapterBuilderError;
 
-
-// #[derive(Debug, Clone)]
-// pub enum HeadingLevel {
-//     PreviousPlusOne,
-//     PreviousMinusOne,
-//     Numerical(u32)
-// }
-
-// impl FromStr for HeadingLevel {
-//     type Err = ParseIntError;     // TODO
-
-//     fn from_str(s: &str) -> Result<Self, Self::Err> {
-//         if s.eq("+") {
-//             return Ok(Self::PreviousPlusOne)
-//         }
-
-//         if s.eq("-") {
-//             return Ok(Self::PreviousMinusOne)
-//         }
-
-//         match s.parse::<u32>() {
-//             Ok(n) => Ok(Self::Numerical(n)),
-//             Err(e) => Err(e)
-//         }
-//     }
-// }
 
 pub type HeadingLevel = u32;
 
@@ -63,7 +37,7 @@ impl Heading {
 }
 
 impl Parsable for Heading {
-    fn parse(&mut self, codex: Arc<Codex>, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<(), ParsingError> {
+    fn parse(&mut self, codex: Arc<Codex>, parsing_configuration: Arc<RwLock<ParsingConfiguration>>, parsing_configuration_overlay: Arc<Option<ParsingConfigurationOverLay>>) -> Result<(), ParsingError> {
 
         let pc = parsing_configuration.read().unwrap();
 
@@ -71,7 +45,7 @@ impl Parsable for Heading {
 
         let id = Reference::of_internal_without_sharp(&self.title, Some(&document_name))?;
 
-        let parsed_title = Parser::parse_text(&codex, &self.title, Arc::clone(&parsing_configuration))?;
+        let parsed_title = Parser::parse_text(&codex, &self.title, Arc::clone(&parsing_configuration), parsing_configuration_overlay)?;
 
         self.parsed_content = Some(ParsingOutcome::new(format!(r#"<h{} class="heading-{}" id="{}">{}</h{}>"#, self.level, self.level, id.build_without_internal_sharp(), parsed_title.parsed_content(), self.level)));
 

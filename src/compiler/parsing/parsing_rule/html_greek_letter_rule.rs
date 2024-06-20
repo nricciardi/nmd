@@ -69,6 +69,36 @@ impl HtmlGreekLettersRule {
             ])
         }
     }
+
+    fn replace_with_greek_letters(&self, input: &str) -> String {
+        let mut result = String::new();
+        let mut i = 0;
+    
+        while i < input.len() {
+            let mut matched = false;
+            
+            let mut keys: Vec<&str> = self.greek_letters_map.keys().cloned().collect();
+
+            keys.sort_by(|a, b| b.len().cmp(&a.len()));
+
+            for key in keys {
+                if input[i..].starts_with(key) {
+                    result.push_str(r"\");
+                    result.push_str(self.greek_letters_map.get(key).unwrap());
+                    i += key.len();
+                    matched = true;
+                    break;
+                }
+            }
+    
+            if !matched {
+                result.push(input.chars().nth(i).unwrap());
+                i += 1;
+            }
+        }
+    
+        result
+    }
 }
 
 impl Debug for HtmlGreekLettersRule {
@@ -89,14 +119,12 @@ impl ParsingRule for HtmlGreekLettersRule {
         let parsed_content = regex.replace_all(content, |capture: &Captures| {
 
             if let Some(greek_ref) = capture.get(1) {
-                if let Some(value) = self.greek_letters_map.get(greek_ref.as_str()) {
 
-                    let res = format!(r#"<span class="greek">$\{}$</span>"#, value);
+                let res = format!(r#"<span class="greek">${}$</span>"#, self.replace_with_greek_letters(greek_ref.as_str()));
 
-                    log::debug!("parse '{}' into '{}'", content, res);
+                log::debug!("parse '{}' into '{}'", content, res);
 
-                    return res;
-                }
+                return res;
             }
 
             log::warn!("no greek letters found in '{}'", content);

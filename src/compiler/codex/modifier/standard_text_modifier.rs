@@ -136,7 +136,7 @@ impl StandardTextModifier {
             Self::Link => String::from(r"\[([^\]]+)\]\(([^)]+)\)"),
             Self::InlineCode => String::from(r"`(.*?)`"),
             Self::InlineMath => String::from(r#"\$([^$\n]+)\$"#),
-            Self::GreekLetter => String::from(r"\\(.*?)\\"),        // if it changes, fix greek letters rules
+            Self::GreekLetter => String::from(r"%(.*?)%"),        // if it changes, fix greek letters rules
             
             _ => {
                 log::warn!("there is NOT a modifier pattern for {:#?}", self);

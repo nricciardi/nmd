@@ -12,6 +12,7 @@ use rayon::prelude::*;
 
 use crate::compiler::codex::Codex;
 use crate::compiler::parsable::Parsable;
+use crate::compiler::parsing::parsing_configuration::parsing_configuration_overlay::ParsingConfigurationOverLay;
 use crate::compiler::parsing::parsing_configuration::ParsingConfiguration;
 use crate::compiler::parsing::parsing_error::ParsingError;
 use crate::compiler::parsing::parsing_metadata::ParsingMetadata;
@@ -72,7 +73,7 @@ impl Document {
 
 impl Parsable for Document {
 
-    fn parse(&mut self, codex: Arc<Codex>, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<(), ParsingError> {
+    fn parse(&mut self, codex: Arc<Codex>, parsing_configuration: Arc<RwLock<ParsingConfiguration>>, parsing_configuration_overlay: Arc<Option<ParsingConfigurationOverLay>>) -> Result<(), ParsingError> {
 
         let parallelization = parsing_configuration.read().unwrap().parallelization();
 
@@ -85,7 +86,7 @@ impl Parsable for Document {
             let maybe_one_failed: Option<Result<(), ParsingError>> = self.preamble.par_iter_mut()
                 .map(|paragraph| {
 
-                    paragraph.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration))
+                    paragraph.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration), Arc::clone(&parsing_configuration_overlay))
                 
                 }).find_any(|result| result.is_err());
 
@@ -96,7 +97,7 @@ impl Parsable for Document {
             let maybe_one_failed: Option<Result<(), ParsingError>> = self.chapters.par_iter_mut()
                 .map(|chapter| {
 
-                    chapter.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration))
+                    chapter.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration), Arc::clone(&parsing_configuration_overlay))
                 
                 }).find_any(|result| result.is_err());
 
@@ -109,7 +110,7 @@ impl Parsable for Document {
             let maybe_one_failed: Option<Result<(), ParsingError>> = self.preamble.iter_mut()
                 .map(|paragraph| {
 
-                    paragraph.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration))
+                    paragraph.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration), Arc::clone(&parsing_configuration_overlay))
                 
                 }).find(|result| result.is_err());
 
@@ -120,7 +121,7 @@ impl Parsable for Document {
             let maybe_one_failed: Option<Result<(), ParsingError>> = self.chapters.iter_mut()
                 .map(|chapter| {
 
-                    chapter.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration))
+                    chapter.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration), Arc::clone(&parsing_configuration_overlay))
                 
                 }).find(|result| result.is_err());
 

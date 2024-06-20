@@ -12,8 +12,10 @@ use crate::compiler::codex::modifier::standard_chapter_modifier::StandardChapter
 use crate::resource::disk_resource::DiskResource;
 use crate::resource::{Resource, ResourceError};
 
+use super::codex::modifier::constants::CHAPTER_STYLE_PATTERN;
 use super::codex::Codex;
 use super::dossier::document::chapter::chapter_builder::{self, ChapterBuilder};
+use super::dossier::document::chapter::chapter_tag::ChapterTag;
 use super::dossier::dossier_configuration::DossierConfiguration;
 use super::dossier::Dossier;
 use super::{dossier::{document::{chapter::{heading::{Heading, HeadingLevel}, paragraph::ParagraphError}, Chapter, Paragraph}, Document, DocumentError}};
@@ -127,7 +129,7 @@ impl Loader {
             let end = chapter_borders[index].1;
             let raw_content = &chapter_borders[index].2;
 
-            let heading = Self::load_heading_from_raw_str(codex, raw_content, last_heading_level);
+            let (heading, tags) = Self::load_chapter_metadata_from_raw_str(codex, raw_content, last_heading_level);
 
             if heading.is_none() {
                 return Err(LoadError::ResourceError(ResourceError::ResourceNotFound("heading".to_string())))
@@ -147,7 +149,7 @@ impl Loader {
 
             let paragraphs = Self::load_paragraphs_from_str(codex, sub_content)?;
 
-            document_chapters.push(Chapter::new(heading, paragraphs));
+            document_chapters.push(Chapter::new(heading, tags, paragraphs));
         }
 
         let mut preamble_end = content.len();
@@ -194,7 +196,6 @@ impl Loader {
             Err(err) => return Err(LoadError::ElaborationError(err.to_string()))
         }
     }
-
 
     /// Split a string in the corresponding vector of paragraphs
     pub fn load_paragraphs_from_str(codex: &Codex, content: &str) -> Result<Vec<Paragraph>, LoadError> {
@@ -263,9 +264,42 @@ impl Loader {
     }
 
 
-    fn load_heading_from_raw_str(codex: &Codex, content: &str, last_heading_level: HeadingLevel) -> Option<Heading> {
+    fn load_chapter_tags_from_raw_str(content: &str) -> Vec<ChapterTag> {
+        
+        let mut tags: Vec<ChapterTag> = Vec::new();
+        
+        for line in content.lines() {
+            
+            let tag = ChapterTag::from_str(line);
 
-        log::debug!("load heading from (last heading level: {}):\n{}", last_heading_level, content);
+            if let Ok(tag) = tag {
+
+                tags.push(tag);
+
+            }
+        }
+
+        tags
+    }
+
+    fn load_chapter_style_from_raw_str(content: &str) -> Option<String> {
+        
+        let mut style: Option<String> = None;
+        
+        let regex = Regex::new(CHAPTER_STYLE_PATTERN).unwrap();
+
+        if let Some(captures) = regex.captures(content) {
+            if let Some(s) = captures.get(1) {
+                style = Some(s.as_str().to_string())
+            }
+        }
+
+        style
+    }
+
+    fn load_chapter_metadata_from_raw_str(codex: &Codex, content: &str, last_heading_level: HeadingLevel) -> (Option<Heading>, Vec<ChapterTag>) {
+
+        log::debug!("load chapter metadata from (last heading level: {}):\n{}", last_heading_level, content);
 
         let chapter_modifiers = codex.configuration().ordered_chapter_modifier();
 
@@ -277,6 +311,7 @@ impl Loader {
                 continue
             }
 
+            // ==== MinorHeading ====
             if chapter_modifier.identifier().eq(&StandardChapterModifier::MinorHeading.identifier()) {
                 let matched = modifier_regex.captures(content).unwrap();
 
@@ -293,9 +328,13 @@ impl Loader {
 
                 let title = matched.get(1).unwrap().as_str();
 
-                return Some(Heading::new(level, String::from(title)));
+
+                let tags = Self::load_chapter_tags_from_raw_str(content);
+
+                return (Some(Heading::new(level, String::from(title))), tags);
             }
 
+            // ==== MajorHeading ====
             if chapter_modifier.identifier().eq(&StandardChapterModifier::MajorHeading.identifier()) {
                 let matched = modifier_regex.captures(content).unwrap();
 
@@ -308,9 +347,12 @@ impl Loader {
 
                 let title = matched.get(1).unwrap().as_str();
 
-                return Some(Heading::new(level, String::from(title)));
+                let tags = Self::load_chapter_tags_from_raw_str(content);
+
+                return (Some(Heading::new(level, String::from(title))), tags);
             }
 
+            // ==== SameHeading ====
             if chapter_modifier.identifier().eq(&StandardChapterModifier::SameHeading.identifier()) {
                 let matched = modifier_regex.captures(content).unwrap();
 
@@ -326,13 +368,16 @@ impl Loader {
                 
                 let title = matched.get(1).unwrap().as_str();
 
-                return Some(Heading::new(level, String::from(title)));
+                let tags = Self::load_chapter_tags_from_raw_str(content);
+
+                return (Some(Heading::new(level, String::from(title))), tags);
             }
 
 
             let regex_to_find_extended_version = Regex::new(r"heading-[[:digit:]]+-extended-version").unwrap();
             let regex_to_find_compact_version = Regex::new(r"heading-[[:digit:]]+-compact-version").unwrap();
 
+            // ==== Extended version heading ====
             if regex_to_find_extended_version.is_match(chapter_modifier.identifier()) {
 
                 let level: u32 = content.chars().take_while(|&c| c == '#').count() as u32;
@@ -341,21 +386,26 @@ impl Loader {
 
                 let title = matched.get(1).unwrap().as_str();
 
-                return Some(Heading::new(level, String::from(title)));
+                let tags = Self::load_chapter_tags_from_raw_str(content);
+
+                return (Some(Heading::new(level, String::from(title))), tags);
             }
 
+            // ==== Compact version heading ====
             if regex_to_find_compact_version.is_match(chapter_modifier.identifier()) {
                 let matched = modifier_regex.captures(content).unwrap();
 
                 let level: HeadingLevel = matched.get(1).unwrap().as_str().parse().unwrap();
                 let title = matched.get(2).unwrap().as_str();
 
-                return Some(Heading::new(level, String::from(title)));
+                let tags = Self::load_chapter_tags_from_raw_str(content);
+
+                return (Some(Heading::new(level, String::from(title))), tags);
             }
 
         }
 
-        Option::None
+        (None, Vec::new())
     }
 
     pub fn load_dossier_from_path_buf(codex: &Codex, path_buf: &PathBuf) -> Result<Dossier, LoadError> {

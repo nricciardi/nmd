@@ -237,7 +237,8 @@ For example:
 - `author`
 - `date` of creation
 - `intent`
-- `style`
+- `style` (inline style, e.g. `color:red`)
+- `styleclass` (style class, e.g. `.red`)
 
 
 
