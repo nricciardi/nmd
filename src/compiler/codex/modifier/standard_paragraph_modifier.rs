@@ -1,4 +1,4 @@
-use super::{base_modifier::BaseModifier, modifiers_bucket::ModifiersBucket, Modifier, ModifierIdentifier, ModifierPattern};
+use super::{base_modifier::BaseModifier, constants::NEW_LINE_PATTERN, modifiers_bucket::ModifiersBucket, Modifier, ModifierIdentifier, ModifierPattern};
 
 
 pub const PARAGRAPH_SEPARATOR_START: &str = r"(?m:^[ \t]*\r*\n)+";
@@ -98,21 +98,21 @@ impl StandardParagraphModifier {
             Self::Image => String::from(r"!\[([^\]]+)\]\(([^)]+)\)"),
 
             Self::CommonParagraph => String::from(r#"(?s:(.*?))"#),
-            Self::CodeBlock => String::from(r"```(\w+)\n+(.*?)\n+```"),
+            Self::CodeBlock => format!(r"```(\w+){}+(.*?)\n+```", NEW_LINE_PATTERN),
             Self::MathBlock => String::from(r#"\$\$((?s:.+?))\$\$"#),
 
-            Self::ListItem => String::from(r#"(?m:^([\t ]*)(-\[\]|-\[ \]|-\[x\]|-\[X\]|-|->|\||\*|\+|--|\d[\.)]?|[a-zA-Z]{1,8}[\.)]|&[^;]+;) (.*)\n)"#),
+            Self::ListItem => format!(r#"(?m:^([\t ]*)(-\[\]|-\[ \]|-\[x\]|-\[X\]|-|->|\||\*|\+|--|\d[\.)]?|[a-zA-Z]{{1,8}}[\.)]|&[^;]+;) (.*){})"#, NEW_LINE_PATTERN),
             Self::List => format!(r#"((?:{}+)+)"#, Self::ListItem.modifier_pattern()),
             Self::ExtendedBlockQuoteLine => String::from(r"(?m:^> (.*))"),
             Self::ExtendedBlockQuote => format!(r"(?ms:^> .*?)"),
             Self::LineBreakDash => String::from(r"(?m:^-{3,})"),
             Self::LineBreakStar => String::from(r"(?m:^\*{3,})"),
             Self::LineBreakPlus => String::from(r"(?m:^\+{3,})"),
-            Self::FocusBlock => String::from(r":::\s(\w+)\n(?s:(.*?))\n:::"),
+            Self::FocusBlock => format!(r":::\s(\w+){}(?s:(.*?)){}:::", NEW_LINE_PATTERN, NEW_LINE_PATTERN),
             Self::AbridgedEmbeddedParagraphStyle => String::from(r"\[\[(?sx:(.*?))\]\]\{(.*?)(?s:;(.*?)(?:;(.*?))?)?\}"),
-            Self::AbridgedEmbeddedParagraphStyleWithId => String::from(r"\[\[(?sx:(.*?))\]\]\n?#([\w-]*)\n?\{(.*?)(?s:;(.*?)(?:;(.*?))?)?\}"),
-            Self::ParagraphIdentifier => String::from(r"\[\[(?sx:(.*?))\]\]\n?#([\w-]*)"),
-            Self::EmbeddedParagraphStyleWithId => String::from(r"\[\[(?sx:(.*?))\]\]\n?#([\w-]*)\n?\{\{(?xs:((?:.*?:.*?;?)))\}\}"),
+            Self::AbridgedEmbeddedParagraphStyleWithId => format!(r"\[\[(?sx:(.*?))\]\]{}?#([\w-]*){}?\{{(.*?)(?s:;(.*?)(?:;(.*?))?)?\}}", NEW_LINE_PATTERN, NEW_LINE_PATTERN),
+            Self::ParagraphIdentifier => format!(r"\[\[(?sx:(.*?))\]\]{}?#([\w-]*)", NEW_LINE_PATTERN),
+            Self::EmbeddedParagraphStyleWithId => format!(r"\[\[(?sx:(.*?))\]\]{}?#([\w-]*){}?\{{\{{(?xs:((?:.*?:.*?;?)))\}}\}}", NEW_LINE_PATTERN, NEW_LINE_PATTERN),
             Self::EmbeddedParagraphStyle => String::from(r"\[\[(?sx:(.*?))\]\]\{\{(?xs:((?:.*?:.*?;?)))\}\}"),
             Self::PageBreak => String::from(r"(?m:^#{3,}$)"),
             Self::AbridgedTodo => String::from(r"(?m:^(?i:TODO):?\s(?:(.*?))$)"),
