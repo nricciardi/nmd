@@ -182,6 +182,10 @@ impl Codex {
                 StandardTextModifier::Emoji.identifier().clone(),
                 Box::new(ReplacementRule::new(StandardTextModifier::Emoji.modifier_pattern().clone(), String::from(r#"<i class="em-svg em-${1}" aria-role="presentation"></i>"#))),
             ),
+            (
+                StandardTextModifier::Escape.identifier().clone(),
+                Box::new(ReplacementRule::new(StandardTextModifier::Escape.modifier_pattern().clone(), String::from(r"${1}")))
+            ),
         ]);
 
         let paragraph_rules: HashMap<ModifierIdentifier, Box<dyn ParsingRule>> = HashMap::from([

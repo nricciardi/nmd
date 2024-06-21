@@ -32,6 +32,7 @@ pub enum StandardTextModifier {
     Checkbox,
     CheckboxChecked,
     GreekLetter,
+    Escape
 }
 
 impl StandardTextModifier {
@@ -40,6 +41,10 @@ impl StandardTextModifier {
 
         //! they must have the compatibility order
         vec![
+            Self::InlineMath,
+            Self::InlineCode,
+            Self::Comment,
+            Self::Escape,
             Self::GreekLetter,
             Self::Todo,
             Self::BookmarkWithId,
@@ -52,8 +57,6 @@ impl StandardTextModifier {
             Self::AbridgedEmbeddedStyle,
             Self::Identifier,
             Self::Highlight,
-            Self::InlineMath,
-            Self::InlineCode,
             Self::BoldStarVersion,
             Self::BoldUnderscoreVersion,
             Self::ItalicStarVersion,
@@ -63,7 +66,6 @@ impl StandardTextModifier {
             Self::Superscript,
             Self::Subscript,
             Self::Link,
-            Self::Comment,
             Self::Checkbox,
             Self::CheckboxChecked,
             Self::Emoji,
@@ -99,6 +101,7 @@ impl StandardTextModifier {
             Self::InlineCode => String::from("inline-code"),
             Self::InlineMath => String::from("inline-math"),
             Self::GreekLetter => String::from("greek-letter"),
+            Self::Escape => String::from("escape"),
 
             _ => {
 
@@ -137,6 +140,7 @@ impl StandardTextModifier {
             Self::InlineCode => String::from(r"`(.*?)`"),
             Self::InlineMath => format!(r#"\$([^${}]+)\$"#, NEW_LINE_PATTERN),
             Self::GreekLetter => String::from(r"%(.*?)%"),        // if it changes, fix greek letters rules
+            Self::Escape => String::from(r"\\([\*\+\\~%\^\$@=\[\]!<>\{\}\(\)#-_\|\?]+)"),
             
             _ => {
                 log::warn!("there is NOT a modifier pattern for {:#?}", self);
@@ -152,6 +156,7 @@ impl StandardTextModifier {
             Self::InlineMath => ModifiersBucket::All,
             Self::Emoji => ModifiersBucket::All,
             Self::GreekLetter => ModifiersBucket::All,
+            Self::Escape => ModifiersBucket::All,
             _ => ModifiersBucket::None
         }
     }
