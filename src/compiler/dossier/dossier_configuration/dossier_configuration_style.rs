@@ -38,10 +38,10 @@ impl DossierConfigurationStyle {
 
     pub fn styles_references(&self) -> Vec<DossierConfigurationPathReference> {
 
-        let DCRFM = DOSSIER_CONFIGURATION_RAW_REFERENCE_MANAGER.lock().unwrap();
+        let dcrfm = DOSSIER_CONFIGURATION_RAW_REFERENCE_MANAGER.lock().unwrap();
 
         self.styles.iter().map(|raw_reference| {
-            DCRFM.parse_raw_reference(raw_reference, Some(PathBuf::from(STYLE_PREFIX)))
+            dcrfm.parse_raw_reference(raw_reference, Some(PathBuf::from(STYLE_PREFIX)))
         }).collect()
     }
 }
