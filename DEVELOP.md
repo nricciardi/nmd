@@ -15,6 +15,7 @@
 - [ ] Linkify (convert URL-like strings in links)
 - [ ] Fast draft (prevent to parse time consuming parts)
 - [ ] Dynamics addons (e.g. katex iff math is used)
+- [x] Watcher mode
 
 ### Features in Progress for current version
 

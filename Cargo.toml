@@ -19,6 +19,7 @@ clap = "4.4.18"
 env_logger = "0.10.1"
 image = "0.24.8"
 log = "0.4.20"
+notify = "6.1.1"
 rayon = "1.8.0"
 regex = "1.10.2"
 reqwest = { version = "0.11.24", features = ["blocking"] }

@@ -1,7 +1,7 @@
 # New MarkDown [BETA]
 
 [![License](https://img.shields.io/badge/license-GPL3-green.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v0.26.0-blue.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-v0.27.0-blue.svg)](CHANGELOG.md)
 
 **NMD**: a new way to write in markdown.
 
@@ -129,6 +129,10 @@ Compile a dossier in `html`:
 ```shell
 nmd compile dossier -f html -i dossier/input/path -o artifact/output/path
 ```
+
+If you watch dossier files and compile them if anything changes, you should use watcher mode (`-w` option).
+
+Watcher mode compile dossier if any change is captured. Changes are captured only if a minimum time is elapsed. To set minimum time use `-t` option
 
 ## Develop
 

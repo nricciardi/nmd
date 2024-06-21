@@ -238,7 +238,7 @@ For example:
 - `date` of creation
 - `intent`
 - `style` (inline style, e.g. `color:red`)
-- `styleclass` (style class, e.g. `.red`)
+- `styleclass` (style class, e.g. `bold-txt`)
 
 
 

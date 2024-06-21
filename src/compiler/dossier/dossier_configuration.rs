@@ -78,18 +78,18 @@ impl DossierConfiguration {
 
     pub fn documents_paths(&self) -> Vec<DossierConfigurationPathReference> {
 
-        let DCRFM = DOSSIER_CONFIGURATION_RAW_REFERENCE_MANAGER.lock().unwrap();
+        let dcrfm = DOSSIER_CONFIGURATION_RAW_REFERENCE_MANAGER.lock().unwrap();
 
         if self.compilation.parallelization() {
 
             return self.raw_documents_paths.par_iter().map(|raw_reference| {
-                DCRFM.parse_raw_reference(raw_reference, None)
+                dcrfm.parse_raw_reference(raw_reference, None)
             }).collect()
 
         } else {
 
             return self.raw_documents_paths.iter().map(|raw_reference| {
-                DCRFM.parse_raw_reference(raw_reference, None)
+                dcrfm.parse_raw_reference(raw_reference, None)
             }).collect()
         }
     }

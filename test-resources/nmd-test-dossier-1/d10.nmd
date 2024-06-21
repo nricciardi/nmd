@@ -2,7 +2,7 @@
 @key value
 @key
 @style color:red
-@class .class
+@class class
 
 %aphib%
 

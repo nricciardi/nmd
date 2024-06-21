@@ -2,10 +2,11 @@
 
 use std::{path::PathBuf, str::FromStr};
 
+use clap::builder::OsStr;
 use clap::{Arg, ArgAction, ArgMatches, Command};
 use crate::compiler::Compiler;
 use crate::compiler::{output_format::OutputFormatError, CompilationError};
-use crate::constants::VERSION;
+use crate::constants::{MINIMUM_WATCHER_TIME, VERSION};
 use crate::dossier_manager::{dossier_manager_configuration::DossierManagerConfiguration, DossierManager, DossierManagerError};
 use crate::generator::{generator_configuration::GeneratorConfiguration, Generator};
 use log::{LevelFilter, ParseLevelError};
@@ -94,8 +95,23 @@ impl NmdCli {
                                             Arg::new("verbose")
                                                 .short('v')
                                                 .long("verbose")
+                                                .help("set verbose mode")
                                                 .action(ArgAction::Set)
                                                 .default_value("info")
+                                        )
+                                        .arg(
+                                            Arg::new("watch")
+                                                .short('w')
+                                                .long("watch")
+                                                .help("set to compile if files change")
+                                                .action(ArgAction::SetTrue)
+                                        )
+                                        .arg(
+                                            Arg::new("watcher-time")
+                                                .short('t')
+                                                .long("watcher-time")
+                                                .help("set minimum watcher time interval")
+                                                .action(ArgAction::Set)
                                         )
 
                                 )
@@ -288,8 +304,29 @@ impl NmdCli {
                     compilation_configuration.set_output_location(compilation_configuration.input_location().clone());
                 }
 
+                let watcher_time: u64;
 
-                Ok(Compiler::compile_dossier(compilation_configuration)?)
+                if let Some(mut wt) = compile_dossier_matches.get_many::<String>("watcher-time") {
+                    
+                    if wt.len() != 1 {
+                        return Err(NmdCliError::MoreThanOneValue("watcher-time".to_string()));
+                    }
+                    
+                    
+                    watcher_time = wt.nth(0).unwrap().parse::<u64>().unwrap();
+
+                } else {
+                    watcher_time = MINIMUM_WATCHER_TIME;
+                }
+
+                let watch: bool = compile_dossier_matches.get_flag("watch");
+
+
+                if watch {
+                    return Ok(Compiler::watch_compile(compilation_configuration, watcher_time)?)
+                } else {
+                    return Ok(Compiler::compile_dossier(compilation_configuration)?)
+                }
 
             },
 
