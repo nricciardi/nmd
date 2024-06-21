@@ -231,7 +231,19 @@ impl Codex {
             ),
             (
                 StandardParagraphModifier::Image.identifier().clone(),
-                Box::new(HtmlImageRule::new())
+                Box::new(HtmlImageRule::new(StandardParagraphModifier::Image.identifier()))
+            ),
+            (
+                StandardParagraphModifier::AbridgedImage.identifier().clone(),
+                Box::new(HtmlImageRule::new(StandardParagraphModifier::AbridgedImage.identifier()))
+            ),
+            (
+                StandardParagraphModifier::ImageWithId.identifier().clone(),
+                Box::new(HtmlImageRule::new(StandardParagraphModifier::ImageWithId.identifier()))
+            ),
+            (
+                StandardParagraphModifier::AbridgedImageWithId.identifier().clone(),
+                Box::new(HtmlImageRule::new(StandardParagraphModifier::AbridgedImageWithId.identifier()))
             ),
             (
                 StandardParagraphModifier::CodeBlock.identifier().clone(),

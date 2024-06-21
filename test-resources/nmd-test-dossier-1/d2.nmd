@@ -2,7 +2,30 @@
 
 ![Wikipedia](./assets/images/wikipedia-logo.png)
 
-
 ![Infer Wikipedia image](wikipedia-logo.png)
 
 ![JPG image](jpg.jpg)
+
+
+
+![(./assets/images/wikipedia-logo.png)]
+
+![(wikipedia-logo.png)]
+
+![(jpg.jpg)]
+
+
+
+![Wikipedia]#image-1(./assets/images/wikipedia-logo.png)
+
+![Infer Wikipedia image]#image-2(wikipedia-logo.png)
+
+![JPG image]#image-3(jpg.jpg)
+
+
+
+![(./assets/images/wikipedia-logo.png)]#image-4
+
+![(wikipedia-logo.png)]#image-5
+
+![(jpg.jpg)]#image-6

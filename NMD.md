@@ -15,7 +15,7 @@
     - [Relative heading](#relative-heading)
     - [Annotations](#annotations)
   - [Inline modifier](#inline-modifier)
-    - [Escape \[NOT SUPPORTED YET\]](#escape-not-supported-yet)
+    - [Escape](#escape)
     - [Metadata \[NOT SUPPORTED YET\]](#metadata-not-supported-yet)
     - [Reference \[NOT SUPPORTED YET\]](#reference-not-supported-yet)
     - [Bold](#bold)
@@ -42,6 +42,7 @@
   - [Paragraph modifier](#paragraph-modifier)
     - [Embedded style](#embedded-style-1)
     - [Image](#image)
+      - [Abridged Image](#abridged-image)
     - [Page break](#page-break)
     - [Line break](#line-break)
     - [List](#list)
@@ -247,7 +248,7 @@ For example:
 
 TODO
 
-#### Escape [NOT SUPPORTED YET]
+#### Escape
 
 You can prevent text modification using **escape**, i.e. `\`:
 
@@ -598,6 +599,18 @@ style]]{}
 
 ```markdown
 ![Image](http://url/a.png)
+
+![Image]#id(http://url/a.png)
+```
+
+##### Abridged Image
+
+**Style class**: `figure`, `image`, `abridged-image`
+
+```markdown
+![(http://url/a.png)]
+
+![(http://url/a.png)]#id
 ```
 
 #### Page break
