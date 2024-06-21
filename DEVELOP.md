@@ -46,7 +46,7 @@
 - [x] Todo modifier with only `todo` or `TODO`
 - [x] Todo modifier with text between `TODO:` and `:TODO`
 - [x] Relative header (e.g. `#+` to indicate precedent header level + 1, `#=` to indicate same header level of precedente header)
-- [ ] Short image modifier (without alt)
+- [x] Short image modifier (without alt)
 - [x] `nmd dossier add` auto-add `.nmd`
 - [x] `nmd dossier add` accept more than one file
 - [x] Escape

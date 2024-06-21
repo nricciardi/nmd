@@ -10,9 +10,8 @@ pub enum StandardParagraphModifier {
     List,
     ListItem,
     Image,
-    ImageWithId,
     AbridgedImage,
-    AbridgedImageWithId,
+    MultiImage,
     CodeBlock,
     CommentBlock,
     ExtendedBlockQuote,
@@ -50,8 +49,7 @@ impl StandardParagraphModifier {
             Self::LineBreakStar,
             Self::LineBreakPlus,
             Self::List,
-            Self::AbridgedImageWithId,
-            Self::ImageWithId,
+            Self::MultiImage,
             Self::AbridgedImage,
             Self::Image,
             Self::CodeBlock,
@@ -66,7 +64,6 @@ impl StandardParagraphModifier {
     pub fn identifier(&self) -> ModifierIdentifier {
         match self {
             Self::Image => String::from("image"),
-            Self::ImageWithId => String::from("image-with-id"),
             Self::CommonParagraph => String::from("common-paragraph"),
             Self::CodeBlock => String::from("code-block"),
             Self::MathBlock => String::from("math-block"),
@@ -87,7 +84,7 @@ impl StandardParagraphModifier {
             Self::AbridgedTodo => String::from("abridged-todo"),
             Self::MultilineTodo => String::from("multiline-todo"),
             Self::AbridgedImage => String::from(r"abridged-image"),
-            Self::AbridgedImageWithId => String::from(r"abridged-image-with-id"),
+            Self::MultiImage => String::from("multi-image"),
 
 
             _ => {
@@ -101,8 +98,7 @@ impl StandardParagraphModifier {
     // Return the modifier pattern
     pub fn modifier_pattern(&self) -> ModifierPattern {
         match *self {
-            Self::Image => String::from(r"!\[([^\]]+)\]\(([^)]+)\)"),
-            Self::ImageWithId => format!(r"!\[([^\]]+)\]{}\(([^)]+)\)", IDENTIFIER_PATTERN),
+            Self::Image => format!(r"!\[([^\]]+)\](?:{})?\(([^)]+)\)(?:\{{(.*)\}})?", IDENTIFIER_PATTERN),
 
             Self::CommonParagraph => String::from(r#"(?s:(.*?))"#),
             Self::CodeBlock => format!(r"```(\w+){}+(.*?)\n+```", NEW_LINE_PATTERN),
@@ -124,8 +120,8 @@ impl StandardParagraphModifier {
             Self::PageBreak => String::from(r"(?m:^#{3,}$)"),
             Self::AbridgedTodo => String::from(r"(?m:^(?i:TODO):?\s(?:(.*?))$)"),
             Self::MultilineTodo => String::from(r"(?i:TODO):(?s:(.*?)):(?i:TODO)"),
-            Self::AbridgedImage => String::from(r"!\[\((.*)\)\]"),
-            Self::AbridgedImageWithId => format!(r"!\[\((.*)\)\]{}", IDENTIFIER_PATTERN),
+            Self::AbridgedImage => format!(r"!\[\((.*)\)\](?:{})?(?:\{{(.*)\}})?", IDENTIFIER_PATTERN),
+            Self::MultiImage => String::from(r"!!([\w-]+)\[\[(?s:(.*?))\]\]"),
             
             _ => {                                                                  // TODO
                 log::warn!("there is NOT a modifier pattern for {:#?}", self);
@@ -144,9 +140,7 @@ impl StandardParagraphModifier {
         match self {
 
             Self::Image => ModifiersBucket::All,
-            Self::ImageWithId => ModifiersBucket::All,
             Self::AbridgedImage => ModifiersBucket::All,
-            Self::AbridgedImageWithId => ModifiersBucket::All,
             Self::CodeBlock => ModifiersBucket::All,
             Self::MathBlock => ModifiersBucket::All,
             _ => ModifiersBucket::None

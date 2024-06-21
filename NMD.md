@@ -601,6 +601,8 @@ style]]{}
 ![Image](http://url/a.png)
 
 ![Image]#id(http://url/a.png)
+
+![Image]#id(http://url/a.png){maring:0;width:50vw}
 ```
 
 ##### Abridged Image
@@ -611,6 +613,8 @@ style]]{}
 ![(http://url/a.png)]
 
 ![(http://url/a.png)]#id
+
+![(http://url/a.png)]#id{maring:0;width:50vw}
 ```
 
 #### Page break

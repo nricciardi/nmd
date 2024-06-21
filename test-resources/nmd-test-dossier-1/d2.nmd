@@ -1,5 +1,17 @@
 # image
 
+!!space-between[
+center![(wikipedia-logo.png)]#image-7{width:70%}
+![Wikipedia](./assets/images/wikipedia-logo.png){width:45%;margin:0;}
+]
+
+
+![(wikipedia-logo.png)]#image-7{width:70%}
+
+![Wikipedia](./assets/images/wikipedia-logo.png){width:45%;margin:0;}
+
+
+
 ![Wikipedia](./assets/images/wikipedia-logo.png)
 
 ![Infer Wikipedia image](wikipedia-logo.png)

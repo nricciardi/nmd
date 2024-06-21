@@ -17,6 +17,11 @@ use crate::resource::{image_resource::ImageResource, remote_resource::RemoteReso
 
 use super::ParsingRule;
 
+
+const MULTI_IMAGE_PERMITTED_MODIFIER: &'static [StandardParagraphModifier] = &[StandardParagraphModifier::Image, StandardParagraphModifier::AbridgedImage];
+
+
+
 #[derive(Debug)]
 /// Rule to replace a NMD text based on a specific pattern matching rule
 pub struct HtmlImageRule {
@@ -46,20 +51,12 @@ impl HtmlImageRule {
             return StandardParagraphModifier::AbridgedImage.modifier_pattern_with_paragraph_separator()
         }
 
-        if image_modifier_identifier.eq(&StandardParagraphModifier::ImageWithId.identifier()) {
-            return StandardParagraphModifier::ImageWithId.modifier_pattern_with_paragraph_separator()
-        }
-
-        if image_modifier_identifier.eq(&StandardParagraphModifier::AbridgedImageWithId.identifier()) {
-            return StandardParagraphModifier::AbridgedImageWithId.modifier_pattern_with_paragraph_separator()
-        }
-
         log::error!("'{}' is unsupported image modifier identifier", image_modifier_identifier);
 
         panic!("unsupported image modifier identifier");
     }
 
-    fn create_img_figure(src: &str, label: Option<&str>, id: Option<Reference>, img_classes: Vec<&str>) -> String {
+    fn create_figure_img(src: &str, label: Option<&str>, id: Option<Reference>, img_classes: Vec<&str>, style: Option<String>) -> String {
 
         let id_attr: String;
 
@@ -80,13 +77,21 @@ impl HtmlImageRule {
             caption = String::new();
         }
 
+        let style_attr: String;
+
+        if let Some(style) = style {
+            style_attr = format!(r#"style="{}""#, style);
+        } else {
+            style_attr = String::new();
+        }
+
         format!(r#"<figure class="figure" {}>
-                    <img src="{}" {} class="{}" />
+                    <img src="{}" {} class="{}" {} />
                     {}
-                </figure>"#, id_attr, src, alt, caption, img_classes.join(" "))
+                </figure>"#, id_attr, src, alt, img_classes.join(" "), style_attr, caption)
     }
 
-    fn build_img(src: &str, label: Option<&str>, id: Option<Reference>, img_classes: Vec<&str>, parsing_configuration: &RwLockReadGuard<ParsingConfiguration>) -> String {
+    fn build_img(src: &str, label: Option<&str>, id: Option<Reference>, img_classes: Vec<&str>, figure_style: Option<String>, parsing_configuration: &RwLockReadGuard<ParsingConfiguration>) -> String {
 
         if RemoteResource::is_valid_remote_resource(src) {
 
@@ -98,7 +103,7 @@ impl HtmlImageRule {
                 
                 let src = Url::parse(src).unwrap();
 
-                return Self::create_img_figure(src.as_str(), label, id, img_classes)
+                return Self::create_figure_img(src.as_str(), label, id, img_classes, figure_style)
             }
 
         } else {
@@ -129,7 +134,7 @@ impl HtmlImageRule {
 
                 let base64_image = image.to_base64();
 
-                return Self::create_img_figure(format!("data:image/png;base64,{}", base64_image.unwrap()).as_str(), label, id, img_classes);
+                return Self::create_figure_img(format!("data:image/png;base64,{}", base64_image.unwrap()).as_str(), label, id, img_classes, figure_style);
 
             } else if parsing_configuration.strict_image_src_check() {
 
@@ -138,7 +143,7 @@ impl HtmlImageRule {
                 panic!("invalid src")
 
             } else {
-                return Self::create_img_figure(src, label, id, img_classes)       // create image tag of invalid image instead of panic
+                return Self::create_figure_img(src, label, id, img_classes, figure_style)       // create image tag of invalid image instead of panic
             }
 
         }
@@ -149,72 +154,69 @@ impl HtmlImageRule {
         let parsed_content = regex.replace_all(content, |captures: &Captures| {
             
             if let Some(label) = captures.get(1) {
-                if let Some(src) = captures.get(2) {
-
-                    let id = Reference::of(label.as_str(), Some(document_name)).unwrap();
-
-                    return Self::build_img(src.as_str(), Some(label.as_str()), Some(id), vec!["image"], parsing_configuration);
-                }
-            }
-
-            captures.get(0).unwrap().as_str().to_string()
-
-        }).to_string();
-        
-        Ok(ParsingOutcome::new(parsed_content))
-    }
-
-    fn parse_abridged_image(regex: Regex, content: &str, parsing_configuration: &RwLockReadGuard<ParsingConfiguration>) -> Result<ParsingOutcome, ParsingError> {
-        let parsed_content = regex.replace_all(content, |captures: &Captures| {
-            
-            if let Some(src) = captures.get(1) {
-
-                return Self::build_img(src.as_str(), None, None, vec!["image", "abridged-image"], parsing_configuration);
-            }
-
-            captures.get(0).unwrap().as_str().to_string()
-
-        }).to_string();
-        
-        Ok(ParsingOutcome::new(parsed_content))
-    }
-
-    fn parse_image_with_id(regex: Regex, content: &str, document_name: &String, parsing_configuration: &RwLockReadGuard<ParsingConfiguration>) -> Result<ParsingOutcome, ParsingError> {
-        let parsed_content = regex.replace_all(content, |captures: &Captures| {
-            
-            if let Some(label) = captures.get(1) {
                 if let Some(src) = captures.get(3) {
+
+                    let style: Option<String>;
+
+                    if let Some(_style) = captures.get(4) {
+                        style = Some(String::from(_style.as_str()));
+                    } else {
+                        style = None;
+                    }
+
                     if let Some(id) = captures.get(2) {
                         let id = Reference::of_internal_without_sharp(id.as_str(), Some(document_name)).unwrap();
 
-                        return Self::build_img(src.as_str(), Some(label.as_str()), Some(id), vec!["image"], parsing_configuration);
+                        return Self::build_img(src.as_str(), Some(label.as_str()), Some(id), vec!["image"], style, parsing_configuration);
+
+                    } else {
+                        let id = Reference::of(label.as_str(), Some(document_name)).unwrap();
+
+                        return Self::build_img(src.as_str(), Some(label.as_str()), Some(id), vec!["image"], style, parsing_configuration);
+ 
                     }
                 }
             }
 
-            captures.get(0).unwrap().as_str().to_string()
+            unreachable!()
+            
+        }).to_string();
+        
+        Ok(ParsingOutcome::new(parsed_content))
+    }
+
+    fn parse_abridged_image(regex: Regex, content: &str, document_name: &String, parsing_configuration: &RwLockReadGuard<ParsingConfiguration>) -> Result<ParsingOutcome, ParsingError> {
+        let parsed_content = regex.replace_all(content, |captures: &Captures| {
+            
+            let src = captures.get(1).unwrap();
+
+            let id: Option<Reference>;
+
+            if let Some(_id) = captures.get(2) {
+                id = Some(Reference::of_internal_without_sharp(_id.as_str(), Some(document_name)).unwrap());
+            } else {
+                id = None;
+            }
+
+            let style: Option<String>;
+
+            if let Some(_style) = captures.get(3) {
+                style = Some(String::from(_style.as_str()));
+            } else {
+                style = None;
+            }
+
+            return Self::build_img(src.as_str(), None, id, vec!["image", "abridged-image"], style, parsing_configuration);
 
         }).to_string();
         
         Ok(ParsingOutcome::new(parsed_content))
     }
 
-    fn parse_abridged_image_with_id(regex: Regex, content: &str, document_name: &String, parsing_configuration: &RwLockReadGuard<ParsingConfiguration>) -> Result<ParsingOutcome, ParsingError> {
-        let parsed_content = regex.replace_all(content, |captures: &Captures| {
-            
-            if let Some(src) = captures.get(1) {
-                if let Some(id) = captures.get(2) {
-                    let id = Reference::of_internal_without_sharp(id.as_str(), Some(document_name)).unwrap();
+    fn parse_multi_image(regex: Regex, content: &str, document_name: &String, parsing_configuration: &RwLockReadGuard<ParsingConfiguration>) -> Result<ParsingOutcome, ParsingError> {
 
-                    return Self::build_img(src.as_str(), None, Some(id), vec!["image", "abridged-image"], parsing_configuration);
-                }
-            }
 
-            captures.get(0).unwrap().as_str().to_string()
-
-        }).to_string();
-        
-        Ok(ParsingOutcome::new(parsed_content))
+        todo!()
     }
 }
 
@@ -240,15 +242,7 @@ impl ParsingRule for HtmlImageRule {
         }
 
         if self.image_modifier_identifier.eq(&StandardParagraphModifier::AbridgedImage.identifier()) {
-            return Self::parse_abridged_image(regex, content, &parsing_configuration);        
-        }
-
-        if self.image_modifier_identifier.eq(&StandardParagraphModifier::ImageWithId.identifier()) {
-            return Self::parse_image_with_id(regex, content, document_name, &parsing_configuration);
-        }
-
-        if self.image_modifier_identifier.eq(&StandardParagraphModifier::AbridgedImageWithId.identifier()) {
-            return Self::parse_abridged_image_with_id(regex, content, document_name, &parsing_configuration);        
+            return Self::parse_abridged_image(regex, content, document_name, &parsing_configuration);        
         }
 
         log::error!("'{}' is unsupported image modifier identifier", self.image_modifier_identifier);
