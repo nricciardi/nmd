@@ -266,7 +266,7 @@ You can prevent text modification using **escape**, i.e. `\`:
 The syntax is:
 
 ```
-%metadata%
+TBD
 ```
 
 #### Reference [NOT SUPPORTED YET]
@@ -454,10 +454,11 @@ $inline math$
 **Style class**: `greek`
 
 ```
-\a\
+%a%
 
-\b\
+%b%
 
+%athb%
 ...
 ```
 
