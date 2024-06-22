@@ -1,21 +1,10 @@
 pub mod codex_configuration;
 pub mod modifier;
-pub mod reference;
 
 use std::collections::HashMap;
-use std::str::FromStr;
-use std::sync::Arc;
-
-use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
-use rayon::slice::ParallelSliceMut;
-use regex::{Captures, Regex};
-use self::modifier::standard_chapter_modifier::StandardChapterModifier;
-use self::modifier::modifiers_bucket::ModifiersBucket;
-use self::modifier::standard_paragraph_modifier::{self, StandardParagraphModifier};
+use self::modifier::standard_paragraph_modifier::StandardParagraphModifier;
 use self::modifier::standard_text_modifier::StandardTextModifier;
-use self::modifier::{Modifier, ModifierIdentifier};
-use crate::compiler::dossier::document::chapter::heading::{Heading, HeadingLevel};
-use crate::compiler::dossier::{Document, DocumentError};
+use self::modifier::ModifierIdentifier;
 use crate::compiler::output_format::OutputFormat;
 use self::codex_configuration::CodexConfiguration;
 
@@ -23,6 +12,7 @@ use super::parsing::parsing_rule::html_extended_block_quote_rule::HtmlExtendedBl
 use super::parsing::parsing_rule::html_greek_letter_rule::HtmlGreekLettersRule;
 use super::parsing::parsing_rule::html_image_rule::HtmlImageRule;
 use super::parsing::parsing_rule::html_list_rule::HtmlListRule;
+use super::parsing::parsing_rule::reference_rule::ReferenceRule;
 use super::parsing::parsing_rule::replacement_rule::ReplacementRule;
 use super::parsing::parsing_rule::ParsingRule;
 
@@ -186,6 +176,10 @@ impl Codex {
                 StandardTextModifier::Escape.identifier().clone(),
                 Box::new(ReplacementRule::new(StandardTextModifier::Escape.modifier_pattern().clone(), String::from(r"${1}")))
             ),
+            (
+                StandardTextModifier::Reference.identifier().clone(),
+                Box::new(ReferenceRule::new())
+            ),
         ]);
 
         let paragraph_rules: HashMap<ModifierIdentifier, Box<dyn ParsingRule>> = HashMap::from([
@@ -281,8 +275,6 @@ impl Codex {
 mod test {
 
     use std::sync::{Arc, RwLock};
-
-    use test::reference::Reference;
 
     use crate::compiler::{loader::Loader, parsing::parsing_configuration::ParsingConfiguration};
 

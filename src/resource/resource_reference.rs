@@ -11,7 +11,7 @@ const SPACE_REPLACER: char = '-';
 
 
 #[derive(Error, Debug)]
-pub enum ReferenceError {
+pub enum ResourceReferenceError {
     #[error("invalid URL reference")]
     InvalidUrlReference,
 
@@ -23,7 +23,7 @@ pub enum ReferenceError {
 }
 
 #[derive(Debug, Clone)]
-enum ReferenceType {
+pub enum ResourceReferenceType {
     Url,
     Asset,
     Internal
@@ -40,13 +40,13 @@ enum ReferenceType {
 /// 
 /// An external resource is interpreted "as it is"
 #[derive(Debug, Clone)]
-pub struct Reference {
+pub struct ResourceReference {
     value: String,
-    ref_type: ReferenceType
+    ref_type: ResourceReferenceType
 }
 
-impl Reference {
-    pub fn new(value: &str, ref_type: ReferenceType) -> Self {
+impl ResourceReference {
+    pub fn new(value: &str, ref_type: ResourceReferenceType) -> Self {
         Self {
             value: String::from(value),
             ref_type
@@ -61,21 +61,21 @@ impl Reference {
         self.value = value
     }
 
-    pub fn of_url(raw: &str) -> Result<Self, ReferenceError> {
+    pub fn of_url(raw: &str) -> Result<Self, ResourceReferenceError> {
 
         if !RemoteResource::is_valid_remote_resource(raw) {
-            return Err(ReferenceError::InvalidUrlReference)
+            return Err(ResourceReferenceError::InvalidUrlReference)
         }
 
-        Ok(Self::new(raw, ReferenceType::Url))
+        Ok(Self::new(raw, ResourceReferenceType::Url))
     }
 
-    pub fn of_asset(raw: &str) -> Result<Self, ReferenceError> {
+    pub fn of_asset(raw: &str) -> Result<Self, ResourceReferenceError> {
         if !file_utility::is_file_path(raw) {
-            return Err(ReferenceError::InvalidAssetReference)
+            return Err(ResourceReferenceError::InvalidAssetReference)
         }
 
-        Ok(Self::new(raw, ReferenceType::Asset))
+        Ok(Self::new(raw, ResourceReferenceType::Asset))
     }
 
     /// Reference from raw internal string.
@@ -83,13 +83,13 @@ impl Reference {
     /// Raw string must be in the format: <document-name>#id 
     /// 
     /// <document-name> can be omitted. 
-    pub fn of_internal(raw: &str, document_name_if_missed: Option<&str>) -> Result<Self, ReferenceError> {
+    pub fn of_internal(raw: &str, document_name_if_missed: Option<&str>) -> Result<Self, ResourceReferenceError> {
         let regex = Regex::new(r"(.*)?#(.*)").unwrap();
 
         let caps = regex.captures(raw);
 
         if caps.is_none() {
-            return Err(ReferenceError::InvalidInternalReference)
+            return Err(ResourceReferenceError::InvalidInternalReference)
         }
 
         let caps = caps.unwrap();
@@ -98,7 +98,7 @@ impl Reference {
         let value = caps.get(2);
 
         if value.is_none() {
-            return Err(ReferenceError::InvalidInternalReference)
+            return Err(ResourceReferenceError::InvalidInternalReference)
         }
         let value = value.unwrap().as_str();
 
@@ -108,15 +108,15 @@ impl Reference {
 
             if !document_name.is_empty() {
 
-                return Ok(Self::new(&format!("{}{}{}", document_name, VALUE_SEPARATOR, value), ReferenceType::Internal))
+                return Ok(Self::new(&format!("{}{}{}", document_name, VALUE_SEPARATOR, value), ResourceReferenceType::Internal))
             }
         }
 
-        Ok(Self::new(&format!("{}{}{}", document_name_if_missed.unwrap(), VALUE_SEPARATOR, value), ReferenceType::Internal))
+        Ok(Self::new(&format!("{}{}{}", document_name_if_missed.unwrap(), VALUE_SEPARATOR, value), ResourceReferenceType::Internal))
         
     }
 
-    pub fn of_internal_without_sharp(raw: &str, document_name_if_missed: Option<&str>) -> Result<Self, ReferenceError> {
+    pub fn of_internal_without_sharp(raw: &str, document_name_if_missed: Option<&str>) -> Result<Self, ResourceReferenceError> {
 
         let raw_with_sharp = format!("#{}", raw);
 
@@ -130,7 +130,7 @@ impl Reference {
     /// - url
     /// - url#id
     /// - asset 
-    pub fn of(raw: &str, document_name_if_missed: Option<&str>) -> Result<Self, ReferenceError> {
+    pub fn of(raw: &str, document_name_if_missed: Option<&str>) -> Result<Self, ResourceReferenceError> {
 
         if RemoteResource::is_valid_remote_resource(raw) {
             return Self::of_url(raw)
@@ -147,16 +147,16 @@ impl Reference {
     pub fn build(&self) -> String {
 
         match self.ref_type {
-            ReferenceType::Url | ReferenceType::Asset => String::from(&self.value),
-            ReferenceType::Internal => format!("#{}", Self::parse_str(&self.value))
+            ResourceReferenceType::Url | ResourceReferenceType::Asset => String::from(&self.value),
+            ResourceReferenceType::Internal => format!("#{}", Self::parse_str(&self.value))
         }
     }
 
     pub fn build_without_internal_sharp(&self) -> String {
 
         match self.ref_type {
-            ReferenceType::Url | ReferenceType::Asset => String::from(&self.value),
-            ReferenceType::Internal => format!("{}", Self::parse_str(&self.value))
+            ResourceReferenceType::Url | ResourceReferenceType::Asset => String::from(&self.value),
+            ResourceReferenceType::Internal => format!("{}", Self::parse_str(&self.value))
         }
 
     }

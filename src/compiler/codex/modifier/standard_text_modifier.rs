@@ -32,7 +32,8 @@ pub enum StandardTextModifier {
     Checkbox,
     CheckboxChecked,
     GreekLetter,
-    Escape
+    Escape,
+    Reference,
 }
 
 impl StandardTextModifier {
@@ -69,6 +70,7 @@ impl StandardTextModifier {
             Self::Checkbox,
             Self::CheckboxChecked,
             Self::Emoji,
+            Self::Reference,
         ]
     }
 
@@ -102,6 +104,7 @@ impl StandardTextModifier {
             Self::InlineMath => String::from("inline-math"),
             Self::GreekLetter => String::from("greek-letter"),
             Self::Escape => String::from("escape"),
+            Self::Reference => String::from("reference"),
 
             _ => {
 
@@ -140,7 +143,8 @@ impl StandardTextModifier {
             Self::InlineCode => String::from(r"`(.*?)`"),
             Self::InlineMath => format!(r#"\$([^${}]+)\$"#, NEW_LINE_PATTERN),
             Self::GreekLetter => String::from(r"%(.*?)%"),        // if it changes, fix greek letters rules
-            Self::Escape => String::from(r"\\([\*\+\\~%\^\$@=\[\]!<>\{\}\(\)#-_\|\?]+)"),
+            Self::Escape => String::from(r"\\([\*\+\\~%\^\$@=\[\]!<>\{\}\(\)#-_\|\?&]+)"),
+            Self::Reference => String::from(r"&([\w-]+)&"),
             
             _ => {
                 log::warn!("there is NOT a modifier pattern for {:#?}", self);
@@ -157,6 +161,7 @@ impl StandardTextModifier {
             Self::Emoji => ModifiersBucket::All,
             Self::GreekLetter => ModifiersBucket::All,
             Self::Escape => ModifiersBucket::All,
+            Self::Reference => ModifiersBucket::All,
             _ => ModifiersBucket::None
         }
     }

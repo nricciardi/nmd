@@ -1,23 +1,24 @@
 mod dossier_configuration_style;
-mod dossier_configuration_metadata;
 mod dossier_configuration_compilation;
 mod dossier_configuration_path_reference;
 mod dossier_configuration_path_reference_manager;
 
-use std::path::{PathBuf, MAIN_SEPARATOR_STR};
+use std::collections::HashMap;
+use std::path::PathBuf;
 
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use serde::{Deserialize, Serialize};
 use log;
 
 use crate::constants::{DOSSIER_CONFIGURATION_JSON_FILE_NAME, DOSSIER_CONFIGURATION_YAML_FILE_NAME};
+use crate::resource::text_reference::TextReferenceMap;
 use crate::resource::Resource;
 use crate::resource::{disk_resource::DiskResource, ResourceError};
 use crate::utility::file_utility;
 
 use self::dossier_configuration_path_reference::{DossierConfigurationPathReference, DossierConfigurationRawPathReference};
-use self::dossier_configuration_path_reference_manager::{DossierConfigurationRawReferenceManager, DOSSIER_CONFIGURATION_RAW_REFERENCE_MANAGER};
-use self::{dossier_configuration_compilation::DossierConfigurationCompilation, dossier_configuration_metadata::DossierConfigurationMetadata, dossier_configuration_style::DossierConfigurationStyle};
+use self::dossier_configuration_path_reference_manager::DOSSIER_CONFIGURATION_RAW_REFERENCE_MANAGER;
+use self::{dossier_configuration_compilation::DossierConfigurationCompilation, dossier_configuration_style::DossierConfigurationStyle};
 
 
 
@@ -32,8 +33,8 @@ pub struct DossierConfiguration {
     #[serde(default = "default_style")]
     style: DossierConfigurationStyle,
 
-    #[serde(default = "default_metadata")]
-    metadata: DossierConfigurationMetadata,
+    #[serde(default = "default_references")]
+    references: TextReferenceMap,
 
     #[serde(default = "default_compilation")]
     compilation: DossierConfigurationCompilation,
@@ -47,8 +48,8 @@ fn default_style() -> DossierConfigurationStyle {
     DossierConfigurationStyle::default()
 }
 
-fn default_metadata() -> DossierConfigurationMetadata {
-    DossierConfigurationMetadata::default()
+fn default_references() -> TextReferenceMap {
+    HashMap::new()
 }
 
 fn default_compilation() -> DossierConfigurationCompilation {
@@ -59,7 +60,7 @@ fn default_compilation() -> DossierConfigurationCompilation {
 #[allow(dead_code)]
 impl DossierConfiguration {
 
-    pub fn new(root_path: PathBuf, name: String, raw_documents_paths: Vec<String>, style: DossierConfigurationStyle, metadata: DossierConfigurationMetadata, compilation: DossierConfigurationCompilation) -> Self {
+    pub fn new(root_path: PathBuf, name: String, raw_documents_paths: Vec<String>, style: DossierConfigurationStyle, reference: TextReferenceMap, compilation: DossierConfigurationCompilation) -> Self {
         
         DOSSIER_CONFIGURATION_RAW_REFERENCE_MANAGER.lock().unwrap().set_root_path(root_path);
         
@@ -67,7 +68,7 @@ impl DossierConfiguration {
             name,
             raw_documents_paths,
             style,
-            metadata,
+            references: reference,
             compilation
         }
     }
@@ -114,6 +115,10 @@ impl DossierConfiguration {
         &self.compilation
     }
 
+    pub fn references(&self) -> &TextReferenceMap {
+        &self.references
+    }
+
     pub fn set_root_path(&mut self, root_path: PathBuf) {
         DOSSIER_CONFIGURATION_RAW_REFERENCE_MANAGER.lock().unwrap().set_root_path(root_path);
     }
@@ -138,7 +143,7 @@ impl Default for DossierConfiguration {
             name: String::from("New Dossier"),
             raw_documents_paths: vec![],          // TODO: all .nmd file in running directory
             style: DossierConfigurationStyle::default(),
-            metadata: DossierConfigurationMetadata::default(),
+            references: HashMap::new(),
             compilation: DossierConfigurationCompilation::default()
         }
     }

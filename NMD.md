@@ -17,7 +17,7 @@
   - [Inline modifier](#inline-modifier)
     - [Escape](#escape)
     - [Metadata \[NOT SUPPORTED YET\]](#metadata-not-supported-yet)
-    - [Reference \[NOT SUPPORTED YET\]](#reference-not-supported-yet)
+    - [Reference](#reference)
     - [Bold](#bold)
     - [Italic](#italic)
     - [Strikethrough](#strikethrough)
@@ -269,11 +269,11 @@ The syntax is:
 TBD
 ```
 
-#### Reference [NOT SUPPORTED YET]
+#### Reference
 
 **Reference** is a... reference! You can use a fictitious name as a classic variable in the programming languages.
 
-References must be set in `nmd.json`.
+References must be set in dossier configuration (`nmd.json` or `nmd.yml`).
 
 The syntax is below.
 

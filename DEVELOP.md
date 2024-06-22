@@ -54,7 +54,7 @@
 - [x] `nmd dossier add` accept more than one file
 - [x] Escape
 - [x] Metadata
-- [ ] Reference
+- [x] Reference
 
 ### Known issues
 

@@ -7,11 +7,11 @@ use rayon::iter::ParallelBridge;
 use regex::{Captures, Regex, Replacer};
 
 use crate::compiler::codex::modifier::modifiers_bucket::ModifiersBucket;
-use crate::compiler::codex::reference::Reference;
 use crate::compiler::parsing::parsing_configuration::ParsingConfiguration;
 use crate::compiler::parsing::parsing_error::ParsingError;
 use crate::compiler::parsing::parsing_metadata::ParsingMetadata;
 use crate::compiler::parsing::parsing_outcome::ParsingOutcome;
+use crate::resource::resource_reference::ResourceReference;
 
 use super::ParsingRule;
 
@@ -84,7 +84,7 @@ impl ParsingRule for ReplacementRule<String> {
 
                 let reference = captures.get(reference_at.clone()).unwrap().as_str();
 
-                let reference = Reference::of(reference, Some(parsing_configuration.read().unwrap().metadata().document_name().as_ref().unwrap()))?;
+                let reference = ResourceReference::of(reference, Some(parsing_configuration.read().unwrap().metadata().document_name().as_ref().unwrap()))?;
 
 
                 let reference = reference.build();

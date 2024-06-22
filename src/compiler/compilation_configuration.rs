@@ -1,4 +1,6 @@
-use std::{clone, path::PathBuf};
+use std::{clone, collections::HashMap, path::PathBuf};
+
+use crate::resource::text_reference::TextReferenceMap;
 
 use super::{codex::{codex_configuration::CodexConfiguration, Codex}, dossier::dossier_configuration::DossierConfiguration, output_format::OutputFormat, parsing::parsing_configuration::ParsingConfiguration};
 
@@ -16,7 +18,8 @@ pub struct CompilationConfiguration {
     strict_image_src_check: Option<bool>,
     // excluded_modifiers: Modifiers,       // TODO
     parallelization: Option<bool>,
-    use_remote_addons: Option<bool>
+    use_remote_addons: Option<bool>,
+    references: Option<TextReferenceMap>,
 }
 
 impl CompilationConfiguration {
@@ -82,6 +85,10 @@ impl CompilationConfiguration {
         self.use_remote_addons
     }
 
+    pub fn references(&self) -> &Option<TextReferenceMap> {
+        &self.references
+    }
+
     pub fn strict_image_src_check(&self) -> Option<bool> {
         self.strict_image_src_check
     }
@@ -108,6 +115,10 @@ impl CompilationConfiguration {
     pub fn set_use_remote_addons(&mut self, value: bool) {
         self.use_remote_addons = Some(value);
     }
+
+    pub fn set_references(&mut self, references: TextReferenceMap) {
+        self.references = Some(references)
+    } 
 }
 
 impl CompilationConfiguration {
@@ -136,6 +147,10 @@ impl CompilationConfiguration {
         if self.strict_image_src_check().is_none() {
             self.set_strict_image_src_check(dossier_configuration.compilation().strict_image_src_check().clone());
         }
+
+        if self.references().is_none() {
+            self.set_references(dossier_configuration.references().clone())
+        }
     }
 }
 
@@ -150,7 +165,8 @@ impl Default for CompilationConfiguration {
             compress_embed_image: None,
             strict_image_src_check: None,
             parallelization: None,
-            use_remote_addons: None
+            use_remote_addons: None,
+            references: None
         }
     }
 }

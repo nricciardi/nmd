@@ -9,11 +9,11 @@ use url::Url;
 
 use crate::compiler::codex::modifier::standard_paragraph_modifier::StandardParagraphModifier;
 use crate::compiler::codex::modifier::ModifierIdentifier;
-use crate::compiler::codex::reference::Reference;
 use crate::compiler::dossier;
 use crate::compiler::parsing::parsing_configuration::ParsingConfiguration;
 use crate::compiler::parsing::parsing_error::ParsingError;
 use crate::compiler::parsing::parsing_outcome::ParsingOutcome;
+use crate::resource::resource_reference::ResourceReference;
 use crate::resource::{image_resource::ImageResource, remote_resource::RemoteResource};
 
 use super::ParsingRule;
@@ -67,7 +67,7 @@ impl HtmlImageRule {
         panic!("unsupported image modifier identifier");
     }
 
-    fn create_figure_img(src: &str, label: Option<&str>, id: Option<Reference>, img_classes: Vec<&str>, style: Option<String>) -> String {
+    fn create_figure_img(src: &str, label: Option<&str>, id: Option<ResourceReference>, img_classes: Vec<&str>, style: Option<String>) -> String {
 
         let id_attr: String;
 
@@ -102,7 +102,7 @@ impl HtmlImageRule {
                 </figure>"#, id_attr, src, alt, img_classes.join(" "), style_attr, caption)
     }
 
-    fn build_img(src: &str, label: Option<&str>, id: Option<Reference>, img_classes: Vec<&str>, figure_style: Option<String>, parsing_configuration: &RwLockReadGuard<ParsingConfiguration>) -> String {
+    fn build_img(src: &str, label: Option<&str>, id: Option<ResourceReference>, img_classes: Vec<&str>, figure_style: Option<String>, parsing_configuration: &RwLockReadGuard<ParsingConfiguration>) -> String {
 
         if RemoteResource::is_valid_remote_resource(src) {
 
@@ -184,12 +184,12 @@ impl HtmlImageRule {
                     }
 
                     if let Some(id) = captures.get(2) {
-                        let id = Reference::of_internal_without_sharp(id.as_str(), Some(document_name)).unwrap();
+                        let id = ResourceReference::of_internal_without_sharp(id.as_str(), Some(document_name)).unwrap();
 
                         return Self::build_img(src.as_str(), Some(label.as_str()), Some(id), vec!["image"], style, parsing_configuration);
 
                     } else {
-                        let id = Reference::of(label.as_str(), Some(document_name)).unwrap();
+                        let id = ResourceReference::of(label.as_str(), Some(document_name)).unwrap();
 
                         return Self::build_img(src.as_str(), Some(label.as_str()), Some(id), vec!["image"], style, parsing_configuration);
  
@@ -221,10 +221,10 @@ impl HtmlImageRule {
             
             let src = captures.get(1).unwrap();
 
-            let id: Option<Reference>;
+            let id: Option<ResourceReference>;
 
             if let Some(_id) = captures.get(2) {
-                id = Some(Reference::of_internal_without_sharp(_id.as_str(), Some(document_name)).unwrap());
+                id = Some(ResourceReference::of_internal_without_sharp(_id.as_str(), Some(document_name)).unwrap());
             } else {
                 id = None;
             }

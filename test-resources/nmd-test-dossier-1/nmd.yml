@@ -1,6 +1,6 @@
 name: new-dossier
 documents:
-  - "./d2.nmd"
+  - "./d10.nmd"
 style:
   theme: Light
   styles:
@@ -54,11 +54,12 @@ style:
     to: ':checkbox-checked:'
     indentation_level: 0
     strict_indentation: false
-metadata: {}
+references:
+  ref1: "my ref1"
 compilation:
   embed_local_image: true
   embed_remote_image: true
-  compress_embed_image: true
+  compress_embed_image: false
   strict_image_src_check: true
   parallelization: false
   use_remote_addons: false
