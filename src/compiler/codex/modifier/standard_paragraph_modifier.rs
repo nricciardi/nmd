@@ -121,7 +121,7 @@ impl StandardParagraphModifier {
             Self::AbridgedTodo => String::from(r"(?m:^(?i:TODO):?\s(?:(.*?))$)"),
             Self::MultilineTodo => String::from(r"(?i:TODO):(?s:(.*?)):(?i:TODO)"),
             Self::AbridgedImage => format!(r"!\[\((.*)\)\](?:{})?(?:\{{(.*)\}})?", IDENTIFIER_PATTERN),
-            Self::MultiImage => String::from(r"!!([\w-]+)\[\[(?s:(.*?))\]\]"),
+            Self::MultiImage => String::from(r"!!(?::([\w-]+):)?\[\[(?s:(.*?))\]\]"),
             
             _ => {                                                                  // TODO
                 log::warn!("there is NOT a modifier pattern for {:#?}", self);
@@ -141,6 +141,7 @@ impl StandardParagraphModifier {
 
             Self::Image => ModifiersBucket::All,
             Self::AbridgedImage => ModifiersBucket::All,
+            Self::MultiImage => ModifiersBucket::All,
             Self::CodeBlock => ModifiersBucket::All,
             Self::MathBlock => ModifiersBucket::All,
             _ => ModifiersBucket::None

@@ -29,8 +29,8 @@
 - [x] Quote
 - [x] Image caption
 - [x] Image URL fix meta-characters
-- [ ] Multiple image in a single row
-- [ ] Set image dimensions
+- [x] Multiple image in a single row
+- [x] Set image dimensions
 - [ ] Image compression
 - [x] Image in dossier: default path to `assets/images`
 - [x] Focus block

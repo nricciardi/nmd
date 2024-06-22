@@ -2,6 +2,7 @@ use std::borrow::BorrowMut;
 use std::sync::{RwLock, RwLockReadGuard};
 use std::{path::PathBuf, sync::Arc};
 
+use build_html::{Container, Html, HtmlContainer};
 use log;
 use regex::{Regex, Captures};
 use url::Url;
@@ -19,7 +20,9 @@ use super::ParsingRule;
 
 
 const MULTI_IMAGE_PERMITTED_MODIFIER: &'static [StandardParagraphModifier] = &[StandardParagraphModifier::Image, StandardParagraphModifier::AbridgedImage];
-
+const DEFAULT_JUSTIFY_CONTENT: &str = "normal";
+const DEFAULT_ALIGN_SELF: &str = "center";
+const ALIGN_ITEM_PATTERN: &str = r":([\w-]*):";
 
 
 #[derive(Debug)]
@@ -41,6 +44,10 @@ impl HtmlImageRule {
         }
     }
 
+    fn set_searching_pattern(&mut self, searching_pattern: String) {
+        self.searching_pattern = searching_pattern
+    }
+
     fn get_searching_pattern(image_modifier_identifier: &ModifierIdentifier) -> String {
 
         if image_modifier_identifier.eq(&StandardParagraphModifier::Image.identifier()) {
@@ -49,6 +56,10 @@ impl HtmlImageRule {
 
         if image_modifier_identifier.eq(&StandardParagraphModifier::AbridgedImage.identifier()) {
             return StandardParagraphModifier::AbridgedImage.modifier_pattern_with_paragraph_separator()
+        }
+
+        if image_modifier_identifier.eq(&StandardParagraphModifier::MultiImage.identifier()) {
+            return StandardParagraphModifier::MultiImage.modifier_pattern_with_paragraph_separator()
         }
 
         log::error!("'{}' is unsupported image modifier identifier", image_modifier_identifier);
@@ -150,7 +161,19 @@ impl HtmlImageRule {
 
     }
 
-    fn parse_image(regex: Regex, content: &str, document_name: &String, parsing_configuration: &RwLockReadGuard<ParsingConfiguration>) -> Result<ParsingOutcome, ParsingError> {
+    fn parse_image(searching_pattern: &str, content: &str, parsing_configuration: &RwLockReadGuard<ParsingConfiguration>) -> Result<ParsingOutcome, ParsingError> {
+
+        let document_name = parsing_configuration.metadata().document_name().as_ref().unwrap();
+
+        let regex = match Regex::new(searching_pattern) {
+            Ok(r) => r,
+            Err(_) => return Err(ParsingError::InvalidPattern(searching_pattern.to_string()))  
+        };
+
+        if !regex.is_match(content) {
+            return Err(ParsingError::InvalidSource(format!("'{}' do not match using: {}", content, searching_pattern)))
+        }
+
         let parsed_content = regex.replace_all(content, |captures: &Captures| {
             
             if let Some(label) = captures.get(1) {
@@ -185,7 +208,19 @@ impl HtmlImageRule {
         Ok(ParsingOutcome::new(parsed_content))
     }
 
-    fn parse_abridged_image(regex: Regex, content: &str, document_name: &String, parsing_configuration: &RwLockReadGuard<ParsingConfiguration>) -> Result<ParsingOutcome, ParsingError> {
+    fn parse_abridged_image(searching_pattern: &str, content: &str, parsing_configuration: &RwLockReadGuard<ParsingConfiguration>) -> Result<ParsingOutcome, ParsingError> {
+
+        let document_name = parsing_configuration.metadata().document_name().as_ref().unwrap();
+
+        let regex = match Regex::new(searching_pattern) {
+            Ok(r) => r,
+            Err(_) => return Err(ParsingError::InvalidPattern(searching_pattern.to_string()))  
+        };
+
+        if !regex.is_match(content) {
+            return Err(ParsingError::InvalidSource(format!("'{}' do not match using: {}", content, searching_pattern)))
+        }
+
         let parsed_content = regex.replace_all(content, |captures: &Captures| {
             
             let src = captures.get(1).unwrap();
@@ -213,10 +248,95 @@ impl HtmlImageRule {
         Ok(ParsingOutcome::new(parsed_content))
     }
 
-    fn parse_multi_image(regex: Regex, content: &str, document_name: &String, parsing_configuration: &RwLockReadGuard<ParsingConfiguration>) -> Result<ParsingOutcome, ParsingError> {
+    fn parse_multi_image(searching_pattern: &str, content: &str, parsing_configuration: &RwLockReadGuard<ParsingConfiguration>) -> Result<ParsingOutcome, ParsingError> {
 
+        let document_name = parsing_configuration.metadata().document_name().as_ref().unwrap();
 
-        todo!()
+        let regex = match Regex::new(searching_pattern) {
+            Ok(r) => r,
+            Err(_) => return Err(ParsingError::InvalidPattern(searching_pattern.to_string()))  
+        };
+
+        let parsed_content = regex.replace_all(content, |captures: &Captures| {
+            
+            let justify_content: Option<String>;
+
+            if let Some(jc) = captures.get(1) {
+                justify_content = Some(String::from(jc.as_str()));
+            } else {
+                justify_content = None;
+            }
+
+            let raw_images = String::from(captures.get(2).unwrap().as_str());
+
+            let images_container_style: String = format!("display: flex; justify-content: {};", justify_content.unwrap_or(String::from(DEFAULT_JUSTIFY_CONTENT)));
+            let mut images_container = build_html::Container::new(build_html::ContainerType::Div)
+                                                .with_attributes(vec![
+                                                    ("style", images_container_style.as_str()),
+                                                    ("class", "images-container")
+                                                ]);
+
+            for mut raw_image_line in raw_images.lines() {
+
+                if raw_image_line.trim().is_empty() {
+                    continue;
+                }
+
+                let regex = Regex::new(ALIGN_ITEM_PATTERN).unwrap();
+
+                let align_self_captures = regex.captures(raw_image_line);
+
+                let align_self = match align_self_captures {
+                    Some(ai) => {
+                        raw_image_line = raw_image_line.strip_prefix(ai.get(0).unwrap().as_str()).unwrap();
+
+                        ai.get(1).unwrap().as_str()
+                    },
+                    None => DEFAULT_ALIGN_SELF
+                };
+
+                let mut image_container = Container::new(build_html::ContainerType::Div)
+                                                    .with_attributes(vec![
+                                                        ("style", format!(r"align-self: {}", align_self).as_str()),
+                                                        ("class", "image-container")
+                                                    ]);
+
+                for modifier in MULTI_IMAGE_PERMITTED_MODIFIER {
+                    let parse_res = Self::_parse(&modifier.identifier(), &modifier.modifier_pattern(), raw_image_line, parsing_configuration);
+
+                    if let Ok(result) = parse_res {
+                        image_container = image_container.with_raw(result.parsed_content());
+                    }
+                }
+
+                images_container = images_container.with_container(image_container);
+            }
+
+            images_container.to_html_string()
+
+        }).to_string();
+        
+        Ok(ParsingOutcome::new(parsed_content))
+    }
+
+    fn _parse(image_modifier_identifier: &ModifierIdentifier, searching_pattern: &String, content: &str, parsing_configuration: &RwLockReadGuard<ParsingConfiguration>) -> Result<ParsingOutcome, ParsingError> {
+        
+
+        if image_modifier_identifier.eq(&StandardParagraphModifier::Image.identifier()) {
+            return Self::parse_image(searching_pattern, content, parsing_configuration);
+        }
+
+        if image_modifier_identifier.eq(&StandardParagraphModifier::AbridgedImage.identifier()) {
+            return Self::parse_abridged_image(searching_pattern, content, parsing_configuration);        
+        }
+
+        if image_modifier_identifier.eq(&StandardParagraphModifier::MultiImage.identifier()) {
+            return Self::parse_multi_image(searching_pattern, content, parsing_configuration)
+        }
+
+        log::error!("'{}' is unsupported image modifier identifier", image_modifier_identifier);
+
+        panic!("unsupported image modifier identifier");
     }
 }
 
@@ -230,24 +350,7 @@ impl ParsingRule for HtmlImageRule {
     fn parse(&self, content: &str, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError> {
 
         let parsing_configuration = parsing_configuration.read().unwrap();
-        let document_name = parsing_configuration.metadata().document_name().as_ref().unwrap();
-
-        let regex = match Regex::new(&self.searching_pattern()) {
-            Ok(r) => r,
-            Err(_) => return Err(ParsingError::InvalidPattern(self.searching_pattern().clone()))  
-        };
-
-        if self.image_modifier_identifier.eq(&StandardParagraphModifier::Image.identifier()) {
-            return Self::parse_image(regex, content, document_name, &parsing_configuration);
-        }
-
-        if self.image_modifier_identifier.eq(&StandardParagraphModifier::AbridgedImage.identifier()) {
-            return Self::parse_abridged_image(regex, content, document_name, &parsing_configuration);        
-        }
-
-        log::error!("'{}' is unsupported image modifier identifier", self.image_modifier_identifier);
-
-        panic!("unsupported image modifier identifier");
+        Self::_parse(&self.image_modifier_identifier, &self.searching_pattern, content, &parsing_configuration)
     }
 }
 

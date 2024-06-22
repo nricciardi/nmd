@@ -43,6 +43,7 @@
     - [Embedded style](#embedded-style-1)
     - [Image](#image)
       - [Abridged Image](#abridged-image)
+      - [Multi Image](#multi-image)
     - [Page break](#page-break)
     - [Line break](#line-break)
     - [List](#list)
@@ -615,6 +616,17 @@ style]]{}
 ![(http://url/a.png)]#id
 
 ![(http://url/a.png)]#id{maring:0;width:50vw}
+```
+
+##### Multi Image
+
+**Style class**: `figure`, `image`, `image-caption`, `abridged-image`, `images-container`, `image-container`
+
+```
+!!:space-between:[[
+:center:![(wikipedia-logo.png)]#image-7{width:70%}
+![Wikipedia](./assets/images/wikipedia-logo.png){width:45%;margin:0;}
+]]
 ```
 
 #### Page break
