@@ -137,13 +137,9 @@ impl HtmlImageRule {
 
             if src_path_buf.exists() {
             
-                let mut image = ImageResource::try_from(src_path_buf).unwrap();
+                let image = ImageResource::try_from(src_path_buf).unwrap();
 
-                if parsing_configuration.compress_embed_image() {
-                    image.compress().unwrap();
-                }
-
-                let base64_image = image.to_base64();
+                let base64_image = image.to_base64(parsing_configuration.compress_embed_image());
 
                 return Self::create_figure_img(format!("data:image/png;base64,{}", base64_image.unwrap()).as_str(), label, id, img_classes, figure_style);
 

@@ -2,6 +2,7 @@ use std::{fs::File, io::{Cursor, Read}, path::PathBuf, str::FromStr};
 
 use base64::{engine::general_purpose::STANDARD, Engine};
 use image::{codecs::jpeg, DynamicImage, ImageOutputFormat};
+use oxipng::Options;
 
 use super::ResourceError;
 use jpeg::JpegEncoder;
@@ -18,13 +19,30 @@ pub struct ImageResource {
 }
 
 impl ImageResource {
-    pub fn to_base64(self) -> Result<String, ResourceError> {
+    pub fn to_base64(self, compression: bool) -> Result<String, ResourceError> {
 
         let mut buffer: Vec<u8> = Vec::new();
 
         self.image.write_to(&mut Cursor::new(&mut buffer), ImageOutputFormat::Png)?;
 
-        Ok(STANDARD.encode(buffer))
+        if compression {
+
+            let original_log_level = log::max_level();
+            log::set_max_level(log::LevelFilter::Warn);
+
+            let options = Options::max_compression();
+        
+            let optimized_png = oxipng::optimize_from_memory(&buffer, &options);
+
+            log::set_max_level(original_log_level);
+    
+            match optimized_png {
+                Ok(image) => return Ok(STANDARD.encode(image)),
+                Err(err) => return Err(ResourceError::ElaborationError(format!("image compression error: {}", err)))
+            }
+        } else {
+            Ok(STANDARD.encode(buffer))
+        }
     }
 
     pub fn pathbuf_is_image(file_path: &PathBuf) -> bool {
@@ -36,26 +54,6 @@ impl ImageResource {
         }
 
         false
-    }
-
-    pub fn compress(&mut self) -> Result<(), ResourceError> {
-        
-        todo!();
-        
-        let rgba_image = self.image.to_rgba8();
-        let width = self.image.width();
-        let height = self.image.height();
-
-        let image_data = rgba_image.into_raw();
-    
-        let mut compressed_data: Vec<u8> = Vec::new();
-        let mut jpeg_encoder = JpegEncoder::new_with_quality(&mut compressed_data, COMPRESSION_QUALITY);
-
-        jpeg_encoder.encode(&image_data, width, height, image::ColorType::Rgba8)?;
-
-        self.image = image::load_from_memory(&compressed_data)?;        
-
-        Ok(())
     }
 }
 

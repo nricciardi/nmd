@@ -58,7 +58,7 @@ metadata: {}
 compilation:
   embed_local_image: true
   embed_remote_image: true
-  compress_embed_image: false
+  compress_embed_image: true
   strict_image_src_check: true
   parallelization: false
   use_remote_addons: false

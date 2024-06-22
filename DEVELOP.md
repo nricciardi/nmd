@@ -7,7 +7,7 @@
 - [ ] PDF compile format
 - [ ] Vintage style (typewriter)
 - [ ] Dark style
-- [ ] Table of Content
+- [ ] Table of contents with page numbers
 - [ ] Run code
 - [ ] Video
 - [ ] Bibliography
@@ -16,6 +16,9 @@
 - [ ] Fast draft (prevent to parse time consuming parts)
 - [ ] Dynamics addons (e.g. katex iff math is used)
 - [x] Watcher mode
+- [ ] Split CLI lib from compiler
+- [ ] Documentation
+
 
 ### Features in Progress for current version
 
@@ -31,14 +34,14 @@
 - [x] Image URL fix meta-characters
 - [x] Multiple image in a single row
 - [x] Set image dimensions
-- [ ] Image compression
+- [x] Image compression
 - [x] Image in dossier: default path to `assets/images`
 - [x] Focus block
 - [x] Light base page style
 - [ ] Paper format support (A4, A5, ...)
 - [ ] Footer with page counter
 - [x] Embedded style
-- [ ] Embedded chapter style
+- [x] Embedded chapter style
 - [x] Custom style files
 - [ ] Tables
 - [x] Embedded Greek letters
@@ -50,7 +53,7 @@
 - [x] `nmd dossier add` auto-add `.nmd`
 - [x] `nmd dossier add` accept more than one file
 - [x] Escape
-- [ ] Metadata
+- [x] Metadata
 - [ ] Reference
 
 ### Known issues
