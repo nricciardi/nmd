@@ -16,8 +16,6 @@ pub trait ParsingRule: Send + Sync + Debug {
 
     fn searching_pattern(&self) -> &String;
 
-    // TODO?: fn replacing_pattern(&self) -> &R;         // Replacer
-
     fn is_match(&self, content: &str) -> bool {
 
         let pattern = self.searching_pattern();

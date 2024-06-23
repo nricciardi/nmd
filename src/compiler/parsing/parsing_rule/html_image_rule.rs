@@ -10,6 +10,7 @@ use url::Url;
 use crate::compiler::codex::modifier::standard_paragraph_modifier::StandardParagraphModifier;
 use crate::compiler::codex::modifier::ModifierIdentifier;
 use crate::compiler::dossier;
+use crate::compiler::parser::Parser;
 use crate::compiler::parsing::parsing_configuration::ParsingConfiguration;
 use crate::compiler::parsing::parsing_error::ParsingError;
 use crate::compiler::parsing::parsing_outcome::ParsingOutcome;

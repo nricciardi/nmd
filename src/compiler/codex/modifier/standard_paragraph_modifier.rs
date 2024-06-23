@@ -1,3 +1,5 @@
+use build_html::Table;
+
 use super::{base_modifier::BaseModifier, constants::{IDENTIFIER_PATTERN, NEW_LINE_PATTERN}, modifiers_bucket::ModifiersBucket, Modifier, ModifierIdentifier, ModifierPattern};
 
 
@@ -9,6 +11,7 @@ pub const PARAGRAPH_SEPARATOR_END: &str = r"(?m:[ \t]*\r*\n){2}";
 pub enum StandardParagraphModifier {
     List,
     ListItem,
+    Table,
     Image,
     AbridgedImage,
     MultiImage,
@@ -37,6 +40,7 @@ impl StandardParagraphModifier {
 
         //! they must have the compatibility order
         vec![
+            Self::Table,
             Self::MultilineTodo,
             Self::AbridgedTodo,
             Self::PageBreak,
@@ -85,7 +89,7 @@ impl StandardParagraphModifier {
             Self::MultilineTodo => String::from("multiline-todo"),
             Self::AbridgedImage => String::from(r"abridged-image"),
             Self::MultiImage => String::from("multi-image"),
-
+            Self::Table => String::from("table"),
 
             _ => {
 

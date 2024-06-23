@@ -36,6 +36,7 @@
 - [x] Set image dimensions
 - [x] Image compression
 - [x] Image in dossier: default path to `assets/images`
+- [ ] Parse image caption 
 - [x] Focus block
 - [x] Light base page style
 - [ ] Paper format support (A4, A5, ...)

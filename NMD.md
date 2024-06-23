@@ -53,10 +53,7 @@
       - [Focus quote block](#focus-quote-block)
     - [Math block (LaTeX)](#math-block-latex)
     - [Chapter styles and metadata \[TO BE DEFINE; NOT SUPPORTED YET\]](#chapter-styles-and-metadata-to-be-define-not-supported-yet)
-    - [Tables \[TO BE DEFINE; NOT SUPPORTED YET\]](#tables-to-be-define-not-supported-yet)
-      - [Table Head](#table-head)
-      - [Table Body](#table-body)
-      - [Table Footer](#table-footer)
+    - [Tables \[NOT SUPPORTED YET\]](#tables-not-supported-yet)
 
 
 
@@ -831,33 +828,44 @@ There is an example below.
 
 You can add decorators also to a single word using this syntax:
 
-#### Tables [TO BE DEFINE; NOT SUPPORTED YET]
+#### Tables [NOT SUPPORTED YET]
 
 Each table has an table head, body and footer (like HTML tables). A table can have only head or only footer, but it must always have body.
 
-##### Table Head
-
-The pattern for a cell table head is: 
+**Standard syntax**:
 
 ```
-|| + single space + cell head text + one or more spaces ||
+| Syntax      | Description | Test Text     |
+| :---        |    :----:   |          ---: |
+| Header      | Title       | Here's this   |
+| Paragraph   | Text        | And more      |
 ```
 
-##### Table Body
+`:---` for column left alignment
 
-The pattern for a generic table record is: | + single space + cell text + one or more spaces |
+`---:` for column right alignment
+
+`:---:` for column center alignment
+
+
+**Extended syntax**
 
 ```
-| cell text | cell text | cell text |
+| Syntax     :| Description |: Test Text   :|
+| :---        |    :----:   |          ---: |
+| Header     :| Title       | Here's this   |
+| Paragraph   | Text       :| And more      |
+|---|
+|| Footer     |
+[Caption]#table-id{style}
 ```
 
-##### Table Footer
+`:` to specify cell alignment
 
-> WIP
+`:---` for column left alignment
 
+`---:` for column right alignment
 
-
-
-
+`:---:` for column center alignment
 
 
