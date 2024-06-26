@@ -5,6 +5,7 @@ pub mod remote_resource;
 pub mod dynamic_resource;
 pub mod resource_reference;
 pub mod text_reference;
+pub mod table;
 
 use std::{path::PathBuf, str::FromStr, fs::{File, self, OpenOptions}, io::{self, Write}};
 use ::image::ImageError;

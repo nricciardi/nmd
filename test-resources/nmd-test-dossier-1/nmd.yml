@@ -1,10 +1,10 @@
 name: new-dossier
 documents:
-  - "./d10.nmd"
+- ./d11.nmd
 style:
   theme: Light
   styles:
-    - "custom.css"
+  - custom.css
   list_bullets_configuration:
   - from: '|'
     to: '&#8205;'
@@ -55,7 +55,7 @@ style:
     indentation_level: 0
     strict_indentation: false
 references:
-  ref1: "my ref1"
+  ref1: my ref1
 compilation:
   embed_local_image: true
   embed_remote_image: true

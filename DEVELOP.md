@@ -18,6 +18,7 @@
 - [x] Watcher mode
 - [ ] Split CLI lib from compiler
 - [ ] Documentation
+- [ ] Compile only modified chapters
 
 
 ### Features in Progress for current version

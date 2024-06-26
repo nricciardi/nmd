@@ -205,10 +205,14 @@ impl Loader {
         let mut paragraphs: Vec<(usize, usize, Paragraph)> = Vec::new();
         let mut content = String::from(content);
 
-        content = content.trim_end_matches('\n').to_string();
+        content = content.trim_matches('\n').to_string();
         content = content.replace("\n\n", "\n\n\n");
 
         // work-around to fix paragraph matching end line
+        while !content.starts_with("\n\n") {
+            content.insert_str(0, "\n");
+        }
+
         while !content.ends_with("\n\n") {
             content.push_str("\n");
         }
@@ -217,7 +221,7 @@ impl Loader {
 
             let search_pattern = paragraph_modifier.modifier_pattern();
 
-            log::debug!("test paragraph modifier '{:?}'", paragraph_modifier);
+            log::debug!("test paragraph modifier '{}': {:?}", paragraph_modifier.identifier(), search_pattern);
 
             let regex = Regex::new(&search_pattern).unwrap();
 
@@ -233,7 +237,7 @@ impl Loader {
                     end -= nl_at_end;
                 }
 
-                log::debug!("found paragraph using {:?} between {} and {}:\n{}", &paragraph_modifier, start, end, matched_str);
+                log::debug!("found paragraph using '{}': {:?} between {} and {}:\n{}", paragraph_modifier.identifier(), search_pattern, start, end, matched_str);
 
                 let overlap_paragraph = paragraphs.par_iter().find_any(|p| {
                     (p.0 >= start && p.1 <= end) ||     // current paragraph contains p

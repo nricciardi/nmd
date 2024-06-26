@@ -1,10 +1,10 @@
 pub mod replacement_rule;
-
 pub mod html_image_rule;
 pub mod html_list_rule;
 pub mod html_extended_block_quote_rule;
 pub mod html_greek_letter_rule;
 pub mod reference_rule;
+pub mod html_table_rule;
 
 use std::{fmt::Debug, sync::{Arc, RwLock}};
 use regex::Regex;

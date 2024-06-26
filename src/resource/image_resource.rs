@@ -5,13 +5,7 @@ use image::{codecs::jpeg, DynamicImage, ImageOutputFormat};
 use oxipng::Options;
 
 use super::ResourceError;
-use jpeg::JpegEncoder;
-
-
-
 use image::io::Reader as ImageReader;
-
-const COMPRESSION_QUALITY: u8 = 75;
 
 
 pub struct ImageResource {

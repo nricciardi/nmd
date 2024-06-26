@@ -12,6 +12,7 @@ use super::parsing::parsing_rule::html_extended_block_quote_rule::HtmlExtendedBl
 use super::parsing::parsing_rule::html_greek_letter_rule::HtmlGreekLettersRule;
 use super::parsing::parsing_rule::html_image_rule::HtmlImageRule;
 use super::parsing::parsing_rule::html_list_rule::HtmlListRule;
+use super::parsing::parsing_rule::html_table_rule::HtmlTableRule;
 use super::parsing::parsing_rule::reference_rule::ReferenceRule;
 use super::parsing::parsing_rule::replacement_rule::ReplacementRule;
 use super::parsing::parsing_rule::ParsingRule;
@@ -262,6 +263,10 @@ impl Codex {
             (
                 StandardParagraphModifier::CommonParagraph.identifier().clone(),
                 Box::new(ReplacementRule::new(StandardParagraphModifier::CommonParagraph.modifier_pattern_with_paragraph_separator().clone(), String::from(r#"<p class="paragraph">${1}</p>"#)))
+            ),
+            (
+                StandardParagraphModifier::Table.identifier().clone(),
+                Box::new(HtmlTableRule::new())
             ),
         ]);
 

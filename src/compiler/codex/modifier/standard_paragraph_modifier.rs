@@ -3,8 +3,8 @@ use build_html::Table;
 use super::{base_modifier::BaseModifier, constants::{IDENTIFIER_PATTERN, NEW_LINE_PATTERN}, modifiers_bucket::ModifiersBucket, Modifier, ModifierIdentifier, ModifierPattern};
 
 
-pub const PARAGRAPH_SEPARATOR_START: &str = r"(?m:^[ \t]*\r*\n)+";
-pub const PARAGRAPH_SEPARATOR_END: &str = r"(?m:[ \t]*\r*\n){2}";
+pub const PARAGRAPH_SEPARATOR_START: &str = r"(?m:^[ \t]*\r?\n)+";
+pub const PARAGRAPH_SEPARATOR_END: &str = r"(?m:[ \t]*\r?\n){2}";
 
 
 #[derive(Debug, PartialEq, Clone)]
@@ -126,6 +126,7 @@ impl StandardParagraphModifier {
             Self::MultilineTodo => String::from(r"(?i:TODO):(?s:(.*?)):(?i:TODO)"),
             Self::AbridgedImage => format!(r"!\[\((.*)\)\](?:{})?(?:\{{(.*)\}})?", IDENTIFIER_PATTERN),
             Self::MultiImage => String::from(r"!!(?::([\w-]+):)?\[\[(?s:(.*?))\]\]"),
+            Self::Table => format!(r"(\|(.*)\|\n?)+(?:\|(.*)\|)(?U:\n?(?:\[(.*)\])?(?:{})?(?:\{{(.*)\}})?)?", IDENTIFIER_PATTERN),
             
             _ => {                                                                  // TODO
                 log::warn!("there is NOT a modifier pattern for {:#?}", self);

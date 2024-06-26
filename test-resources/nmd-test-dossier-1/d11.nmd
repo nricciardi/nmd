@@ -1,0 +1,23 @@
+
+| Syntax      | Description | Test Text     |
+| :---        |    :----:   |          ---: |
+| Header      | Title       | Here's this   |
+| Paragraph   | Text        | And more      |
+
+| Syntax2      | Description2 | Test Text2     |
+| :---        |    :----:   |          ---: |
+| Header2      | Title2       | Here's this2   |
+| Paragraph 2  | Text    2   | And more 2     |
+
+| Syntax3     :| Description |: Test Text  3 :|
+| :---        |    :----:   |          ---: |
+| Header     :| Title 3      | Here's this   |
+| Paragraph3   | Text       :| And more      |
+|---|
+|| Footer     |
+[Caption]#table-id{style}
+
+
+
+
+
