@@ -45,7 +45,7 @@
 - [x] Embedded style
 - [x] Embedded chapter style
 - [x] Custom style files
-- [ ] Tables
+- [x] Tables
 - [x] Embedded Greek letters
 - [x] Fix single list item
 - [x] Todo modifier with only `todo` or `TODO`
