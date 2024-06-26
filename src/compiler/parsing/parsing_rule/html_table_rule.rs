@@ -1,6 +1,8 @@
 use std::{collections::HashMap, fmt::Debug, sync::{Arc, RwLock}};
 
 use build_html::{Container, ContainerType, Html, HtmlContainer};
+use build_html::TableCell as HtmlTableCell;
+use build_html::TableRow as HtmlTableRow;
 use regex::{Captures, Regex};
 
 use crate::{compiler::{codex::modifier::{constants::IDENTIFIER_PATTERN, standard_paragraph_modifier::StandardParagraphModifier, standard_text_modifier::StandardTextModifier}, parsing::{parsing_configuration::ParsingConfiguration, parsing_error::ParsingError, parsing_outcome::ParsingOutcome}}, resource::{resource_reference::ResourceReference, table::{self, Table, TableCell, TableCellAlignment}}};
@@ -8,6 +10,7 @@ use crate::{compiler::{codex::modifier::{constants::IDENTIFIER_PATTERN, standard
 use super::ParsingRule;
 
 
+/// (caption, id, style)
 type TableMetadata = (Option<String>, Option<String>, Option<String>);
 
 
@@ -86,6 +89,8 @@ impl HtmlTableRule {
 
         for (index, cell) in row.iter().enumerate() {
 
+            let mut cell = String::from(cell);
+
             if cell.is_empty() {
 
                 cells.push(TableCell::None);
@@ -95,35 +100,45 @@ impl HtmlTableRule {
                 let mut align = alignments.get(index).unwrap_or(&TableCellAlignment::default()).clone();
 
                 if cell.starts_with(":") && cell.ends_with(":") {
-                    align = TableCellAlignment::Center
+                    align = TableCellAlignment::Center;
+
+                    cell.remove(0);
+                    cell.remove(cell.len() - 1);
                 }
                 
                 if cell.starts_with(":") && !cell.ends_with(":") {
-                    align = TableCellAlignment::Left
+                    align = TableCellAlignment::Left;
+
+                    cell.remove(0);
                 }
 
                 if !cell.starts_with(":") && cell.ends_with(":") {
-                    align = TableCellAlignment::Right
+                    align = TableCellAlignment::Right;
+
+                    cell.remove(cell.len() - 1);
                 }
 
-                cells.push(TableCell::ContentCell { content: String::from(cell), alignment: align});
+                cells.push(TableCell::ContentCell { content: cell, alignment: align});
             }
         }
 
         cells
     }
 
-    fn load_html_row(html_row: &mut Container, cells: &Vec<TableCell>) {
+    fn load_html_row(html_row: &mut HtmlTableRow, cells: &Vec<TableCell>) {
 
         for cell in cells {
             match cell {
                 TableCell::None => {
-                    let html_cell = Container::new(ContainerType::Div)
-                                                            .with_attributes(vec![
-                                                                ("class", "table-cell table-empty-cell")
-                                                            ]);
 
-                    html_row.add_container(html_cell);
+                    html_row.add_cell(
+                        HtmlTableCell::new(build_html::TableCellType::Data)
+                                    .with_attributes(vec![
+                                        ("class", "table-cell table-empty-cell")
+                                    ])
+                                    .with_raw("")
+                    );                       
+
                 },
                 TableCell::ContentCell { content, alignment } => {
 
@@ -133,20 +148,20 @@ impl HtmlTableRule {
                         TableCellAlignment::Right => String::from("table-right-cell"),
                     };
 
-                    let html_cell = Container::new(ContainerType::Div)
-                                                            .with_attributes(vec![
-                                                                ("class", format!("table-cell {}", align_class).as_str())
-                                                            ])
-                                                            .with_raw(content);
-
-                    html_row.add_container(html_cell);
+                    html_row.add_cell(
+                        HtmlTableCell::new(build_html::TableCellType::Data)
+                                    .with_attributes(vec![
+                                        ("class", format!("table-cell {}", align_class).as_str())
+                                    ])
+                                    .with_raw(content)
+                    );       
                 },
             }
         }
     }
 
     fn extract_table_metadata(s: &str, document_name: &str) -> TableMetadata {
-        let regex = Regex::new(&format!(r"(?:\[\((.*)\)\])?(?:{})?(?:\{{(.*)\}})?", IDENTIFIER_PATTERN)).unwrap();
+        let regex = Regex::new(&format!(r"(?:\[(.*)\])?(?:{})?(?:\{{(.*)\}})?", IDENTIFIER_PATTERN)).unwrap();
 
         let captures = regex.captures(s);
 
@@ -173,8 +188,7 @@ impl HtmlTableRule {
             style = Some(_style.as_str().to_string());
         }
 
-
-        (id, caption, style)
+        (caption, id, style)
     }
 
     fn build_html_table(caption: Option<String>, id: Option<String>, style: Option<String>, table: Table) -> String {
@@ -190,49 +204,55 @@ impl HtmlTableRule {
             html_table_attrs.push((String::from("style"), String::from(style.as_str())));
         }
 
-        let mut html_table = Container::new(ContainerType::Div)
-                                        .with_attributes(html_table_attrs);
+        let mut html_table = build_html::Table::new()
+                                                    .with_attributes(html_table_attrs);
+
 
         if let Some(header_cells) = table.header() {
 
-            let mut html_table_header = Container::new(ContainerType::Div)
-                                                .with_attributes(vec![
-                                                    ("class", "table-header")
-                                                ]);
+
+            html_table = html_table.with_thead_attributes(vec![
+                                        ("class", "table-header")
+                                    ]);
+
+            let mut html_table_header = HtmlTableRow::new()
+                                                    .with_attributes(vec![
+                                                        ("class", "table-header-row")
+                                                    ]);
             
             Self::load_html_row(&mut html_table_header, header_cells);
-            
-            html_table.add_container(html_table_header);
+
+            html_table.add_custom_header_row(html_table_header);
         }
 
-        let mut html_table_body = Container::new(ContainerType::Div)
-                                                    .with_attributes(vec![
-                                                        ("class", "table-body")
-                                                    ]);
+
+        html_table = html_table.with_tbody_attributes(vec![
+                                    ("class", "table-body")
+                                ]);
         
         for row in table.body() {
 
-            let mut html_body_row = Container::new(ContainerType::Div)
+            let mut html_body_row = HtmlTableRow::new()
                                                             .with_attributes(vec![
                                                                 ("class", "table-body-row")
                                                             ]);
 
             Self::load_html_row(&mut html_body_row, row);
 
-            html_table_body.add_container(html_body_row);
+            html_table.add_custom_body_row(html_body_row);
         }
 
-        html_table.add_container(html_table_body);
-
+        // TODO: use embedded add_tfoot when available
         if let Some(footer_cells) = table.footer() {
-            let mut html_table_footer = Container::new(ContainerType::Div)
-            .with_attributes(vec![
-                ("class", "table-footer")
-            ]);
+
+            let mut html_table_footer = HtmlTableRow::new()
+                                                .with_attributes(vec![
+                                                    ("class", "table-footer")
+                                                ]);
 
             Self::load_html_row(&mut html_table_footer, footer_cells);
 
-            html_table.add_container(html_table_footer);
+            html_table.add_custom_body_row(html_table_footer);
         }
 
         if let Some(c) = caption {
@@ -243,7 +263,7 @@ impl HtmlTableRule {
                                                 ])
                                                 .with_raw(c);
 
-            html_table.add_container(html_caption);
+            html_table.add_caption(html_caption);
         }
 
         html_table.to_html_string()
@@ -284,7 +304,7 @@ impl ParsingRule for HtmlTableRule {
 
                     let document_name = pc.metadata().document_name().as_ref().unwrap();
                     
-                    (caption, id, style) = Self::extract_table_metadata(line, document_name);
+                    (caption, id, style) = Self::extract_table_metadata(trim_line, document_name);
 
                     if id.is_none() && caption.is_some() {
                         id = Some(ResourceReference::of_internal_without_sharp(&caption.clone().unwrap(), Some(document_name)).unwrap().build());

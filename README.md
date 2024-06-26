@@ -3,7 +3,7 @@
 **New way to write in markdown**
 
 [![License](https://img.shields.io/badge/license-GPL3-green.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v0.28.0-blue.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-v0.29.0-blue.svg)](CHANGELOG.md)
 
 NMD stands for **New MarkDown**, or for friends, *Nicola MarkDown* (if Stephen Bourne can name a shell, why can't I name mine NMD?)
 

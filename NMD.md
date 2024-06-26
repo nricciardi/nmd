@@ -830,7 +830,7 @@ You can add decorators also to a single word using this syntax:
 
 #### Tables [NOT SUPPORTED YET]
 
-**Style class**: `table`, `table-header`, `table-body`, `table-footer`, `table-body-row`, `table-cell`, `table-left-cell`, `table-center-cell`, `table-right-cell`, `table-empty-cell`, `table-caption`
+**Style class**: `table`, `table-header`, `table-header-row`, `table-body`, `table-footer`, `table-body-row`, `table-cell`, `table-left-cell`, `table-center-cell`, `table-right-cell`, `table-empty-cell`, `table-caption`
 
 Each table has an table head, body and footer (like HTML tables). A table can have only head or only footer, but it must always have body.
 

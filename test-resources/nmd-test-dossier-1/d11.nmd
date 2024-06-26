@@ -15,7 +15,7 @@
 | Paragraph3   | Text       :| And more      |
 |---|
 || Footer     |
-[Caption]#table-id{style}
+[Caption]#table-id{color:red;}
 
 
 

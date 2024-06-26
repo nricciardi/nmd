@@ -64,3 +64,4 @@
 - [x] `nmd dossier add` save only 2 paths
 - [x] Chapter body are not parsed on Windows
 - [ ] `* words *` works
+- [ ] Table footer doesn't use `tfoot` in HTML format (caused by `build_html` crate)
