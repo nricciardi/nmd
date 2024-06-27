@@ -40,7 +40,6 @@
 - [x] Parse image caption 
 - [x] Focus block
 - [x] Light base page style
-- [ ] Footer with page counter
 - [x] Embedded style
 - [x] Embedded chapter style
 - [x] Custom style files
