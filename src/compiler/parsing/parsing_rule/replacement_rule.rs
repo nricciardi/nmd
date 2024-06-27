@@ -7,6 +7,7 @@ use rayon::iter::ParallelBridge;
 use regex::{Captures, Regex, Replacer};
 
 use crate::compiler::codex::modifier::modifiers_bucket::ModifiersBucket;
+use crate::compiler::codex::Codex;
 use crate::compiler::parsing::parsing_configuration::ParsingConfiguration;
 use crate::compiler::parsing::parsing_error::ParsingError;
 use crate::compiler::parsing::parsing_metadata::ParsingMetadata;
@@ -66,7 +67,7 @@ impl Debug for ReplacementRule<String> {
 impl ParsingRule for ReplacementRule<String> {
 
     /// Parse the content using internal search and replacement pattern
-    fn parse(&self, content: &str, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError> {
+    fn parse(&self, content: &str, codex: &Codex, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError> {
 
         let searching_pattern = self.searching_pattern().clone();
         let mut replacer = self.replacer.clone();
@@ -125,7 +126,7 @@ impl<F> ParsingRule for ReplacementRule<F>
 where F: 'static + Sync + Send + Fn(&Captures) -> String {
 
     /// Parse the content using internal search and replacement pattern
-    fn parse(&self, content: &str, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError> {
+    fn parse(&self, content: &str, codex: &Codex, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError> {
 
         if self.reference_at.is_some() {
             return Err(ParsingError::InvalidParameter("id_at".to_string()))
@@ -159,26 +160,29 @@ where F: 'static + Sync + Send + Fn(&Captures) -> String {
 #[cfg(test)]
 mod test {
 
-    use crate::compiler::codex::modifier::{standard_chapter_modifier::StandardChapterModifier, standard_paragraph_modifier::StandardParagraphModifier, standard_text_modifier::StandardTextModifier, Modifier};
+    use crate::compiler::codex::{codex_configuration::CodexConfiguration, modifier::{standard_chapter_modifier::StandardChapterModifier, standard_paragraph_modifier::StandardParagraphModifier, standard_text_modifier::StandardTextModifier, Modifier}};
 
     use super::*;
 
     #[test]
     fn bold_parsing() {
+
+        let codex = Codex::of_html(CodexConfiguration::default());
+
         // valid pattern with a valid text modifier
         let parsing_rule = ReplacementRule::new(StandardTextModifier::BoldStarVersion.modifier_pattern().clone(), String::from("<strong>$1</strong>"));
 
         let text_to_parse = r"A piece of **bold text**";
         let parsing_configuration = Arc::new(RwLock::new(ParsingConfiguration::default()));
 
-        let parsed_text = parsing_rule.parse(text_to_parse, Arc::clone(&parsing_configuration)).unwrap();
+        let parsed_text = parsing_rule.parse(text_to_parse, &codex, Arc::clone(&parsing_configuration)).unwrap();
 
         assert_eq!(parsed_text.parsed_content(), r"A piece of <strong>bold text</strong>");
 
         // without text modifier
         let text_to_parse = r"A piece of text without bold text";
 
-        let parsed_text = parsing_rule.parse(text_to_parse, Arc::clone(&parsing_configuration)).unwrap();
+        let parsed_text = parsing_rule.parse(text_to_parse, &codex, Arc::clone(&parsing_configuration)).unwrap();
 
         assert_eq!(parsed_text.parsed_content(), r"A piece of text without bold text");
 
@@ -187,19 +191,25 @@ mod test {
 
     #[test]
     fn heading_parsing() {
+
+        let codex = Codex::of_html(CodexConfiguration::default());
+
         let parsing_configuration = Arc::new(RwLock::new(ParsingConfiguration::default()));
 
         let parsing_rule = ReplacementRule::new(StandardChapterModifier::HeadingGeneralExtendedVersion(6).modifier_pattern().clone(), String::from("<h6>$1</h6>"));
 
         let text_to_parse = r"###### title 6";
 
-        let parsed_text = parsing_rule.parse(text_to_parse, Arc::clone(&parsing_configuration)).unwrap();
+        let parsed_text = parsing_rule.parse(text_to_parse, &codex, Arc::clone(&parsing_configuration)).unwrap();
 
         assert_eq!(parsed_text.parsed_content(), r"<h6>title 6</h6>");
     }
 
     #[test]
     fn paragraph_parsing() {
+
+        let codex = Codex::of_html(CodexConfiguration::default());
+
         let parsing_configuration = Arc::new(RwLock::new(ParsingConfiguration::default()));
 
         let parsing_rule = ReplacementRule::new(StandardParagraphModifier::CommonParagraph.modifier_pattern_with_paragraph_separator().clone(), String::from("<p>$1</p>"));
@@ -215,13 +225,16 @@ paragraph
 
 "#.trim_start();
 
-        let parsed_text = parsing_rule.parse(text_to_parse, Arc::clone(&parsing_configuration)).unwrap();
+        let parsed_text = parsing_rule.parse(text_to_parse, &codex, Arc::clone(&parsing_configuration)).unwrap();
 
         assert_eq!(parsed_text.parsed_content(), r"<p>paragraph 2a.</p><p>paragraph 2b.</p><p>paragraph\n2c\n.</p>");
     }
 
     #[test]
     fn code_block() {
+
+        let codex = Codex::of_html(CodexConfiguration::default());
+
         let parsing_configuration = Arc::new(RwLock::new(ParsingConfiguration::default()));
 
         let parsing_rule = ReplacementRule::new(StandardParagraphModifier::CodeBlock.modifier_pattern_with_paragraph_separator().clone(), String::from(r#"<pre><code class="language-$1 codeblock">$2</code></pre>"#));
@@ -234,13 +247,16 @@ print("hello world")
 ```
 "#;
 
-        let parsed_text = parsing_rule.parse(text_to_parse, Arc::clone(&parsing_configuration)).unwrap();
+        let parsed_text = parsing_rule.parse(text_to_parse, &codex, Arc::clone(&parsing_configuration)).unwrap();
 
         assert_eq!(parsed_text.parsed_content(), "\n<pre><code class=\"language-python codeblock\">print(\"hello world\")</code></pre>\n");
     }
 
     #[test]
     fn focus_block() {
+
+        let codex = Codex::of_html(CodexConfiguration::default());
+        
         let parsing_configuration = Arc::new(RwLock::new(ParsingConfiguration::default()));
 
         let parsing_rule = ReplacementRule::new(StandardParagraphModifier::FocusBlock.modifier_pattern_with_paragraph_separator().clone(), String::from(r#"<div class="focus-block focus-block-$1">$2</div>"#)).with_newline_fix(r"<br>".to_string());
@@ -258,7 +274,7 @@ multiline
 
 "#;
 
-        let parsed_text = parsing_rule.parse(text_to_parse, Arc::clone(&parsing_configuration)).unwrap();
+        let parsed_text = parsing_rule.parse(text_to_parse, &codex, Arc::clone(&parsing_configuration)).unwrap();
         let parsed_text = parsed_text.parsed_content();
 
         assert_ne!(parsed_text, text_to_parse);

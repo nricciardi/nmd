@@ -9,7 +9,9 @@ pub mod html_table_rule;
 use std::{fmt::Debug, sync::{Arc, RwLock}};
 use regex::Regex;
 
-use super::{parsing_configuration::ParsingConfiguration, parsing_error::ParsingError, parsing_metadata::ParsingMetadata, parsing_outcome::ParsingOutcome};
+use crate::compiler::codex::Codex;
+
+use super::{parsing_configuration::ParsingConfiguration, parsing_error::ParsingError, parsing_outcome::ParsingOutcome};
 
 
 pub trait ParsingRule: Send + Sync + Debug {
@@ -25,27 +27,11 @@ pub trait ParsingRule: Send + Sync + Debug {
         regex.is_match(content)
     }
 
-    fn parse(&self, content: &str, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError>;
+    /// Parse content based on codex and parsing_configuration.
+    fn parse(&self, content: &str, codex: &Codex, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError>;
+
+    fn fast_parse(&self, content: &str, codex: &Codex, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError> {
+        self.parse(content, codex, parsing_configuration)
+    }
 
 }
-
-
-// #[cfg(test)]
-// mod test {
-//     use crate::compiler::codex::Modifier;
-
-//     #[test]
-//     fn is_heading() {
-//         let content = "#6 title 6";
-
-//         assert!(Modifier::heading_level(content).is_some());
-
-//         let content = "### title 3";
-
-//         assert!(Modifier::heading_level(content).is_some());
-
-//         let content = "text";
-
-//         assert!(Modifier::heading_level(content).is_none())
-//     }
-// }

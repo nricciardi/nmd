@@ -2,7 +2,7 @@ use std::sync::{Arc, RwLock};
 
 use regex::Regex;
 
-use crate::compiler::{codex::modifier::{modifiers_bucket::ModifiersBucket, standard_paragraph_modifier::StandardParagraphModifier, Modifier}, parsing::{parsing_configuration::{list_bullet_configuration_record::{self, ListBulletConfigurationRecord}, ParsingConfiguration}, parsing_error::ParsingError, parsing_metadata::ParsingMetadata, parsing_outcome::ParsingOutcome}};
+use crate::compiler::{codex::{modifier::{modifiers_bucket::ModifiersBucket, standard_paragraph_modifier::StandardParagraphModifier, Modifier}, Codex}, parsing::{parsing_configuration::{list_bullet_configuration_record::{self, ListBulletConfigurationRecord}, ParsingConfiguration}, parsing_error::ParsingError, parsing_metadata::ParsingMetadata, parsing_outcome::ParsingOutcome}};
 
 use super::ParsingRule;
 
@@ -62,7 +62,7 @@ impl ParsingRule for HtmlListRule {
         &self.searching_pattern
     }
 
-    fn parse(&self, content: &str, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError> {
+    fn parse(&self, content: &str, codex: &Codex, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError> {
         
         let mut parsed_content = String::new();
 
@@ -134,6 +134,8 @@ impl ParsingRule for HtmlListRule {
 
 #[cfg(test)]
 mod test {
+    use crate::compiler::codex::codex_configuration::CodexConfiguration;
+
     use super::*;
 
     #[test]
@@ -154,7 +156,9 @@ mod test {
 
        let regex = Regex::new(rule.searching_pattern()).unwrap();
 
-       let outcome = rule.parse(nmd_text, Arc::new(RwLock::new(ParsingConfiguration::default()))).unwrap();
+       let codex = Codex::of_html(CodexConfiguration::default());
+
+       let outcome = rule.parse(nmd_text, &codex, Arc::new(RwLock::new(ParsingConfiguration::default()))).unwrap();
 
     }
 }

@@ -2,7 +2,7 @@ use std::{collections::HashMap, fmt::Debug, sync::{Arc, RwLock}};
 
 use regex::{Captures, Regex};
 
-use crate::compiler::{codex::modifier::standard_text_modifier::StandardTextModifier, parsing::{parsing_configuration::ParsingConfiguration, parsing_error::ParsingError, parsing_outcome::ParsingOutcome}};
+use crate::compiler::{codex::{modifier::standard_text_modifier::StandardTextModifier, Codex}, parsing::{parsing_configuration::ParsingConfiguration, parsing_error::ParsingError, parsing_outcome::ParsingOutcome}};
 
 use super::ParsingRule;
 
@@ -112,7 +112,7 @@ impl ParsingRule for HtmlGreekLettersRule {
         &self.searching_pattern
     }
 
-    fn parse(&self, content: &str, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError> {
+    fn parse(&self, content: &str, codex: &Codex, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError> {
         
         let regex = Regex::new(&self.searching_pattern).unwrap();
 

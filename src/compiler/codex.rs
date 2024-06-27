@@ -295,7 +295,7 @@ mod test {
         let parsing_configuration = Arc::new(RwLock::new(ParsingConfiguration::default()));
 
         for rule in codex.text_rules() {
-            let result = rule.1.parse(parsing_result.as_str(), Arc::clone(&parsing_configuration)).unwrap();
+            let result = rule.1.parse(parsing_result.as_str(), codex, Arc::clone(&parsing_configuration)).unwrap();
 
             parsing_result = result.parsed_content().clone()
         }
@@ -307,7 +307,7 @@ mod test {
         let mut parsing_result = String::from(nmd_text);
 
         for rule in codex.text_rules() {
-            let result = rule.1.parse(parsing_result.as_str(), Arc::clone(&parsing_configuration)).unwrap();
+            let result = rule.1.parse(parsing_result.as_str(), codex, Arc::clone(&parsing_configuration)).unwrap();
 
             parsing_result = result.parsed_content().clone()
         }
@@ -336,7 +336,7 @@ r#"
         let parsing_configuration = Arc::new(RwLock::new(ParsingConfiguration::default()));
 
         for rule in codex.text_rules() {
-            let result = rule.1.parse(parsing_result.as_str(), Arc::clone(&parsing_configuration)).unwrap();
+            let result = rule.1.parse(parsing_result.as_str(), codex, Arc::clone(&parsing_configuration)).unwrap();
 
             parsing_result = result.parsed_content().clone()
         }

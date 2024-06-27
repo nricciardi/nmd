@@ -58,7 +58,7 @@ impl Parser {
             if text_rule.is_match(content) {
                 log::debug!("there is a match with {:#?}", text_rule);
 
-                outcome = text_rule.parse(outcome.parsed_content(), Arc::clone(&parsing_configuration))?;
+                outcome = text_rule.parse(outcome.parsed_content(), codex, Arc::clone(&parsing_configuration))?;
     
                 excluded_modifiers = excluded_modifiers + text_modifier.incompatible_modifiers().clone();
 
@@ -101,7 +101,7 @@ impl Parser {
 
             log::debug!("paragraph rule {:#?} is found, it is about to be applied to parse paragraph", paragraph_rule);
 
-            outcome = paragraph_rule.parse(outcome.parsed_content(), Arc::clone(&parsing_configuration))?;
+            outcome = paragraph_rule.parse(outcome.parsed_content(), codex, Arc::clone(&parsing_configuration))?;
 
             excluded_modifiers = excluded_modifiers + paragraph_modifier.incompatible_modifiers().clone();
 

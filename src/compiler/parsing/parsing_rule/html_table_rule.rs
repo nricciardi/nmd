@@ -5,7 +5,7 @@ use build_html::TableCell as HtmlTableCell;
 use build_html::TableRow as HtmlTableRow;
 use regex::{Captures, Regex};
 
-use crate::{compiler::{codex::modifier::{constants::IDENTIFIER_PATTERN, standard_paragraph_modifier::StandardParagraphModifier, standard_text_modifier::StandardTextModifier}, parsing::{parsing_configuration::ParsingConfiguration, parsing_error::ParsingError, parsing_outcome::ParsingOutcome}}, resource::{resource_reference::ResourceReference, table::{self, Table, TableCell, TableCellAlignment}}};
+use crate::{compiler::{codex::{modifier::{constants::IDENTIFIER_PATTERN, standard_paragraph_modifier::StandardParagraphModifier, standard_text_modifier::StandardTextModifier}, Codex}, parsing::{parsing_configuration::ParsingConfiguration, parsing_error::ParsingError, parsing_outcome::ParsingOutcome}}, resource::{resource_reference::ResourceReference, table::{self, Table, TableCell, TableCellAlignment}}};
 
 use super::ParsingRule;
 
@@ -281,7 +281,7 @@ impl ParsingRule for HtmlTableRule {
         &self.searching_pattern
     }
 
-    fn parse(&self, content: &str, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError> {
+    fn parse(&self, content: &str, codex: &Codex, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError> {
 
         //return Ok(ParsingOutcome::new(format!("table: {}", content.lines().nth(2).unwrap())));
 

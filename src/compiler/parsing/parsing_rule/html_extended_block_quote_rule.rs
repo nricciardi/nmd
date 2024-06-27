@@ -2,7 +2,7 @@ use std::sync::{Arc, RwLock};
 
 use regex::Regex;
 
-use crate::compiler::{codex::modifier::{modifiers_bucket::ModifiersBucket, standard_paragraph_modifier::StandardParagraphModifier, Modifier}, parsing::{parsing_configuration::ParsingConfiguration, parsing_error::ParsingError, parsing_outcome::ParsingOutcome}};
+use crate::compiler::{codex::{modifier::{modifiers_bucket::ModifiersBucket, standard_paragraph_modifier::StandardParagraphModifier, Modifier}, Codex}, parsing::{parsing_configuration::ParsingConfiguration, parsing_error::ParsingError, parsing_outcome::ParsingOutcome}};
 
 use super::ParsingRule;
 
@@ -25,7 +25,7 @@ impl ParsingRule for HtmlExtendedBlockQuoteRule {
     fn searching_pattern(&self) -> &String {
         &self.searching_pattern
     }
-    fn parse(&self, content: &str, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError> {
+    fn parse(&self, content: &str, codex: &Codex, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError> {
 
         let content = content.trim();
         let mut lines: Vec<&str> = content.lines().collect();
