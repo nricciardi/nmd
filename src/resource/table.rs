@@ -40,6 +40,10 @@ impl Table {
         &self.body
     }
 
+    pub fn body_mut(&mut self) -> &mut Vec<Vec<TableCell>> {
+        &mut self.body
+    }
+
     pub fn footer(&self) -> &Option<Vec<TableCell>> {
         &self.footer
     }

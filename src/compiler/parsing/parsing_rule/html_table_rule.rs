@@ -354,7 +354,9 @@ impl ParsingRule for HtmlTableRule {
         // check if there is footer
         if table.body().len() > 2 {
 
-            let second_last_row = table.body().get(table.body().len() - 2).unwrap();
+            let second_last_row_index = table.body().len() - 2;
+
+            let second_last_row = table.body().get(second_last_row_index).unwrap();
 
             if  second_last_row.len() == 1 {
 
@@ -364,6 +366,7 @@ impl ParsingRule for HtmlTableRule {
                     TableCell::None => (),
                     TableCell::ContentCell { content, alignment: _ } => {
                         if content.chars().all(|c| c.eq(&'-')) {
+                            table.body_mut().remove(second_last_row_index);
                             table.shift_last_body_row_to_footer()
                         }
                     },
