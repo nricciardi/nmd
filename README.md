@@ -18,6 +18,7 @@ NMD stands for **New MarkDown**, or for friends, *Nicola MarkDown* (if Stephen B
     - [TL;DR](#tldr)
     - [Installation](#installation)
     - [Generate a new dossier using compiler](#generate-a-new-dossier-using-compiler)
+    - [Markdown to New Markdown](#markdown-to-new-markdown)
       - [Add a new document](#add-a-new-document)
       - [Compile dossier](#compile-dossier)
       - [HTML](#html)
@@ -102,6 +103,10 @@ nmd generate dossier -p dossier/input/path -f -w
 ```
 
 The Git support is planned, but not implemented yet. You can only add `.gitkeep` files in assets directories using `-k`.
+
+### Markdown to New Markdown
+
+You can easily convert a standard Markdown file in a New Markdown dossier using `--from-md <md-file-path>` option. 
 
 #### Add a new document
 
