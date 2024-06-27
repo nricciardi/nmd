@@ -113,6 +113,12 @@ impl NmdCli {
                                                 .help("set minimum watcher time interval")
                                                 .action(ArgAction::Set)
                                         )
+                                        .arg(
+                                            Arg::new("fast-draft")
+                                            .long("fast-draft")
+                                            .help("fast draft instead of complete compilation")
+                                            .action(ArgAction::SetTrue)
+                                        )
 
                                 )
                                 
@@ -320,6 +326,10 @@ impl NmdCli {
                 }
 
                 let watch: bool = compile_dossier_matches.get_flag("watch");
+
+                let fast_draft: bool = compile_dossier_matches.get_flag("fast-draft");
+
+                compilation_configuration.set_fast_draft(fast_draft);
 
 
                 if watch {

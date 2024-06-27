@@ -62,7 +62,7 @@ impl ParsingRule for HtmlListRule {
         &self.searching_pattern
     }
 
-    fn parse(&self, content: &str, codex: &Codex, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError> {
+    fn standard_parse(&self, content: &str, codex: &Codex, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError> {
         
         let mut parsed_content = String::new();
 

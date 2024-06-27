@@ -25,7 +25,7 @@ impl ParsingRule for HtmlExtendedBlockQuoteRule {
     fn searching_pattern(&self) -> &String {
         &self.searching_pattern
     }
-    fn parse(&self, content: &str, codex: &Codex, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError> {
+    fn standard_parse(&self, content: &str, codex: &Codex, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError> {
 
         let content = content.trim();
         let mut lines: Vec<&str> = content.lines().collect();

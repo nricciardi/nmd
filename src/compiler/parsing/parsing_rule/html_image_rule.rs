@@ -1,5 +1,4 @@
-use std::borrow::BorrowMut;
-use std::sync::{RwLock, RwLockReadGuard, RwLockWriteGuard};
+use std::sync::{RwLock, RwLockReadGuard};
 use std::{path::PathBuf, sync::Arc};
 
 use build_html::{Container, Html, HtmlContainer};
@@ -352,10 +351,13 @@ impl ParsingRule for HtmlImageRule {
         &self.searching_pattern
     }
 
-    /// Parse the content using internal search and replacement pattern
-    fn parse(&self, content: &str, codex: &Codex, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError> {
+    fn standard_parse(&self, content: &str, codex: &Codex, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError> {
 
         Self::parse_image_from_identifier(&self.image_modifier_identifier, &self.searching_pattern, content, codex, Arc::clone(&parsing_configuration))
+    }
+
+    fn fast_parse(&self, content: &str, codex: &Codex, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError> {
+        Ok(ParsingOutcome::new(format!(r#"<img alt="{}" />"#, content)))
     }
 }
 

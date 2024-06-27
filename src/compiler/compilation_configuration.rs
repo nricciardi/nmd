@@ -12,14 +12,17 @@ pub struct CompilationConfiguration {
     input_location: PathBuf,
     output_location: PathBuf,
 
+    fast_draft: bool,
     embed_local_image: Option<bool>,
     embed_remote_image: Option<bool>,
     compress_embed_image: Option<bool>,
     strict_image_src_check: Option<bool>,
     // excluded_modifiers: Modifiers,       // TODO
+
     parallelization: Option<bool>,
     use_remote_addons: Option<bool>,
     references: Option<TextReferenceMap>,
+
 }
 
 impl CompilationConfiguration {
@@ -89,6 +92,10 @@ impl CompilationConfiguration {
         &self.references
     }
 
+    pub fn fast_draft(&self) -> bool {
+        self.fast_draft
+    }
+
     pub fn strict_image_src_check(&self) -> Option<bool> {
         self.strict_image_src_check
     }
@@ -118,7 +125,11 @@ impl CompilationConfiguration {
 
     pub fn set_references(&mut self, references: TextReferenceMap) {
         self.references = Some(references)
-    } 
+    }
+
+    pub fn set_fast_draft(&mut self, value: bool) {
+        self.fast_draft = value;
+    }
 }
 
 impl CompilationConfiguration {
@@ -160,6 +171,7 @@ impl Default for CompilationConfiguration {
             format: Default::default(),
             input_location: PathBuf::from("."),
             output_location: PathBuf::from("."),
+            fast_draft: false,
             embed_local_image: None,
             embed_remote_image: None,
             compress_embed_image: None,

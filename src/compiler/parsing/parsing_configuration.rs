@@ -35,6 +35,8 @@ pub struct ParsingConfiguration {
     strict_focus_block_check: bool,
 
     references: TextReferenceMap,
+
+    fast_draft: bool,
 }
 
 impl ParsingConfiguration {
@@ -42,7 +44,7 @@ impl ParsingConfiguration {
     pub fn new(input_location: PathBuf, output_location: PathBuf, embed_local_image: bool, embed_remote_image: bool, 
                 compress_embed_image: bool, strict_image_src_check: bool, metadata: ParsingMetadata, excluded_modifiers: ModifiersBucket, 
                 parallelization: bool, list_bullets_configuration: Vec<ListBulletConfigurationRecord>, strict_list_check: bool, 
-                strict_focus_block_check: bool, references: TextReferenceMap) -> Self {
+                strict_focus_block_check: bool, references: TextReferenceMap, fast_draft: bool) -> Self {
 
         Self {
             input_location,
@@ -57,7 +59,8 @@ impl ParsingConfiguration {
             list_bullets_configuration,
             strict_list_check,
             strict_focus_block_check,
-            references
+            references,
+            fast_draft
         }
     }
 
@@ -117,6 +120,10 @@ impl ParsingConfiguration {
         &self.references
     }
 
+    pub fn fast_draft(&self) -> bool {
+        self.fast_draft
+    }
+
     pub fn set_input_location(&mut self, new_input_location: PathBuf) {
         self.input_location = new_input_location;
     }
@@ -168,6 +175,10 @@ impl ParsingConfiguration {
     pub fn set_strict_focus_block_check(&mut self, strict_focus_block_check: bool) {
         self.strict_focus_block_check = strict_focus_block_check;
     }
+
+    pub fn set_fast_draft(&mut self, value: bool) {
+        self.fast_draft = value;
+    }
 }
 
 impl Default for ParsingConfiguration {
@@ -185,7 +196,8 @@ impl Default for ParsingConfiguration {
             list_bullets_configuration: list_bullet_configuration_record::default_bullets_configuration(),
             strict_list_check: false,
             strict_focus_block_check: false,
-            references: HashMap::new()
+            references: HashMap::new(),
+            fast_draft: false,
         }
     }
 }
@@ -203,6 +215,7 @@ impl From<CompilationConfiguration> for ParsingConfiguration {
             strict_image_src_check: compilation_configuration.strict_image_src_check().clone().unwrap(),
             parallelization: compilation_configuration.parallelization().clone().unwrap(),
             references: compilation_configuration.references().clone().unwrap(),
+            fast_draft: compilation_configuration.fast_draft(),
             
             ..Default::default()
         }

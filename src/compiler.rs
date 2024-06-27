@@ -85,6 +85,10 @@ impl Compiler {
         
         log::info!("parsing...");
         log::debug!("parsing configuration:\n{:#?}\n", parsing_configuration);
+        
+        if parsing_configuration.fast_draft() {
+            log::info!("fast draft!")
+        }
 
         dossier.parse(Arc::clone(&codex), Arc::new(RwLock::new(parsing_configuration)), Arc::new(None))?;
 

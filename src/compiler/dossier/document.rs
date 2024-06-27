@@ -4,6 +4,7 @@ use std::fmt::Display;
 use std::path::PathBuf;
 use std::str::FromStr;
 use std::sync::{Arc, RwLock};
+use std::time::Instant;
 
 pub use chapter::Chapter;
 use thiserror::Error;
@@ -73,7 +74,7 @@ impl Document {
 
 impl Parsable for Document {
 
-    fn parse(&mut self, codex: Arc<Codex>, parsing_configuration: Arc<RwLock<ParsingConfiguration>>, parsing_configuration_overlay: Arc<Option<ParsingConfigurationOverLay>>) -> Result<(), ParsingError> {
+    fn standard_parse(&mut self, codex: Arc<Codex>, parsing_configuration: Arc<RwLock<ParsingConfiguration>>, parsing_configuration_overlay: Arc<Option<ParsingConfigurationOverLay>>) -> Result<(), ParsingError> {
 
         let parallelization = parsing_configuration.read().unwrap().parallelization();
 
@@ -129,8 +130,8 @@ impl Parsable for Document {
                 return result;
             }
         }
-
-       Ok(())
+    
+        Ok(())
 
     }
 }

@@ -13,7 +13,7 @@
 - [ ] Bibliography
 - [ ] Scientific style
 - [ ] Linkify (convert URL-like strings in links)
-- [ ] Fast draft (prevent to parse time consuming parts)
+- [x] Fast draft (prevent to parse time consuming parts)
 - [ ] Dynamics addons (e.g. katex iff math is used)
 - [x] Watcher mode
 - [ ] Split CLI lib from compiler
@@ -37,7 +37,7 @@
 - [x] Set image dimensions
 - [x] Image compression
 - [x] Image in dossier: default path to `assets/images`
-- [ ] Parse image caption 
+- [x] Parse image caption 
 - [x] Focus block
 - [x] Light base page style
 - [ ] Paper format support (A4, A5, ...)

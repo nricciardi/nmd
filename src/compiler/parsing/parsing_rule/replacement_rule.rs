@@ -67,7 +67,7 @@ impl Debug for ReplacementRule<String> {
 impl ParsingRule for ReplacementRule<String> {
 
     /// Parse the content using internal search and replacement pattern
-    fn parse(&self, content: &str, codex: &Codex, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError> {
+    fn standard_parse(&self, content: &str, codex: &Codex, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError> {
 
         let searching_pattern = self.searching_pattern().clone();
         let mut replacer = self.replacer.clone();
@@ -126,7 +126,7 @@ impl<F> ParsingRule for ReplacementRule<F>
 where F: 'static + Sync + Send + Fn(&Captures) -> String {
 
     /// Parse the content using internal search and replacement pattern
-    fn parse(&self, content: &str, codex: &Codex, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError> {
+    fn standard_parse(&self, content: &str, codex: &Codex, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError> {
 
         if self.reference_at.is_some() {
             return Err(ParsingError::InvalidParameter("id_at".to_string()))

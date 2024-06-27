@@ -48,7 +48,7 @@ impl Paragraph {
 }
 
 impl Parsable for Paragraph {
-    fn parse(&mut self, codex: Arc<Codex>, parsing_configuration: Arc<RwLock<ParsingConfiguration>>, parsing_configuration_overlay: Arc<Option<ParsingConfigurationOverLay>>) -> Result<(), ParsingError> {
+    fn standard_parse(&mut self, codex: Arc<Codex>, parsing_configuration: Arc<RwLock<ParsingConfiguration>>, parsing_configuration_overlay: Arc<Option<ParsingConfigurationOverLay>>) -> Result<(), ParsingError> {
 
         let parsing_outcome = Parser::parse_paragraph(&codex, self, Arc::clone(&parsing_configuration), parsing_configuration_overlay)?;
 

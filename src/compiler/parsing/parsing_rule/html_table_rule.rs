@@ -281,7 +281,7 @@ impl ParsingRule for HtmlTableRule {
         &self.searching_pattern
     }
 
-    fn parse(&self, content: &str, codex: &Codex, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError> {
+    fn standard_parse(&self, content: &str, codex: &Codex, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError> {
 
         //return Ok(ParsingOutcome::new(format!("table: {}", content.lines().nth(2).unwrap())));
 

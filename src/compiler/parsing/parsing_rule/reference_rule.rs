@@ -30,7 +30,7 @@ impl ParsingRule for ReferenceRule {
         &self.searching_pattern
     }
 
-    fn parse(&self, content: &str, codex: &Codex, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError> {
+    fn standard_parse(&self, content: &str, codex: &Codex, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError> {
         
         let regex = Regex::new(&self.searching_pattern).unwrap();
 

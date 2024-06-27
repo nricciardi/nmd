@@ -131,7 +131,9 @@ nmd compile dossier -f html -i dossier/input/path -o artifact/output/path
 
 If you watch dossier files and compile them if anything changes, you should use watcher mode (`-w` option).
 
-Watcher mode compile dossier if any change is captured. Changes are captured only if a minimum time is elapsed. To set minimum time use `-t` option
+Watcher mode compile dossier if any change is captured. Changes are captured only if a minimum time is elapsed. To set minimum time use `-t` option.
+
+`--fast-draft` to create a fast draft of dossier, generally compiler takes less time to generate it.
 
 ## Develop
 

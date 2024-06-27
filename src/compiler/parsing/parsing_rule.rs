@@ -28,10 +28,19 @@ pub trait ParsingRule: Send + Sync + Debug {
     }
 
     /// Parse content based on codex and parsing_configuration.
-    fn parse(&self, content: &str, codex: &Codex, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError>;
+    fn standard_parse(&self, content: &str, codex: &Codex, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError>;
 
     fn fast_parse(&self, content: &str, codex: &Codex, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError> {
-        self.parse(content, codex, parsing_configuration)
+        self.standard_parse(content, codex, parsing_configuration)
     }
+
+    fn parse(&self, content: &str, codex: &Codex, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError> {
+        if parsing_configuration.read().unwrap().fast_draft() {
+            return self.fast_parse(content, codex, parsing_configuration)
+        }
+
+        self.standard_parse(content, codex, parsing_configuration)
+    }
+
 
 }
