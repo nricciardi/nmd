@@ -1,5 +1,3 @@
-use build_html::Table;
-
 use super::{base_modifier::BaseModifier, constants::{IDENTIFIER_PATTERN, NEW_LINE_PATTERN}, modifiers_bucket::ModifiersBucket, Modifier, ModifierIdentifier, ModifierPattern};
 
 
@@ -108,7 +106,7 @@ impl StandardParagraphModifier {
             Self::CodeBlock => format!(r"```(\w+){}+(.*?)\n+```", NEW_LINE_PATTERN),
             Self::MathBlock => String::from(r#"\$\$((?s:.+?))\$\$"#),
 
-            Self::ListItem => format!(r#"(?m:^([\t ]*)(-\[\]|-\[ \]|-\[x\]|-\[X\]|-|->|\||\*|\+|--|\d[\.)]?|[a-zA-Z]{{1,8}}[\.)]|&[^;]+;) (.*){})"#, NEW_LINE_PATTERN),
+            Self::ListItem => format!(r#"(?m:^([\t ]*)(-\[\]|-\[ \]|-\[x\]|-\[X\]|-|->|\||\*|\+|--|\d[\.)]?|[a-zA-Z]{{1,8}}[\.)]|&[^;]+;) (.*){}?)"#, NEW_LINE_PATTERN),
             Self::List => format!(r#"((?:{}+)+)"#, Self::ListItem.modifier_pattern()),
             Self::ExtendedBlockQuoteLine => String::from(r"(?m:^> (.*))"),
             Self::ExtendedBlockQuote => format!(r"(?ms:^> .*?)"),
@@ -158,4 +156,30 @@ impl Into<BaseModifier> for StandardParagraphModifier {
     fn into(self) -> BaseModifier {
         BaseModifier::new(self.identifier(), self.modifier_pattern_with_paragraph_separator(), self.incompatible_modifiers())
     }
+}
+
+
+#[cfg(test)]
+mod test {
+    use regex::Regex;
+
+    use super::StandardParagraphModifier;
+
+    #[test]
+    fn match_list() {
+        let regex = Regex::new(StandardParagraphModifier::List.modifier_pattern_with_paragraph_separator().as_str()).unwrap();
+
+        let list = concat!(
+            "\n",
+            "\n",
+            "- [Element 1](#element-1)",
+            "- [Element 2](#element-2)",
+            "\n",
+            "\n",
+        );
+
+        assert!(regex.is_match(list));
+
+    }
+
 }

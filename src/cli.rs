@@ -1,5 +1,6 @@
 
 
+use std::collections::HashSet;
 use std::{path::PathBuf, str::FromStr};
 
 use clap::builder::OsStr;
@@ -119,6 +120,13 @@ impl NmdCli {
                                             .long("fast-draft")
                                             .help("fast draft instead of complete compilation")
                                             .action(ArgAction::SetTrue)
+                                        )
+                                        .arg(
+                                            Arg::new("documents-subset")
+                                            .short('s')
+                                            .long("documents-subset")
+                                            .help("compile only a documents subset")
+                                            .action(ArgAction::Append)
                                         )
 
                                 )
@@ -315,6 +323,20 @@ impl NmdCli {
                 } else {
 
                     compilation_configuration.set_output_location(compilation_configuration.input_location().clone());
+                }
+
+                if let Some(documents_subset) = compile_dossier_matches.get_many::<String>("documents-subset") {
+                    
+                    if documents_subset.len() < 1 {
+                        return Err(NmdCliError::MoreThanOneValue("documents-subset".to_string()));
+                    }
+
+                    let mut subset: HashSet<String> = HashSet::new();
+                    for file_name in documents_subset {
+                        subset.insert(file_name.clone());
+                    }
+
+                    compilation_configuration.set_documents_subset_to_compile(Some(subset));
                 }
 
                 let watcher_time: u64;

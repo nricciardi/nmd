@@ -18,7 +18,7 @@
 - [x] Watcher mode
 - [ ] Split CLI lib from compiler
 - [ ] Compile only modified chapters
-- [ ] Compile only a subset of documents
+- [x] Compile only a subset of documents
 - [ ] Paper format support (A3, A5, ...)
 - [x] MD to NMD converter
 

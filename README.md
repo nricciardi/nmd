@@ -140,6 +140,8 @@ Watcher mode compile dossier if any change is captured. Changes are captured onl
 
 `--fast-draft` to create a fast draft of dossier, generally compiler takes less time to generate it.
 
+`-s <document1> -s <documentN>` to compile only a subset of documents in dossier configuration list.
+
 ## Develop
 
 Develop [check list](DEVELOP.md)

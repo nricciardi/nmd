@@ -1,4 +1,5 @@
 use std::borrow::Borrow;
+use std::collections::HashSet;
 use std::{cmp, io};
 use std::path::PathBuf;
 use std::str::FromStr;
@@ -16,7 +17,7 @@ use super::codex::modifier::constants::CHAPTER_STYLE_PATTERN;
 use super::codex::Codex;
 use super::dossier::document::chapter::chapter_builder::{self, ChapterBuilder};
 use super::dossier::document::chapter::chapter_tag::ChapterTag;
-use super::dossier::dossier_configuration::DossierConfiguration;
+use super::dossier::dossier_configuration::{self, DossierConfiguration};
 use super::dossier::Dossier;
 use super::{dossier::{document::{chapter::{heading::{Heading, HeadingLevel}, paragraph::ParagraphError}, Chapter, Paragraph}, Document, DocumentError}};
 
@@ -418,6 +419,23 @@ impl Loader {
         Self::load_dossier_from_dossier_configuration(codex, &dossier_configuration)
     }
 
+    pub fn load_dossier_from_path_buf_only_documents(codex: &Codex, path_buf: &PathBuf, only_documents: &HashSet<String>) -> Result<Dossier, LoadError> {
+        let mut dossier_configuration = DossierConfiguration::try_from(path_buf)?;
+
+        let d: Vec<String> = dossier_configuration.raw_documents_paths().iter()
+                                                    .filter(|item| {
+
+                                                        let file_name = PathBuf::from(*item).file_name().unwrap().to_string_lossy().to_string();
+
+                                                        only_documents.contains(file_name.as_str())
+                                                    })
+                                                    .map(|item| item.clone())
+                                                    .collect();
+
+        dossier_configuration.set_raw_documents_paths(d);
+
+        Self::load_dossier_from_dossier_configuration(codex, &dossier_configuration)
+    }
 
     pub fn load_dossier_from_dossier_configuration(codex: &Codex, dossier_configuration: &DossierConfiguration) -> Result<Dossier, LoadError> {
 

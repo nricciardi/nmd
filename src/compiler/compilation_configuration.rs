@@ -1,4 +1,4 @@
-use std::{clone, collections::HashMap, path::PathBuf};
+use std::{clone, collections::{HashMap, HashSet}, path::PathBuf};
 
 use crate::resource::text_reference::TextReferenceMap;
 
@@ -18,11 +18,12 @@ pub struct CompilationConfiguration {
     embed_remote_image: Option<bool>,
     compress_embed_image: Option<bool>,
     strict_image_src_check: Option<bool>,
-    // excluded_modifiers: Modifiers,       // TODO
 
     parallelization: Option<bool>,
     use_remote_addons: Option<bool>,
     references: Option<TextReferenceMap>,
+
+    documents_subset_to_compile: Option<HashSet<String>>
 
 }
 
@@ -97,6 +98,10 @@ impl CompilationConfiguration {
         self.fast_draft
     }
 
+    pub fn documents_subset_to_compile(&self) -> &Option<HashSet<String>> {
+        &self.documents_subset_to_compile
+    }
+
     pub fn strict_image_src_check(&self) -> Option<bool> {
         self.strict_image_src_check
     }
@@ -130,6 +135,10 @@ impl CompilationConfiguration {
 
     pub fn set_fast_draft(&mut self, value: bool) {
         self.fast_draft = value;
+    }
+
+    pub fn set_documents_subset_to_compile(&mut self, d: Option<HashSet<String>>) {
+        self.documents_subset_to_compile = d;
     }
 }
 
@@ -179,7 +188,8 @@ impl Default for CompilationConfiguration {
             strict_image_src_check: None,
             parallelization: None,
             use_remote_addons: None,
-            references: None
+            references: None,
+            documents_subset_to_compile: None,
         }
     }
 }

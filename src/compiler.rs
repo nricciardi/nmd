@@ -13,7 +13,7 @@ pub mod parsing;
 
 use std::{sync::{mpsc::{channel, RecvError}, Arc, RwLock}, thread, time::{Instant, SystemTime}};
 
-use dossier::dossier_configuration::DossierConfiguration;
+use dossier::{dossier_configuration::DossierConfiguration, Dossier};
 use notify::{RecursiveMode, Watcher};
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use thiserror::Error;
@@ -62,10 +62,18 @@ impl Compiler {
 
         let codex = Arc::new(compilation_configuration.codex());
 
-        let mut dossier = Loader::load_dossier_from_path_buf(&codex, compilation_configuration.input_location())?;
+        let mut dossier: Dossier;
+        
+        if let Some(dstc) = compilation_configuration.documents_subset_to_compile() {
+
+            dossier = Loader::load_dossier_from_path_buf_only_documents(&codex, compilation_configuration.input_location(), dstc)?;
+
+        } else {
+
+            dossier = Loader::load_dossier_from_path_buf(&codex, compilation_configuration.input_location())?;
+        }
 
         log::info!("dossier loaded");
-
 
         let dossier_configuration = dossier.configuration();
 
