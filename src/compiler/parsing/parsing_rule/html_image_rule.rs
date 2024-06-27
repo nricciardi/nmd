@@ -69,7 +69,7 @@ impl HtmlImageRule {
         panic!("unsupported image modifier identifier");
     }
 
-    fn create_figure_img(src: &str, label: Option<&str>, id: Option<ResourceReference>, img_classes: Vec<&str>, style: Option<String>) -> String {
+    fn create_figure_img(src: &str, alt: Option<&str>, caption: Option<&str>, id: Option<ResourceReference>, img_classes: Vec<&str>, style: Option<String>) -> String {
 
         let id_attr: String;
 
@@ -79,15 +79,19 @@ impl HtmlImageRule {
             id_attr = String::new();
         }
 
-        let alt: String;
-        let caption: String;
+        let html_alt: String;
+        let html_caption: String;
 
-        if let Some(label) = label {
-            alt = format!(r#"alt="{}""#, label);
-            caption = format!(r#"<figcaption class="image-caption">{}</figcaption>"#, label);
+        if let Some(a) = alt {
+            html_alt = format!(r#"alt="{}""#, a);
         } else {
-            alt = String::new();
-            caption = String::new();
+            html_alt = String::new();
+        }
+
+        if let Some(c) = caption {
+            html_caption = format!(r#"<figcaption class="image-caption">{}</figcaption>"#, c);
+        } else {
+            html_caption = String::new();
         }
 
         let style_attr: String;
@@ -101,10 +105,10 @@ impl HtmlImageRule {
         format!(r#"<figure class="figure" {}>
                     <img src="{}" {} class="{}" {} />
                     {}
-                </figure>"#, id_attr, src, alt, img_classes.join(" "), style_attr, caption)
+                </figure>"#, id_attr, src, html_alt, img_classes.join(" "), style_attr, html_caption)
     }
 
-    fn build_img(src: &str, label: Option<&str>, id: Option<ResourceReference>, img_classes: Vec<&str>, figure_style: Option<String>, parsing_configuration: &RwLockReadGuard<ParsingConfiguration>) -> String {
+    fn build_img(src: &str, alt: Option<&str>, caption: Option<&str>, id: Option<ResourceReference>, img_classes: Vec<&str>, figure_style: Option<String>, parsing_configuration: &RwLockReadGuard<ParsingConfiguration>) -> String {
 
         if RemoteResource::is_valid_remote_resource(src) {
 
@@ -116,7 +120,7 @@ impl HtmlImageRule {
                 
                 let src = Url::parse(src).unwrap();
 
-                return Self::create_figure_img(src.as_str(), label, id, img_classes, figure_style)
+                return Self::create_figure_img(src.as_str(), alt, caption, id, img_classes, figure_style)
             }
 
         } else {
@@ -143,7 +147,7 @@ impl HtmlImageRule {
 
                 let base64_image = image.to_base64(parsing_configuration.compress_embed_image());
 
-                return Self::create_figure_img(format!("data:image/png;base64,{}", base64_image.unwrap()).as_str(), label, id, img_classes, figure_style);
+                return Self::create_figure_img(format!("data:image/png;base64,{}", base64_image.unwrap()).as_str(), alt, caption, id, img_classes, figure_style);
 
             } else if parsing_configuration.strict_image_src_check() {
 
@@ -152,7 +156,7 @@ impl HtmlImageRule {
                 panic!("invalid src")
 
             } else {
-                return Self::create_figure_img(src, label, id, img_classes, figure_style)       // create image tag of invalid image instead of panic
+                return Self::create_figure_img(src, alt, caption, id, img_classes, figure_style)       // create image tag of invalid image instead of panic
             }
 
         }
@@ -192,12 +196,12 @@ impl HtmlImageRule {
                     if let Some(id) = captures.get(2) {
                         let id = ResourceReference::of_internal_without_sharp(id.as_str(), Some(document_name)).unwrap();
 
-                        return Self::build_img(src.as_str(), Some(&parsed_label.parsed_content()), Some(id), vec!["image"], style, &parsing_configuration);
+                        return Self::build_img(src.as_str(), Some(label.as_str()), Some(&parsed_label.parsed_content()), Some(id), vec!["image"], style, &parsing_configuration);
 
                     } else {
                         let id = ResourceReference::of(label.as_str(), Some(document_name)).unwrap();
 
-                        return Self::build_img(src.as_str(), Some(&parsed_label.parsed_content()), Some(id), vec!["image"], style, &parsing_configuration);
+                        return Self::build_img(src.as_str(), Some(label.as_str()), Some(&parsed_label.parsed_content()), Some(id), vec!["image"], style, &parsing_configuration);
  
                     }
                 }
@@ -245,7 +249,7 @@ impl HtmlImageRule {
                 style = None;
             }
 
-            return Self::build_img(src.as_str(), None, id, vec!["image", "abridged-image"], style, &parsing_configuration);
+            return Self::build_img(src.as_str(), None, None, id, vec!["image", "abridged-image"], style, &parsing_configuration);
 
         }).to_string();
         
