@@ -7,7 +7,7 @@ pub mod reference_rule;
 pub mod html_table_rule;
 
 use std::{fmt::Debug, sync::{Arc, RwLock}};
-use regex::Regex;
+use regex::{Match, Matches, Regex};
 
 use crate::compiler::codex::Codex;
 
@@ -25,6 +25,14 @@ pub trait ParsingRule: Send + Sync + Debug {
         let regex = Regex::new(&pattern).unwrap();
 
         regex.is_match(content)
+    }
+
+    fn find_iter<'r, 'h>(&'r self, content: &'h str) -> Vec<Match<'h>> {
+        let pattern = self.searching_pattern();
+
+        let regex = Regex::new(&pattern).unwrap();
+
+        regex.find_iter(content).collect()
     }
 
     /// Parse content based on `Codex` and `ParsingConfiguration`

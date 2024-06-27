@@ -26,3 +26,9 @@ impl ParsingOutcome {
         self.parsed_content.push_str(s)
     }
 }
+
+impl Into<String> for ParsingOutcome {
+    fn into(self) -> String {
+        self.parsed_content
+    }
+}

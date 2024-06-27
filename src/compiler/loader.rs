@@ -201,6 +201,11 @@ impl Loader {
     /// Split a string in the corresponding vector of paragraphs
     pub fn load_paragraphs_from_str(codex: &Codex, content: &str) -> Result<Vec<Paragraph>, LoadError> {
 
+        if content.trim().is_empty() {
+            log::debug!("skip paragraphs loading: empty content");
+            return Ok(Vec::new());
+        }
+
         log::debug!("loading paragraph:\n{}", content);
 
         let mut paragraphs: Vec<(usize, usize, Paragraph)> = Vec::new();
