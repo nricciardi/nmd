@@ -19,6 +19,7 @@
 - [ ] Split CLI lib from compiler
 - [ ] Compile only modified chapters
 - [ ] Paper format support (A3, A5, ...)
+- [ ] MD to NMD converter
 
 
 ### Features in Progress for current version
