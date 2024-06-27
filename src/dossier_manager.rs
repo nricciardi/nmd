@@ -35,20 +35,16 @@ impl DossierManager {
     }
 
     /// Add document to dossier. Create file if it doesn't exist.
-    pub fn add_document(&self, filename: &String) -> Result<(), DossierManagerError> {
+    pub fn add_document(&self, filename: &String, content: &str) -> Result<(), DossierManagerError> {
 
-        let mut filename = String::from(filename);
-
-        if !filename.ends_with(&format!(".{}", NMD_EXTENSION)) {
-            filename.push_str(&format!(".{}", NMD_EXTENSION));
-        }
+        let filename = file_utility::build_output_file_name(&filename, NMD_EXTENSION);
 
         let mut dossier_configuration = DossierConfiguration::try_from(self.configuration.dossier_path())?;
 
         let abs_file_path = self.configuration.dossier_path().clone().join(&filename);
         let rel_file_path = format!(r"./{}", filename);
 
-        file_utility::create_empty_file(&abs_file_path)?;
+        file_utility::create_file_with_content(&abs_file_path, content)?;
 
         log::info!("created document: '{}'", filename);
 
@@ -57,5 +53,9 @@ impl DossierManager {
         dossier_configuration.dump_as_yaml(self.configuration.dossier_path().clone().join(DOSSIER_CONFIGURATION_YAML_FILE_NAME))?;
 
         Ok(())
+    }
+
+    pub fn add_empty_document(&self, filename: &String) -> Result<(), DossierManagerError> {
+        self.add_document(filename, "")
     }
 }

@@ -174,6 +174,12 @@ impl NmdCli {
                                                 .action(ArgAction::Set)
                                                 .default_value("info")
                                         )
+                                        .arg(
+                                            Arg::new("from-md")
+                                                .long("from-md")
+                                                .help("generate NMD dossier from Markdown file")
+                                                .action(ArgAction::Set)
+                                        )
 
                                 )
                 )
@@ -375,11 +381,34 @@ impl NmdCli {
                     generator_configuration.set_path(input_path);
                 }
 
+                let md_file_path: Option<PathBuf>;
+                if let Some(mut md_fp) = generate_dossier_matches.get_many::<String>("from-md") {
+                    
+                    if md_fp.len() != 1 {
+                        return Err(NmdCliError::MoreThanOneValue("from-md".to_string()));
+                    }
+                    
+                    
+                    md_file_path = Some(PathBuf::from(md_fp.nth(0).unwrap()));
+                
+                } else {
+                    md_file_path = None;
+                }
+
                 generator_configuration.set_force_generation(generate_dossier_matches.get_flag("force"));
                 generator_configuration.set_gitkeep(generate_dossier_matches.get_flag("gitkeep"));
                 generator_configuration.set_welcome(generate_dossier_matches.get_flag("welcome"));
                 
-                Ok(Generator::generate_dossier(generator_configuration)?)
+                if let Some(md_file_path) = md_file_path {
+
+                    Generator::generate_dossier_from_markdown_file(&md_file_path, generator_configuration)?;
+                    
+                } else {
+
+                    Generator::generate_dossier(generator_configuration)?;
+                }
+
+                Ok(())
             },
             _ => unreachable!()
         }
@@ -419,7 +448,7 @@ impl NmdCli {
                         let dossier_manager = DossierManager::new(dossier_manager_configuration);
 
                         for file_name in document_names {
-                            dossier_manager.add_document(&file_name)?;
+                            dossier_manager.add_empty_document(&file_name)?;
                         }
 
                         return Ok(())

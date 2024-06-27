@@ -1,8 +1,10 @@
 pub mod generator_configuration;
 
-use std::fs;
+use std::{collections::{HashMap, HashSet}, fs, path::PathBuf};
+use regex::Regex;
+
 use self::generator_configuration::GeneratorConfiguration;
-use crate::{compiler::dossier::{self, dossier_configuration::DossierConfiguration}, constants::DOSSIER_CONFIGURATION_YAML_FILE_NAME, resource::{disk_resource::DiskResource, Resource, ResourceError}, utility::file_utility};
+use crate::{compiler::dossier::{self, dossier_configuration::DossierConfiguration}, constants::DOSSIER_CONFIGURATION_YAML_FILE_NAME, dossier_manager::{dossier_manager_configuration::DossierManagerConfiguration, DossierManager}, resource::{disk_resource::DiskResource, Resource, ResourceError}, utility::file_utility::{self, read_file_content}};
 
 pub const WELCOME_FILE_NAME: &str = "welcome.nmd";
 
@@ -12,7 +14,7 @@ pub struct Generator {
 impl Generator {
 
     /// Generate a new dossier based on GeneratorConfiguration
-    pub fn generate_dossier(configuration: GeneratorConfiguration) -> Result<(), ResourceError> {
+    pub fn generate_dossier(configuration: GeneratorConfiguration) -> Result<DossierConfiguration, ResourceError> {
         
         if configuration.path().exists() {
 
@@ -94,8 +96,63 @@ impl Generator {
 
         log::info!("added dossier configuration file: '{}'", DOSSIER_CONFIGURATION_YAML_FILE_NAME);
 
-        Ok(())
+        Ok(dossier_configuration)
     }
 
+    pub fn generate_dossier_from_markdown_file(markdown_source_file_path: &PathBuf, configuration: GeneratorConfiguration) -> Result<DossierConfiguration, ResourceError> {
+        let markdown_file_content = read_file_content(markdown_source_file_path)?;
+
+        let dossier_path = configuration.path().clone();
+        let dossier_configuration = Self::generate_dossier(configuration)?;
+
+        let dossier_manager = DossierManager::new(DossierManagerConfiguration::new(dossier_path));
+
+        let mut current_nmd_file_content = String::new();
+        let mut current_nmd_file_name: Option<String> = None;
+        let regex = Regex::new(r"(?m:^#[ ]?([\w ]+))").unwrap();
+
+        let newline = match std::env::consts::OS {
+            "windows" => "\r\n",
+            _ => "\n",
+        };
+
+        let mut document_names: HashMap<String, u32> = HashMap::new();
+
+        for line in markdown_file_content.lines() {
+            if regex.is_match(line) {
+
+                log::info!("new header 1 found, generating new document...");
+
+                if let Some(ref file_name) = current_nmd_file_name {
+
+                    let mut file_name = String::from(file_name);
+
+                    if let Some(n) = document_names.get(&file_name) {
+
+                        if *n > 1 {
+                            file_name = format!("{}-{}", file_name, n);
+                        }
+
+                    }
+                    
+                    let n = document_names.get(&file_name).unwrap_or(&1);
+                    document_names.insert(file_name.clone(), *n);
+                    
+
+                    dossier_manager.add_document(&file_name, &current_nmd_file_content).unwrap();
+                    current_nmd_file_content.clear();
+                }
+
+                current_nmd_file_name = Some(String::from(regex.captures(line).unwrap().get(1).unwrap().as_str()));
+
+            }
+
+            current_nmd_file_content.push_str(&format!("{}{}", line, newline));
+            
+        }
+        
+
+        Ok(dossier_configuration)
+    }
 }
 

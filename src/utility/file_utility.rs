@@ -27,9 +27,14 @@ pub fn create_directory(path: &PathBuf) -> Result<(), io::Error> {
 
 pub fn create_empty_file(file_path: &PathBuf) -> Result<(), io::Error> {
 
+    create_file_with_content(file_path, "")
+}
+
+pub fn create_file_with_content(file_path: &PathBuf, content: &str) -> Result<(), io::Error> {
+
     let mut file = File::create(&file_path)?;
 
-    file.write_all(b"")
+    file.write_all(content.as_bytes())
 }
 
 /// Generate a new file name String using passed base and extension arguments
