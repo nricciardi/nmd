@@ -1,6 +1,5 @@
-use std::{io, path::PathBuf};
+use std::io;
 
-use clap::error;
 use thiserror::Error;
 
 use crate::{compiler::dossier::{dossier_configuration::{self, DossierConfiguration}, Dossier}, constants::{DOSSIER_CONFIGURATION_YAML_FILE_NAME, NMD_EXTENSION}, resource::ResourceError, utility::file_utility};
@@ -19,6 +18,7 @@ pub enum DossierManagerError {
 
 }
 
+/// Dossier manager, it can be used to add documents to a dossier
 #[derive(Debug)]
 pub struct DossierManager {
     configuration: DossierManagerConfiguration
@@ -34,6 +34,7 @@ impl DossierManager {
         }
     }
 
+    /// Add document to dossier. Create file if it doesn't exist.
     pub fn add_document(&self, filename: &String) -> Result<(), DossierManagerError> {
 
         let mut filename = String::from(filename);

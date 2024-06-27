@@ -17,7 +17,7 @@ pub struct Parser {
 
 impl Parser {
 
-
+    /// Parse a text (string) using `Codex` rules and `ParsingConfiguration` options 
     pub fn parse_text(codex: &Codex, content: &str, parsing_configuration: Arc<RwLock<ParsingConfiguration>>, parsing_configuration_overlay: Arc<Option<ParsingConfigurationOverLay>>) -> Result<ParsingOutcome, ParsingError> {
 
         let excluded_modifiers = parsing_configuration.read().unwrap().modifiers_excluded().clone();
@@ -25,6 +25,7 @@ impl Parser {
         Parser::parse_text_excluding_modifiers(codex, content, Arc::clone(&parsing_configuration), excluded_modifiers, parsing_configuration_overlay)
     }
 
+    /// Parse a text (string) using `Codex` rules and `ParsingConfiguration` options, excluding a set of modifiers
     pub fn parse_text_excluding_modifiers(codex: &Codex, content: &str, parsing_configuration: Arc<RwLock<ParsingConfiguration>>,
         mut excluded_modifiers: ModifiersBucket, parsing_configuration_overlay: Arc<Option<ParsingConfigurationOverLay>>) -> Result<ParsingOutcome, ParsingError> {
 
@@ -76,10 +77,14 @@ impl Parser {
         Ok(outcome)
     }
 
+    /// Parse a `Paragraph` using `Codex` rules and `ParsingConfiguration` options
     pub fn parse_paragraph(codex: &Codex, paragraph: &Paragraph, parsing_configuration: Arc<RwLock<ParsingConfiguration>>, parsing_configuration_overlay: Arc<Option<ParsingConfigurationOverLay>>) -> Result<ParsingOutcome, ParsingError> {
         Parser::parse_paragraph_excluding_modifiers(codex, paragraph, parsing_configuration, ModifiersBucket::None, parsing_configuration_overlay)
     }
 
+    /// Parse a `Paragraph` using `Codex` rules and `ParsingConfiguration` options, excluding a set of modifiers.
+    /// 
+    /// Only one paragraph rule can be applied on Paragraph.
     pub fn parse_paragraph_excluding_modifiers(codex: &Codex, paragraph: &Paragraph, parsing_configuration: Arc<RwLock<ParsingConfiguration>>,
         mut excluded_modifiers: ModifiersBucket, parsing_configuration_overlay: Arc<Option<ParsingConfigurationOverLay>>) -> Result<ParsingOutcome, ParsingError> {
 

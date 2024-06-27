@@ -6,6 +6,7 @@ use super::{codex::{codex_configuration::CodexConfiguration, Codex}, dossier::do
 
 
 
+/// Struct which contains all information about possible compilation options. It is used to wrap specific user requests for compilation 
 #[derive(Clone, Debug)]
 pub struct CompilationConfiguration {
     format: OutputFormat,

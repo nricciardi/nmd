@@ -1,9 +1,9 @@
-use std::{collections::HashMap, fmt::Debug, sync::{Arc, RwLock}};
+use std::{fmt::Debug, sync::{Arc, RwLock}};
 
 use build_html::{Container, ContainerType, Html, HtmlContainer};
 use build_html::TableCell as HtmlTableCell;
 use build_html::TableRow as HtmlTableRow;
-use regex::{Captures, Regex};
+use regex::Regex;
 
 use crate::{compiler::{codex::{modifier::{constants::IDENTIFIER_PATTERN, standard_paragraph_modifier::StandardParagraphModifier, standard_text_modifier::StandardTextModifier}, Codex}, parsing::{parsing_configuration::ParsingConfiguration, parsing_error::ParsingError, parsing_outcome::ParsingOutcome}}, resource::{resource_reference::ResourceReference, table::{self, Table, TableCell, TableCellAlignment}}};
 
@@ -282,8 +282,6 @@ impl ParsingRule for HtmlTableRule {
     }
 
     fn standard_parse(&self, content: &str, codex: &Codex, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError> {
-
-        //return Ok(ParsingOutcome::new(format!("table: {}", content.lines().nth(2).unwrap())));
 
         let mut table: Table = Table::new();
         let mut alignments: Option<Vec<TableCellAlignment>> = None;

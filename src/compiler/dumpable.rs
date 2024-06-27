@@ -10,6 +10,7 @@ pub enum DumpError {
 }
 
 
+/// Dump trait. Dump is the operation which permits to save save a resource
 pub trait Dumpable {
 
     fn dump(&mut self) -> Result<(), DumpError>;

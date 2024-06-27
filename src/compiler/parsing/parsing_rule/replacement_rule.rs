@@ -26,6 +26,7 @@ pub struct ReplacementRule<R: Replacer> {
 }
 
 impl<R: Replacer> ReplacementRule<R> {
+    
     /// Returns a new instance having a search pattern and a replication pattern
     ///
     /// # Arguments

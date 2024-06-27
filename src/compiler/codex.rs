@@ -62,6 +62,7 @@ impl Codex {
         }
     }
 
+    /// Standard HTML `Codex`
     pub fn of_html(configuration: CodexConfiguration) -> Self {
 
         let text_rules: HashMap<ModifierIdentifier, Box<dyn ParsingRule>> = HashMap::from([

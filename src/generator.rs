@@ -1,8 +1,8 @@
 pub mod generator_configuration;
 
-use std::{fs, path::PathBuf};
+use std::fs;
 use self::generator_configuration::GeneratorConfiguration;
-use crate::{compiler::dossier::{self, dossier_configuration::{self, DossierConfiguration}}, constants::DOSSIER_CONFIGURATION_YAML_FILE_NAME, resource::{disk_resource::DiskResource, Resource, ResourceError}, utility::file_utility};
+use crate::{compiler::dossier::{self, dossier_configuration::DossierConfiguration}, constants::DOSSIER_CONFIGURATION_YAML_FILE_NAME, resource::{disk_resource::DiskResource, Resource, ResourceError}, utility::file_utility};
 
 pub const WELCOME_FILE_NAME: &str = "welcome.nmd";
 
@@ -11,7 +11,7 @@ pub struct Generator {
 
 impl Generator {
 
-    // TODO: move configuration in struct
+    /// Generate a new dossier based on GeneratorConfiguration
     pub fn generate_dossier(configuration: GeneratorConfiguration) -> Result<(), ResourceError> {
         
         if configuration.path().exists() {

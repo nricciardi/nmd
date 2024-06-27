@@ -36,8 +36,8 @@ pub trait Assembler {
 
     fn assemble_dossier(&self, /*codex: &Codex,*/ dossier: &Dossier) -> Result<Artifact, AssemblerError>;
 
-    // TODO: change return type
-    fn assemble_document(&self, document: &Document) -> Result<String, AssemblerError> {
+    /// Assemble document in only one `String`
+    fn assemble_document(&self, document: &Document) -> Result<String, AssemblerError> {        // TODO: change return type
         let mut result = String::new();
 
         for paragraph in document.preamble() {

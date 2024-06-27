@@ -11,20 +11,18 @@ pub mod codex;
 pub mod parsable;
 pub mod parsing;
 
-use std::{path::PathBuf, sync::{mpsc::{channel, RecvError}, Arc, RwLock}, thread, time::{Duration, Instant, SystemTime}};
+use std::{sync::{mpsc::{channel, RecvError}, Arc, RwLock}, thread, time::{Instant, SystemTime}};
 
 use dossier::dossier_configuration::DossierConfiguration;
-use notify::{Config, RecommendedWatcher, RecursiveMode, Watcher};
+use notify::{RecursiveMode, Watcher};
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use thiserror::Error;
-use crate::{compiler::{dossier::Dossier, dumpable::{DumpError, Dumpable}, loader::Loader, parsable::Parsable, parsing::parsing_metadata::ParsingMetadata}, constants::{DOSSIER_CONFIGURATION_JSON_FILE_NAME, DOSSIER_CONFIGURATION_YAML_FILE_NAME}};
-use self::{assembler::{assembler_configuration::AssemblerConfiguration, AssemblerError}, compilation_configuration::CompilationConfiguration, dossier::dossier_configuration, loader::LoadError, parsing::parsing_error::ParsingError};
+use crate::{compiler::{dumpable::{DumpError, Dumpable}, loader::Loader, parsable::Parsable}, constants::{DOSSIER_CONFIGURATION_JSON_FILE_NAME, DOSSIER_CONFIGURATION_YAML_FILE_NAME}};
+use self::{assembler::{assembler_configuration::AssemblerConfiguration, AssemblerError}, compilation_configuration::CompilationConfiguration, loader::LoadError, parsing::parsing_error::ParsingError};
 
 
 #[derive(Error, Debug)]
 pub enum CompilationError {
-    /* #[error(transparent)]
-    InvalidTarget(#[from] LocationError), */
 
     #[error("unknown error")]
     Unknown(String),
@@ -53,6 +51,7 @@ pub struct Compiler {
 
 impl Compiler {
 
+    /// Standard dossier compilation based on CompilationConfiguration
     pub fn compile_dossier(mut compilation_configuration: CompilationConfiguration) -> Result<(), CompilationError> {
 
         log::info!("start to compile dossier");
@@ -112,7 +111,10 @@ impl Compiler {
         Ok(())
     }
 
-    pub fn watch_compile(mut compilation_configuration: CompilationConfiguration, min_elapsed_time_between_events_in_secs: u64) -> Result<(), CompilationError> {
+    /// Watch filesystem and compile dossier if any changes occur
+    /// 
+    /// - min_elapsed_time_between_events_in_secs is the minimum time interval between two compilation
+    pub fn watch_compile(compilation_configuration: CompilationConfiguration, min_elapsed_time_between_events_in_secs: u64) -> Result<(), CompilationError> {
 
         let (tx, rx) = channel();
 

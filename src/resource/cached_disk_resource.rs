@@ -4,6 +4,7 @@ use super::{disk_resource::DiskResource, ResourceError, Resource};
 
 
 
+/// Resource which uses filesystem to store information. It use simple cache logics avoid duplicating read and write operations
 #[derive(Debug, Clone)]
 pub struct CachedDiskResource {
     name: String, 

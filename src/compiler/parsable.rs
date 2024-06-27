@@ -19,7 +19,7 @@ pub trait Parsable {
             self.standard_parse(codex, parsing_configuration, parsing_configuration_overlay)
     }
 
-    /// standard_parse or fast_parse based on parsing configuration
+    /// `standard_parse` or `fast_parse` based on parsing configuration `fast_draft()` value
     fn parse(&mut self, codex: Arc<Codex>, parsing_configuration: Arc<RwLock<ParsingConfiguration>>,
         parsing_configuration_overlay: Arc<Option<ParsingConfigurationOverLay>>) -> Result<(), ParsingError> {
             

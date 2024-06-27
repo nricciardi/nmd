@@ -8,11 +8,14 @@ use super::ResourceError;
 use image::io::Reader as ImageReader;
 
 
+/// Image resource to manipulate images
 pub struct ImageResource {
     image: DynamicImage
 }
 
 impl ImageResource {
+
+    /// Encode image in base64
     pub fn to_base64(self, compression: bool) -> Result<String, ResourceError> {
 
         let mut buffer: Vec<u8> = Vec::new();
@@ -39,6 +42,7 @@ impl ImageResource {
         }
     }
 
+    /// Check if a PathBuf is an image
     pub fn pathbuf_is_image(file_path: &PathBuf) -> bool {
 
         if let Ok(img) = ImageReader::open(file_path) {

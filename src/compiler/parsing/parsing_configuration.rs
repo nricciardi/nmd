@@ -12,6 +12,7 @@ use crate::compiler::codex::modifier::modifiers_bucket::ModifiersBucket;
 use super::parsing_metadata::ParsingMetadata;
 
 
+/// Struct which contains all information about possible parsing options 
 #[derive(Clone, Debug)]
 pub struct ParsingConfiguration {
 

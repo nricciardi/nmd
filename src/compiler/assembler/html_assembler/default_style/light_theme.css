@@ -40,7 +40,7 @@ body {
 
 
 @page:right {
-    @bottom-right {
+    @bottom-center {
         content: counter(page);
     }
 }

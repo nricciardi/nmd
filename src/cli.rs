@@ -42,6 +42,7 @@ pub enum NmdCliError {
 }
 
 
+/// NMD CLI. It is used as interface with NDM compiler, NDM generator and others
 pub struct NmdCli {
     cli: Command
 }

@@ -19,12 +19,15 @@ pub const IMAGES_DIR: &str = "images";
 pub const DOCUMENTS_DIR: &str = "documents";
 pub const STYLES_DIR: &str = "styles";
 
+
 #[derive(Error, Debug)]
 pub enum DossierError {
     #[error("dossier loading failed: '{0}'")]
     Load(#[from] ResourceError)
 }
 
+
+/// NMD Dossier struct. It has own documents list
 pub struct Dossier {
     configuration: DossierConfiguration,
     documents: Vec<Document>

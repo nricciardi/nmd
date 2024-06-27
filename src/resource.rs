@@ -7,9 +7,8 @@ pub mod resource_reference;
 pub mod text_reference;
 pub mod table;
 
-use std::{path::PathBuf, str::FromStr, fs::{File, self, OpenOptions}, io::{self, Write}};
+use std::{str::FromStr, io::{self}};
 use ::image::ImageError;
-use serde_json::error;
 use thiserror::Error;
 
 
@@ -51,6 +50,7 @@ impl Clone for ResourceError {
 }
 
 
+/// General physical or virtual resource
 pub trait Resource: FromStr {
 
     type LocationType;

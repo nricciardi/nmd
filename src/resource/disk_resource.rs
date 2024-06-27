@@ -5,6 +5,7 @@ use super::{ResourceError, Resource};
 
 
 
+/// Resource which uses filesystem to store information 
 #[derive(Debug, Clone)]
 pub struct DiskResource {
     name: String, 

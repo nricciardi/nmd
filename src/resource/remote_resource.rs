@@ -6,6 +6,7 @@ use super::{Resource, ResourceError};
 
 
 
+/// Remote resource based on URL
 pub struct RemoteResource {
     url: Url
 }

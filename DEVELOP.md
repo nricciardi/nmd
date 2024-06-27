@@ -17,8 +17,8 @@
 - [ ] Dynamics addons (e.g. katex iff math is used)
 - [x] Watcher mode
 - [ ] Split CLI lib from compiler
-- [ ] Documentation
 - [ ] Compile only modified chapters
+- [ ] Paper format support (A3, A5, ...)
 
 
 ### Features in Progress for current version
@@ -40,7 +40,6 @@
 - [x] Parse image caption 
 - [x] Focus block
 - [x] Light base page style
-- [ ] Paper format support (A4, A5, ...)
 - [ ] Footer with page counter
 - [x] Embedded style
 - [x] Embedded chapter style

@@ -23,6 +23,8 @@ pub enum ArtifactError {
     ResourceError(#[from] ResourceError)
 }
 
+
+/// Final compilation result
 pub struct Artifact {
     assets: Option<ArtifactAssets>,
     documents: Vec<CachedDiskResource>,
