@@ -361,7 +361,7 @@ print("hello world")
 `print("hello world)`
 "#.trim();
 
-        let paragraphs = Loader::load_paragraphs_from_str(&codex, nmd_text).unwrap();
+        let paragraphs = Loader::new().load_paragraphs_from_str(&codex, nmd_text).unwrap();
 
         assert_eq!(paragraphs.len(), 2)
     }

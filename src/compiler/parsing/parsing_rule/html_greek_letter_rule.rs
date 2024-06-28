@@ -8,14 +8,16 @@ use super::ParsingRule;
 
 
 pub struct HtmlGreekLettersRule {
-    searching_pattern: String,
+    search_pattern: String,
+    search_pattern_regex: Regex,
     greek_letters_map: HashMap<&'static str, &'static str>,
 }
 
 impl HtmlGreekLettersRule {
     pub fn new() -> Self {
         Self {
-            searching_pattern: StandardTextModifier::GreekLetter.modifier_pattern(),
+            search_pattern: StandardTextModifier::GreekLetter.modifier_pattern(),
+            search_pattern_regex: Regex::new(&StandardTextModifier::GreekLetter.modifier_pattern()).unwrap(),
             greek_letters_map: HashMap::from([
                 ("a", r"alpha"),
                 ("b", r"beta"),
@@ -103,20 +105,18 @@ impl HtmlGreekLettersRule {
 
 impl Debug for HtmlGreekLettersRule {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("HtmlGreekLettersRule").field("searching_pattern", &self.searching_pattern).finish()
+        f.debug_struct("HtmlGreekLettersRule").field("searching_pattern", &self.search_pattern).finish()
     }
 }
 
 impl ParsingRule for HtmlGreekLettersRule {
-    fn searching_pattern(&self) -> &String {
-        &self.searching_pattern
+    fn search_pattern(&self) -> &String {
+        &self.search_pattern
     }
 
     fn standard_parse(&self, content: &str, codex: &Codex, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError> {
         
-        let regex = Regex::new(&self.searching_pattern).unwrap();
-
-        let parsed_content = regex.replace_all(content, |capture: &Captures| {
+        let parsed_content = self.search_pattern_regex.replace_all(content, |capture: &Captures| {
 
             if let Some(greek_ref) = capture.get(1) {
 
@@ -134,5 +134,9 @@ impl ParsingRule for HtmlGreekLettersRule {
 
         
         Ok(ParsingOutcome::new(parsed_content.to_string()))
+    }
+    
+    fn search_pattern_regex(&self) -> &Regex {
+        &self.search_pattern_regex
     }
 }

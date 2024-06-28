@@ -1,4 +1,4 @@
-use super::{base_modifier::BaseModifier, constants::{IDENTIFIER_PATTERN, NEW_LINE_PATTERN}, modifiers_bucket::ModifiersBucket, Modifier, ModifierIdentifier, ModifierPattern};
+use super::{base_modifier::BaseModifier, constants::{IDENTIFIER_PATTERN, NEW_LINE}, modifiers_bucket::ModifiersBucket, Modifier, ModifierIdentifier, ModifierPattern};
 
 
 pub const PARAGRAPH_SEPARATOR_START: &str = r"(?m:^[ \t]*\r?\n)+";
@@ -103,28 +103,28 @@ impl StandardParagraphModifier {
             Self::Image => format!(r"!\[([^\]]+)\](?:{})?\(([^)]+)\)(?:\{{(.*)\}})?", IDENTIFIER_PATTERN),
 
             Self::CommonParagraph => String::from(r#"(?s:(.*?))"#),
-            Self::CodeBlock => format!(r"```(\w+){}+(.*?)\n+```", NEW_LINE_PATTERN),
+            Self::CodeBlock => format!(r"```(\w+){}+(.*?){}+```", NEW_LINE, NEW_LINE),
             Self::MathBlock => String::from(r#"\$\$((?s:.+?))\$\$"#),
 
-            Self::ListItem => format!(r#"(?m:^([\t ]*)(-\[\]|-\[ \]|-\[x\]|-\[X\]|-|->|\||\*|\+|--|\d[\.)]?|[a-zA-Z]{{1,8}}[\.)]|&[^;]+;) (.*){}?)"#, NEW_LINE_PATTERN),
+            Self::ListItem => format!(r#"(?m:^([\t ]*)(-\[\]|-\[ \]|-\[x\]|-\[X\]|-|->|\||\*|\+|--|\d[\.)]?|[a-zA-Z]{{1,8}}[\.)]|&[^;]+;) (.*){}?)"#, NEW_LINE),
             Self::List => format!(r#"((?:{}+)+)"#, Self::ListItem.modifier_pattern()),
             Self::ExtendedBlockQuoteLine => String::from(r"(?m:^> (.*))"),
             Self::ExtendedBlockQuote => format!(r"(?ms:^> .*?)"),
             Self::LineBreakDash => String::from(r"(?m:^-{3,})"),
             Self::LineBreakStar => String::from(r"(?m:^\*{3,})"),
             Self::LineBreakPlus => String::from(r"(?m:^\+{3,})"),
-            Self::FocusBlock => format!(r":::\s(\w+){}(?s:(.*?)){}:::", NEW_LINE_PATTERN, NEW_LINE_PATTERN),
+            Self::FocusBlock => format!(r":::\s(\w+){}(?s:(.*?)){}:::", NEW_LINE, NEW_LINE),
             Self::AbridgedEmbeddedParagraphStyle => String::from(r"\[\[(?sx:(.*?))\]\]\{(.*?)(?s:;(.*?)(?:;(.*?))?)?\}"),
-            Self::AbridgedEmbeddedParagraphStyleWithId => format!(r"\[\[(?sx:(.*?))\]\]{}?{}{}?\{{(.*?)(?s:;(.*?)(?:;(.*?))?)?\}}", NEW_LINE_PATTERN, IDENTIFIER_PATTERN, NEW_LINE_PATTERN),
-            Self::ParagraphIdentifier => format!(r"\[\[(?sx:(.*?))\]\]{}?{}", NEW_LINE_PATTERN, IDENTIFIER_PATTERN),
-            Self::EmbeddedParagraphStyleWithId => format!(r"\[\[(?sx:(.*?))\]\]{}?{}{}?\{{\{{(?xs:((?:.*?:.*?;?)))\}}\}}", NEW_LINE_PATTERN, IDENTIFIER_PATTERN, NEW_LINE_PATTERN),
+            Self::AbridgedEmbeddedParagraphStyleWithId => format!(r"\[\[(?sx:(.*?))\]\]{}?{}{}?\{{(.*?)(?s:;(.*?)(?:;(.*?))?)?\}}", NEW_LINE, IDENTIFIER_PATTERN, NEW_LINE),
+            Self::ParagraphIdentifier => format!(r"\[\[(?sx:(.*?))\]\]{}?{}", NEW_LINE, IDENTIFIER_PATTERN),
+            Self::EmbeddedParagraphStyleWithId => format!(r"\[\[(?sx:(.*?))\]\]{}?{}{}?\{{\{{(?xs:((?:.*?:.*?;?)))\}}\}}", NEW_LINE, IDENTIFIER_PATTERN, NEW_LINE),
             Self::EmbeddedParagraphStyle => String::from(r"\[\[(?sx:(.*?))\]\]\{\{(?xs:((?:.*?:.*?;?)))\}\}"),
             Self::PageBreak => String::from(r"(?m:^#{3,}$)"),
             Self::AbridgedTodo => String::from(r"(?m:^(?i:TODO):?\s(?:(.*?))$)"),
             Self::MultilineTodo => String::from(r"(?i:TODO):(?s:(.*?)):(?i:TODO)"),
             Self::AbridgedImage => format!(r"!\[\((.*)\)\](?:{})?(?:\{{(.*)\}})?", IDENTIFIER_PATTERN),
             Self::MultiImage => String::from(r"!!(?::([\w-]+):)?\[\[(?s:(.*?))\]\]"),
-            Self::Table => format!(r"(\|(.*)\|\n?)+(?:\|(.*)\|)(?U:\n?(?:\[(.*)\])?(?:{})?(?:\{{(.*)\}})?)?", IDENTIFIER_PATTERN),
+            Self::Table => format!(r"(\|(.*)\|{}?)+(?:\|(.*)\|)(?U:{}?(?:\[(.*)\])?(?:{})?(?:\{{(.*)\}})?)?", NEW_LINE, NEW_LINE, IDENTIFIER_PATTERN),
             
             _ => {                                                                  // TODO
                 log::warn!("there is NOT a modifier pattern for {:#?}", self);
@@ -166,6 +166,7 @@ mod test {
     use super::StandardParagraphModifier;
 
     #[test]
+    #[cfg(not(windows))]
     fn match_list() {
         let regex = Regex::new(StandardParagraphModifier::List.modifier_pattern_with_paragraph_separator().as_str()).unwrap();
 

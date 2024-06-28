@@ -63,14 +63,16 @@ impl Compiler {
         let codex = Arc::new(compilation_configuration.codex());
 
         let mut dossier: Dossier;
+
+        let loader = Loader::new();
         
         if let Some(dstc) = compilation_configuration.documents_subset_to_compile() {
 
-            dossier = Loader::load_dossier_from_path_buf_only_documents(&codex, compilation_configuration.input_location(), dstc)?;
+            dossier = loader.load_dossier_from_path_buf_only_documents(&codex, compilation_configuration.input_location(), dstc)?;
 
         } else {
 
-            dossier = Loader::load_dossier_from_path_buf(&codex, compilation_configuration.input_location())?;
+            dossier = loader.load_dossier_from_path_buf(&codex, compilation_configuration.input_location())?;
         }
 
         log::info!("dossier loaded");

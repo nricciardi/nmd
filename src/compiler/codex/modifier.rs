@@ -7,6 +7,8 @@ pub mod constants;
 
 use std::fmt;
 
+use regex::Regex;
+
 use self::{base_modifier::BaseModifier, modifiers_bucket::ModifiersBucket};
 
 
@@ -23,6 +25,8 @@ pub trait Modifier: Sync + Send {
     }
 
     fn modifier_pattern(&self) -> &ModifierPattern;
+    
+    fn modifier_pattern_regex(&self) -> &Regex; 
 
     fn incompatible_modifiers(&self) -> &ModifiersBucket {
         &ModifiersBucket::None

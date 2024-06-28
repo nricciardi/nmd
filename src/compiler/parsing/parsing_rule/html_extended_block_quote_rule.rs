@@ -2,41 +2,46 @@ use std::sync::{Arc, RwLock};
 
 use regex::Regex;
 
-use crate::compiler::{codex::{modifier::{modifiers_bucket::ModifiersBucket, standard_paragraph_modifier::StandardParagraphModifier, Modifier}, Codex}, parsing::{parsing_configuration::ParsingConfiguration, parsing_error::ParsingError, parsing_outcome::ParsingOutcome}};
+use crate::compiler::{codex::{modifier::{constants::NEW_LINE, modifiers_bucket::ModifiersBucket, standard_paragraph_modifier::StandardParagraphModifier, Modifier}, Codex}, parsing::{parsing_configuration::ParsingConfiguration, parsing_error::ParsingError, parsing_outcome::ParsingOutcome}};
 
 use super::ParsingRule;
 
 
 #[derive(Debug)]
 pub struct HtmlExtendedBlockQuoteRule {
-    searching_pattern: String
+    search_pattern: String,
+    search_pattern_regex: Regex,
+    check_extended_block_quote_regex: Regex,
+    double_new_line_regex: Regex,
 }
 
 impl HtmlExtendedBlockQuoteRule {
     pub fn new() -> Self {
         Self {
-            searching_pattern: StandardParagraphModifier::ExtendedBlockQuote.modifier_pattern_with_paragraph_separator()
+            search_pattern: StandardParagraphModifier::ExtendedBlockQuote.modifier_pattern_with_paragraph_separator(),
+            search_pattern_regex: Regex::new(&StandardParagraphModifier::ExtendedBlockQuoteLine.modifier_pattern_with_paragraph_separator()).unwrap(),
+            check_extended_block_quote_regex: Regex::new(r"(?:^(?m:^> \[!(.*)\]))").unwrap(),
+            double_new_line_regex: Regex::new(&format!("{}{{2}}", NEW_LINE)).unwrap(),
         }
     }
 }
 
 impl ParsingRule for HtmlExtendedBlockQuoteRule {
 
-    fn searching_pattern(&self) -> &String {
-        &self.searching_pattern
+    fn search_pattern(&self) -> &String {
+        &self.search_pattern
     }
     fn standard_parse(&self, content: &str, codex: &Codex, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError> {
 
         let content = content.trim();
         let mut lines: Vec<&str> = content.lines().collect();
 
-        let check_extended_block_quote_regex = Regex::new(r"(?:^(?m:^> \[!(.*)\]))").unwrap();
-        let there_is_quote_type = check_extended_block_quote_regex.is_match(content);
+        let there_is_quote_type = self.check_extended_block_quote_regex.is_match(content);
         let mut quote_type: String = String::from("quote");
 
         if there_is_quote_type {
 
-            quote_type = check_extended_block_quote_regex.captures(content).unwrap().get(1).unwrap().as_str().to_string().to_lowercase();
+            quote_type = self.check_extended_block_quote_regex.captures(content).unwrap().get(1).unwrap().as_str().to_string().to_lowercase();
 
             lines.remove(0);
         }
@@ -54,17 +59,16 @@ impl ParsingRule for HtmlExtendedBlockQuoteRule {
                 }
             }
 
-            let mut c = line[1..].trim_start();
+            let mut c = String::from(line[1..].trim_start());
 
             if c.is_empty() {
-                c = "\n\n";
+                c = format!("{}{}", NEW_LINE, NEW_LINE);
             }
 
-            tag_body.push_str(c);
+            tag_body.push_str(c.as_str());
         }
 
-        let regex = Regex::new("\n\n").unwrap();
-        tag_body = regex.replace_all(&tag_body, "<br>").to_string();
+        tag_body = self.double_new_line_regex.replace_all(&tag_body, "<br>").to_string();
 
         let outcome = ParsingOutcome::new(format!(r#"
         <div class="focus-quote-block focus-quote-block-{}">
@@ -75,6 +79,10 @@ impl ParsingRule for HtmlExtendedBlockQuoteRule {
         </div>"#, quote_type, quote_type, quote_type, tag_body));
 
         Ok(outcome)
+    }
+    
+    fn search_pattern_regex(&self) -> &Regex {
+        &self.search_pattern_regex
     }
 
 }

@@ -1,4 +1,4 @@
-use super::{base_modifier::BaseModifier, constants::NEW_LINE_PATTERN, modifiers_bucket::ModifiersBucket, Modifier, ModifierIdentifier};
+use super::{base_modifier::BaseModifier, constants::NEW_LINE, modifiers_bucket::ModifiersBucket, Modifier, ModifierIdentifier};
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum StandardTextModifier {
@@ -122,9 +122,9 @@ impl StandardTextModifier {
             Self::BookmarkWithId => String::from(r"@\[([^\]]*?)\]#([\w-]*)\((?s:(.*?))\)"),
             Self::Todo => String::from(r"@\[(?i:TODO)\]\((?s:(.*?))\)"),
             Self::AbridgedEmbeddedStyle => String::from(r"\[([^\]]*?)\]\{(.*?)(?s:;(.*?)(?:;(.*?))?)?\}"),
-            Self::AbridgedEmbeddedStyleWithId => format!(r"\[([^\]]*?)\]{}?#([\w-]*){}?\{{(.*?)(?s:;(.*?)(?:;(.*?))?)?\}}", NEW_LINE_PATTERN, NEW_LINE_PATTERN),
-            Self::Identifier => format!(r"\[(.*?)\]{}?#([\w-]*)", NEW_LINE_PATTERN),
-            Self::EmbeddedStyleWithId => format!(r"\[([^\]]*?)\]{}?#([\w-]*){}?\{{\{{(?xs:((?:.*?:.*?;?)))\}}\}}", NEW_LINE_PATTERN, NEW_LINE_PATTERN),
+            Self::AbridgedEmbeddedStyleWithId => format!(r"\[([^\]]*?)\]{}?#([\w-]*){}?\{{(.*?)(?s:;(.*?)(?:;(.*?))?)?\}}", NEW_LINE, NEW_LINE),
+            Self::Identifier => format!(r"\[(.*?)\]{}?#([\w-]*)", NEW_LINE),
+            Self::EmbeddedStyleWithId => format!(r"\[([^\]]*?)\]{}?#([\w-]*){}?\{{\{{(?xs:((?:.*?:.*?;?)))\}}\}}", NEW_LINE, NEW_LINE),
             Self::EmbeddedStyle => String::from(r"\[([^\]]*?)\]\{\{(?xs:((?:.*?:.*?;?)))\}\}"),
             Self::Highlight => String::from(r"==(.*)=="),
             Self::Comment => String::from(r"^//(.*)"),
@@ -141,7 +141,7 @@ impl StandardTextModifier {
             Self::Underlined => String::from(r"\+\+(.*?)\+\+"),
             Self::Link => String::from(r"\[([^\]]+)\]\(([^)]+)\)"),
             Self::InlineCode => String::from(r"`(.*?)`"),
-            Self::InlineMath => format!(r#"\$([^${}]+)\$"#, NEW_LINE_PATTERN),
+            Self::InlineMath => format!(r#"\$([^${}]+)\$"#, NEW_LINE),
             Self::GreekLetter => String::from(r"%(.*?)%"),        // if it changes, fix greek letters rules
             Self::Escape => String::from(r"\\([\*\+\\~%\^\$@=\[\]!<>\{\}\(\)#-_\|\?&]+)"),
             Self::Reference => String::from(r"&([\w-]+)&"),

@@ -9,6 +9,7 @@ use rayon::slice::ParallelSliceMut;
 use regex::Regex;
 use thiserror::Error;
 
+use crate::compiler::codex::modifier::constants::NEW_LINE;
 use crate::compiler::codex::modifier::standard_chapter_modifier::StandardChapterModifier;
 use crate::resource::disk_resource::DiskResource;
 use crate::resource::{Resource, ResourceError};
@@ -45,11 +46,22 @@ impl Clone for LoadError {
 
 
 pub struct Loader {
-    
+    chapter_style_pattern_regex: Regex,
+    find_extended_version_regex: Regex,
+    find_compact_version_regex: Regex,
+    double_new_lines: String,
 }
 
 impl Loader {
 
+    pub fn new() -> Self {
+        Self {
+            chapter_style_pattern_regex: Regex::new(CHAPTER_STYLE_PATTERN).unwrap(),
+            find_extended_version_regex: Regex::new(r"heading-[[:digit:]]+-extended-version").unwrap(),
+            find_compact_version_regex: Regex::new(r"heading-[[:digit:]]+-compact-version").unwrap(),
+            double_new_lines: format!("{}{}", NEW_LINE, NEW_LINE)
+        }
+    }
 
     fn count_newlines_at_start(s: &str) -> usize {
         s.bytes().take_while(|&b| b == b'\n').count()
@@ -59,7 +71,7 @@ impl Loader {
         s.bytes().rev().take_while(|&b| b == b'\n').count()
     }
 
-    pub fn load_document_from_str(codex: &Codex, document_name: &str, content: &str) -> Result<Document, LoadError> {
+    pub fn load_document_from_str(&self, codex: &Codex, document_name: &str, content: &str) -> Result<Document, LoadError> {
 
         log::info!("loading document '{}' from its content...", document_name);
 
@@ -79,9 +91,7 @@ impl Loader {
 
             log::debug!("find chapter borders using chapter modifier: {:#?}", chapter_modifier);
 
-            let regex = Regex::new(&modifier_pattern).unwrap();
-
-            regex.find_iter(content.as_str()).for_each(|m| {
+            chapter_modifier.modifier_pattern_regex().find_iter(content.as_str()).for_each(|m| {
 
                 let matched_str = m.as_str().to_string();
 
@@ -130,7 +140,7 @@ impl Loader {
             let end = chapter_borders[index].1;
             let raw_content = &chapter_borders[index].2;
 
-            let (heading, tags) = Self::load_chapter_metadata_from_raw_str(codex, raw_content, last_heading_level);
+            let (heading, tags) = self.load_chapter_metadata_from_raw_str(codex, raw_content, last_heading_level);
 
             if heading.is_none() {
                 return Err(LoadError::ResourceError(ResourceError::ResourceNotFound("heading".to_string())))
@@ -148,7 +158,7 @@ impl Loader {
 
             let sub_content = content.get(end..next_start).unwrap();     // exclude heading
 
-            let paragraphs = Self::load_paragraphs_from_str(codex, sub_content)?;
+            let paragraphs = self.load_paragraphs_from_str(codex, sub_content)?;
 
             document_chapters.push(Chapter::new(heading, tags, paragraphs));
         }
@@ -167,7 +177,7 @@ impl Loader {
 
             let s = String::from(content.get(0..preamble_end).unwrap());
 
-            preamble = Self::load_paragraphs_from_str(codex, &s)?;
+            preamble = self.load_paragraphs_from_str(codex, &s)?;
         
         } else {
 
@@ -182,7 +192,7 @@ impl Loader {
 
     }
 
-    pub fn load_document_from_path(codex: &Codex, path_buf: &PathBuf) -> Result<Document, LoadError> {
+    pub fn load_document_from_path(&self, codex: &Codex, path_buf: &PathBuf) -> Result<Document, LoadError> {
 
         let resource = DiskResource::try_from(path_buf.clone())?;
 
@@ -190,7 +200,7 @@ impl Loader {
 
         let document_name = resource.name();
 
-        match Self::load_document_from_str(codex, document_name, &content) {
+        match self.load_document_from_str(codex, document_name, &content) {
             Ok(document) => {
                 return Ok(document)
             },
@@ -199,7 +209,7 @@ impl Loader {
     }
 
     /// Split a string in the corresponding vector of paragraphs
-    pub fn load_paragraphs_from_str(codex: &Codex, content: &str) -> Result<Vec<Paragraph>, LoadError> {
+    pub fn load_paragraphs_from_str(&self, codex: &Codex, content: &str) -> Result<Vec<Paragraph>, LoadError> {
 
         if content.trim().is_empty() {
             log::debug!("skip paragraphs loading: empty content");
@@ -211,16 +221,15 @@ impl Loader {
         let mut paragraphs: Vec<(usize, usize, Paragraph)> = Vec::new();
         let mut content = String::from(content);
 
-        content = content.trim_matches('\n').to_string();
-        content = content.replace("\n\n", "\n\n\n");
+        content = content.replace(&self.double_new_lines, &format!("{}{}{}", NEW_LINE, NEW_LINE, NEW_LINE));
 
         // work-around to fix paragraph matching end line
-        while !content.starts_with("\n\n") {
-            content.insert_str(0, "\n");
+        while !content.starts_with(&self.double_new_lines) {
+            content.insert_str(0, NEW_LINE);
         }
 
-        while !content.ends_with("\n\n") {
-            content.push_str("\n");
+        while !content.ends_with(&self.double_new_lines) {
+            content.push_str(NEW_LINE);
         }
 
         for paragraph_modifier in codex.configuration().ordered_paragraph_modifiers() {
@@ -229,9 +238,7 @@ impl Loader {
 
             log::debug!("test paragraph modifier '{}': {:?}", paragraph_modifier.identifier(), search_pattern);
 
-            let regex = Regex::new(&search_pattern).unwrap();
-
-            regex.find_iter(content.clone().as_str()).for_each(|m| {
+            paragraph_modifier.modifier_pattern_regex().find_iter(content.clone().as_str()).for_each(|m| {
 
                 let matched_str = String::from(&content[m.start()..m.end()]);
 
@@ -292,13 +299,11 @@ impl Loader {
         tags
     }
 
-    fn load_chapter_style_from_raw_str(content: &str) -> Option<String> {
+    fn load_chapter_style_from_raw_str(&self, content: &str) -> Option<String> {
         
         let mut style: Option<String> = None;
-        
-        let regex = Regex::new(CHAPTER_STYLE_PATTERN).unwrap();
 
-        if let Some(captures) = regex.captures(content) {
+        if let Some(captures) = self.chapter_style_pattern_regex.captures(content) {
             if let Some(s) = captures.get(1) {
                 style = Some(s.as_str().to_string())
             }
@@ -307,7 +312,7 @@ impl Loader {
         style
     }
 
-    fn load_chapter_metadata_from_raw_str(codex: &Codex, content: &str, last_heading_level: HeadingLevel) -> (Option<Heading>, Vec<ChapterTag>) {
+    fn load_chapter_metadata_from_raw_str(&self, codex: &Codex, content: &str, last_heading_level: HeadingLevel) -> (Option<Heading>, Vec<ChapterTag>) {
 
         log::debug!("load chapter metadata from (last heading level: {}):\n{}", last_heading_level, content);
 
@@ -315,15 +320,13 @@ impl Loader {
 
         for chapter_modifier in chapter_modifiers {
 
-            let modifier_regex = Regex::new(chapter_modifier.modifier_pattern()).unwrap();
-
-            if !modifier_regex.is_match(content) {
+            if !chapter_modifier.modifier_pattern_regex().is_match(content) {
                 continue
             }
 
             // ==== MinorHeading ====
             if chapter_modifier.identifier().eq(&StandardChapterModifier::MinorHeading.identifier()) {
-                let matched = modifier_regex.captures(content).unwrap();
+                let matched = chapter_modifier.modifier_pattern_regex().captures(content).unwrap();
 
                 let level: HeadingLevel;
 
@@ -346,7 +349,7 @@ impl Loader {
 
             // ==== MajorHeading ====
             if chapter_modifier.identifier().eq(&StandardChapterModifier::MajorHeading.identifier()) {
-                let matched = modifier_regex.captures(content).unwrap();
+                let matched = chapter_modifier.modifier_pattern_regex().captures(content).unwrap();
 
                 let mut level: HeadingLevel = last_heading_level + 1;
 
@@ -364,7 +367,7 @@ impl Loader {
 
             // ==== SameHeading ====
             if chapter_modifier.identifier().eq(&StandardChapterModifier::SameHeading.identifier()) {
-                let matched = modifier_regex.captures(content).unwrap();
+                let matched = chapter_modifier.modifier_pattern_regex().captures(content).unwrap();
 
                 let level: HeadingLevel;
                 if last_heading_level < 1 {
@@ -383,16 +386,12 @@ impl Loader {
                 return (Some(Heading::new(level, String::from(title))), tags);
             }
 
-
-            let regex_to_find_extended_version = Regex::new(r"heading-[[:digit:]]+-extended-version").unwrap();
-            let regex_to_find_compact_version = Regex::new(r"heading-[[:digit:]]+-compact-version").unwrap();
-
             // ==== Extended version heading ====
-            if regex_to_find_extended_version.is_match(chapter_modifier.identifier()) {
+            if self.find_extended_version_regex.is_match(chapter_modifier.identifier()) {
 
                 let level: u32 = content.chars().take_while(|&c| c == '#').count() as u32;
 
-                let matched = modifier_regex.captures(content).unwrap();
+                let matched = chapter_modifier.modifier_pattern_regex().captures(content).unwrap();
 
                 let title = matched.get(1).unwrap().as_str();
 
@@ -402,8 +401,8 @@ impl Loader {
             }
 
             // ==== Compact version heading ====
-            if regex_to_find_compact_version.is_match(chapter_modifier.identifier()) {
-                let matched = modifier_regex.captures(content).unwrap();
+            if self.find_compact_version_regex.is_match(chapter_modifier.identifier()) {
+                let matched = chapter_modifier.modifier_pattern_regex().captures(content).unwrap();
 
                 let level: HeadingLevel = matched.get(1).unwrap().as_str().parse().unwrap();
                 let title = matched.get(2).unwrap().as_str();
@@ -418,13 +417,13 @@ impl Loader {
         (None, Vec::new())
     }
 
-    pub fn load_dossier_from_path_buf(codex: &Codex, path_buf: &PathBuf) -> Result<Dossier, LoadError> {
+    pub fn load_dossier_from_path_buf(&self, codex: &Codex, path_buf: &PathBuf) -> Result<Dossier, LoadError> {
         let dossier_configuration = DossierConfiguration::try_from(path_buf)?;
 
-        Self::load_dossier_from_dossier_configuration(codex, &dossier_configuration)
+        self.load_dossier_from_dossier_configuration(codex, &dossier_configuration)
     }
 
-    pub fn load_dossier_from_path_buf_only_documents(codex: &Codex, path_buf: &PathBuf, only_documents: &HashSet<String>) -> Result<Dossier, LoadError> {
+    pub fn load_dossier_from_path_buf_only_documents(&self, codex: &Codex, path_buf: &PathBuf, only_documents: &HashSet<String>) -> Result<Dossier, LoadError> {
         let mut dossier_configuration = DossierConfiguration::try_from(path_buf)?;
 
         let d: Vec<String> = dossier_configuration.raw_documents_paths().iter()
@@ -439,10 +438,10 @@ impl Loader {
 
         dossier_configuration.set_raw_documents_paths(d);
 
-        Self::load_dossier_from_dossier_configuration(codex, &dossier_configuration)
+        self.load_dossier_from_dossier_configuration(codex, &dossier_configuration)
     }
 
-    pub fn load_dossier_from_dossier_configuration(codex: &Codex, dossier_configuration: &DossierConfiguration) -> Result<Dossier, LoadError> {
+    pub fn load_dossier_from_dossier_configuration(&self, codex: &Codex, dossier_configuration: &DossierConfiguration) -> Result<Dossier, LoadError> {
 
         // TODO: are really mandatory?
         if dossier_configuration.documents_paths().is_empty() {
@@ -460,7 +459,7 @@ impl Loader {
 
             dossier_configuration.documents_paths().par_iter()
             .map(|document_path| {
-                Loader::load_document_from_path(codex, &PathBuf::from(document_path))
+                self.load_document_from_path(codex, &PathBuf::from(document_path))
             }).collect_into_vec(&mut documents_res);
             
             let error = documents_res.par_iter().find_any(|result| result.is_err());
@@ -481,7 +480,7 @@ impl Loader {
 
             for document_path in dossier_configuration.documents_paths() {
     
-                let document = Loader::load_document_from_path(codex, &PathBuf::from(document_path))?;
+                let document = self.load_document_from_path(codex, &PathBuf::from(document_path))?;
     
                 documents.push(document)
             }

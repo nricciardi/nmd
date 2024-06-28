@@ -16,13 +16,17 @@ type TableMetadata = (Option<String>, Option<String>, Option<String>);
 
 
 pub struct HtmlTableRule {
-    searching_pattern: String
+    search_pattern: String,
+    search_pattern_regex: Regex,
+    extract_table_metadata_regex: Regex,
 }
 
 impl HtmlTableRule {
     pub fn new() -> Self {
         Self {
-            searching_pattern: StandardParagraphModifier::Table.modifier_pattern()
+            search_pattern: StandardParagraphModifier::Table.modifier_pattern(),
+            search_pattern_regex: Regex::new(&StandardParagraphModifier::Table.modifier_pattern()).unwrap(),
+            extract_table_metadata_regex: Regex::new(&format!(r"(?:\[(.*)\])?(?:{})?(?:\{{(.*)\}})?", IDENTIFIER_PATTERN)).unwrap()
         }
     }
 
@@ -160,10 +164,9 @@ impl HtmlTableRule {
         }
     }
 
-    fn extract_table_metadata(s: &str, document_name: &str) -> TableMetadata {
-        let regex = Regex::new(&format!(r"(?:\[(.*)\])?(?:{})?(?:\{{(.*)\}})?", IDENTIFIER_PATTERN)).unwrap();
+    fn extract_table_metadata(&self, s: &str, document_name: &str) -> TableMetadata {
 
-        let captures = regex.captures(s);
+        let captures = self.extract_table_metadata_regex.captures(s);
 
         if captures.is_none() {
             log::warn!("invalid table metadata: '{}'", s);
@@ -272,13 +275,13 @@ impl HtmlTableRule {
 
 impl Debug for HtmlTableRule {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("HtmlTableRule").field("searching_pattern", &self.searching_pattern).finish()
+        f.debug_struct("HtmlTableRule").field("searching_pattern", &self.search_pattern).finish()
     }
 }
 
 impl ParsingRule for HtmlTableRule {
-    fn searching_pattern(&self) -> &String {
-        &self.searching_pattern
+    fn search_pattern(&self) -> &String {
+        &self.search_pattern
     }
 
     fn standard_parse(&self, content: &str, codex: &Codex, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError> {
@@ -302,7 +305,7 @@ impl ParsingRule for HtmlTableRule {
 
                     let document_name = pc.metadata().document_name().as_ref().unwrap();
                     
-                    (caption, id, style) = Self::extract_table_metadata(trim_line, document_name);
+                    (caption, id, style) = self.extract_table_metadata(trim_line, document_name);
 
                     if id.is_none() && caption.is_some() {
                         id = Some(ResourceReference::of_internal_without_sharp(&caption.clone().unwrap(), Some(document_name)).unwrap().build());
@@ -374,5 +377,9 @@ impl ParsingRule for HtmlTableRule {
 
         
         Ok(ParsingOutcome::new(Self::build_html_table(caption, id, style, table)))
+    }
+    
+    fn search_pattern_regex(&self) -> &Regex {
+        &self.search_pattern_regex
     }
 }

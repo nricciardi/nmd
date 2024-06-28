@@ -30,7 +30,8 @@ const ALIGN_ITEM_PATTERN: &str = r":([\w-]*):";
 /// Rule to replace a NMD text based on a specific pattern matching rule
 pub struct HtmlImageRule {
     image_modifier_identifier: ModifierIdentifier,
-    searching_pattern: String
+    search_pattern: String,
+    search_pattern_regex: Regex,
 }
 
 impl HtmlImageRule {
@@ -41,12 +42,13 @@ impl HtmlImageRule {
 
         Self {
             image_modifier_identifier,
-            searching_pattern
+            search_pattern_regex: Regex::new(&searching_pattern).unwrap(),
+            search_pattern: searching_pattern,
         }
     }
 
     fn set_searching_pattern(&mut self, searching_pattern: String) {
-        self.searching_pattern = searching_pattern
+        self.search_pattern = searching_pattern
     }
 
     fn get_searching_pattern(image_modifier_identifier: &ModifierIdentifier) -> String {
@@ -162,18 +164,13 @@ impl HtmlImageRule {
 
     }
 
-    fn parse_image(searching_pattern: &str, content: &str, codex: &Codex, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError> {
+    fn parse_image(search_pattern_regex: &Regex, content: &str, codex: &Codex, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError> {
 
-        let regex = match Regex::new(searching_pattern) {
-            Ok(r) => r,
-            Err(_) => return Err(ParsingError::InvalidPattern(searching_pattern.to_string()))  
-        };
-
-        if !regex.is_match(content) {
-            return Err(ParsingError::InvalidSource(format!("'{}' do not match using: {}", content, searching_pattern)))
+        if !search_pattern_regex.is_match(content) {
+            return Err(ParsingError::InvalidSource(format!("'{}' do not match using: {}", content, search_pattern_regex)))
         }
 
-        let parsed_content = regex.replace_all(content, |captures: &Captures| {
+        let parsed_content = search_pattern_regex.replace_all(content, |captures: &Captures| {
             
             if let Some(label) = captures.get(1) {
 
@@ -213,22 +210,17 @@ impl HtmlImageRule {
         Ok(ParsingOutcome::new(parsed_content))
     }
 
-    fn parse_abridged_image(searching_pattern: &str, content: &str, codex: &Codex, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError> {
+    fn parse_abridged_image(search_pattern_regex: &Regex, content: &str, codex: &Codex, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError> {
 
         let parsing_configuration = parsing_configuration.read().unwrap();
 
         let document_name = parsing_configuration.metadata().document_name().as_ref().unwrap();
 
-        let regex = match Regex::new(searching_pattern) {
-            Ok(r) => r,
-            Err(_) => return Err(ParsingError::InvalidPattern(searching_pattern.to_string()))  
-        };
-
-        if !regex.is_match(content) {
-            return Err(ParsingError::InvalidSource(format!("'{}' do not match using: {}", content, searching_pattern)))
+        if !search_pattern_regex.is_match(content) {
+            return Err(ParsingError::InvalidSource(format!("'{}' do not match using: {}", content, search_pattern_regex)))
         }
 
-        let parsed_content = regex.replace_all(content, |captures: &Captures| {
+        let parsed_content = search_pattern_regex.replace_all(content, |captures: &Captures| {
             
             let src = captures.get(1).unwrap();
 
@@ -255,14 +247,11 @@ impl HtmlImageRule {
         Ok(ParsingOutcome::new(parsed_content))
     }
 
-    fn parse_multi_image(searching_pattern: &str, content: &str, codex: &Codex, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError> {
+    fn parse_multi_image(search_pattern_regex: &Regex, content: &str, codex: &Codex, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError> {
 
-        let regex = match Regex::new(searching_pattern) {
-            Ok(r) => r,
-            Err(_) => return Err(ParsingError::InvalidPattern(searching_pattern.to_string()))  
-        };
+        let align_item_pattern_regex = Regex::new(ALIGN_ITEM_PATTERN).unwrap();
 
-        let parsed_content = regex.replace_all(content, |captures: &Captures| {
+        let parsed_content = search_pattern_regex.replace_all(content, |captures: &Captures| {
             
             let justify_content: Option<String>;
 
@@ -287,9 +276,7 @@ impl HtmlImageRule {
                     continue;
                 }
 
-                let regex = Regex::new(ALIGN_ITEM_PATTERN).unwrap();
-
-                let align_self_captures = regex.captures(raw_image_line);
+                let align_self_captures = align_item_pattern_regex.captures(raw_image_line);
 
                 let align_self = match align_self_captures {
                     Some(ai) => {
@@ -307,7 +294,7 @@ impl HtmlImageRule {
                                                     ]);
 
                 for modifier in MULTI_IMAGE_PERMITTED_MODIFIER {
-                    let parse_res = Self::parse_image_from_identifier(&modifier.identifier(), &modifier.modifier_pattern(), raw_image_line, codex, Arc::clone(&parsing_configuration));
+                    let parse_res = Self::parse_image_from_identifier(&modifier.identifier(), &Regex::new(&modifier.modifier_pattern()).unwrap(), raw_image_line, codex, Arc::clone(&parsing_configuration));
 
                     if let Ok(result) = parse_res {
                         image_container = image_container.with_raw(result.parsed_content());
@@ -324,19 +311,19 @@ impl HtmlImageRule {
         Ok(ParsingOutcome::new(parsed_content))
     }
 
-    fn parse_image_from_identifier(image_modifier_identifier: &ModifierIdentifier, searching_pattern: &String, content: &str, codex: &Codex, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError> {
+    fn parse_image_from_identifier(image_modifier_identifier: &ModifierIdentifier, search_pattern_regex: &Regex, content: &str, codex: &Codex, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError> {
         
 
         if image_modifier_identifier.eq(&StandardParagraphModifier::Image.identifier()) {
-            return Self::parse_image(searching_pattern, content, codex, Arc::clone(&parsing_configuration));
+            return Self::parse_image(search_pattern_regex, content, codex, Arc::clone(&parsing_configuration));
         }
 
         if image_modifier_identifier.eq(&StandardParagraphModifier::AbridgedImage.identifier()) {
-            return Self::parse_abridged_image(searching_pattern, content, codex, Arc::clone(&parsing_configuration));        
+            return Self::parse_abridged_image(search_pattern_regex, content, codex, Arc::clone(&parsing_configuration));        
         }
 
         if image_modifier_identifier.eq(&StandardParagraphModifier::MultiImage.identifier()) {
-            return Self::parse_multi_image(searching_pattern, content, codex, Arc::clone(&parsing_configuration))
+            return Self::parse_multi_image(search_pattern_regex, content, codex, Arc::clone(&parsing_configuration))
         }
 
         log::error!("'{}' is unsupported image modifier identifier", image_modifier_identifier);
@@ -347,17 +334,21 @@ impl HtmlImageRule {
 
 impl ParsingRule for HtmlImageRule {
 
-    fn searching_pattern(&self) -> &String {
-        &self.searching_pattern
+    fn search_pattern(&self) -> &String {
+        &self.search_pattern
     }
 
     fn standard_parse(&self, content: &str, codex: &Codex, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError> {
 
-        Self::parse_image_from_identifier(&self.image_modifier_identifier, &self.searching_pattern, content, codex, Arc::clone(&parsing_configuration))
+        Self::parse_image_from_identifier(&self.image_modifier_identifier, &self.search_pattern_regex, content, codex, Arc::clone(&parsing_configuration))
     }
 
     fn fast_parse(&self, content: &str, codex: &Codex, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError> {
         Ok(ParsingOutcome::new(format!(r#"<img alt="{}" />"#, content)))
+    }
+    
+    fn search_pattern_regex(&self) -> &Regex {
+        &self.search_pattern_regex
     }
 }
 

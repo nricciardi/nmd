@@ -1,6 +1,16 @@
 name: new-dossier
 documents:
+  - "./d1.nmd"
+  - "./d2.nmd"
+  - "./d3.nmd"
+  - "./d4.nmd"
   - "./d5.nmd"
+  - "./d6.nmd"
+  - "./d7.nmd"
+  - ./d8.nmd
+  - ./d9.nmd
+  - ./d10.nmd
+  - ./d11.nmd
 style:
   theme: Light
   styles:

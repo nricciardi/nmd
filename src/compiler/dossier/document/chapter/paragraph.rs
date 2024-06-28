@@ -39,7 +39,7 @@ impl Paragraph {
     }
 
     pub fn contains_only_newlines(&self) -> bool {
-        self.content.chars().all(|c| c == '\n')
+        self.content.chars().all(|c| c == '\n' || c == '\r')
     }
 
     pub fn paragraph_type(&self) -> &ParagraphType {

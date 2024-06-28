@@ -16,23 +16,17 @@ use super::{parsing_configuration::ParsingConfiguration, parsing_error::ParsingE
 
 pub trait ParsingRule: Send + Sync + Debug {
 
-    fn searching_pattern(&self) -> &String;
+    fn search_pattern(&self) -> &String;
+
+    fn search_pattern_regex(&self) -> &Regex;
 
     fn is_match(&self, content: &str) -> bool {
 
-        let pattern = self.searching_pattern();
-
-        let regex = Regex::new(&pattern).unwrap();
-
-        regex.is_match(content)
+        self.search_pattern_regex().is_match(content)
     }
 
     fn find_iter<'r, 'h>(&'r self, content: &'h str) -> Vec<Match<'h>> {
-        let pattern = self.searching_pattern();
-
-        let regex = Regex::new(&pattern).unwrap();
-
-        regex.find_iter(content).collect()
+        self.search_pattern_regex().find_iter(content).collect()
     }
 
     /// Parse content based on `Codex` and `ParsingConfiguration`

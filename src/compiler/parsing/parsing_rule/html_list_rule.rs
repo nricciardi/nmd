@@ -12,13 +12,19 @@ const INDENTATION: &str = r#"<span class="list-item-indentation"></span>"#;
 
 #[derive(Debug)]
 pub struct HtmlListRule {
-    searching_pattern: String
+    search_pattern: String,
+    search_pattern_regex: Regex,
+    search_list_item_pattern: String,
+    search_list_item_regex: Regex,
 }
 
 impl HtmlListRule {
     pub fn new() -> Self {
         Self {
-            searching_pattern: StandardParagraphModifier::List.modifier_pattern_with_paragraph_separator(),
+            search_pattern: StandardParagraphModifier::List.modifier_pattern_with_paragraph_separator(),
+            search_pattern_regex: Regex::new(&StandardParagraphModifier::List.modifier_pattern_with_paragraph_separator()).unwrap(),
+            search_list_item_pattern: StandardParagraphModifier::ListItem.modifier_pattern(),
+            search_list_item_regex: Regex::new(&StandardParagraphModifier::ListItem.modifier_pattern()).unwrap()
         }
     }
 }
@@ -58,8 +64,8 @@ impl HtmlListRule {
 }
 
 impl ParsingRule for HtmlListRule {
-    fn searching_pattern(&self) -> &String {
-        &self.searching_pattern
+    fn search_pattern(&self) -> &String {
+        &self.search_pattern
     }
 
     fn standard_parse(&self, content: &str, codex: &Codex, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError> {
@@ -68,15 +74,11 @@ impl ParsingRule for HtmlListRule {
 
         parsed_content.push_str(r#"<ul class="list">"#);
 
-        let modifier_pattern = StandardParagraphModifier::ListItem.modifier_pattern();
-
-        let regex = Regex::new(&modifier_pattern).unwrap();
-
         let mut items_found = 0;
 
         let mut parsed_lines: Vec<(&str, &str)> = Vec::new();
 
-        for captures in regex.captures_iter(content) {
+        for captures in self.search_list_item_regex.captures_iter(content) {
             if let Some(indentation) = captures.get(1) {
                 if let Some(bullet) = captures.get(2) {
                     if let Some(content) = captures.get(3) {
@@ -130,6 +132,10 @@ impl ParsingRule for HtmlListRule {
         
         Ok(ParsingOutcome::new(parsed_content))
     }
+    
+    fn search_pattern_regex(&self) -> &Regex {
+        &self.search_pattern_regex
+    }
 }
 
 #[cfg(test)]
@@ -154,7 +160,7 @@ mod test {
        
        let rule = HtmlListRule::new();
 
-       let regex = Regex::new(rule.searching_pattern()).unwrap();
+       let regex = Regex::new(rule.search_pattern()).unwrap();
 
        let codex = Codex::of_html(CodexConfiguration::default());
 

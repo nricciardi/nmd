@@ -6,6 +6,7 @@ use log;
 use rayon::iter::ParallelBridge;
 use regex::{Captures, Regex, Replacer};
 
+use crate::compiler::codex::modifier::constants::NEW_LINE;
 use crate::compiler::codex::modifier::modifiers_bucket::ModifiersBucket;
 use crate::compiler::codex::Codex;
 use crate::compiler::parsing::parsing_configuration::ParsingConfiguration;
@@ -16,13 +17,14 @@ use crate::resource::resource_reference::ResourceReference;
 
 use super::ParsingRule;
 
-
 /// Rule to replace a NMD text based on a specific pattern matching rule
 pub struct ReplacementRule<R: Replacer> {
-    searching_pattern: String,
+    search_pattern: String,
+    search_pattern_regex: Regex,
     replacer: R,
     newline_fix_pattern: Option<String>,
-    reference_at: Option<usize>
+    reference_at: Option<usize>,
+    double_new_line_regex: Regex,
 }
 
 impl<R: Replacer> ReplacementRule<R> {
@@ -39,10 +41,12 @@ impl<R: Replacer> ReplacementRule<R> {
         log::debug!("created new parsing rule with search_pattern: '{}'", searching_pattern);
 
         Self {
-            searching_pattern,
+            search_pattern_regex: Regex::new(&searching_pattern).unwrap(),
+            search_pattern: searching_pattern,
             replacer,
             newline_fix_pattern: None,
-            reference_at: None
+            reference_at: None,
+            double_new_line_regex: Regex::new(&format!("{}{{2}}", NEW_LINE)).unwrap()
         }
     }
 
@@ -61,7 +65,7 @@ impl<R: Replacer> ReplacementRule<R> {
 
 impl Debug for ReplacementRule<String> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("ReplacementRule").field("searching_pattern", &self.searching_pattern).field("replacer", &self.replacer).field("newline_fix_pattern", &self.newline_fix_pattern).finish()
+        f.debug_struct("ReplacementRule").field("searching_pattern", &self.search_pattern).field("replacer", &self.replacer).field("newline_fix_pattern", &self.newline_fix_pattern).finish()
     }
 }
 
@@ -70,19 +74,13 @@ impl ParsingRule for ReplacementRule<String> {
     /// Parse the content using internal search and replacement pattern
     fn standard_parse(&self, content: &str, codex: &Codex, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError> {
 
-        let searching_pattern = self.searching_pattern().clone();
         let mut replacer = self.replacer.clone();
 
-        let regex = match Regex::new(&searching_pattern) {
-          Ok(r) => r,
-          Err(_) => return Err(ParsingError::InvalidPattern(searching_pattern))  
-        };
-
-        log::debug!("parsing:\n{}\nusing '{}'->'{}' (newline fix: {}, id_at: {:?})", content, self.searching_pattern(), self.replacer, self.newline_fix_pattern.is_some(), self.reference_at);
+        log::debug!("parsing:\n{}\nusing '{}'->'{}' (newline fix: {}, id_at: {:?})", content, self.search_pattern(), self.replacer, self.newline_fix_pattern.is_some(), self.reference_at);
 
         if let Some(ref reference_at) = self.reference_at {
 
-            for captures in regex.captures_iter(content) {
+            for captures in self.search_pattern_regex.captures_iter(content) {
 
                 let reference = captures.get(reference_at.clone()).unwrap().as_str();
 
@@ -98,11 +96,10 @@ impl ParsingRule for ReplacementRule<String> {
             }
         }
 
-        let mut parsed_content = regex.replace_all(content, &replacer).to_string();
+        let mut parsed_content = self.search_pattern_regex.replace_all(content, &replacer).to_string();
 
         if let Some(newline_fix_pattern) = self.newline_fix_pattern.as_ref() {
-            let regex = Regex::new("\n\n").unwrap();
-            parsed_content = regex.replace_all(&parsed_content, newline_fix_pattern).to_string();
+            parsed_content = self.double_new_line_regex.replace_all(&parsed_content, newline_fix_pattern).to_string();
         }
 
         log::debug!("result:\n{}", parsed_content);
@@ -110,8 +107,12 @@ impl ParsingRule for ReplacementRule<String> {
         Ok(ParsingOutcome::new(parsed_content))
     }
     
-    fn searching_pattern(&self) -> &String {
-        &self.searching_pattern
+    fn search_pattern(&self) -> &String {
+        &self.search_pattern
+    }
+    
+    fn search_pattern_regex(&self) -> &Regex {
+        &self.search_pattern_regex
     }
 }
 
@@ -119,7 +120,7 @@ impl ParsingRule for ReplacementRule<String> {
 impl<F> Debug for ReplacementRule<F>
 where F: 'static + Sync + Send + Fn(&Captures) -> String {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("ReplacementRule").field("searching_pattern", &self.searching_pattern).field("replacer", &"lambda function".to_string()).field("newline_fix_pattern", &self.newline_fix_pattern).finish()
+        f.debug_struct("ReplacementRule").field("searching_pattern", &self.search_pattern).field("replacer", &"lambda function".to_string()).field("newline_fix_pattern", &self.newline_fix_pattern).finish()
     }
 }
 
@@ -133,7 +134,7 @@ where F: 'static + Sync + Send + Fn(&Captures) -> String {
             return Err(ParsingError::InvalidParameter("id_at".to_string()))
         }
 
-        let searching_pattern = self.searching_pattern().clone();
+        let searching_pattern = self.search_pattern().clone();
 
         let regex = match Regex::new(&searching_pattern) {
           Ok(r) => r,
@@ -143,8 +144,8 @@ where F: 'static + Sync + Send + Fn(&Captures) -> String {
         let mut parsed_content = regex.replace_all(content, &self.replacer).to_string();
 
         if let Some(newline_fix_pattern) = self.newline_fix_pattern.as_ref() {
-            let regex = Regex::new("\n\n").unwrap();
-            parsed_content = regex.replace_all(&parsed_content, newline_fix_pattern).to_string();
+
+            parsed_content = self.double_new_line_regex.replace_all(&parsed_content, newline_fix_pattern).to_string();
         }
 
         log::debug!("result:\n{}", parsed_content);
@@ -152,8 +153,12 @@ where F: 'static + Sync + Send + Fn(&Captures) -> String {
         Ok(ParsingOutcome::new(parsed_content))
     }
 
-    fn searching_pattern(&self) -> &String {
-        &self.searching_pattern
+    fn search_pattern(&self) -> &String {
+        &self.search_pattern
+    }
+
+    fn search_pattern_regex(&self) -> &Regex {
+        &self.search_pattern_regex
     }
 }
 
