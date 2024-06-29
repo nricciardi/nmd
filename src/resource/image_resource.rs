@@ -10,7 +10,8 @@ use image::io::Reader as ImageReader;
 
 /// Image resource to manipulate images
 pub struct ImageResource {
-    image: DynamicImage
+    src: PathBuf,
+    image: DynamicImage,
 }
 
 impl ImageResource {
@@ -23,12 +24,14 @@ impl ImageResource {
         self.image.write_to(&mut Cursor::new(&mut buffer), ImageOutputFormat::Png)?;
 
         if compression {
+        
+            log::warn!("compressing image {:?}... it is a time consuming task! Consider not using this feature unless strictly necessary", self.src);
 
             let original_log_level = log::max_level();
             log::set_max_level(log::LevelFilter::Warn);
 
             let options = Options::max_compression();
-        
+
             let optimized_png = oxipng::optimize_from_memory(&buffer, &options);
 
             log::set_max_level(original_log_level);
@@ -60,7 +63,8 @@ impl TryFrom<PathBuf> for ImageResource {
 
     fn try_from(path: PathBuf) -> Result<Self, Self::Error> {
 
-        let image = ImageReader::open(path)?.decode();
+        // TODO: open is a time consuming operation
+        let image = ImageReader::open(path.clone())?.decode();
 
         if image.is_err() {
             return Err(ResourceError::ImageError(image.err().unwrap()))
@@ -68,7 +72,10 @@ impl TryFrom<PathBuf> for ImageResource {
 
         let image = image?;
 
-        Ok(Self { image })
+        Ok(Self {
+            src: path,
+            image
+        })
     }
 }
 

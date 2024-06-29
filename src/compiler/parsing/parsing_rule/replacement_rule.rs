@@ -13,9 +13,13 @@ use crate::compiler::parsing::parsing_configuration::ParsingConfiguration;
 use crate::compiler::parsing::parsing_error::ParsingError;
 use crate::compiler::parsing::parsing_metadata::ParsingMetadata;
 use crate::compiler::parsing::parsing_outcome::ParsingOutcome;
+use crate::compiler::parsing::parsing_rule::constants::DOUBLE_NEW_LINE_REGEX;
 use crate::resource::resource_reference::ResourceReference;
 
 use super::ParsingRule;
+
+
+
 
 /// Rule to replace a NMD text based on a specific pattern matching rule
 pub struct ReplacementRule<R: Replacer> {
@@ -24,7 +28,6 @@ pub struct ReplacementRule<R: Replacer> {
     replacer: R,
     newline_fix_pattern: Option<String>,
     reference_at: Option<usize>,
-    double_new_line_regex: Regex,
 }
 
 impl<R: Replacer> ReplacementRule<R> {
@@ -45,8 +48,7 @@ impl<R: Replacer> ReplacementRule<R> {
             search_pattern: searching_pattern,
             replacer,
             newline_fix_pattern: None,
-            reference_at: None,
-            double_new_line_regex: Regex::new(&format!("{}{{2}}", NEW_LINE)).unwrap()
+            reference_at: None
         }
     }
 
@@ -99,7 +101,7 @@ impl ParsingRule for ReplacementRule<String> {
         let mut parsed_content = self.search_pattern_regex.replace_all(content, &replacer).to_string();
 
         if let Some(newline_fix_pattern) = self.newline_fix_pattern.as_ref() {
-            parsed_content = self.double_new_line_regex.replace_all(&parsed_content, newline_fix_pattern).to_string();
+            parsed_content = DOUBLE_NEW_LINE_REGEX.replace_all(&parsed_content, newline_fix_pattern).to_string();
         }
 
         log::debug!("result:\n{}", parsed_content);
@@ -145,7 +147,7 @@ where F: 'static + Sync + Send + Fn(&Captures) -> String {
 
         if let Some(newline_fix_pattern) = self.newline_fix_pattern.as_ref() {
 
-            parsed_content = self.double_new_line_regex.replace_all(&parsed_content, newline_fix_pattern).to_string();
+            parsed_content = DOUBLE_NEW_LINE_REGEX.replace_all(&parsed_content, newline_fix_pattern).to_string();
         }
 
         log::debug!("result:\n{}", parsed_content);

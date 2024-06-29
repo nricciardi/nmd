@@ -1,6 +1,10 @@
 use std::str::FromStr;
 
+use once_cell::sync::Lazy;
 use regex::Regex;
+
+static FROM_STR_PATTERN_REGEX: Lazy<Regex> = Lazy::new(|| Regex::new(r"@(\w+) (.*)").unwrap());
+
 
 #[derive(Debug, Clone)]
 pub struct ChapterTag {
@@ -65,9 +69,8 @@ impl FromStr for ChapterTag {
     type Err = String;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let regex = Regex::new(r"@(\w+) (.*)").unwrap();
 
-        let captures = regex.captures(s);
+        let captures = FROM_STR_PATTERN_REGEX.captures(s);
 
         if let Some(captures) = captures {
 

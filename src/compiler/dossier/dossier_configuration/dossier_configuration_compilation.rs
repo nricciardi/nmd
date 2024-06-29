@@ -100,7 +100,7 @@ impl Default for DossierConfigurationCompilation {
         Self {
             embed_local_image: true,
             embed_remote_image: true,
-            compress_embed_image: true,
+            compress_embed_image: false,
             strict_image_src_check: true,
             parallelization: true,
             use_remote_addons: false,

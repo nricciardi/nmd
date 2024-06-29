@@ -1,18 +1,19 @@
 use std::sync::{Arc, RwLock};
 
+use once_cell::sync::Lazy;
 use regex::Regex;
 
 use crate::compiler::{codex::{modifier::{constants::NEW_LINE, modifiers_bucket::ModifiersBucket, standard_paragraph_modifier::StandardParagraphModifier, Modifier}, Codex}, parsing::{parsing_configuration::ParsingConfiguration, parsing_error::ParsingError, parsing_outcome::ParsingOutcome}};
 
-use super::ParsingRule;
+use super::{constants::DOUBLE_NEW_LINE_REGEX, ParsingRule};
+
+static CHECK_EXTENDED_BLOCK_QUOTE_REGEX: Lazy<Regex> = Lazy::new(|| Regex::new(r"(?:^(?m:^> \[!(.*)\]))").unwrap());
 
 
 #[derive(Debug)]
 pub struct HtmlExtendedBlockQuoteRule {
     search_pattern: String,
     search_pattern_regex: Regex,
-    check_extended_block_quote_regex: Regex,
-    double_new_line_regex: Regex,
 }
 
 impl HtmlExtendedBlockQuoteRule {
@@ -20,8 +21,6 @@ impl HtmlExtendedBlockQuoteRule {
         Self {
             search_pattern: StandardParagraphModifier::ExtendedBlockQuote.modifier_pattern_with_paragraph_separator(),
             search_pattern_regex: Regex::new(&StandardParagraphModifier::ExtendedBlockQuoteLine.modifier_pattern_with_paragraph_separator()).unwrap(),
-            check_extended_block_quote_regex: Regex::new(r"(?:^(?m:^> \[!(.*)\]))").unwrap(),
-            double_new_line_regex: Regex::new(&format!("{}{{2}}", NEW_LINE)).unwrap(),
         }
     }
 }
@@ -36,12 +35,12 @@ impl ParsingRule for HtmlExtendedBlockQuoteRule {
         let content = content.trim();
         let mut lines: Vec<&str> = content.lines().collect();
 
-        let there_is_quote_type = self.check_extended_block_quote_regex.is_match(content);
+        let there_is_quote_type = CHECK_EXTENDED_BLOCK_QUOTE_REGEX.is_match(content);
         let mut quote_type: String = String::from("quote");
 
         if there_is_quote_type {
 
-            quote_type = self.check_extended_block_quote_regex.captures(content).unwrap().get(1).unwrap().as_str().to_string().to_lowercase();
+            quote_type = CHECK_EXTENDED_BLOCK_QUOTE_REGEX.captures(content).unwrap().get(1).unwrap().as_str().to_string().to_lowercase();
 
             lines.remove(0);
         }
@@ -68,7 +67,7 @@ impl ParsingRule for HtmlExtendedBlockQuoteRule {
             tag_body.push_str(c.as_str());
         }
 
-        tag_body = self.double_new_line_regex.replace_all(&tag_body, "<br>").to_string();
+        tag_body = DOUBLE_NEW_LINE_REGEX.replace_all(&tag_body, "<br>").to_string();
 
         let outcome = ParsingOutcome::new(format!(r#"
         <div class="focus-quote-block focus-quote-block-{}">

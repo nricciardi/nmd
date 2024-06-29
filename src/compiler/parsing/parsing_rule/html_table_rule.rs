@@ -3,6 +3,7 @@ use std::{fmt::Debug, sync::{Arc, RwLock}};
 use build_html::{Container, ContainerType, Html, HtmlContainer};
 use build_html::TableCell as HtmlTableCell;
 use build_html::TableRow as HtmlTableRow;
+use once_cell::sync::Lazy;
 use regex::Regex;
 
 use crate::{compiler::{codex::{modifier::{constants::IDENTIFIER_PATTERN, standard_paragraph_modifier::StandardParagraphModifier, standard_text_modifier::StandardTextModifier}, Codex}, parsing::{parsing_configuration::ParsingConfiguration, parsing_error::ParsingError, parsing_outcome::ParsingOutcome}}, resource::{resource_reference::ResourceReference, table::{self, Table, TableCell, TableCellAlignment}}};
@@ -14,11 +15,12 @@ use super::ParsingRule;
 type TableMetadata = (Option<String>, Option<String>, Option<String>);
 
 
+static EXTRACT_TABLE_METADATA_REGEX: Lazy<Regex> = Lazy::new(|| Regex::new(&format!(r"(?:\[(.*)\])?(?:{})?(?:\{{(.*)\}})?", IDENTIFIER_PATTERN)).unwrap());
+
 
 pub struct HtmlTableRule {
     search_pattern: String,
     search_pattern_regex: Regex,
-    extract_table_metadata_regex: Regex,
 }
 
 impl HtmlTableRule {
@@ -26,7 +28,6 @@ impl HtmlTableRule {
         Self {
             search_pattern: StandardParagraphModifier::Table.modifier_pattern(),
             search_pattern_regex: Regex::new(&StandardParagraphModifier::Table.modifier_pattern()).unwrap(),
-            extract_table_metadata_regex: Regex::new(&format!(r"(?:\[(.*)\])?(?:{})?(?:\{{(.*)\}})?", IDENTIFIER_PATTERN)).unwrap()
         }
     }
 
@@ -166,7 +167,7 @@ impl HtmlTableRule {
 
     fn extract_table_metadata(&self, s: &str, document_name: &str) -> TableMetadata {
 
-        let captures = self.extract_table_metadata_regex.captures(s);
+        let captures = EXTRACT_TABLE_METADATA_REGEX.captures(s);
 
         if captures.is_none() {
             log::warn!("invalid table metadata: '{}'", s);

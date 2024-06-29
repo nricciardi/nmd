@@ -1,12 +1,16 @@
 pub mod generator_configuration;
 
 use std::{collections::{HashMap, HashSet}, fs, path::PathBuf};
+use once_cell::sync::Lazy;
 use regex::Regex;
 
 use self::generator_configuration::GeneratorConfiguration;
 use crate::{compiler::dossier::{self, dossier_configuration::DossierConfiguration}, constants::DOSSIER_CONFIGURATION_YAML_FILE_NAME, dossier_manager::{dossier_manager_configuration::DossierManagerConfiguration, DossierManager}, resource::{disk_resource::DiskResource, Resource, ResourceError}, utility::file_utility::{self, read_file_content}};
 
 pub const WELCOME_FILE_NAME: &str = "welcome.nmd";
+
+static SEARCH_HEADING_1_REGEX: Lazy<Regex> = Lazy::new(|| Regex::new(r"(?m:^#[ ]?([\w ]+))").unwrap());
+
 
 pub struct Generator {
 }
@@ -109,7 +113,6 @@ impl Generator {
 
         let mut current_nmd_file_content = String::new();
         let mut current_nmd_file_name: Option<String> = None;
-        let regex = Regex::new(r"(?m:^#[ ]?([\w ]+))").unwrap();
 
         let newline = match std::env::consts::OS {
             "windows" => "\r\n",
@@ -119,7 +122,7 @@ impl Generator {
         let mut document_names: HashMap<String, u32> = HashMap::new();
 
         for line in markdown_file_content.lines() {
-            if regex.is_match(line) {
+            if SEARCH_HEADING_1_REGEX.is_match(line) {
 
                 log::info!("new header 1 found, generating new document...");
 
@@ -143,7 +146,7 @@ impl Generator {
                     current_nmd_file_content.clear();
                 }
 
-                current_nmd_file_name = Some(String::from(regex.captures(line).unwrap().get(1).unwrap().as_str()));
+                current_nmd_file_name = Some(String::from(SEARCH_HEADING_1_REGEX.captures(line).unwrap().get(1).unwrap().as_str()));
 
             }
 

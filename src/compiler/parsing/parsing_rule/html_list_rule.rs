@@ -1,5 +1,6 @@
 use std::sync::{Arc, RwLock};
 
+use once_cell::sync::Lazy;
 use regex::Regex;
 
 use crate::compiler::{codex::{modifier::standard_paragraph_modifier::StandardParagraphModifier, Codex}, parsing::{parsing_configuration::{list_bullet_configuration_record::{self, ListBulletConfigurationRecord}, ParsingConfiguration}, parsing_error::ParsingError, parsing_metadata::ParsingMetadata, parsing_outcome::ParsingOutcome}};
@@ -9,13 +10,13 @@ use super::ParsingRule;
 const SPACE_TAB_EQUIVALENCE: &str = r"   ";
 const INDENTATION: &str = r#"<span class="list-item-indentation"></span>"#;
 
+static SEARCH_LIST_ITEM_REGEX: Lazy<Regex> = Lazy::new(|| Regex::new(&StandardParagraphModifier::ListItem.modifier_pattern()).unwrap());
+
 
 #[derive(Debug)]
 pub struct HtmlListRule {
     search_pattern: String,
     search_pattern_regex: Regex,
-    search_list_item_pattern: String,
-    search_list_item_regex: Regex,
 }
 
 impl HtmlListRule {
@@ -23,8 +24,6 @@ impl HtmlListRule {
         Self {
             search_pattern: StandardParagraphModifier::List.modifier_pattern_with_paragraph_separator(),
             search_pattern_regex: Regex::new(&StandardParagraphModifier::List.modifier_pattern_with_paragraph_separator()).unwrap(),
-            search_list_item_pattern: StandardParagraphModifier::ListItem.modifier_pattern(),
-            search_list_item_regex: Regex::new(&StandardParagraphModifier::ListItem.modifier_pattern()).unwrap()
         }
     }
 }
@@ -78,7 +77,7 @@ impl ParsingRule for HtmlListRule {
 
         let mut parsed_lines: Vec<(&str, &str)> = Vec::new();
 
-        for captures in self.search_list_item_regex.captures_iter(content) {
+        for captures in SEARCH_LIST_ITEM_REGEX.captures_iter(content) {
             if let Some(indentation) = captures.get(1) {
                 if let Some(bullet) = captures.get(2) {
                     if let Some(content) = captures.get(3) {

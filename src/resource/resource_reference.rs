@@ -1,10 +1,13 @@
 use std::str::FromStr;
 
+use once_cell::sync::Lazy;
 use regex::Regex;
 use serde::de::value;
 use thiserror::Error;
 
 use crate::{compiler::dossier::document, resource::remote_resource::RemoteResource, utility::file_utility};
+
+static OF_INTERNAL_RESOURCE_REGEX: Lazy<Regex> = Lazy::new(|| Regex::new(r"(.*)?#(.*)").unwrap());
 
 const VALUE_SEPARATOR: &str = "-";
 const SPACE_REPLACER: char = '-';
@@ -84,9 +87,8 @@ impl ResourceReference {
     /// 
     /// <document-name> can be omitted. 
     pub fn of_internal(raw: &str, document_name_if_missed: Option<&str>) -> Result<Self, ResourceReferenceError> {
-        let regex = Regex::new(r"(.*)?#(.*)").unwrap();
 
-        let caps = regex.captures(raw);
+        let caps = OF_INTERNAL_RESOURCE_REGEX.captures(raw);
 
         if caps.is_none() {
             return Err(ResourceReferenceError::InvalidInternalReference)

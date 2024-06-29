@@ -236,17 +236,12 @@ impl NmdCli {
         let matches = self.cli.get_matches();
 
         let result = match matches.subcommand() {
-            Some(("compile", compile_matches)) => {
-                Self::handle_compile_command(&compile_matches)
-            },
 
-            Some(("generate", generate_matches)) => {
-                Self::handle_generate_command(&generate_matches)                
-            },
+            Some(("compile", compile_matches)) => Self::handle_compile_command(&compile_matches),
 
-            Some(("dossier", dossier_matches)) => {
-                Self::handle_dossier_command(&dossier_matches)
-            },
+            Some(("generate", generate_matches)) => Self::handle_generate_command(&generate_matches),
+
+            Some(("dossier", dossier_matches)) => Self::handle_dossier_command(&dossier_matches),
 
             _ => unreachable!()
         };
@@ -268,6 +263,7 @@ impl NmdCli {
     }
 
     fn handle_compile_command(matches: &ArgMatches) -> Result<(), NmdCliError> {
+
         match matches.subcommand() {
             Some(("dossier", compile_dossier_matches)) => {
 
@@ -359,7 +355,6 @@ impl NmdCli {
                 let fast_draft: bool = compile_dossier_matches.get_flag("fast-draft");
 
                 compilation_configuration.set_fast_draft(fast_draft);
-
 
                 if watch {
                     return Ok(Compiler::watch_compile(compilation_configuration, watcher_time)?)

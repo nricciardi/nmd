@@ -65,7 +65,7 @@ impl Compiler {
         let mut dossier: Dossier;
 
         let loader = Loader::new();
-        
+
         if let Some(dstc) = compilation_configuration.documents_subset_to_compile() {
 
             dossier = loader.load_dossier_from_path_buf_only_documents(&codex, compilation_configuration.input_location(), dstc)?;

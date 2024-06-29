@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use nmd::cli::{NmdCli, NmdCliError};
 
 

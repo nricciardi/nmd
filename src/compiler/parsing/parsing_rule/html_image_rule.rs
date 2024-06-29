@@ -3,6 +3,7 @@ use std::{path::PathBuf, sync::Arc};
 
 use build_html::{Container, Html, HtmlContainer};
 use log;
+use once_cell::sync::Lazy;
 use regex::{Regex, Captures};
 use url::Url;
 
@@ -19,6 +20,7 @@ use crate::resource::{image_resource::ImageResource, remote_resource::RemoteReso
 
 use super::ParsingRule;
 
+static ALIGN_ITEM_PATTERN_REGEX: Lazy<Regex> = Lazy::new(|| Regex::new(ALIGN_ITEM_PATTERN).unwrap());
 
 const MULTI_IMAGE_PERMITTED_MODIFIER: &'static [StandardParagraphModifier] = &[StandardParagraphModifier::Image, StandardParagraphModifier::AbridgedImage];
 const DEFAULT_JUSTIFY_CONTENT: &str = "normal";
@@ -249,8 +251,6 @@ impl HtmlImageRule {
 
     fn parse_multi_image(search_pattern_regex: &Regex, content: &str, codex: &Codex, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError> {
 
-        let align_item_pattern_regex = Regex::new(ALIGN_ITEM_PATTERN).unwrap();
-
         let parsed_content = search_pattern_regex.replace_all(content, |captures: &Captures| {
             
             let justify_content: Option<String>;
@@ -276,7 +276,7 @@ impl HtmlImageRule {
                     continue;
                 }
 
-                let align_self_captures = align_item_pattern_regex.captures(raw_image_line);
+                let align_self_captures = ALIGN_ITEM_PATTERN_REGEX.captures(raw_image_line);
 
                 let align_self = match align_self_captures {
                     Some(ai) => {

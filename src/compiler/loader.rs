@@ -4,6 +4,7 @@ use std::{cmp, io};
 use std::path::PathBuf;
 use std::str::FromStr;
 
+use once_cell::sync::Lazy;
 use rayon::iter::{IndexedParallelIterator, IntoParallelIterator, IntoParallelRefIterator, ParallelBridge, ParallelIterator};
 use rayon::slice::ParallelSliceMut;
 use regex::Regex;
@@ -16,11 +17,18 @@ use crate::resource::{Resource, ResourceError};
 
 use super::codex::modifier::constants::CHAPTER_STYLE_PATTERN;
 use super::codex::Codex;
-use super::dossier::document::chapter::chapter_builder::{self, ChapterBuilder};
 use super::dossier::document::chapter::chapter_tag::ChapterTag;
-use super::dossier::dossier_configuration::{self, DossierConfiguration};
+use super::dossier::dossier_configuration::DossierConfiguration;
 use super::dossier::Dossier;
-use super::{dossier::{document::{chapter::{heading::{Heading, HeadingLevel}, paragraph::ParagraphError}, Chapter, Paragraph}, Document, DocumentError}};
+use super::dossier::{document::{chapter::heading::{Heading, HeadingLevel}, Chapter, Paragraph}, Document};
+
+
+
+static CHAPTER_STYLE_PATTERN_REGEX: Lazy<Regex> = Lazy::new(|| Regex::new(CHAPTER_STYLE_PATTERN).unwrap());
+static FIND_EXTENDED_VERSION_REGEX: Lazy<Regex> = Lazy::new(|| Regex::new(r"heading-[[:digit:]]+-extended-version").unwrap());
+static FIND_COMPACT_VERSION_REGEX: Lazy<Regex> = Lazy::new(|| Regex::new(r"heading-[[:digit:]]+-compact-version").unwrap());
+static DOUBLE_NEW_LINES: Lazy<String> = Lazy::new(|| format!("{}{}", NEW_LINE, NEW_LINE));
+
 
 
 #[derive(Error, Debug)]
@@ -46,20 +54,12 @@ impl Clone for LoadError {
 
 
 pub struct Loader {
-    chapter_style_pattern_regex: Regex,
-    find_extended_version_regex: Regex,
-    find_compact_version_regex: Regex,
-    double_new_lines: String,
 }
 
 impl Loader {
 
     pub fn new() -> Self {
         Self {
-            chapter_style_pattern_regex: Regex::new(CHAPTER_STYLE_PATTERN).unwrap(),
-            find_extended_version_regex: Regex::new(r"heading-[[:digit:]]+-extended-version").unwrap(),
-            find_compact_version_regex: Regex::new(r"heading-[[:digit:]]+-compact-version").unwrap(),
-            double_new_lines: format!("{}{}", NEW_LINE, NEW_LINE)
         }
     }
 
@@ -221,14 +221,14 @@ impl Loader {
         let mut paragraphs: Vec<(usize, usize, Paragraph)> = Vec::new();
         let mut content = String::from(content);
 
-        content = content.replace(&self.double_new_lines, &format!("{}{}{}", NEW_LINE, NEW_LINE, NEW_LINE));
+        content = content.replace(&(*DOUBLE_NEW_LINES), &format!("{}{}{}", NEW_LINE, NEW_LINE, NEW_LINE));
 
         // work-around to fix paragraph matching end line
-        while !content.starts_with(&self.double_new_lines) {
+        while !content.starts_with(&(*DOUBLE_NEW_LINES)) {
             content.insert_str(0, NEW_LINE);
         }
 
-        while !content.ends_with(&self.double_new_lines) {
+        while !content.ends_with(&(*DOUBLE_NEW_LINES)) {
             content.push_str(NEW_LINE);
         }
 
@@ -303,7 +303,7 @@ impl Loader {
         
         let mut style: Option<String> = None;
 
-        if let Some(captures) = self.chapter_style_pattern_regex.captures(content) {
+        if let Some(captures) = CHAPTER_STYLE_PATTERN_REGEX.captures(content) {
             if let Some(s) = captures.get(1) {
                 style = Some(s.as_str().to_string())
             }
@@ -387,7 +387,7 @@ impl Loader {
             }
 
             // ==== Extended version heading ====
-            if self.find_extended_version_regex.is_match(chapter_modifier.identifier()) {
+            if FIND_EXTENDED_VERSION_REGEX.is_match(chapter_modifier.identifier()) {
 
                 let level: u32 = content.chars().take_while(|&c| c == '#').count() as u32;
 
@@ -401,7 +401,7 @@ impl Loader {
             }
 
             // ==== Compact version heading ====
-            if self.find_compact_version_regex.is_match(chapter_modifier.identifier()) {
+            if FIND_COMPACT_VERSION_REGEX.is_match(chapter_modifier.identifier()) {
                 let matched = chapter_modifier.modifier_pattern_regex().captures(content).unwrap();
 
                 let level: HeadingLevel = matched.get(1).unwrap().as_str().parse().unwrap();
