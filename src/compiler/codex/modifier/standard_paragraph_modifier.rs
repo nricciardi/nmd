@@ -100,7 +100,7 @@ impl StandardParagraphModifier {
     // Return the modifier pattern
     pub fn modifier_pattern(&self) -> ModifierPattern {
         match *self {
-            Self::Image => format!(r"!\[([^\]]+)\](?:{})?\(([^)]+)\)(?:\{{(.*)\}})?", IDENTIFIER_PATTERN),
+            Self::Image => format!(r"!\[([^\]]*)\](?:{})?\(([^)]+)\)(?:\{{(.*)\}})?", IDENTIFIER_PATTERN),
 
             Self::CommonParagraph => String::from(r#"(?s:(.*?))"#),
             Self::CodeBlock => format!(r"```(\w+){}+(.*?){}+```", NEW_LINE, NEW_LINE),

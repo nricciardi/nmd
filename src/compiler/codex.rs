@@ -160,11 +160,11 @@ impl Codex {
             ),
             (
                 StandardTextModifier::Comment.identifier().clone(),
-                Box::new(ReplacementRule::new(StandardTextModifier::Comment.modifier_pattern().clone(), String::from(r#"<div class="checkbox checkbox-unchecked"></div>"#))),
+                Box::new(ReplacementRule::new(StandardTextModifier::Comment.modifier_pattern().clone(), String::from(r"<!-- ${1} -->"))),
             ),
             (
                 StandardTextModifier::Checkbox.identifier().clone(),
-                Box::new(ReplacementRule::new(StandardTextModifier::Checkbox.modifier_pattern().clone(), String::from(r#"<div class="todo"><div class="todo-title"></div><div class="todo-description">$1</div></div>"#))) as Box<dyn ParsingRule>,
+                Box::new(ReplacementRule::new(StandardTextModifier::Checkbox.modifier_pattern().clone(), String::from(r#"<div class="checkbox checkbox-unchecked"></div>"#))) as Box<dyn ParsingRule>,
             ),
             (
                 StandardTextModifier::CheckboxChecked.identifier().clone(),
