@@ -69,9 +69,9 @@ impl ParsingRule for HtmlListRule {
 
     fn standard_parse(&self, content: &str, codex: &Codex, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError> {
         
-        let mut parsed_content = String::new();
+        let mut parsing_outcome = ParsingOutcome::new_empty();
 
-        parsed_content.push_str(r#"<ul class="list">"#);
+        parsing_outcome.add_fixed_part(r#"<ul class="list">"#.to_string());
 
         let mut items_found = 0;
 
@@ -100,16 +100,14 @@ impl ParsingRule for HtmlListRule {
 
                         let bullet = Self::bullet_transform(bullet, indentation_level, parsing_configuration.read().unwrap().list_bullets_configuration());
 
-                        parsed_content.push_str(format!(r#"
-                        <li class="list-item">
-                            {}
-                            <span class="list-item-bullet">
-                                {}
-                            </span>
-                            <span class="list-item-content">
-                                {}
-                            </span>
-                        </li>"#, INDENTATION.repeat(indentation_level), bullet, content).trim());
+                        parsing_outcome.add_fixed_part(r#"<li class="list-item">"#.to_string());
+                        parsing_outcome.add_mutable_part(INDENTATION.repeat(indentation_level));
+                        parsing_outcome.add_fixed_part(r#"<span class="list-item-bullet">"#.to_string());
+                        parsing_outcome.add_mutable_part(bullet);
+                        parsing_outcome.add_fixed_part(r#"</span><span class="list-item-content">"#.to_string());
+                        parsing_outcome.add_mutable_part(content.to_string());
+                        parsing_outcome.add_fixed_part(r#"</span></li>"#.to_string());
+
                     }
                 }
             }
@@ -127,9 +125,9 @@ impl ParsingRule for HtmlListRule {
             }
         }
 
-        parsed_content.push_str("</ul>");
+        parsing_outcome.add_fixed_part("</ul>".to_string());
         
-        Ok(ParsingOutcome::new(parsed_content))
+        Ok(parsing_outcome)
     }
     
     fn search_pattern_regex(&self) -> &Regex {

@@ -6,7 +6,7 @@ use build_html::TableRow as HtmlTableRow;
 use once_cell::sync::Lazy;
 use regex::Regex;
 
-use crate::{compiler::{codex::{modifier::{constants::IDENTIFIER_PATTERN, standard_paragraph_modifier::StandardParagraphModifier, standard_text_modifier::StandardTextModifier}, Codex}, parsing::{parsing_configuration::ParsingConfiguration, parsing_error::ParsingError, parsing_outcome::ParsingOutcome}}, resource::{resource_reference::ResourceReference, table::{self, Table, TableCell, TableCellAlignment}}};
+use crate::{compiler::{codex::{modifier::{constants::IDENTIFIER_PATTERN, standard_paragraph_modifier::StandardParagraphModifier, standard_text_modifier::StandardTextModifier}, Codex}, parser::Parser, parsing::{parsing_configuration::ParsingConfiguration, parsing_error::ParsingError, parsing_outcome::ParsingOutcome}}, resource::{resource_reference::ResourceReference, table::{self, Table, TableCell, TableCellAlignment}}};
 
 use super::ParsingRule;
 
@@ -130,7 +130,7 @@ impl HtmlTableRule {
         cells
     }
 
-    fn load_html_row(html_row: &mut HtmlTableRow, cells: &Vec<TableCell>) {
+    fn load_html_row(html_row: &mut HtmlTableRow, cells: &Vec<TableCell>, codex: &Codex, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<(), ParsingError> {
 
         for cell in cells {
             match cell {
@@ -158,11 +158,13 @@ impl HtmlTableRule {
                                     .with_attributes(vec![
                                         ("class", format!("table-cell {}", align_class).as_str())
                                     ])
-                                    .with_raw(content)
+                                    .with_raw(Parser::parse_text(codex, content, Arc::clone(&parsing_configuration), Arc::new(None))?.parsed_content())
                     );       
                 },
             }
         }
+
+        Ok(())
     }
 
     fn extract_table_metadata(&self, s: &str, document_name: &str) -> TableMetadata {
@@ -195,7 +197,7 @@ impl HtmlTableRule {
         (caption, id, style)
     }
 
-    fn build_html_table(caption: Option<String>, id: Option<String>, style: Option<String>, table: Table) -> String {
+    fn build_html_table(caption: Option<String>, id: Option<String>, style: Option<String>, table: Table, codex: &Codex, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> String {
 
         let mut html_table_attrs: Vec<(String, String)> = vec![(String::from("class"), String::from("table"))];
 
@@ -224,7 +226,7 @@ impl HtmlTableRule {
                                                         ("class", "table-header-row")
                                                     ]);
             
-            Self::load_html_row(&mut html_table_header, header_cells);
+            Self::load_html_row(&mut html_table_header, header_cells, codex, Arc::clone(&parsing_configuration));
 
             html_table.add_custom_header_row(html_table_header);
         }
@@ -241,7 +243,7 @@ impl HtmlTableRule {
                                                                 ("class", "table-body-row")
                                                             ]);
 
-            Self::load_html_row(&mut html_body_row, row);
+            Self::load_html_row(&mut html_body_row, row, codex, Arc::clone(&parsing_configuration));
 
             html_table.add_custom_body_row(html_body_row);
         }
@@ -254,7 +256,7 @@ impl HtmlTableRule {
                                                     ("class", "table-footer")
                                                 ]);
 
-            Self::load_html_row(&mut html_table_footer, footer_cells);
+            Self::load_html_row(&mut html_table_footer, footer_cells, codex, Arc::clone(&parsing_configuration));
 
             html_table.add_custom_body_row(html_table_footer);
         }
@@ -296,7 +298,7 @@ impl ParsingRule for HtmlTableRule {
         let mut style: Option<String> = None;
         
 
-        for (index, line) in content.lines().enumerate() {
+        for line in content.lines() {
 
             // check if there is caption
             let trim_line = line.trim_start();
@@ -377,7 +379,7 @@ impl ParsingRule for HtmlTableRule {
         }
 
         
-        Ok(ParsingOutcome::new(Self::build_html_table(caption, id, style, table)))
+        Ok(ParsingOutcome::new_fixed(Self::build_html_table(caption, id, style, table, codex, Arc::clone(&parsing_configuration))))
     }
     
     fn search_pattern_regex(&self) -> &Regex {

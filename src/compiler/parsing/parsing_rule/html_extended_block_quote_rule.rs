@@ -3,7 +3,7 @@ use std::sync::{Arc, RwLock};
 use once_cell::sync::Lazy;
 use regex::Regex;
 
-use crate::compiler::{codex::{modifier::{constants::NEW_LINE, modifiers_bucket::ModifiersBucket, standard_paragraph_modifier::StandardParagraphModifier, Modifier}, Codex}, parsing::{parsing_configuration::ParsingConfiguration, parsing_error::ParsingError, parsing_outcome::ParsingOutcome}};
+use crate::compiler::{codex::{modifier::{constants::NEW_LINE, modifiers_bucket::ModifiersBucket, standard_paragraph_modifier::StandardParagraphModifier, Modifier}, Codex}, parsing::{parsing_configuration::ParsingConfiguration, parsing_error::ParsingError, parsing_outcome::{ParsingOutcome, ParsingOutcomePart}}};
 
 use super::{constants::DOUBLE_NEW_LINE_REGEX, ParsingRule};
 
@@ -69,13 +69,14 @@ impl ParsingRule for HtmlExtendedBlockQuoteRule {
 
         tag_body = DOUBLE_NEW_LINE_REGEX.replace_all(&tag_body, "<br>").to_string();
 
-        let outcome = ParsingOutcome::new(format!(r#"
-        <div class="focus-quote-block focus-quote-block-{}">
-        <div class="focus-quote-block-title focus-quote-block-{}-title"></div>
-        <div class="focus-quote-block-description focus-quote-block-{}-description">
-            {}
-        </div>
-        </div>"#, quote_type, quote_type, quote_type, tag_body));
+        let outcome = ParsingOutcome::new(vec![
+            ParsingOutcomePart::Fixed { content: format!(r#"
+                <div class="focus-quote-block focus-quote-block-{}">
+                <div class="focus-quote-block-title focus-quote-block-{}-title"></div>
+                <div class="focus-quote-block-description focus-quote-block-{}-description">"#, quote_type, quote_type, quote_type) },
+            ParsingOutcomePart::Mutable { content: tag_body },
+            ParsingOutcomePart::Fixed { content: String::from("</div></div>") }
+        ]);
 
         Ok(outcome)
     }

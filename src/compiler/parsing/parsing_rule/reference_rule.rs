@@ -47,7 +47,7 @@ impl ParsingRule for ReferenceRule {
             }
         });
 
-        Ok(ParsingOutcome::new(parsed_content.to_string()))
+        Ok(ParsingOutcome::new_fixed(parsed_content.to_string()))
     }
     
     fn search_pattern_regex(&self) -> &Regex {

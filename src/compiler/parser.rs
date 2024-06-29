@@ -5,7 +5,7 @@ use std::{any::Any, sync::{Arc, RwLock}};
 
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 
-use crate::compiler::{codex::modifier::standard_paragraph_modifier, parsing::parsing_outcome::ParsingOutcome};
+use crate::compiler::{codex::modifier::standard_paragraph_modifier, parsing::parsing_outcome::{ParsingOutcome, ParsingOutcomePart}};
 
 use super::{codex::{modifier::modifiers_bucket::ModifiersBucket, Codex}, dossier::document::Paragraph, parsing::{parsing_configuration::{parsing_configuration_overlay::ParsingConfigurationOverLay, ParsingConfiguration}, parsing_error::ParsingError}};
 
@@ -39,15 +39,13 @@ impl Parser {
 
         log::debug!("start to parse content:\n{}\nexcluding: {:?}", content, excluded_modifiers);
 
-        let mut outcome = ParsingOutcome::new(String::from(content));
-
         if excluded_modifiers == ModifiersBucket::All {
             log::debug!("parsing of content:\n{} is skipped are excluded all modifiers", content);
             
-            return Ok(outcome)
+            return Ok(ParsingOutcome::new_fixed(content.to_string()))
         }
 
-        let mut content_parts: Vec<String> = vec![String::from(content)];
+        let mut content_parts: Vec<ParsingOutcomePart> = vec![ParsingOutcomePart::Mutable{ content: String::from(content) }];
         let mut content_parts_additional_excluded_modifiers: Vec<ModifiersBucket> = vec![ModifiersBucket::None];
 
         for text_modifier in codex.configuration().ordered_text_modifiers() {
@@ -69,39 +67,46 @@ impl Parser {
 
             let text_rule = text_rule.unwrap();
 
-            let mut new_content_parts: Vec<String> = content_parts.clone();
+            let mut new_content_parts: Vec<ParsingOutcomePart> = content_parts.clone();
             let mut new_content_parts_additional_excluded_modifiers: Vec<ModifiersBucket> = content_parts_additional_excluded_modifiers.clone();
             
             for (content_part_index, content_part) in content_parts.iter().enumerate() {
 
                 let current_excluded_modifiers = &content_parts_additional_excluded_modifiers[content_part_index];
 
-                if current_excluded_modifiers.contains(text_modifier) {
-                    log::debug!("{:?} is skipped for '{}'", text_modifier, content_part);
-                }
-
-                let matches = text_rule.find_iter(&content_part);
-
-                if matches.len() == 0 {
-                    log::debug!("'{}' => no matches with {:#?}", content_part, text_rule);
+                if let ParsingOutcomePart::Fixed { content } = content_part {
+                    
+                    new_content_parts.insert(content_part_index , content_part.clone());
+                    new_content_parts_additional_excluded_modifiers.insert(content_part_index, current_excluded_modifiers.clone());
                     continue;
                 }
 
-                log::debug!("'{}' => there is a match with {:#?}", content_part, text_rule);
+                if current_excluded_modifiers.contains(text_modifier) {
+                    log::debug!("{:?} is skipped for '{}'", text_modifier, content_part.content());
+                }
+
+                let matches = text_rule.find_iter(&content_part.content());
+
+                if matches.len() == 0 {
+                    log::debug!("'{}' => no matches with {:#?}", content_part.content(), text_rule);
+                    continue;
+                }
+
+                log::debug!("'{}' => there is a match with {:#?}", content_part.content(), text_rule);
 
                 let mut sub_content_parts: Vec<Segment> = Vec::new();
 
                 let mut last_end = 0;
                 for mat in matches {
                     if mat.start() > last_end {
-                        sub_content_parts.push(Segment::NonMatch(content_part[last_end..mat.start()].to_string()));
+                        sub_content_parts.push(Segment::NonMatch(content_part.content()[last_end..mat.start()].to_string()));
                     }
                     sub_content_parts.push(Segment::Match(mat.as_str().to_string()));
                     last_end = mat.end();
                 }
 
-                if last_end < content_part.len() {
-                    sub_content_parts.push(Segment::NonMatch(content_part[last_end..].to_string()));
+                if last_end < content_part.content().len() {
+                    sub_content_parts.push(Segment::NonMatch(content_part.content()[last_end..].to_string()));
                 }
 
                 new_content_parts.remove(content_part_index);        // remove father matched content
@@ -115,16 +120,18 @@ impl Parser {
                             
                             let outcome = text_rule.parse(m, codex, Arc::clone(&parsing_configuration))?;
 
-                            new_content_parts.insert(content_part_index + sub_content_part_index, outcome.parsed_content().into());
-        
-                            let new_current_excluded_modifiers = current_excluded_modifiers.clone() + text_modifier.incompatible_modifiers().clone();
-        
-                            new_content_parts_additional_excluded_modifiers.insert(content_part_index + sub_content_part_index, new_current_excluded_modifiers);
-                        
+                            for part in outcome.into() {
 
+                                new_content_parts.insert(content_part_index + sub_content_part_index, part);
+            
+                                let new_current_excluded_modifiers = current_excluded_modifiers.clone() + text_modifier.incompatible_modifiers().clone();
+            
+                                new_content_parts_additional_excluded_modifiers.insert(content_part_index + sub_content_part_index, new_current_excluded_modifiers);
+                            
+                            }
                         },
                         Segment::NonMatch(s) => {
-                            new_content_parts.insert(content_part_index + sub_content_part_index, s.clone());
+                            new_content_parts.insert(content_part_index + sub_content_part_index, ParsingOutcomePart::Mutable { content: s.clone() });
                             new_content_parts_additional_excluded_modifiers.insert(content_part_index + sub_content_part_index, current_excluded_modifiers.clone());
 
 

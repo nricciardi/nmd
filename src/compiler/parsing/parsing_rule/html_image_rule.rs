@@ -209,7 +209,7 @@ impl HtmlImageRule {
             
         }).to_string();
         
-        Ok(ParsingOutcome::new(parsed_content))
+        Ok(ParsingOutcome::new_fixed(parsed_content))
     }
 
     fn parse_abridged_image(search_pattern_regex: &Regex, content: &str, codex: &Codex, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError> {
@@ -246,7 +246,7 @@ impl HtmlImageRule {
 
         }).to_string();
         
-        Ok(ParsingOutcome::new(parsed_content))
+        Ok(ParsingOutcome::new_fixed(parsed_content))
     }
 
     fn parse_multi_image(search_pattern_regex: &Regex, content: &str, codex: &Codex, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError> {
@@ -308,7 +308,7 @@ impl HtmlImageRule {
 
         }).to_string();
         
-        Ok(ParsingOutcome::new(parsed_content))
+        Ok(ParsingOutcome::new_fixed(parsed_content))
     }
 
     fn parse_image_from_identifier(image_modifier_identifier: &ModifierIdentifier, search_pattern_regex: &Regex, content: &str, codex: &Codex, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError> {
@@ -344,7 +344,7 @@ impl ParsingRule for HtmlImageRule {
     }
 
     fn fast_parse(&self, content: &str, codex: &Codex, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError> {
-        Ok(ParsingOutcome::new(format!(r#"<img alt="{}" />"#, content)))
+        Ok(ParsingOutcome::new_fixed(format!(r#"<img alt="{}" />"#, content)))
     }
     
     fn search_pattern_regex(&self) -> &Regex {
