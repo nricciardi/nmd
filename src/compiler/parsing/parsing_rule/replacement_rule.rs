@@ -1,23 +1,66 @@
-use std::fmt::{Display, Debug};
-use std::str::FromStr;
+use std::fmt::Debug;
 use std::sync::{Arc, RwLock};
 
 use log;
-use rayon::iter::ParallelBridge;
 use regex::{Captures, Regex, Replacer};
 
-use crate::compiler::codex::modifier::constants::NEW_LINE;
-use crate::compiler::codex::modifier::modifiers_bucket::ModifiersBucket;
 use crate::compiler::codex::Codex;
 use crate::compiler::parsing::parsing_configuration::ParsingConfiguration;
 use crate::compiler::parsing::parsing_error::ParsingError;
-use crate::compiler::parsing::parsing_metadata::ParsingMetadata;
-use crate::compiler::parsing::parsing_outcome::ParsingOutcome;
+use crate::compiler::parsing::parsing_outcome::{ParsingOutcome, ParsingOutcomePart};
 use crate::compiler::parsing::parsing_rule::constants::DOUBLE_NEW_LINE_REGEX;
 use crate::resource::resource_reference::ResourceReference;
 
 use super::ParsingRule;
 
+
+#[derive(Debug, Clone)]
+pub struct ReplacementRuleReplacerPart<R: Replacer> {
+    replacer: R,
+    fixed: bool,
+    references_at: Vec<usize>
+}
+
+impl<R: Replacer> ReplacementRuleReplacerPart<R> {
+
+    pub fn new_fixed(replacer: R) -> Self {
+        Self {
+            replacer,
+            fixed: true,
+            references_at: Vec::new()
+        }
+    }
+
+    pub fn new_mutable(replacer: R) -> Self {
+        Self {
+            replacer,
+            fixed: false,
+            references_at: Vec::new()
+        }
+    }
+
+    pub fn with_references_at(mut self, references_at: Vec<usize>) -> Self {
+        self.references_at = references_at;
+
+        self
+    }
+
+    pub fn replacer(&self) -> &R {
+        &self.replacer
+    }
+
+    pub fn replacer_mut(&mut self) -> &mut R {
+        &mut self.replacer
+    }
+
+    pub fn set_replacer(&mut self, r: R) {
+        self.replacer = r
+    }
+
+    pub fn references_at(&self) -> &Vec<usize> {
+        &self.references_at
+    }
+}
 
 
 
@@ -25,7 +68,7 @@ use super::ParsingRule;
 pub struct ReplacementRule<R: Replacer> {
     search_pattern: String,
     search_pattern_regex: Regex,
-    replacer: R,
+    replacer_parts: Vec<ReplacementRuleReplacerPart<R>>,
     newline_fix_pattern: Option<String>,
     reference_at: Option<usize>,
 }
@@ -33,20 +76,14 @@ pub struct ReplacementRule<R: Replacer> {
 impl<R: Replacer> ReplacementRule<R> {
     
     /// Returns a new instance having a search pattern and a replication pattern
-    ///
-    /// # Arguments
-    ///
-    /// * `pattern_type` - PatternType which represent the pattern used to search in text 
-    /// * `replacement_pattern` - A string slice which represent the pattern used to replace the text
-    ///
-    pub fn new(searching_pattern: String, replacer: R) -> Self {
+    pub fn new(searching_pattern: String, replacers: Vec<ReplacementRuleReplacerPart<R>>) -> Self {
 
         log::debug!("created new parsing rule with search_pattern: '{}'", searching_pattern);
 
         Self {
             search_pattern_regex: Regex::new(&searching_pattern).unwrap(),
             search_pattern: searching_pattern,
-            replacer,
+            replacer_parts: replacers,
             newline_fix_pattern: None,
             reference_at: None
         }
@@ -57,17 +94,11 @@ impl<R: Replacer> ReplacementRule<R> {
 
         self
     }
-
-    pub fn with_reference_at(mut self, at: usize) -> Self {
-        self.reference_at = Some(at);
-
-        self
-    }
 }
 
 impl Debug for ReplacementRule<String> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("ReplacementRule").field("searching_pattern", &self.search_pattern).field("replacer", &self.replacer).field("newline_fix_pattern", &self.newline_fix_pattern).finish()
+        f.debug_struct("ReplacementRule").field("searching_pattern", &self.search_pattern).field("replacer", &self.replacer_parts).field("newline_fix_pattern", &self.newline_fix_pattern).finish()
     }
 }
 
@@ -76,37 +107,77 @@ impl ParsingRule for ReplacementRule<String> {
     /// Parse the content using internal search and replacement pattern
     fn standard_parse(&self, content: &str, codex: &Codex, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError> {
 
-        let mut replacer = self.replacer.clone();
+        log::debug!("parsing:\n{}\nusing '{}'->'{:?}' (newline fix: {}, id_at: {:?})", content, self.search_pattern(), self.replacer_parts, self.newline_fix_pattern.is_some(), self.reference_at);
 
-        log::debug!("parsing:\n{}\nusing '{}'->'{}' (newline fix: {}, id_at: {:?})", content, self.search_pattern(), self.replacer, self.newline_fix_pattern.is_some(), self.reference_at);
+        let mut outcome = ParsingOutcome::new_empty();
 
-        if let Some(ref reference_at) = self.reference_at {
+        for captures in self.search_pattern_regex.captures_iter(content) {
 
-            for captures in self.search_pattern_regex.captures_iter(content) {
+            let mut replacers = self.replacer_parts.clone(); 
 
-                let reference = captures.get(reference_at.clone()).unwrap().as_str();
+            // replace references
+            for index in 0..self.replacer_parts.len() {
 
-                let reference = ResourceReference::of(reference, Some(parsing_configuration.read().unwrap().metadata().document_name().as_ref().unwrap()))?;
+                for reference_at in self.replacer_parts[index].references_at() {
 
+                    let reference = captures.get(reference_at.clone()).unwrap().as_str();
 
-                let reference = reference.build();
+                    let reference = ResourceReference::of(reference, Some(parsing_configuration.read().unwrap().metadata().document_name().as_ref().unwrap()))?;
+    
+                    let reference = reference.build();
 
-                replacer = replacer.replace(&format!("${}", reference_at), &reference);
-                replacer = replacer.replace(&format!("${{{}}}", reference_at), &reference);
+                    let r = replacers[index].replacer().replace(&format!("${}", reference_at), &reference);
+                    replacers[index].set_replacer(r);
 
-                log::debug!("id: '{}', new replacer: {}", reference, replacer);
+                    let r = replacers[index].replacer_mut().replace(&format!("${{{}}}", reference_at), &reference);
+                    replacers[index].set_replacer(r);
+
+                    log::debug!("id: '{}', new replacer: {:?}", reference, replacers[index]);
+                }
+            }
+
+            for mat in captures.iter() {
+                if mat.is_none() {
+                    outcome.add_mutable_part(mat)
+                }
+            }
+            
+        }
+
+        let parsed_content = self.search_pattern_regex.replace_all(content, || {
+
+        }).to_string();
+
+        for replacer in &replacers {
+
+            
+
+            if replacer.fixed {
+
+                outcome.add_fixed_part(parsed_content);
+
+            } else {
+
+                outcome.add_mutable_part(parsed_content);
             }
         }
 
-        let mut parsed_content = self.search_pattern_regex.replace_all(content, &replacer).to_string();
-
         if let Some(newline_fix_pattern) = self.newline_fix_pattern.as_ref() {
-            parsed_content = DOUBLE_NEW_LINE_REGEX.replace_all(&parsed_content, newline_fix_pattern).to_string();
+
+            let last_index = outcome.parts().len() - 1;
+            let last_element = outcome.parts().get(last_index).unwrap();
+
+            let new_parsed_content = DOUBLE_NEW_LINE_REGEX.replace_all(&last_element.content(), newline_fix_pattern).to_string();
+        
+            match last_element {
+                ParsingOutcomePart::Fixed { content: _ } => outcome.parts_mut().insert(last_index, ParsingOutcomePart::Fixed { content: new_parsed_content }),
+                ParsingOutcomePart::Mutable { content: _ } => outcome.parts_mut().insert(last_index, ParsingOutcomePart::Mutable { content: new_parsed_content }),
+            };
         }
 
-        log::debug!("result:\n{}", parsed_content);
+        log::debug!("result:\n{:?}", outcome);
         
-        Ok(ParsingOutcome::new(parsed_content))
+        Ok(outcome)
     }
     
     fn search_pattern(&self) -> &String {
@@ -132,27 +203,41 @@ where F: 'static + Sync + Send + Fn(&Captures) -> String {
     /// Parse the content using internal search and replacement pattern
     fn standard_parse(&self, content: &str, codex: &Codex, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError> {
 
-        if self.reference_at.is_some() {
-            return Err(ParsingError::InvalidParameter("id_at".to_string()))
+        log::debug!("parsing:\n{}\nusing '{}' (newline fix: {}, id_at: {:?})", content, self.search_pattern(), self.newline_fix_pattern.is_some(), self.reference_at);
+
+
+        let mut outcome = ParsingOutcome::new_empty();
+
+        for replacer in &self.replacer_parts {
+
+            let parsed_content = self.search_pattern_regex.replace_all(content, replacer.replacer()).to_string();
+
+            if replacer.fixed {
+
+                outcome.add_fixed_part(parsed_content);
+
+            } else {
+
+                outcome.add_mutable_part(parsed_content);
+            }
         }
-
-        let searching_pattern = self.search_pattern().clone();
-
-        let regex = match Regex::new(&searching_pattern) {
-          Ok(r) => r,
-          Err(_) => return Err(ParsingError::InvalidPattern(searching_pattern))  
-        };
-
-        let mut parsed_content = regex.replace_all(content, &self.replacer).to_string();
 
         if let Some(newline_fix_pattern) = self.newline_fix_pattern.as_ref() {
 
-            parsed_content = DOUBLE_NEW_LINE_REGEX.replace_all(&parsed_content, newline_fix_pattern).to_string();
+            let last_index = outcome.parts().len() - 1;
+            let last_element = outcome.parts().get(last_index).unwrap();
+
+            let new_parsed_content = DOUBLE_NEW_LINE_REGEX.replace_all(&last_element.content(), newline_fix_pattern).to_string();
+        
+            match last_element {
+                ParsingOutcomePart::Fixed { content: _ } => outcome.parts_mut().insert(last_index, ParsingOutcomePart::Fixed { content: new_parsed_content }),
+                ParsingOutcomePart::Mutable { content: _ } => outcome.parts_mut().insert(last_index, ParsingOutcomePart::Mutable { content: new_parsed_content }),
+            };
         }
 
-        log::debug!("result:\n{}", parsed_content);
+        log::debug!("result:\n{:?}", outcome);
         
-        Ok(ParsingOutcome::new(parsed_content))
+        Ok(outcome)
     }
 
     fn search_pattern(&self) -> &String {
@@ -178,7 +263,11 @@ mod test {
         let codex = Codex::of_html(CodexConfiguration::default());
 
         // valid pattern with a valid text modifier
-        let parsing_rule = ReplacementRule::new(StandardTextModifier::BoldStarVersion.modifier_pattern().clone(), String::from("<strong>$1</strong>"));
+        let parsing_rule = ReplacementRule::new(StandardTextModifier::BoldStarVersion.modifier_pattern().clone(), vec![
+            ReplacementRuleReplacerPart::new_fixed(String::from("<strong>")),
+            ReplacementRuleReplacerPart::new_mutable(String::from("$1")),
+            ReplacementRuleReplacerPart::new_fixed(String::from("</strong>")),
+        ]);
 
         let text_to_parse = r"A piece of **bold text**";
         let parsing_configuration = Arc::new(RwLock::new(ParsingConfiguration::default()));
@@ -204,7 +293,11 @@ mod test {
 
         let parsing_configuration = Arc::new(RwLock::new(ParsingConfiguration::default()));
 
-        let parsing_rule = ReplacementRule::new(StandardChapterModifier::HeadingGeneralExtendedVersion(6).modifier_pattern().clone(), String::from("<h6>$1</h6>"));
+        let parsing_rule = ReplacementRule::new(StandardChapterModifier::HeadingGeneralExtendedVersion(6).modifier_pattern().clone(), vec![
+            ReplacementRuleReplacerPart::new_fixed(String::from("<h6>")),
+            ReplacementRuleReplacerPart::new_mutable(String::from("$1")),
+            ReplacementRuleReplacerPart::new_fixed(String::from("</h6>")),
+        ]);
 
         let text_to_parse = r"###### title 6";
 
@@ -220,7 +313,11 @@ mod test {
 
         let parsing_configuration = Arc::new(RwLock::new(ParsingConfiguration::default()));
 
-        let parsing_rule = ReplacementRule::new(StandardParagraphModifier::CommonParagraph.modifier_pattern_with_paragraph_separator().clone(), String::from("<p>$1</p>"));
+        let parsing_rule = ReplacementRule::new(StandardParagraphModifier::CommonParagraph.modifier_pattern_with_paragraph_separator().clone(), vec![
+            ReplacementRuleReplacerPart::new_fixed(String::from("<p>")),
+            ReplacementRuleReplacerPart::new_mutable(String::from("$1")),
+            ReplacementRuleReplacerPart::new_fixed(String::from("</p>")),
+        ]);
 
         let text_to_parse = r#"
 paragraph 2a.
@@ -245,7 +342,11 @@ paragraph
 
         let parsing_configuration = Arc::new(RwLock::new(ParsingConfiguration::default()));
 
-        let parsing_rule = ReplacementRule::new(StandardParagraphModifier::CodeBlock.modifier_pattern_with_paragraph_separator().clone(), String::from(r#"<pre><code class="language-$1 codeblock">$2</code></pre>"#));
+        let parsing_rule = ReplacementRule::new(StandardParagraphModifier::CodeBlock.modifier_pattern_with_paragraph_separator().clone(), vec![
+            ReplacementRuleReplacerPart::new_fixed(String::from(r#"<pre><code class="language-$1 codeblock">"#)),
+            ReplacementRuleReplacerPart::new_mutable(String::from("$2")),
+            ReplacementRuleReplacerPart::new_fixed(String::from("</code></pre>")),
+        ]);
 
         let text_to_parse = r#"
 ```python
@@ -267,7 +368,11 @@ print("hello world")
         
         let parsing_configuration = Arc::new(RwLock::new(ParsingConfiguration::default()));
 
-        let parsing_rule = ReplacementRule::new(StandardParagraphModifier::FocusBlock.modifier_pattern_with_paragraph_separator().clone(), String::from(r#"<div class="focus-block focus-block-$1">$2</div>"#)).with_newline_fix(r"<br>".to_string());
+        let parsing_rule = ReplacementRule::new(StandardParagraphModifier::FocusBlock.modifier_pattern_with_paragraph_separator().clone(), vec![
+            ReplacementRuleReplacerPart::new_fixed(String::from(r#"<div class="focus-block focus-block-$1">$2</div>"#)),
+            ReplacementRuleReplacerPart::new_mutable(String::from(r#"$2"#)),
+            ReplacementRuleReplacerPart::new_fixed(String::from(r#"</div>"#)),
+        ]).with_newline_fix(r"<br>".to_string());
 
         let text_to_parse = r#"
 # title 1

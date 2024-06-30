@@ -44,7 +44,7 @@ pub trait Assembler {
 
             if let Some(parsed_content) = paragraph.parsed_content().as_ref() {
 
-                result.push_str(parsed_content.parsed_content());
+                result.push_str(&parsed_content.parsed_content());
 
             } else {
                 return Err(AssemblerError::ParsedContentNotFound)
@@ -55,7 +55,7 @@ pub trait Assembler {
 
             if let Some(parsed_content) = chapter.heading().parsed_content().as_ref() {
 
-                result.push_str(parsed_content.parsed_content());
+                result.push_str(&parsed_content.parsed_content());
 
             } else {
                 return Err(AssemblerError::ParsedContentNotFound)
@@ -64,7 +64,7 @@ pub trait Assembler {
             for paragraph in chapter.paragraphs() {
                 if let Some(parsed_content) = paragraph.parsed_content().as_ref() {
 
-                    result.push_str(parsed_content.parsed_content());
+                    result.push_str(&parsed_content.parsed_content());
     
                 } else {
                     return Err(AssemblerError::ParsedContentNotFound)

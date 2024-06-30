@@ -65,7 +65,7 @@ impl Codex {
     /// Standard HTML `Codex`
     pub fn of_html(configuration: CodexConfiguration) -> Self {
 
-        let text_rules: HashMap<ModifierIdentifier, Box<dyn ParsingRule>> = HashMap::from([
+        let text_rules: HashMap<ModifierIdentifier, Box<dyn ParsingRule>> = HashMap::new(); /*HashMap::from([
             (
                 StandardTextModifier::Todo.identifier().clone(),
                 Box::new(ReplacementRule::new(StandardTextModifier::Todo.modifier_pattern().clone(), String::from(r#"<div class="todo"><div class="todo-title"></div><div class="todo-description">$1</div></div>"#))) as Box<dyn ParsingRule>,
@@ -182,9 +182,9 @@ impl Codex {
                 StandardTextModifier::Reference.identifier().clone(),
                 Box::new(ReferenceRule::new())
             ),
-        ]);
+        ]);*/
 
-        let paragraph_rules: HashMap<ModifierIdentifier, Box<dyn ParsingRule>> = HashMap::from([
+        let paragraph_rules: HashMap<ModifierIdentifier, Box<dyn ParsingRule>> = HashMap::new(); /*HashMap::from([
             (
                 StandardParagraphModifier::PageBreak.identifier().clone(),
                 Box::new(ReplacementRule::new(StandardParagraphModifier::PageBreak.modifier_pattern().clone(), String::from(r#"<div class="page-break"></div>"#))) as Box<dyn ParsingRule>
@@ -269,7 +269,7 @@ impl Codex {
                 StandardParagraphModifier::Table.identifier().clone(),
                 Box::new(HtmlTableRule::new())
             ),
-        ]);
+        ]);*/
 
         let chapter_rules: HashMap<ModifierIdentifier, Box<dyn ParsingRule>> = HashMap::new();
 

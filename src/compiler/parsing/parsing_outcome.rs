@@ -38,6 +38,10 @@ impl ParsingOutcome {
         Self::new(vec![ParsingOutcomePart::Fixed { content }])
     }
 
+    pub fn new_mutable(content: String) -> Self {
+        Self::new(vec![ParsingOutcomePart::Mutable { content }])
+    }
+
     pub fn parsed_content(&self) -> String {
         let mut parsed_content = String::new();
 
@@ -62,6 +66,28 @@ impl ParsingOutcome {
     pub fn parts(&self) -> &Vec<ParsingOutcomePart> {
         &self.parts
     }
+
+    pub fn parts_mut(&mut self) -> &mut Vec<ParsingOutcomePart> {
+        &mut self.parts
+    }
+
+    pub fn apply_parsing_function_to_mutable_parts<F, E>(&mut self, f: F) -> Result<(), E>
+        where F: Fn(&ParsingOutcomePart) -> Result<ParsingOutcome, E> {
+
+            let mut new_parts: Vec<ParsingOutcomePart> = Vec::new();
+            for part in &self.parts {
+                match part {
+                    ParsingOutcomePart::Fixed { content: _ } => new_parts.push(part.clone()),
+                    ParsingOutcomePart::Mutable { content: _ } => {
+                        let outcome = f(part)?;
+
+                        Into::<Vec<ParsingOutcomePart>>::into(outcome).into_iter().for_each(|p| new_parts.push(p))
+                    },
+                }
+            }
+
+            Ok(())
+        }
 }
 
 impl Into<String> for ParsingOutcome {

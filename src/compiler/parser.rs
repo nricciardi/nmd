@@ -120,7 +120,7 @@ impl Parser {
                             
                             let outcome = text_rule.parse(m, codex, Arc::clone(&parsing_configuration))?;
 
-                            for part in outcome.into() {
+                            for part in Into::<Vec<ParsingOutcomePart>>::into(outcome) {
 
                                 new_content_parts.insert(content_part_index + sub_content_part_index, part);
             
@@ -145,10 +145,8 @@ impl Parser {
             content_parts_additional_excluded_modifiers = new_content_parts_additional_excluded_modifiers;
             
         }
-
-        outcome = ParsingOutcome::new(content_parts.join(""));
         
-        Ok(outcome)
+        Ok(ParsingOutcome::new(content_parts))
     }
 
     /// Parse a `Paragraph` using `Codex` rules and `ParsingConfiguration` options
@@ -164,7 +162,7 @@ impl Parser {
 
         log::debug!("start to parse paragraph ({:?}):\n{}\nexcluding: {:?}", paragraph.paragraph_type(), paragraph, excluded_modifiers);
 
-        let mut outcome = ParsingOutcome::new(String::from(paragraph.content()));
+        let mut outcome: ParsingOutcome = ParsingOutcome::new_fixed(paragraph.content().to_string());
 
         if excluded_modifiers == ModifiersBucket::All {
             log::debug!("parsing of paragraph:\n{:#?} is skipped are excluded all modifiers", paragraph);
@@ -180,7 +178,7 @@ impl Parser {
 
             log::debug!("paragraph rule {:#?} is found, it is about to be applied to parse paragraph", paragraph_rule);
 
-            outcome = paragraph_rule.parse(outcome.parsed_content(), codex, Arc::clone(&parsing_configuration))?;
+            outcome = paragraph_rule.parse(&paragraph.content(), codex, Arc::clone(&parsing_configuration))?;
 
             excluded_modifiers = excluded_modifiers + paragraph_modifier.incompatible_modifiers().clone();
 
@@ -189,7 +187,7 @@ impl Parser {
             log::warn!("there is NOT a paragraph rule for '{}' in codex", paragraph.paragraph_type());
         }
         
-        outcome = Parser::parse_text_excluding_modifiers(codex, outcome.parsed_content(), excluded_modifiers, Arc::clone(&parsing_configuration), parsing_configuration_overlay)?;
+        outcome.apply_parsing_function_to_mutable_parts(|mutable_part| Parser::parse_text_excluding_modifiers(codex, &mutable_part.content(), excluded_modifiers.clone(), Arc::clone(&parsing_configuration), Arc::clone(&parsing_configuration_overlay)));
 
         Ok(outcome)
     }

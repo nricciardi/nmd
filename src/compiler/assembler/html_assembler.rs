@@ -213,7 +213,7 @@ impl Assembler for HtmlAssembler {
 
             if let Some(parsed_content) = paragraph.parsed_content().as_ref() {
 
-                result.push_str(parsed_content.parsed_content());
+                result.push_str(&parsed_content.parsed_content());
 
             } else {
                 return Err(AssemblerError::ParsedContentNotFound)
@@ -247,7 +247,7 @@ impl Assembler for HtmlAssembler {
 
             if let Some(parsed_content) = chapter.heading().parsed_content().as_ref() {
 
-                div_chapter_content.push_str(parsed_content.parsed_content());
+                div_chapter_content.push_str(&parsed_content.parsed_content());
 
             } else {
                 return Err(AssemblerError::ParsedContentNotFound)
@@ -256,7 +256,7 @@ impl Assembler for HtmlAssembler {
             for paragraph in chapter.paragraphs() {
                 if let Some(parsed_content) = paragraph.parsed_content().as_ref() {
 
-                    div_chapter_content.push_str(parsed_content.parsed_content());
+                    div_chapter_content.push_str(&parsed_content.parsed_content());
     
                 } else {
                     return Err(AssemblerError::ParsedContentNotFound)

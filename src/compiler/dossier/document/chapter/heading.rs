@@ -1,6 +1,6 @@
 use std::{num::ParseIntError, str::FromStr, sync::{Arc, RwLock}};
 
-use crate::{compiler::{codex::Codex, parsable::{parsed_content_accessor::ParsedContentAccessor, Parsable}, parser::Parser, parsing::{parsing_configuration::{parsing_configuration_overlay::ParsingConfigurationOverLay, ParsingConfiguration}, parsing_error::ParsingError, parsing_metadata::ParsingMetadata, parsing_outcome::ParsingOutcome}}, resource::resource_reference::ResourceReference};
+use crate::{compiler::{codex::Codex, parsable::{parsed_content_accessor::ParsedContentAccessor, Parsable}, parser::Parser, parsing::{parsing_configuration::{parsing_configuration_overlay::ParsingConfigurationOverLay, ParsingConfiguration}, parsing_error::ParsingError, parsing_metadata::ParsingMetadata, parsing_outcome::{ParsingOutcome, ParsingOutcomePart}}}, resource::resource_reference::ResourceReference};
 
 use super::chapter_builder::ChapterBuilderError;
 
@@ -47,7 +47,13 @@ impl Parsable for Heading {
 
         let parsed_title = Parser::parse_text(&codex, &self.title, Arc::clone(&parsing_configuration), parsing_configuration_overlay)?;
 
-        self.parsed_content = Some(ParsingOutcome::new(format!(r#"<h{} class="heading-{}" id="{}">{}</h{}>"#, self.level, self.level, id.build_without_internal_sharp(), parsed_title.parsed_content(), self.level)));
+        let outcome = ParsingOutcome::new(vec![
+            ParsingOutcomePart::Fixed { content: format!(r#"<h{} class="heading-{}" id="{}">"#, self.level, self.level, id.build_without_internal_sharp()) },
+            ParsingOutcomePart::Mutable { content: parsed_title.parsed_content() },
+            ParsingOutcomePart::Fixed { content: format!(r#"</h{}>"#, self.level) },
+        ]);
+
+        self.parsed_content = Some(outcome);
 
         Ok(())
     }
