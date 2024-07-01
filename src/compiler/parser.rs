@@ -1,11 +1,9 @@
 
 
-use std::{any::Any, sync::{Arc, RwLock}};
+use std::sync::{Arc, RwLock};
 
 
-use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
-
-use crate::compiler::{codex::modifier::standard_paragraph_modifier, parsing::parsing_outcome::{ParsingOutcome, ParsingOutcomePart}};
+use crate::compiler::parsing::parsing_outcome::{ParsingOutcome, ParsingOutcomePart};
 
 use super::{codex::{modifier::modifiers_bucket::ModifiersBucket, Codex}, dossier::document::Paragraph, parsing::{parsing_configuration::{parsing_configuration_overlay::ParsingConfigurationOverLay, ParsingConfiguration}, parsing_error::ParsingError}};
 
@@ -67,17 +65,19 @@ impl Parser {
 
             let text_rule = text_rule.unwrap();
 
-            let mut new_content_parts: Vec<ParsingOutcomePart> = content_parts.clone();
-            let mut new_content_parts_additional_excluded_modifiers: Vec<ModifiersBucket> = content_parts_additional_excluded_modifiers.clone();
+            let mut new_content_parts: Vec<ParsingOutcomePart> = Vec::new();
+            let mut new_content_parts_additional_excluded_modifiers: Vec<ModifiersBucket> = Vec::new();
             
             for (content_part_index, content_part) in content_parts.iter().enumerate() {
 
                 let current_excluded_modifiers = &content_parts_additional_excluded_modifiers[content_part_index];
 
                 if let ParsingOutcomePart::Fixed { content } = content_part {
+
+                    log::debug!("{:?} is skipped for because '{}' fixed", text_modifier, content);
                     
-                    new_content_parts.insert(content_part_index , content_part.clone());
-                    new_content_parts_additional_excluded_modifiers.insert(content_part_index, current_excluded_modifiers.clone());
+                    new_content_parts.push(content_part.clone());
+                    new_content_parts_additional_excluded_modifiers.push(current_excluded_modifiers.clone());
                     continue;
                 }
 
@@ -94,51 +94,55 @@ impl Parser {
 
                 log::debug!("'{}' => there is a match with {:#?}", content_part.content(), text_rule);
 
-                let mut sub_content_parts: Vec<Segment> = Vec::new();
-
                 let mut last_end = 0;
-                for mat in matches {
-                    if mat.start() > last_end {
-                        sub_content_parts.push(Segment::NonMatch(content_part.content()[last_end..mat.start()].to_string()));
-                    }
-                    sub_content_parts.push(Segment::Match(mat.as_str().to_string()));
-                    last_end = mat.end();
-                }
 
-                if last_end < content_part.content().len() {
-                    sub_content_parts.push(Segment::NonMatch(content_part.content()[last_end..].to_string()));
-                }
-
-                new_content_parts.remove(content_part_index);        // remove father matched content
-                new_content_parts_additional_excluded_modifiers.remove(content_part_index);
-
-
-                for (sub_content_part_index, sub_content_part) in sub_content_parts.iter().enumerate() {
-
-                    match sub_content_part {
+                let mut elaborate_segment_fn = |segment: Segment| -> Result<(), ParsingError> {
+                    match segment {
                         Segment::Match(m) => {
                             
-                            let outcome = text_rule.parse(m, codex, Arc::clone(&parsing_configuration))?;
+                            let outcome = text_rule.parse(&m, codex, Arc::clone(&parsing_configuration))?;
 
                             for part in Into::<Vec<ParsingOutcomePart>>::into(outcome) {
 
-                                new_content_parts.insert(content_part_index + sub_content_part_index, part);
+                                new_content_parts.push(part);
             
                                 let new_current_excluded_modifiers = current_excluded_modifiers.clone() + text_modifier.incompatible_modifiers().clone();
             
-                                new_content_parts_additional_excluded_modifiers.insert(content_part_index + sub_content_part_index, new_current_excluded_modifiers);
+                                new_content_parts_additional_excluded_modifiers.push(new_current_excluded_modifiers);
                             
                             }
                         },
                         Segment::NonMatch(s) => {
-                            new_content_parts.insert(content_part_index + sub_content_part_index, ParsingOutcomePart::Mutable { content: s.clone() });
-                            new_content_parts_additional_excluded_modifiers.insert(content_part_index + sub_content_part_index, current_excluded_modifiers.clone());
-
+                            new_content_parts.push(ParsingOutcomePart::Mutable { content: s.clone() });
+                            new_content_parts_additional_excluded_modifiers.push(current_excluded_modifiers.clone());
 
                         },
                     }
 
-                    }                
+                    Ok(())
+                };
+
+                for mat in matches {
+
+                    let segment: Segment;
+
+                    if mat.start() > last_end {
+                        segment = Segment::NonMatch(content_part.content()[last_end..mat.start()].to_string());
+
+                    } else {
+
+                        segment = Segment::Match(mat.as_str().to_string());
+                        last_end = mat.end();
+                    }
+
+                    elaborate_segment_fn(segment)?;
+                }
+
+                if last_end < content_part.content().len() {
+                    let segment = Segment::NonMatch(content_part.content()[last_end..].to_string());
+
+                    elaborate_segment_fn(segment)?;
+                }
             }
 
             content_parts = new_content_parts;
@@ -186,8 +190,8 @@ impl Parser {
 
             log::warn!("there is NOT a paragraph rule for '{}' in codex", paragraph.paragraph_type());
         }
-        
-        outcome.apply_parsing_function_to_mutable_parts(|mutable_part| Parser::parse_text_excluding_modifiers(codex, &mutable_part.content(), excluded_modifiers.clone(), Arc::clone(&parsing_configuration), Arc::clone(&parsing_configuration_overlay)));
+
+        outcome.apply_parsing_function_to_mutable_parts(|mutable_part| Parser::parse_text_excluding_modifiers(codex, &mutable_part.content(), excluded_modifiers.clone(), Arc::clone(&parsing_configuration), Arc::clone(&parsing_configuration_overlay)))?;
 
         Ok(outcome)
     }

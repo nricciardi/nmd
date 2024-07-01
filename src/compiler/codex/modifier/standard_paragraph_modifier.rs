@@ -101,11 +101,9 @@ impl StandardParagraphModifier {
     pub fn modifier_pattern(&self) -> ModifierPattern {
         match *self {
             Self::Image => format!(r"!\[([^\]]*)\](?:{})?\(([^)]+)\)(?:\{{(.*)\}})?", IDENTIFIER_PATTERN),
-
             Self::CommonParagraph => String::from(r#"(?s:(.*?))"#),
             Self::CodeBlock => format!(r"```(\w+){}+(.*?){}+```", NEW_LINE, NEW_LINE),
             Self::MathBlock => String::from(r#"\$\$((?s:.+?))\$\$"#),
-
             Self::ListItem => format!(r#"(?m:^([\t ]*)(-\[\]|-\[ \]|-\[x\]|-\[X\]|-|->|\||\*|\+|--|\d[\.)]?|[a-zA-Z]{{1,8}}[\.)]|&[^;]+;) (.*){}?)"#, NEW_LINE),
             Self::List => format!(r#"((?:{}+)+)"#, Self::ListItem.modifier_pattern()),
             Self::ExtendedBlockQuoteLine => String::from(r"(?m:^> (.*))"),

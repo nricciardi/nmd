@@ -9,7 +9,7 @@
             "request": "launch",
             "name": "Debug",
             "program": "${workspaceFolder}/target/debug/nmd",
-            "args": ["compile", "dossier", "-i", "test-resources/nmd-test-dossier-1"],
+            "args": ["compile", "dossier", "-i", "test-resources/nmd-test-dossier-from-md", "--fast-draft"],
             "cwd": "${workspaceFolder}"
         }
     ]

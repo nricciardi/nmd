@@ -75,7 +75,7 @@ impl Compiler {
             dossier = loader.load_dossier_from_path_buf(&codex, compilation_configuration.input_location())?;
         }
 
-        log::info!("dossier loaded");
+        log::info!("dossier loaded in {} ms", compile_start.elapsed().as_millis());
 
         let dossier_configuration = dossier.configuration();
 

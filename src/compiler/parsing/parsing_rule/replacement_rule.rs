@@ -110,6 +110,7 @@ impl ParsingRule for ReplacementRule<String> {
         log::debug!("parsing:\n{}\nusing '{}'->'{:?}' (newline fix: {}, id_at: {:?})", content, self.search_pattern(), self.replacer_parts, self.newline_fix_pattern.is_some(), self.reference_at);
 
         let mut outcome = ParsingOutcome::new_empty();
+        let mut last_match = 0;
 
         for captures in self.search_pattern_regex.captures_iter(content) {
 
@@ -136,43 +137,43 @@ impl ParsingRule for ReplacementRule<String> {
                 }
             }
 
-            for mat in captures.iter() {
-                if mat.is_none() {
-                    outcome.add_mutable_part(mat)
+            let matched_content = captures.get(0).unwrap();
+
+            if last_match < matched_content.start() {
+                outcome.add_mutable_part(content[last_match..matched_content.start()].to_string());
+            }
+
+            last_match = matched_content.end();
+
+            for replacer in replacers {
+                let parsed_content = self.search_pattern_regex.replace_all(matched_content.as_str(), replacer.replacer());
+
+                if replacer.fixed {
+
+                    outcome.add_fixed_part(parsed_content.to_string());
+    
+                } else {
+    
+                    outcome.add_mutable_part(parsed_content.to_string());
                 }
             }
             
         }
 
-        let parsed_content = self.search_pattern_regex.replace_all(content, || {
-
-        }).to_string();
-
-        for replacer in &replacers {
-
-            
-
-            if replacer.fixed {
-
-                outcome.add_fixed_part(parsed_content);
-
-            } else {
-
-                outcome.add_mutable_part(parsed_content);
-            }
+        if last_match < content.len() {
+            outcome.add_mutable_part(content[last_match..content.len()].to_string());
         }
 
         if let Some(newline_fix_pattern) = self.newline_fix_pattern.as_ref() {
 
-            let last_index = outcome.parts().len() - 1;
-            let last_element = outcome.parts().get(last_index).unwrap();
-
-            let new_parsed_content = DOUBLE_NEW_LINE_REGEX.replace_all(&last_element.content(), newline_fix_pattern).to_string();
+            for part in outcome.parts_mut().iter_mut() {
+                let new_parsed_content = DOUBLE_NEW_LINE_REGEX.replace_all(&part.content(), newline_fix_pattern).to_string();
         
-            match last_element {
-                ParsingOutcomePart::Fixed { content: _ } => outcome.parts_mut().insert(last_index, ParsingOutcomePart::Fixed { content: new_parsed_content }),
-                ParsingOutcomePart::Mutable { content: _ } => outcome.parts_mut().insert(last_index, ParsingOutcomePart::Mutable { content: new_parsed_content }),
-            };
+                match part {
+                    ParsingOutcomePart::Fixed { content: _ } => *part = ParsingOutcomePart::Fixed { content: new_parsed_content },
+                    ParsingOutcomePart::Mutable { content: _ } => *part = ParsingOutcomePart::Mutable { content: new_parsed_content },
+                };
+            }
         }
 
         log::debug!("result:\n{:?}", outcome);
@@ -269,12 +270,12 @@ mod test {
             ReplacementRuleReplacerPart::new_fixed(String::from("</strong>")),
         ]);
 
-        let text_to_parse = r"A piece of **bold text**";
+        let text_to_parse = r"A piece of **bold text** and **bold text2**";
         let parsing_configuration = Arc::new(RwLock::new(ParsingConfiguration::default()));
 
         let parsed_text = parsing_rule.parse(text_to_parse, &codex, Arc::clone(&parsing_configuration)).unwrap();
 
-        assert_eq!(parsed_text.parsed_content(), r"A piece of <strong>bold text</strong>");
+        assert_eq!(parsed_text.parsed_content(), r"A piece of <strong>bold text</strong> and <strong>bold text2</strong>");
 
         // without text modifier
         let text_to_parse = r"A piece of text without bold text";
@@ -319,20 +320,15 @@ mod test {
             ReplacementRuleReplacerPart::new_fixed(String::from("</p>")),
         ]);
 
-        let text_to_parse = r#"
-paragraph 2a.
-
-paragraph 2b.
-
-paragraph
-2c
-.
-
-"#.trim_start();
+        let text_to_parse = concat!(  "\n\n",
+                                            "p1\n\n\n",
+                                            "p2\n\n\n",
+                                            "p3a\np3b\np3c\n\n"
+                                        );
 
         let parsed_text = parsing_rule.parse(text_to_parse, &codex, Arc::clone(&parsing_configuration)).unwrap();
 
-        assert_eq!(parsed_text.parsed_content(), r"<p>paragraph 2a.</p><p>paragraph 2b.</p><p>paragraph\n2c\n.</p>");
+        assert_eq!(parsed_text.parsed_content(), "<p>p1</p><p>p2</p><p>p3a\np3b\np3c</p>");
     }
 
     #[test]
@@ -348,17 +344,16 @@ paragraph
             ReplacementRuleReplacerPart::new_fixed(String::from("</code></pre>")),
         ]);
 
-        let text_to_parse = r#"
-```python
-
-print("hello world")
-
-```
-"#;
+        let text_to_parse = concat!(
+            "\n\n",
+            "```python\n\n",
+            r#"print("hello world")"#,
+            "\n\n```\n\n"
+        );
 
         let parsed_text = parsing_rule.parse(text_to_parse, &codex, Arc::clone(&parsing_configuration)).unwrap();
 
-        assert_eq!(parsed_text.parsed_content(), "\n<pre><code class=\"language-python codeblock\">print(\"hello world\")</code></pre>\n");
+        assert_eq!(parsed_text.parsed_content(), "<pre><code class=\"language-python codeblock\">print(\"hello world\")</code></pre>");
     }
 
     #[test]
@@ -374,18 +369,11 @@ print("hello world")
             ReplacementRuleReplacerPart::new_fixed(String::from(r#"</div>"#)),
         ]).with_newline_fix(r"<br>".to_string());
 
-        let text_to_parse = r#"
-# title 1
-
-::: warning
-new
-warning
-
-multiline
-:::
-
-
-"#;
+        let text_to_parse = concat!(
+            "# title 1",
+            "::: warning\nnew warning\n\nmultiline\n:::",
+            "\n",
+        );
 
         let parsed_text = parsing_rule.parse(text_to_parse, &codex, Arc::clone(&parsing_configuration)).unwrap();
         let parsed_text = parsed_text.parsed_content();

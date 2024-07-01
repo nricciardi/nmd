@@ -127,7 +127,7 @@ impl Loader {
 
         chapter_borders.par_sort_by(|a, b| a.0.cmp(&b.0));
 
-        log::info!("loading {} chapters of document '{}'...", chapter_borders.len(), document_name);
+        log::debug!("loading {} chapters of document '{}'...", chapter_borders.len(), document_name);
 
         let mut last_heading_level: HeadingLevel = 0;
 

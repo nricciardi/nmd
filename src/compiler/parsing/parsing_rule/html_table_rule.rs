@@ -226,7 +226,7 @@ impl HtmlTableRule {
                                                         ("class", "table-header-row")
                                                     ]);
             
-            Self::load_html_row(&mut html_table_header, header_cells, codex, Arc::clone(&parsing_configuration));
+            Self::load_html_row(&mut html_table_header, header_cells, codex, Arc::clone(&parsing_configuration)).unwrap();
 
             html_table.add_custom_header_row(html_table_header);
         }
@@ -243,7 +243,7 @@ impl HtmlTableRule {
                                                                 ("class", "table-body-row")
                                                             ]);
 
-            Self::load_html_row(&mut html_body_row, row, codex, Arc::clone(&parsing_configuration));
+            Self::load_html_row(&mut html_body_row, row, codex, Arc::clone(&parsing_configuration)).unwrap();
 
             html_table.add_custom_body_row(html_body_row);
         }
@@ -256,7 +256,7 @@ impl HtmlTableRule {
                                                     ("class", "table-footer")
                                                 ]);
 
-            Self::load_html_row(&mut html_table_footer, footer_cells, codex, Arc::clone(&parsing_configuration));
+            Self::load_html_row(&mut html_table_footer, footer_cells, codex, Arc::clone(&parsing_configuration)).unwrap();
 
             html_table.add_custom_body_row(html_table_footer);
         }

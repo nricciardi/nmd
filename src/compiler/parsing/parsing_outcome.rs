@@ -86,6 +86,8 @@ impl ParsingOutcome {
                 }
             }
 
+            self.parts = new_parts;
+
             Ok(())
         }
 }

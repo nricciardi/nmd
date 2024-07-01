@@ -7,17 +7,15 @@
 - [ ] PDF compile format
 - [ ] Vintage style (typewriter)
 - [ ] Dark style
-- [ ] Table of contents with page numbers
 - [ ] Run code
 - [ ] Video
-- [ ] Bibliography
 - [ ] Scientific style
 - [ ] Linkify (convert URL-like strings in links)
 - [x] Fast draft (prevent to parse time consuming parts)
 - [ ] Dynamics addons (e.g. katex iff math is used)
 - [x] Watcher mode
 - [ ] Split CLI lib from compiler
-- [ ] Compile only modified chapters
+- [ ] Compile only modified chapters in watcher mode
 - [x] Compile only a subset of documents
 - [ ] Paper format support (A3, A5, ...)
 - [x] MD to NMD converter
@@ -57,6 +55,9 @@
 - [x] Escape
 - [x] Metadata
 - [x] Reference
+- [ ] Table of contents with page numbers
+- [ ] Cover page
+- [ ] Bibliography
 
 ### Known issues
 
