@@ -88,7 +88,9 @@ impl ResourceReference {
     /// <document-name> can be omitted. 
     pub fn of_internal(raw: &str, document_name_if_missed: Option<&str>) -> Result<Self, ResourceReferenceError> {
 
-        let caps = OF_INTERNAL_RESOURCE_REGEX.captures(raw);
+        let raw = raw.to_lowercase();
+
+        let caps = OF_INTERNAL_RESOURCE_REGEX.captures(&raw);
 
         if caps.is_none() {
             return Err(ResourceReferenceError::InvalidInternalReference)

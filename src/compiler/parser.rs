@@ -72,23 +72,33 @@ impl Parser {
 
                 let current_excluded_modifiers = &content_parts_additional_excluded_modifiers[content_part_index];
 
+                let mut no_match_fn = || {
+                        
+                    new_content_parts.push(content_part.clone());
+                    new_content_parts_additional_excluded_modifiers.push(current_excluded_modifiers.clone());
+                };
+
                 if let ParsingOutcomePart::Fixed { content } = content_part {
 
                     log::debug!("{:?} is skipped for because '{}' fixed", text_modifier, content);
-                    
-                    new_content_parts.push(content_part.clone());
-                    new_content_parts_additional_excluded_modifiers.push(current_excluded_modifiers.clone());
+
+                    no_match_fn();
                     continue;
                 }
 
                 if current_excluded_modifiers.contains(text_modifier) {
                     log::debug!("{:?} is skipped for '{}'", text_modifier, content_part.content());
+
+                    no_match_fn();
+                    continue;
                 }
 
                 let matches = text_rule.find_iter(&content_part.content());
 
                 if matches.len() == 0 {
                     log::debug!("'{}' => no matches with {:#?}", content_part.content(), text_rule);
+                    
+                    no_match_fn();
                     continue;
                 }
 
@@ -124,18 +134,17 @@ impl Parser {
 
                 for mat in matches {
 
-                    let segment: Segment;
-
                     if mat.start() > last_end {
-                        segment = Segment::NonMatch(content_part.content()[last_end..mat.start()].to_string());
+                        let segment = Segment::NonMatch(content_part.content()[last_end..mat.start()].to_string());
 
-                    } else {
-
-                        segment = Segment::Match(mat.as_str().to_string());
-                        last_end = mat.end();
+                        elaborate_segment_fn(segment)?;
                     }
 
+                    let segment = Segment::Match(mat.as_str().to_string());
+
                     elaborate_segment_fn(segment)?;
+
+                    last_end = mat.end();
                 }
 
                 if last_end < content_part.content().len() {

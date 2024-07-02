@@ -52,7 +52,7 @@ impl Parsable for Heading {
             ParsingOutcomePart::Mutable { content: parsed_title.parsed_content() },
             ParsingOutcomePart::Fixed { content: format!(r#"</h{}>"#, self.level) },
         ]);
-
+        
         self.parsed_content = Some(outcome);
 
         Ok(())

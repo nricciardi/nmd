@@ -101,9 +101,9 @@ impl ParsingRule for HtmlListRule {
                         let bullet = Self::bullet_transform(bullet, indentation_level, parsing_configuration.read().unwrap().list_bullets_configuration());
 
                         parsing_outcome.add_fixed_part(r#"<li class="list-item">"#.to_string());
-                        parsing_outcome.add_mutable_part(INDENTATION.repeat(indentation_level));
+                        parsing_outcome.add_fixed_part(INDENTATION.repeat(indentation_level));
                         parsing_outcome.add_fixed_part(r#"<span class="list-item-bullet">"#.to_string());
-                        parsing_outcome.add_mutable_part(bullet);
+                        parsing_outcome.add_fixed_part(bullet);
                         parsing_outcome.add_fixed_part(r#"</span><span class="list-item-content">"#.to_string());
                         parsing_outcome.add_mutable_part(content.to_string());
                         parsing_outcome.add_fixed_part(r#"</span></li>"#.to_string());
