@@ -2,10 +2,12 @@ mod dossier_configuration_style;
 mod dossier_configuration_compilation;
 mod dossier_configuration_path_reference;
 mod dossier_configuration_path_reference_manager;
+mod dossier_configuration_table_of_contents;
 
 use std::collections::HashMap;
 use std::path::PathBuf;
 
+use dossier_configuration_table_of_contents::DossierConfigurationTableOfContents;
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use serde::{Deserialize, Serialize};
 use log;
@@ -26,6 +28,9 @@ use self::{dossier_configuration_compilation::DossierConfigurationCompilation, d
 pub struct DossierConfiguration {
     #[serde(default = "default_name")]
     name: String,
+
+    #[serde(default = "default_toc")]
+    table_of_contents: DossierConfigurationTableOfContents,
 
     #[serde(rename = "documents")]
     raw_documents_paths: Vec<DossierConfigurationRawPathReference>,
@@ -56,16 +61,21 @@ fn default_compilation() -> DossierConfigurationCompilation {
     DossierConfigurationCompilation::default()
 }
 
+fn default_toc() -> DossierConfigurationTableOfContents {
+    DossierConfigurationTableOfContents::default()
+}
+
 
 #[allow(dead_code)]
 impl DossierConfiguration {
 
-    pub fn new(root_path: PathBuf, name: String, raw_documents_paths: Vec<String>, style: DossierConfigurationStyle, reference: TextReferenceMap, compilation: DossierConfigurationCompilation) -> Self {
+    pub fn new(root_path: PathBuf, name: String, toc: DossierConfigurationTableOfContents, raw_documents_paths: Vec<String>, style: DossierConfigurationStyle, reference: TextReferenceMap, compilation: DossierConfigurationCompilation) -> Self {
         
         DOSSIER_CONFIGURATION_RAW_REFERENCE_MANAGER.lock().unwrap().set_root_path(root_path);
         
         Self {
             name,
+            table_of_contents: toc,
             raw_documents_paths,
             style,
             references: reference,
@@ -144,7 +154,8 @@ impl Default for DossierConfiguration {
             raw_documents_paths: vec![],          // TODO: all .nmd file in running directory
             style: DossierConfigurationStyle::default(),
             references: HashMap::new(),
-            compilation: DossierConfigurationCompilation::default()
+            compilation: DossierConfigurationCompilation::default(),
+            table_of_contents: DossierConfigurationTableOfContents::default(),
         }
     }
 }

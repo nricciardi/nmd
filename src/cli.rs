@@ -57,6 +57,14 @@ impl NmdCli {
                 .version(VERSION)
                 .subcommand_required(true)
                 .arg_required_else_help(true)
+                .arg(
+                    Arg::new("verbose")
+                        .short('v')
+                        .long("verbose")
+                        .help("set verbose mode")
+                        .action(ArgAction::Set)
+                        .default_value("info")
+                )
                 .subcommand(
                     Command::new("compile")
                                 .about("Compile an NMD resource")
@@ -92,14 +100,6 @@ impl NmdCli {
                                             .help("output directory path")
                                             .action(ArgAction::Set)
                                             .num_args(1)
-                                        )
-                                        .arg(
-                                            Arg::new("verbose")
-                                                .short('v')
-                                                .long("verbose")
-                                                .help("set verbose mode")
-                                                .action(ArgAction::Set)
-                                                .default_value("info")
                                         )
                                         .arg(
                                             Arg::new("watch")
@@ -176,13 +176,6 @@ impl NmdCli {
 
                                         )
                                         .arg(
-                                            Arg::new("verbose")
-                                                .short('v')
-                                                .long("verbose")
-                                                .action(ArgAction::Set)
-                                                .default_value("info")
-                                        )
-                                        .arg(
                                             Arg::new("from-md")
                                                 .long("from-md")
                                                 .help("generate NMD dossier from Markdown file")
@@ -196,18 +189,18 @@ impl NmdCli {
                     .about("Manage NMD dossier")
                     .short_flag('d')
                     .subcommand_required(true)
-                    .subcommand(
-                        Command::new("add")
-                        .about("Add resource to a dossier")
-                        .short_flag('a')
-                        .arg(
-                            Arg::new("dossier-path")
+                    .arg(
+                        Arg::new("dossier-path")
                             .short('p')
                             .long("dossier-path")
                             .help("insert dossier path")
                             .action(ArgAction::Append)
                             .default_value(".")
-                        )
+                    )
+                    .subcommand(
+                        Command::new("add")
+                        .about("Add resource to a dossier")
+                        .short_flag('a')
                         .arg(
                             Arg::new("document-name")
                             .short('d')
@@ -216,13 +209,11 @@ impl NmdCli {
                             .required(true)
                             .action(ArgAction::Append)
                         )
-                        .arg(
-                            Arg::new("verbose")
-                                .short('v')
-                                .long("verbose")
-                                .action(ArgAction::Set)
-                                .default_value("info")
-                        )
+                    )
+                    .subcommand(
+                        Command::new("reset")
+                        .about("Reset dossier configuration")
+                        .short_flag('r')
                     )
                 );
 
@@ -234,6 +225,18 @@ impl NmdCli {
     pub fn parse(self) -> Result<(), NmdCliError> {
 
         let matches = self.cli.get_matches();
+
+        if let Some(mut verbose) = matches.get_many::<String>("verbose") {
+                    
+            if verbose.len() != 1 {
+                return Err(NmdCliError::MoreThanOneValue("verbose".to_string()));
+            }
+            
+            
+            let log_level = LevelFilter::from_str(verbose.nth(0).unwrap())?;
+
+            Self::set_logger(log_level);
+        }
 
         let result = match matches.subcommand() {
 
@@ -371,19 +374,7 @@ impl NmdCli {
     fn handle_generate_command(matches: &ArgMatches) -> Result<(), NmdCliError> {
         match matches.subcommand() {
             Some(("dossier", generate_dossier_matches)) => {
-
-                if let Some(mut verbose) = generate_dossier_matches.get_many::<String>("verbose") {
-                    
-                    if verbose.len() != 1 {
-                        return Err(NmdCliError::MoreThanOneValue("verbose".to_string()));
-                    }
-                    
-                    
-                    let log_level = LevelFilter::from_str(verbose.nth(0).unwrap())?;
-
-                    Self::set_logger(log_level);
-                }
-
+                
                 let mut generator_configuration = GeneratorConfiguration::default();
 
                 if let Some(mut input_path) = generate_dossier_matches.get_many::<String>("path") {
@@ -432,35 +423,34 @@ impl NmdCli {
     }
 
     fn handle_dossier_command(matches: &ArgMatches) -> Result<(), NmdCliError> {
+
+        let dossier_path: Option<PathBuf>;
+
+        if let Some(mut dp) = matches.get_many::<String>("dossier-path") {
+                    
+            if dp.len() != 1 {
+                return Err(NmdCliError::MoreThanOneValue("dossier-path".to_string()));
+            }
+
+            dossier_path = Some(PathBuf::from(dp.nth(0).unwrap()));
+        
+        } else {
+            
+            dossier_path = None;
+        }
+
         match matches.subcommand() {
             Some(("add", add_dossier_matches)) => {
-                if let Some(mut verbose) = add_dossier_matches.get_many::<String>("verbose") {
-                    
-                    if verbose.len() != 1 {
-                        return Err(NmdCliError::MoreThanOneValue("verbose".to_string()));
-                    }
-                    
-                    
-                    let log_level = LevelFilter::from_str(verbose.nth(0).unwrap())?;
 
-                    Self::set_logger(log_level);
-                }
-
-                if let Some(mut dossier_path) = add_dossier_matches.get_many::<String>("dossier-path") {
+                if let Some(mut dp) = dossier_path {
                     
-                    if dossier_path.len() != 1 {
-                        return Err(NmdCliError::MoreThanOneValue("dossier-path".to_string()));
-                    }
-
                     if let Some(document_names) = add_dossier_matches.get_many::<String>("document-name") {
                     
                         if document_names.len() < 1 {
                             return Err(NmdCliError::MoreThanOneValue("document-name".to_string()));
                         }
 
-                        let dossier_path = PathBuf::from(dossier_path.nth(0).unwrap());
-                
-                        let dossier_manager_configuration = DossierManagerConfiguration::new(dossier_path);
+                        let dossier_manager_configuration = DossierManagerConfiguration::new(dp);
 
                         let dossier_manager = DossierManager::new(dossier_manager_configuration);
 
@@ -475,6 +465,23 @@ impl NmdCli {
 
                 Err(NmdCliError::TooFewArguments("dossier path".to_string()))
             },
+
+            Some(("reset", reset_dossier_matches)) => {
+                
+                if let Some(dp) = dossier_path {
+
+                    let dossier_manager_configuration = DossierManagerConfiguration::new(dp.clone());
+
+                    let dossier_manager = DossierManager::new(dossier_manager_configuration);
+                    
+                    dossier_manager.reset_dossier_configuration(dp)?;
+                    
+                    return Ok(())
+                    
+                }
+
+                Err(NmdCliError::TooFewArguments("dossier path".to_string()))
+            }
 
             _ => unreachable!()
         }

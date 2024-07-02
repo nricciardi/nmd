@@ -1,8 +1,8 @@
-use std::io;
+use std::{io, path::PathBuf};
 
 use thiserror::Error;
 
-use crate::{compiler::dossier::{dossier_configuration::{self, DossierConfiguration}, Dossier}, constants::{DOSSIER_CONFIGURATION_YAML_FILE_NAME, NMD_EXTENSION}, resource::ResourceError, utility::file_utility};
+use crate::{compiler::{dossier::{dossier_configuration::{self, DossierConfiguration}, Dossier}, loader::Loader}, constants::{DOSSIER_CONFIGURATION_YAML_FILE_NAME, NMD_EXTENSION}, resource::ResourceError, utility::file_utility};
 
 use self::dossier_manager_configuration::DossierManagerConfiguration;
 
@@ -15,6 +15,9 @@ pub enum DossierManagerError {
 
     #[error(transparent)]
     IoError(#[from] io::Error),
+
+    #[error(transparent)]
+    SerdeYamlError(#[from] serde_yaml::Error)
 
 }
 
@@ -57,5 +60,14 @@ impl DossierManager {
 
     pub fn add_empty_document(&self, filename: &String) -> Result<(), DossierManagerError> {
         self.add_document(filename, "")
+    }
+
+    pub fn reset_dossier_configuration(&self, dossier_path: PathBuf) -> Result<(), DossierManagerError> {
+        file_utility::create_file_with_content(
+            &dossier_path.join(DOSSIER_CONFIGURATION_YAML_FILE_NAME),
+            &serde_yaml::to_string(&DossierConfiguration::default())?
+        )?;
+
+        Ok(())
     }
 }
