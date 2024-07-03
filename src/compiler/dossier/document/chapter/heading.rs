@@ -1,6 +1,6 @@
 use std::{num::ParseIntError, str::FromStr, sync::{Arc, RwLock}};
 
-use crate::{compiler::{codex::Codex, parsable::{parsed_content_accessor::ParsedContentAccessor, Parsable}, parser::Parser, parsing::{parsing_configuration::{parsing_configuration_overlay::ParsingConfigurationOverLay, ParsingConfiguration}, parsing_error::ParsingError, parsing_metadata::ParsingMetadata, parsing_outcome::{ParsingOutcome, ParsingOutcomePart}}}, resource::resource_reference::ResourceReference};
+use crate::{compiler::{codex::Codex, output_format::OutputFormat, parsable::{parsed_content_accessor::ParsedContentAccessor, Parsable}, parser::Parser, parsing::{parsing_configuration::{parsing_configuration_overlay::ParsingConfigurationOverLay, ParsingConfiguration}, parsing_error::ParsingError, parsing_metadata::ParsingMetadata, parsing_outcome::{ParsingOutcome, ParsingOutcomePart}}}, resource::resource_reference::ResourceReference};
 
 use super::chapter_builder::ChapterBuilderError;
 
@@ -37,7 +37,7 @@ impl Heading {
 }
 
 impl Parsable for Heading {
-    fn standard_parse(&mut self, codex: Arc<Codex>, parsing_configuration: Arc<RwLock<ParsingConfiguration>>, parsing_configuration_overlay: Arc<Option<ParsingConfigurationOverLay>>) -> Result<(), ParsingError> {
+    fn standard_parse(&mut self, format: &OutputFormat, codex: Arc<Codex>, parsing_configuration: Arc<RwLock<ParsingConfiguration>>, parsing_configuration_overlay: Arc<Option<ParsingConfigurationOverLay>>) -> Result<(), ParsingError> {
 
         let pc = parsing_configuration.read().unwrap();
 

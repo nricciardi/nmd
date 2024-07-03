@@ -11,6 +11,7 @@ use chapter_tag::ChapterTag;
 use rayon::iter::{IntoParallelRefMutIterator, ParallelIterator};
 
 use crate::compiler::codex::Codex;
+use crate::compiler::output_format::OutputFormat;
 use crate::compiler::parsable::Parsable;
 use crate::compiler::parsing::parsing_configuration::parsing_configuration_overlay::ParsingConfigurationOverLay;
 use crate::compiler::parsing::parsing_configuration::ParsingConfiguration;
@@ -67,9 +68,9 @@ impl Chapter {
 
 
 impl Parsable for Chapter {
-    fn standard_parse(&mut self, codex: Arc<Codex>, parsing_configuration: Arc<RwLock<ParsingConfiguration>>, parsing_configuration_overlay: Arc<Option<ParsingConfigurationOverLay>>) -> Result<(), ParsingError> {
+    fn standard_parse(&mut self, format: &OutputFormat, codex: Arc<Codex>, parsing_configuration: Arc<RwLock<ParsingConfiguration>>, parsing_configuration_overlay: Arc<Option<ParsingConfigurationOverLay>>) -> Result<(), ParsingError> {
 
-        self.heading.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration), Arc::clone(&parsing_configuration_overlay))?;
+        self.heading.parse(format, Arc::clone(&codex), Arc::clone(&parsing_configuration), Arc::clone(&parsing_configuration_overlay))?;
 
         log::debug!("parsing chapter:\n{:#?}", self);
 
@@ -77,7 +78,7 @@ impl Parsable for Chapter {
 
             let maybe_failed = self.paragraphs.par_iter_mut()
                 .map(|paragraph| {
-                    paragraph.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration), Arc::clone(&parsing_configuration_overlay))
+                    paragraph.parse(format, Arc::clone(&codex), Arc::clone(&parsing_configuration), Arc::clone(&parsing_configuration_overlay))
                 })
                 .find_any(|result| result.is_err());
     
@@ -89,7 +90,7 @@ impl Parsable for Chapter {
             
             let maybe_failed = self.paragraphs.iter_mut()
                 .map(|paragraph| {
-                    paragraph.parse(Arc::clone(&codex), Arc::clone(&parsing_configuration), Arc::clone(&parsing_configuration_overlay))
+                    paragraph.parse(format, Arc::clone(&codex), Arc::clone(&parsing_configuration), Arc::clone(&parsing_configuration_overlay))
                 })
                 .find(|result| result.is_err());
     

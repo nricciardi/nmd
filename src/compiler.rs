@@ -10,6 +10,7 @@ pub mod loader;
 pub mod codex;
 pub mod parsable;
 pub mod parsing;
+pub mod table_of_contents;
 
 use std::{sync::{mpsc::{channel, RecvError}, Arc, RwLock}, thread, time::{Instant, SystemTime}};
 
@@ -99,7 +100,7 @@ impl Compiler {
             log::info!("fast draft!")
         }
 
-        dossier.parse(Arc::clone(&codex), Arc::new(RwLock::new(parsing_configuration)), Arc::new(None))?;
+        dossier.parse(compilation_configuration.format(), Arc::clone(&codex), Arc::new(RwLock::new(parsing_configuration)), Arc::new(None))?;
 
         assembler_configuration.set_output_location(compilation_configuration.output_location().clone());
         assembler_configuration.set_theme(dossier_theme);

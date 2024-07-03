@@ -3,7 +3,7 @@ use std::{fmt::Display, sync::{Arc, RwLock}};
 use regex::Regex;
 use thiserror::Error;
 
-use crate::compiler::{codex::{modifier::ModifierIdentifier, Codex}, parsable::{parsed_content_accessor::ParsedContentAccessor, Parsable}, parser::Parser, parsing::{parsing_configuration::{parsing_configuration_overlay::ParsingConfigurationOverLay, ParsingConfiguration}, parsing_error::ParsingError, parsing_metadata::ParsingMetadata, parsing_outcome::ParsingOutcome}};
+use crate::compiler::{codex::{modifier::ModifierIdentifier, Codex}, output_format::OutputFormat, parsable::{parsed_content_accessor::ParsedContentAccessor, Parsable}, parser::Parser, parsing::{parsing_configuration::{parsing_configuration_overlay::ParsingConfigurationOverLay, ParsingConfiguration}, parsing_error::ParsingError, parsing_metadata::ParsingMetadata, parsing_outcome::ParsingOutcome}};
 
 
 #[derive(Error, Debug)]
@@ -48,7 +48,7 @@ impl Paragraph {
 }
 
 impl Parsable for Paragraph {
-    fn standard_parse(&mut self, codex: Arc<Codex>, parsing_configuration: Arc<RwLock<ParsingConfiguration>>, parsing_configuration_overlay: Arc<Option<ParsingConfigurationOverLay>>) -> Result<(), ParsingError> {
+    fn standard_parse(&mut self, format: &OutputFormat, codex: Arc<Codex>, parsing_configuration: Arc<RwLock<ParsingConfiguration>>, parsing_configuration_overlay: Arc<Option<ParsingConfigurationOverLay>>) -> Result<(), ParsingError> {
 
         let parsing_outcome = Parser::parse_paragraph(&codex, self, Arc::clone(&parsing_configuration), parsing_configuration_overlay)?;
 
