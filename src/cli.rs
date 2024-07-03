@@ -214,6 +214,14 @@ impl NmdCli {
                         Command::new("reset")
                         .about("Reset dossier configuration")
                         .short_flag('r')
+                        .arg(
+                            Arg::new("preserve-documents")
+                            .help("preserve documents list")
+                            .short('p')
+                            .long("preserve-documents")
+                            .required(false)
+                            .action(ArgAction::SetTrue)
+                        )
                     )
                 );
 
@@ -474,7 +482,7 @@ impl NmdCli {
 
                     let dossier_manager = DossierManager::new(dossier_manager_configuration);
                     
-                    dossier_manager.reset_dossier_configuration(dp)?;
+                    dossier_manager.reset_dossier_configuration(dp, reset_dossier_matches.get_flag("preserve-documents"))?;
                     
                     return Ok(())
                     

@@ -80,7 +80,16 @@ impl Generator {
             log::info!("added .gitkeep files");
         }
 
-        let mut dossier_configuration = DossierConfiguration::default();
+        let mut dossier_configuration: DossierConfiguration;
+        
+        if !configuration.evaluate_existing_files() {
+            
+            dossier_configuration = DossierConfiguration::default();
+
+        } else {
+
+            dossier_configuration = DossierConfiguration::default().with_files_in_dir(configuration.path())?;
+        }
 
         if configuration.welcome() {
 

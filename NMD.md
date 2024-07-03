@@ -5,6 +5,7 @@
     - [Dossier](#dossier)
       - [Dossier configuration](#dossier-configuration)
         - [name](#name)
+        - [table\_of\_contents](#table_of_contents)
         - [documents](#documents)
         - [style](#style)
         - [metadata](#metadata)
@@ -103,6 +104,12 @@ Considering YAML version, it may have the following content:
 ```yaml
 name: New Dossier
 
+table_of_contents:
+  include_in_output: false
+  page_numbers: false
+  tabulated: true
+  maximum_heading_level: 4
+
 documents:
 - ./welcome.nmd
 
@@ -125,6 +132,16 @@ compilation:
 ###### name
 
 `name` is the name of dossier.
+
+###### table_of_contents
+
+`include_in_output` if it must be printed
+
+`page_numbers`: if it must be had page numbers
+
+`tabulated` if it must contains tabulations
+
+`maximum_heading_level` maximum heading level which must be printed
 
 ###### documents
 

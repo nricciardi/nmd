@@ -4,17 +4,19 @@ pub struct GeneratorConfiguration {
     path: PathBuf,
     force_generation: bool,
     welcome: bool,
-    gitkeep: bool
+    gitkeep: bool,
+    evaluate_existing_files: bool,
 }
 
 
 impl GeneratorConfiguration {
-    pub fn new(path: PathBuf, force_generation: bool, welcome: bool, gitkeep: bool) -> Self {
-        GeneratorConfiguration {
+    pub fn new(path: PathBuf, force_generation: bool, welcome: bool, gitkeep: bool, evaluate_existing_files: bool) -> Self {
+        Self {
             path,
             force_generation,
             welcome,
-            gitkeep
+            gitkeep,
+            evaluate_existing_files,
         }
     }
 
@@ -49,15 +51,24 @@ impl GeneratorConfiguration {
     pub fn set_gitkeep(&mut self, gitkeep: bool) {
         self.gitkeep = gitkeep;
     }
+
+    pub fn evaluate_existing_files(&self) -> bool {
+        self.evaluate_existing_files
+    }
+
+    pub fn set_evaluate_existing_files(&mut self, evaluate_existing_files: bool) {
+        self.evaluate_existing_files = evaluate_existing_files;
+    }
 }
 
 impl Default for GeneratorConfiguration {
     fn default() -> Self {
         Self {
             path: Default::default(),
-            force_generation: Default::default(),
-            welcome: Default::default(),
-            gitkeep: Default::default()
+            force_generation: false,
+            welcome: false,
+            gitkeep: false,
+            evaluate_existing_files: true
         }
     }
 }

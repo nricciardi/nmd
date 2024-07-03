@@ -5,6 +5,7 @@ mod dossier_configuration_path_reference_manager;
 mod dossier_configuration_table_of_contents;
 
 use std::collections::HashMap;
+use std::io;
 use std::path::PathBuf;
 
 use dossier_configuration_table_of_contents::DossierConfigurationTableOfContents;
@@ -12,7 +13,7 @@ use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use serde::{Deserialize, Serialize};
 use log;
 
-use crate::constants::{DOSSIER_CONFIGURATION_JSON_FILE_NAME, DOSSIER_CONFIGURATION_YAML_FILE_NAME};
+use crate::constants::{DOSSIER_CONFIGURATION_JSON_FILE_NAME, DOSSIER_CONFIGURATION_YAML_FILE_NAME, NMD_EXTENSION};
 use crate::resource::text_reference::TextReferenceMap;
 use crate::resource::Resource;
 use crate::resource::{disk_resource::DiskResource, ResourceError};
@@ -145,13 +146,21 @@ impl DossierConfiguration {
 
         Ok(())
     }
+
+    pub fn with_files_in_dir(mut self, dir_path: &PathBuf) -> Result<Self, io::Error> {
+        let files = file_utility::all_files_in_dir(dir_path, &vec![NMD_EXTENSION.to_string()])?;
+
+        self.raw_documents_paths = files.iter().map(|f| f.to_string_lossy().to_string()).collect();
+
+        Ok(self)
+    }
 }
 
 impl Default for DossierConfiguration {
     fn default() -> Self {
         Self {
             name: String::from("New Dossier"),
-            raw_documents_paths: vec![],          // TODO: all .nmd file in running directory
+            raw_documents_paths: vec![],
             style: DossierConfigurationStyle::default(),
             references: HashMap::new(),
             compilation: DossierConfigurationCompilation::default(),

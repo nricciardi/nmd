@@ -62,11 +62,25 @@ impl DossierManager {
         self.add_document(filename, "")
     }
 
-    pub fn reset_dossier_configuration(&self, dossier_path: PathBuf) -> Result<(), DossierManagerError> {
+    pub fn reset_dossier_configuration(&self, dossier_path: PathBuf, preserve_documents_list: bool) -> Result<(), DossierManagerError> {
+
+        log::info!("resetting dossier configuration...");
+
+        let ex_dc = DossierConfiguration::try_from(&dossier_path)?;
+
+        let mut dc: DossierConfiguration = DossierConfiguration::default();
+
+        if preserve_documents_list {
+            dc.set_raw_documents_paths(ex_dc.raw_documents_paths().clone());
+            log::info!("documents list will be preserved")
+        }
+
         file_utility::create_file_with_content(
             &dossier_path.join(DOSSIER_CONFIGURATION_YAML_FILE_NAME),
-            &serde_yaml::to_string(&DossierConfiguration::default())?
+            &serde_yaml::to_string(&dc)?
         )?;
+
+        log::info!("reset done");
 
         Ok(())
     }

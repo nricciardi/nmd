@@ -17,11 +17,13 @@ NMD stands for **New MarkDown**, or for friends, *Nicola MarkDown* (if Stephen B
   - [Getting Started](#getting-started)
     - [TL;DR](#tldr)
     - [Installation](#installation)
-    - [Generate a new dossier using compiler](#generate-a-new-dossier-using-compiler)
-    - [Markdown to New Markdown](#markdown-to-new-markdown)
-      - [Add a new document](#add-a-new-document)
+    - [NMD CLI](#nmd-cli)
+      - [Generate a new dossier](#generate-a-new-dossier)
+        - [Markdown to New Markdown](#markdown-to-new-markdown)
+        - [Add a new document](#add-a-new-document)
+        - [Reset dossier configuration](#reset-dossier-configuration)
       - [Compile dossier](#compile-dossier)
-      - [HTML](#html)
+        - [HTML](#html)
   - [Develop](#develop)
   - [NMD Syntax](#nmd-syntax)
   - [Author](#author)
@@ -88,7 +90,9 @@ To install NMD, follow these steps:
 2. Extract files
 3. Run `nmd` execution file
 
-### Generate a new dossier using compiler
+### NMD CLI
+
+#### Generate a new dossier
 
 To **generate a new dossier** you can use the following command:
 
@@ -104,16 +108,16 @@ nmd generate dossier -p dossier/input/path -f -w
 
 The Git support is planned, but not implemented yet. You can only add `.gitkeep` files in assets directories using `-k`.
 
-### Markdown to New Markdown
+##### Markdown to New Markdown
 
 You can easily convert a standard Markdown file in a New Markdown dossier using `--from-md <md-file-path>` option. 
 
-#### Add a new document
+##### Add a new document
 
 To **add a new document** you can use the following command:
 
 ```shell
-nmd dossier add -p dossier/input/path -d new-document.nmd
+nmd dossier -p dossier/input/path add -d new-document.nmd
 ```
 
 If the document name doesn't have `nmd` extension, it will be added automatically.
@@ -121,12 +125,20 @@ If the document name doesn't have `nmd` extension, it will be added automaticall
 You can add more than one document at the same time:
 
 ```shell
-nmd dossier add -p dossier/input/path -d new-document-1.nmd -d new-document-2.nmd -d new-document-3.nmd
+nmd dossier -p dossier/input/path add -d new-document-1.nmd -d new-document-2.nmd -d new-document-3.nmd
 ```
+
+##### Reset dossier configuration
+
+```shell
+nmd dossier -p dossier/input/path reset [ -p ]
+```
+
+`-p` reset flag to preserve documents list.
 
 #### Compile dossier
 
-#### HTML
+##### HTML
 
 Compile a dossier in `html`:
 
@@ -141,6 +153,8 @@ Watcher mode compile dossier if any change is captured. Changes are captured onl
 `--fast-draft` to create a fast draft of dossier, generally compiler takes less time to generate it.
 
 `-s <document1> -s <documentN>` to compile only a subset of documents in dossier configuration list.
+
+
 
 ## Develop
 

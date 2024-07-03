@@ -2,6 +2,8 @@ use std::fs::{self, File};
 use std::io::{self, Read, Write};
 use std::path::{Path, PathBuf};
 
+use clap::builder::OsStr;
+
 
 /// Return entirely file content 
 pub fn read_file_content(file_path_buf: &PathBuf) -> Result<String, io::Error> {
@@ -40,4 +42,35 @@ pub fn create_file_with_content(file_path: &PathBuf, content: &str) -> Result<()
 /// Generate a new file name String using passed base and extension arguments
 pub fn build_output_file_name(base: &str, ext: &str) -> String {
     format!("{}.{}", base, ext).replace(" ", "-").to_ascii_lowercase()
+}
+
+pub fn all_files_in_dir(dir_path: &PathBuf, exts: &Vec<String>) -> Result<Vec<PathBuf>, io::Error> {
+    if !dir_path.is_dir() {
+
+        let e = format!("{:?} must be a directory", dir_path);
+
+        return Err(io::Error::new(io::ErrorKind::NotFound, e));
+    }
+
+    let mut files: Vec<PathBuf> = Vec::new();
+
+    for entry in fs::read_dir(dir_path)? {
+        if let Ok(entry) = entry {
+            let path = entry.path();
+            
+            if let Some(extension) = path.extension() {
+
+                for ext in exts {
+                    if extension.to_string_lossy().eq(ext) {
+                        if let Some(_) = path.file_name() {
+                            files.push(path);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }   
+
+    Ok(files)
 }

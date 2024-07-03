@@ -20,6 +20,7 @@
 - [ ] Paper format support (A3, A5, ...)
 - [x] MD to NMD converter
 - [ ] Include all .nmd file in running directory as default option in dossier configuration
+- [ ] Compile single files
 
 
 ### Features in Progress for current version
