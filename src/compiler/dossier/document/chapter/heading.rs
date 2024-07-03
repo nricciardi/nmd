@@ -14,7 +14,8 @@ pub struct Heading {
     title: String,
 
     // raw_content: String,
-    parsed_content: Option<ParsingOutcome>
+    parsed_content: Option<ParsingOutcome>,
+    resource_reference: Option<ResourceReference>,
 }
 
 impl Heading {
@@ -23,7 +24,8 @@ impl Heading {
         Self {
             level,
             title,
-            parsed_content: None
+            parsed_content: None,
+            resource_reference: None
         }
     }
 
@@ -33,6 +35,10 @@ impl Heading {
 
     pub fn title(&self) -> &String {
         &self.title
+    }
+
+    pub fn resource_reference(&self) -> &Option<ResourceReference> {
+        &self.resource_reference
     }
 }
 
@@ -54,6 +60,7 @@ impl Parsable for Heading {
         ]);
         
         self.parsed_content = Some(outcome);
+        self.resource_reference = Some(id);
 
         Ok(())
     }

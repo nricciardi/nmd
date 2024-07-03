@@ -5,12 +5,12 @@ use regex::Regex;
 
 use crate::compiler::{codex::{modifier::standard_paragraph_modifier::StandardParagraphModifier, Codex}, parsing::{parsing_configuration::{list_bullet_configuration_record::{self, ListBulletConfigurationRecord}, ParsingConfiguration}, parsing_error::ParsingError, parsing_metadata::ParsingMetadata, parsing_outcome::ParsingOutcome}};
 
-use super::ParsingRule;
-
-const SPACE_TAB_EQUIVALENCE: &str = r"   ";
-const INDENTATION: &str = r#"<span class="list-item-indentation"></span>"#;
+use super::{constants::SPACE_TAB_EQUIVALENCE, ParsingRule};
 
 static SEARCH_LIST_ITEM_REGEX: Lazy<Regex> = Lazy::new(|| Regex::new(&StandardParagraphModifier::ListItem.modifier_pattern()).unwrap());
+
+pub const LIST_ITEM_INDENTATION: &str = r#"<span class="list-item-indentation"></span>"#;
+
 
 
 #[derive(Debug)]
@@ -101,7 +101,7 @@ impl ParsingRule for HtmlListRule {
                         let bullet = Self::bullet_transform(bullet, indentation_level, parsing_configuration.read().unwrap().list_bullets_configuration());
 
                         parsing_outcome.add_fixed_part(r#"<li class="list-item">"#.to_string());
-                        parsing_outcome.add_fixed_part(INDENTATION.repeat(indentation_level));
+                        parsing_outcome.add_fixed_part(LIST_ITEM_INDENTATION.repeat(indentation_level));
                         parsing_outcome.add_fixed_part(r#"<span class="list-item-bullet">"#.to_string());
                         parsing_outcome.add_fixed_part(bullet);
                         parsing_outcome.add_fixed_part(r#"</span><span class="list-item-content">"#.to_string());

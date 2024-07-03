@@ -5,7 +5,7 @@
     - [Dossier](#dossier)
       - [Dossier configuration](#dossier-configuration)
         - [name](#name)
-        - [table\_of\_contents](#table_of_contents)
+        - [toc](#toc)
         - [documents](#documents)
         - [style](#style)
         - [metadata](#metadata)
@@ -104,10 +104,10 @@ Considering YAML version, it may have the following content:
 ```yaml
 name: New Dossier
 
-table_of_contents:
+toc:
   include_in_output: false
   page_numbers: false
-  tabulated: true
+  plain: false
   maximum_heading_level: 4
 
 documents:
@@ -133,7 +133,7 @@ compilation:
 
 `name` is the name of dossier.
 
-###### table_of_contents
+###### toc
 
 `include_in_output` if it must be printed
 
@@ -142,6 +142,8 @@ compilation:
 `tabulated` if it must contains tabulations
 
 `maximum_heading_level` maximum heading level which must be printed
+
+To customize table of contents there are some classes: `toc`, `toc-title`, `toc-body`, `toc-item`, `toc-item-bullet`, `toc-item-content`, `toc-item-indentation`
 
 ###### documents
 

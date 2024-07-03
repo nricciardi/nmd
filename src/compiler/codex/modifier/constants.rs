@@ -5,7 +5,7 @@ pub const IDENTIFIER_PATTERN: &str = r"#([\w-]+)";
 pub const MAX_HEADING_LEVEL: u32 = 6;
 
 #[cfg(windows)]
-pub const NEW_LINE: &str = r"\r\n";
+pub const NEW_LINE: &str = "\r\n";
 
 #[cfg(not(windows))]
-pub const NEW_LINE: &str = r"\n";
+pub const NEW_LINE: &str = "\n";

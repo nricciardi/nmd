@@ -174,6 +174,12 @@ impl Assembler for HtmlAssembler {
             }
         }
 
+        if let Some(toc) = dossier.table_of_contents() {
+            if let Some(parsed_toc) = toc.parsed_content() {
+                page.add_raw(parsed_toc.parsed_content());
+            }
+        }
+
         if self.configuration.parallelization() {
 
             let mut assembled_documents: Vec<Result<String, AssemblerError>> = Vec::new();
@@ -184,14 +190,21 @@ impl Assembler for HtmlAssembler {
 
             for assembled_document in assembled_documents {
                 let section = Container::new(build_html::ContainerType::Section)
+                                                .with_attributes(vec![
+                                                    ("class", "document")
+                                                ])
                                                 .with_raw(assembled_document?);
     
                 page.add_container(section);
             }
 
         } else {
+
             for document in dossier.documents() {
                 let section = Container::new(build_html::ContainerType::Section)
+                                                .with_attributes(vec![
+                                                    ("class", "document")
+                                                ])
                                                 .with_raw(self.assemble_document(document)?);
     
                 page.add_container(section);

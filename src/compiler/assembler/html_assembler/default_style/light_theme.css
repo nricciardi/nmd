@@ -391,3 +391,36 @@ body {
     text-align: left;
 }
 
+/* TOC */
+
+.toc {
+    line-height: 2vh;   
+}
+
+.toc-title {
+    font-size: large;
+    font-weight: bold;
+}
+
+.toc-body {
+    list-style-type: none;
+    padding: 0;
+
+    page-break-inside: avoid;
+}
+
+.toc-item-indentation {
+    padding-left: 2vw;
+}
+
+.toc-item-bullet {
+    display: inline-block;
+    margin-right: 0.5vw;
+    font-size: large;
+    width: 0.5em;
+}
+
+.toc-item-bullet::before {
+    content: "-";
+}
+

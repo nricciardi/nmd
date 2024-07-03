@@ -3,15 +3,16 @@ pub mod dossier_configuration;
 
 use std::{borrow::{Borrow, BorrowMut}, path::PathBuf, sync::{Arc, RwLock}, time::Instant};
 
+use document::chapter::{self, heading::Heading};
 pub use document::{Document, DocumentError};
 use rayon::{iter::{IntoParallelRefMutIterator, ParallelIterator}, slice::IterMut};
 use thiserror::Error;
 
-use crate::resource::ResourceError;
+use crate::{compiler::table_of_contents::content_tree::{ContentTree, ContentTreeNode}, resource::ResourceError};
 
 use self::dossier_configuration::DossierConfiguration;
 
-use super::{codex::Codex, output_format::OutputFormat, parsable::Parsable, parsing::{parsing_configuration::{parsing_configuration_overlay::ParsingConfigurationOverLay, ParsingConfiguration}, parsing_error::ParsingError, parsing_metadata::ParsingMetadata}};
+use super::{codex::Codex, output_format::OutputFormat, parsable::Parsable, parsing::{parsing_configuration::{parsing_configuration_overlay::ParsingConfigurationOverLay, ParsingConfiguration}, parsing_error::ParsingError, parsing_metadata::ParsingMetadata}, table_of_contents::TableOfContents};
 
 
 pub const ASSETS_DIR: &str = "assets";
@@ -30,14 +31,19 @@ pub enum DossierError {
 /// NMD Dossier struct. It has own documents list
 pub struct Dossier {
     configuration: DossierConfiguration,
+    table_of_contents: Option<TableOfContents>,
     documents: Vec<Document>
 }
 
 impl Dossier {
 
     pub fn new(configuration: DossierConfiguration, documents: Vec<Document>) -> Self {
+
+        log::warn!("{:#?}", configuration);
+
         Self {
             configuration,
+            table_of_contents: None,
             documents
         }
     }
@@ -52,6 +58,10 @@ impl Dossier {
 
     pub fn configuration(&self) -> &DossierConfiguration {
         &self.configuration
+    }
+
+    pub fn table_of_contents(&self) -> &Option<TableOfContents> {
+        &self.table_of_contents
     }
 }
 
@@ -104,6 +114,31 @@ impl Parsable for Dossier {
                 if let Some(Err(fail)) = maybe_fails {
                     return Err(fail)
                 }
+        }
+
+        if self.configuration.table_of_contents_configuration().include_in_output() {
+
+            log::info!("dossier table of contents will be included in output");
+
+            let mut headings: Vec<Heading> = Vec::new();
+
+            for document in self.documents() {
+                for chapter in document.chapters() {
+                    headings.push(chapter.heading().clone());
+                }
+            }
+
+            let mut table_of_contents = TableOfContents::new(
+                self.configuration.table_of_contents_configuration().title().clone(),
+                self.configuration.table_of_contents_configuration().page_numbers(),
+                self.configuration.table_of_contents_configuration().plain(),
+                self.configuration.table_of_contents_configuration().maximum_heading_level(),
+                headings
+            );
+
+            table_of_contents.parse(format, Arc::clone(&codex), Arc::clone(&parsing_configuration), Arc::clone(&parsing_configuration_overlay))?;
+        
+            self.table_of_contents = Some(table_of_contents);
         }
 
         Ok(())

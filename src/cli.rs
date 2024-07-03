@@ -234,14 +234,9 @@ impl NmdCli {
 
         let matches = self.cli.get_matches();
 
-        if let Some(mut verbose) = matches.get_many::<String>("verbose") {
-                    
-            if verbose.len() != 1 {
-                return Err(NmdCliError::MoreThanOneValue("verbose".to_string()));
-            }
+        if let Some(verbose) = matches.get_one::<String>("verbose") {            
             
-            
-            let log_level = LevelFilter::from_str(verbose.nth(0).unwrap())?;
+            let log_level = LevelFilter::from_str(verbose)?;
 
             Self::set_logger(log_level);
         }
@@ -278,18 +273,6 @@ impl NmdCli {
         match matches.subcommand() {
             Some(("dossier", compile_dossier_matches)) => {
 
-                if let Some(mut verbose) = compile_dossier_matches.get_many::<String>("verbose") {
-                    
-                    if verbose.len() != 1 {
-                        return Err(NmdCliError::MoreThanOneValue("verbose".to_string()));
-                    }
-                    
-                    
-                    let log_level = LevelFilter::from_str(verbose.nth(0).unwrap())?;
-
-                    Self::set_logger(log_level);
-                }
-
                 let mut compilation_configuration = CompilationConfiguration::default();
                 
                 if let Some(mut format) = compile_dossier_matches.get_many::<String>("format") {
@@ -297,7 +280,6 @@ impl NmdCli {
                     if format.len() != 1 {
                         return Err(NmdCliError::MoreThanOneValue("format".to_string()));
                     }
-                    
                     
                     let format = OutputFormat::from_str(format.nth(0).unwrap())?;
 

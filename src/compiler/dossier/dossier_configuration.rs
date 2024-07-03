@@ -30,8 +30,8 @@ pub struct DossierConfiguration {
     #[serde(default = "default_name")]
     name: String,
 
-    #[serde(default = "default_toc")]
-    table_of_contents: DossierConfigurationTableOfContents,
+    #[serde(rename(serialize = "toc", deserialize = "toc"), default = "default_toc")]
+    table_of_contents_configuration: DossierConfigurationTableOfContents,
 
     #[serde(rename = "documents")]
     raw_documents_paths: Vec<DossierConfigurationRawPathReference>,
@@ -76,7 +76,7 @@ impl DossierConfiguration {
         
         Self {
             name,
-            table_of_contents: toc,
+            table_of_contents_configuration: toc,
             raw_documents_paths,
             style,
             references: reference,
@@ -130,6 +130,10 @@ impl DossierConfiguration {
         &self.references
     }
 
+    pub fn table_of_contents_configuration(&self) -> &DossierConfigurationTableOfContents {
+        &self.table_of_contents_configuration
+    }
+
     pub fn set_root_path(&mut self, root_path: PathBuf) {
         DOSSIER_CONFIGURATION_RAW_REFERENCE_MANAGER.lock().unwrap().set_root_path(root_path);
     }
@@ -164,7 +168,7 @@ impl Default for DossierConfiguration {
             style: DossierConfigurationStyle::default(),
             references: HashMap::new(),
             compilation: DossierConfigurationCompilation::default(),
-            table_of_contents: DossierConfigurationTableOfContents::default(),
+            table_of_contents_configuration: DossierConfigurationTableOfContents::default(),
         }
     }
 }

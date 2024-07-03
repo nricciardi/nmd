@@ -1,11 +1,15 @@
-mod content_tree;
+pub mod content_tree;
 
 use std::sync::{Arc, RwLock};
 
 use content_tree::ContentTree;
 
-use super::{codex::Codex, output_format::OutputFormat, parsable::Parsable, parsing::{parsing_configuration::{parsing_configuration_overlay::ParsingConfigurationOverLay, ParsingConfiguration}, parsing_error::ParsingError}};
+use crate::resource::resource_reference::ResourceReference;
 
+use super::{codex::Codex, dossier::{self, document::chapter::heading::Heading, Dossier}, output_format::OutputFormat, parsable::Parsable, parser::Parser, parsing::{parsing_configuration::{parsing_configuration_overlay::ParsingConfigurationOverLay, ParsingConfiguration}, parsing_error::ParsingError, parsing_outcome::ParsingOutcome}};
+
+
+pub const TOC_INDENTATION: &str = r#"<span class="toc-item-indentation"></span>"#;
 
 
 
@@ -13,28 +17,123 @@ use super::{codex::Codex, output_format::OutputFormat, parsable::Parsable, parsi
 pub struct TableOfContents {
     title: String,
     page_numbers: bool,
-    tabulated: bool,
+    plain: bool,
     maximum_heading_level: usize,
-    content: ContentTree,
+    headings: Vec<Heading>,
+    parsed_content: Option<ParsingOutcome>,
 }
 
 impl TableOfContents {
-    pub fn new(title: String, page_numbers: bool, tabulated: bool, maximum_heading_level: usize, content: ContentTree) -> Self {
+    pub fn new(title: String, page_numbers: bool, plain: bool, maximum_heading_level: usize, headings: Vec<Heading>) -> Self {
         Self {
             title,
             page_numbers,
-            tabulated,
+            plain,
             maximum_heading_level,
-            content
+            headings,
+            parsed_content: None
         }
+    }
+
+    pub fn title(&self) -> &String {
+        &self.title
+    }
+
+    pub fn plain(&self) -> bool {
+        self.plain
+    }
+
+    pub fn page_numbers(&self) -> bool {
+        self.page_numbers
+    }
+
+    pub fn maximum_heading_level(&self) -> usize {
+        self.maximum_heading_level
+    }
+
+    pub fn parsed_content(&self) -> &Option<ParsingOutcome> {
+        &self.parsed_content
+    }
+
+    fn standard_html_parse(&mut self, plain: bool, codex: Arc<Codex>, parsing_configuration: Arc<RwLock<ParsingConfiguration>>, parsing_configuration_overlay: Arc<Option<ParsingConfigurationOverLay>>) -> Result<(), ParsingError> {
+        
+        let mut outcome = ParsingOutcome::new_empty();
+
+        outcome.add_fixed_part(String::from(r#"<section class="toc">"#));
+        outcome.add_fixed_part(String::from(r#"<span class="toc-title">"#));
+        outcome.append_parsing_outcome(&mut Parser::parse_text(&codex, &self.title, Arc::clone(&parsing_configuration), Arc::clone(&parsing_configuration_overlay))?);
+        outcome.add_fixed_part(String::from(r#"</span>"#));
+        outcome.add_fixed_part(String::from(r#"<ul class="toc-body">"#));
+
+        let mut total_li = 0;
+
+        for heading in &self.headings {
+
+            let heading_lv: usize = heading.level() as usize;
+
+            if heading_lv > self.maximum_heading_level {
+                continue;
+            }
+
+            outcome.add_fixed_part(String::from(r#"<li class="toc-item">"#));
+
+            if !plain {
+
+                outcome.add_fixed_part(TOC_INDENTATION.repeat(heading_lv));
+            }
+
+            outcome.add_fixed_part(r#"<span class="toc-item-bullet">"#.to_string());
+            outcome.add_fixed_part(r#"</span><span class="toc-item-content">"#.to_string());
+
+            if let Some(id) = heading.resource_reference() {
+
+                outcome.add_fixed_part(format!(r#"<a href="{}">"#, id.build()));
+            
+            } else {
+                log::warn!("heading {} does not have a valid id", heading.title())
+            }
+
+            outcome.append_parsing_outcome(&mut Parser::parse_text(&codex, &heading.title(), Arc::clone(&parsing_configuration), Arc::clone(&parsing_configuration_overlay))?);
+
+            if let Some(_) = heading.resource_reference() {
+
+                outcome.add_fixed_part(String::from(r#"</a>"#));
+            }
+
+            outcome.add_fixed_part(String::from(r#"</span></li>"#));
+
+            total_li += 1;
+                
+        }
+
+        outcome.add_fixed_part(String::from(r#"</ul>"#));
+        outcome.add_fixed_part(String::from(r#"</section>"#));
+
+        self.parsed_content = Some(outcome);
+
+        log::info!("parsed table of contents ({} lines, {} skipped)", total_li, self.headings.len() - total_li);
+
+        Ok(())
     }
 }
 
 impl Parsable for TableOfContents {
     fn standard_parse(&mut self, format: &OutputFormat, codex: Arc<Codex>, parsing_configuration: Arc<RwLock<ParsingConfiguration>>, parsing_configuration_overlay: Arc<Option<ParsingConfigurationOverLay>>) -> Result<(), ParsingError> {
         
+        if self.page_numbers {
+            log::error!("table of contents with page numbers not already usable...");
 
+            unimplemented!("table of contents with page numbers not already usable...");
+        }
         
-        todo!()
+        match format {
+            OutputFormat::Html => {
+                if self.plain {
+                    return self.standard_html_parse(true, Arc::clone(&codex), Arc::clone(&parsing_configuration), Arc::clone(&parsing_configuration_overlay))
+                } else {
+                    return self.standard_html_parse(false, Arc::clone(&codex), Arc::clone(&parsing_configuration), Arc::clone(&parsing_configuration_overlay)) 
+                }
+            },
+        }
     }
 }

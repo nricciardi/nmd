@@ -28,6 +28,7 @@ static CHAPTER_STYLE_PATTERN_REGEX: Lazy<Regex> = Lazy::new(|| Regex::new(CHAPTE
 static FIND_EXTENDED_VERSION_REGEX: Lazy<Regex> = Lazy::new(|| Regex::new(r"heading-[[:digit:]]+-extended-version").unwrap());
 static FIND_COMPACT_VERSION_REGEX: Lazy<Regex> = Lazy::new(|| Regex::new(r"heading-[[:digit:]]+-compact-version").unwrap());
 static DOUBLE_NEW_LINES: Lazy<String> = Lazy::new(|| format!("{}{}", NEW_LINE, NEW_LINE));
+static TRIPLE_NEW_LINES: Lazy<String> = Lazy::new(|| format!("{}{}{}", NEW_LINE, NEW_LINE, NEW_LINE));
 
 
 
@@ -221,7 +222,7 @@ impl Loader {
         let mut paragraphs: Vec<(usize, usize, Paragraph)> = Vec::new();
         let mut content = String::from(content);
 
-        content = content.replace(&(*DOUBLE_NEW_LINES), &format!("{}{}{}", NEW_LINE, NEW_LINE, NEW_LINE));
+        content = content.replace(&(*DOUBLE_NEW_LINES), &(*TRIPLE_NEW_LINES));
 
         // work-around to fix paragraph matching end line
         while !content.starts_with(&(*DOUBLE_NEW_LINES)) {
@@ -487,5 +488,66 @@ impl Loader {
 
             return Ok(Dossier::new(dossier_configuration.clone(), documents))
         }
+    }
+}
+
+
+
+#[cfg(test)]
+mod test {
+
+    use crate::compiler::{codex::codex_configuration::CodexConfiguration, loader::Loader};
+
+    use super::*;
+
+    #[test]
+    fn chapters_from_str() {
+
+        let codex = Codex::of_html(CodexConfiguration::default());
+
+        let content: String = 
+r#"
+# title 1a
+
+paragraph 1a
+
+## title 2a
+
+paragraph 2a
+
+# title 1b
+
+paragraph 1b
+"#.trim().to_string();
+
+        let loader = Loader::new();
+
+        let document = loader.load_document_from_str(&codex, "test", &content).unwrap();
+
+        assert_eq!(document.preamble().len(), 0);
+
+        assert_eq!(document.chapters().len(), 3);
+
+
+        
+    }
+
+    #[test]
+    fn paragraphs_from_str() {
+        let content = concat!(
+            "paragraph1",
+            "\n\n",
+            "paragraph2a\nparagraph2b",
+            "\n\n",
+            "paragraph3",
+        );
+
+        let codex = Codex::of_html(CodexConfiguration::default());
+
+        let loader = Loader::new();
+
+        let paragraphs = loader.load_paragraphs_from_str(&codex, content).unwrap();
+
+        assert_eq!(paragraphs.len(), 3)
     }
 }
