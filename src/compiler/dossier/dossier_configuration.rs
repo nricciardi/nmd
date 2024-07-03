@@ -3,11 +3,13 @@ mod dossier_configuration_compilation;
 mod dossier_configuration_path_reference;
 mod dossier_configuration_path_reference_manager;
 mod dossier_configuration_table_of_contents;
+mod dossier_configuration_bibliography;
 
 use std::collections::HashMap;
 use std::io;
 use std::path::PathBuf;
 
+use dossier_configuration_bibliography::DossierConfigurationBibliography;
 use dossier_configuration_table_of_contents::DossierConfigurationTableOfContents;
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use serde::{Deserialize, Serialize};
@@ -42,6 +44,9 @@ pub struct DossierConfiguration {
     #[serde(default = "default_references")]
     references: TextReferenceMap,
 
+    #[serde(default = "default_bibliography")]
+    bibliography: DossierConfigurationBibliography,
+
     #[serde(default = "default_compilation")]
     compilation: DossierConfigurationCompilation,
 }
@@ -66,11 +71,15 @@ fn default_toc() -> DossierConfigurationTableOfContents {
     DossierConfigurationTableOfContents::default()
 }
 
+fn default_bibliography() -> DossierConfigurationBibliography {
+    DossierConfigurationBibliography::default()
+}
+
 
 #[allow(dead_code)]
 impl DossierConfiguration {
 
-    pub fn new(root_path: PathBuf, name: String, toc: DossierConfigurationTableOfContents, raw_documents_paths: Vec<String>, style: DossierConfigurationStyle, reference: TextReferenceMap, compilation: DossierConfigurationCompilation) -> Self {
+    pub fn new(root_path: PathBuf, name: String, toc: DossierConfigurationTableOfContents, raw_documents_paths: Vec<String>, style: DossierConfigurationStyle, references: TextReferenceMap, compilation: DossierConfigurationCompilation, bibliography: DossierConfigurationBibliography) -> Self {
         
         DOSSIER_CONFIGURATION_RAW_REFERENCE_MANAGER.lock().unwrap().set_root_path(root_path);
         
@@ -79,8 +88,9 @@ impl DossierConfiguration {
             table_of_contents_configuration: toc,
             raw_documents_paths,
             style,
-            references: reference,
-            compilation
+            references,
+            compilation,
+            bibliography
         }
     }
 
@@ -130,6 +140,10 @@ impl DossierConfiguration {
         &self.references
     }
 
+    pub fn bibliography(&self) -> &DossierConfigurationBibliography {
+        &self.bibliography
+    }
+
     pub fn table_of_contents_configuration(&self) -> &DossierConfigurationTableOfContents {
         &self.table_of_contents_configuration
     }
@@ -169,6 +183,7 @@ impl Default for DossierConfiguration {
             references: HashMap::new(),
             compilation: DossierConfigurationCompilation::default(),
             table_of_contents_configuration: DossierConfigurationTableOfContents::default(),
+            bibliography: DossierConfigurationBibliography::default()
         }
     }
 }

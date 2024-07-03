@@ -1,28 +1,5 @@
 ## Develop
 
-### Planned Features
-
-- [ ] All modifiers
-- [ ] Possibility to use a different dossier configuration name
-- [ ] PDF compile format
-- [ ] Vintage style (typewriter)
-- [ ] Dark style
-- [ ] Run code
-- [ ] Video
-- [ ] Scientific style
-- [ ] Linkify (convert URL-like strings in links)
-- [x] Fast draft (prevent to parse time consuming parts)
-- [ ] Dynamics addons (e.g. katex iff math is used)
-- [x] Watcher mode
-- [ ] Split CLI lib from compiler
-- [ ] Compile only modified chapters in watcher mode
-- [x] Compile only a subset of documents
-- [ ] Paper format support (A3, A5, ...)
-- [x] MD to NMD converter
-- [x] Include all .nmd file in running directory as default option in dossier configuration
-- [ ] Compile single files
-
-
 ### Features in Progress for current version
 
 - [x] Use file name instead of absolute path in dossier configuration
@@ -57,7 +34,7 @@
 - [x] Escape
 - [x] Metadata
 - [x] Reference
-- [ ] Table of contents with page numbers
+- [x] Table of contents without page numbers
 - [ ] Cover page
 - [ ] Bibliography
 
@@ -68,3 +45,27 @@
 - [x] Chapter body are not parsed on Windows
 - [ ] `* words *` works
 - [ ] Table footer doesn't use `tfoot` in HTML format (caused by `build_html` crate)
+
+### Planned Features
+
+- [ ] All modifiers
+- [ ] Possibility to use a different dossier configuration name
+- [ ] PDF compile format
+- [ ] Vintage style (typewriter)
+- [ ] Dark style
+- [ ] Run code
+- [ ] Video
+- [ ] Scientific style
+- [ ] Linkify (convert URL-like strings in links)
+- [x] Fast draft (prevent to parse time consuming parts)
+- [ ] Dynamics addons (e.g. katex iff math is used)
+- [x] Watcher mode
+- [ ] Split CLI lib from compiler
+- [ ] Compile only modified chapters in watcher mode
+- [x] Compile only a subset of documents
+- [ ] Paper format support (A3, A5, ...)
+- [x] MD to NMD converter
+- [x] Include all .nmd file in running directory as default option in dossier configuration
+- [ ] Compile single files
+- [ ] Table of contents with page numbers
+
