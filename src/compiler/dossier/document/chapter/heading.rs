@@ -1,5 +1,7 @@
 use std::{num::ParseIntError, str::FromStr, sync::{Arc, RwLock}};
 
+use getset::{CopyGetters, Getters, Setters};
+
 use crate::{compiler::{codex::Codex, output_format::OutputFormat, parsable::{parsed_content_accessor::ParsedContentAccessor, Parsable}, parser::Parser, parsing::{parsing_configuration::{parsing_configuration_overlay::ParsingConfigurationOverLay, ParsingConfiguration}, parsing_error::ParsingError, parsing_metadata::ParsingMetadata, parsing_outcome::{ParsingOutcome, ParsingOutcomePart}}}, resource::resource_reference::ResourceReference};
 
 use super::chapter_builder::ChapterBuilderError;
@@ -8,13 +10,19 @@ use super::chapter_builder::ChapterBuilderError;
 pub type HeadingLevel = u32;
 
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Getters, CopyGetters, Setters, Clone)]
 pub struct Heading {
+
+    #[getset(get_copy = "pub", set = "pub")]
     level: HeadingLevel,
+
+    #[getset(get = "pub", set = "pub")]
     title: String,
 
-    // raw_content: String,
+    #[getset(get = "pub", set = "pub")]
     parsed_content: Option<ParsingOutcome>,
+
+    #[getset(get = "pub", set = "pub")]
     resource_reference: Option<ResourceReference>,
 }
 
@@ -28,18 +36,6 @@ impl Heading {
             resource_reference: None
         }
     }
-
-    pub fn level(&self) -> HeadingLevel {
-        self.level
-    }
-
-    pub fn title(&self) -> &String {
-        &self.title
-    }
-
-    pub fn resource_reference(&self) -> &Option<ResourceReference> {
-        &self.resource_reference
-    }
 }
 
 impl Parsable for Heading {
@@ -49,7 +45,7 @@ impl Parsable for Heading {
 
         let document_name = pc.metadata().document_name().as_ref().unwrap();
 
-        let id = ResourceReference::of_internal_without_sharp(&self.title, Some(&document_name))?;
+        let id = ResourceReference::of_internal_from_without_sharp(&self.title, Some(&document_name))?;
 
         let parsed_title = Parser::parse_text(&codex, &self.title, Arc::clone(&parsing_configuration), parsing_configuration_overlay)?;
 

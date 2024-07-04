@@ -187,7 +187,7 @@ impl HtmlTableRule {
         }
 
         if let Some(_id) = captures.get(2) {
-            id = Some(ResourceReference::of_internal_without_sharp(_id.as_str(), Some(document_name)).unwrap().build());
+            id = Some(ResourceReference::of_internal_from_without_sharp(_id.as_str(), Some(document_name)).unwrap().build());
         }
 
         if let Some(_style) = captures.get(3) {
@@ -311,7 +311,7 @@ impl ParsingRule for HtmlTableRule {
                     (caption, id, style) = self.extract_table_metadata(trim_line, document_name);
 
                     if id.is_none() && caption.is_some() {
-                        id = Some(ResourceReference::of_internal_without_sharp(&caption.clone().unwrap(), Some(document_name)).unwrap().build());
+                        id = Some(ResourceReference::of_internal_from_without_sharp(&caption.clone().unwrap(), Some(document_name)).unwrap().build());
                     }
                 }
 

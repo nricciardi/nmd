@@ -7,6 +7,7 @@ use std::sync::{Arc, RwLock};
 use std::time::Instant;
 
 pub use chapter::Chapter;
+use getset::{Getters, Setters};
 use thiserror::Error;
 use log;
 use rayon::prelude::*;
@@ -41,14 +42,20 @@ pub enum DocumentError {
     ParagraphError(#[from] ParagraphError),
 }
 
+#[derive(Debug, Getters, Setters)]
 pub struct Document {
+
+    #[getset(get = "pub", set = "pub")]
     name: String,
+
+    #[getset(get = "pub", set = "pub")]
     preamble: Vec<Paragraph>,
+
+    #[getset(get = "pub", set = "pub")]
     chapters: Vec<Chapter>
 }
 
 
-#[allow(dead_code)]
 impl Document {
 
     pub fn new(name: String, preamble: Vec<Paragraph>, chapters: Vec<Chapter>) -> Self {
@@ -58,18 +65,6 @@ impl Document {
             preamble,
             chapters
         }
-    }
-
-    pub fn name(&self) -> &String {
-        &self.name
-    } 
-
-    pub fn chapters(&self) -> &Vec<Chapter> {
-        &self.chapters
-    }
-
-    pub fn preamble(&self) -> &Vec<Paragraph> {
-        &self.preamble
     }
 }
 

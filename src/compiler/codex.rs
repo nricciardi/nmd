@@ -8,6 +8,7 @@ use self::modifier::ModifierIdentifier;
 use crate::compiler::output_format::OutputFormat;
 use self::codex_configuration::CodexConfiguration;
 
+use super::parsing::parsing_rule::html_cite_rule::HtmlCiteRule;
 use super::parsing::parsing_rule::html_extended_block_quote_rule::HtmlExtendedBlockQuoteRule;
 use super::parsing::parsing_rule::html_greek_letter_rule::HtmlGreekLettersRule;
 use super::parsing::parsing_rule::html_image_rule::HtmlImageRule;
@@ -286,6 +287,10 @@ impl Codex {
             (
                 StandardTextModifier::Reference.identifier().clone(),
                 Box::new(ReferenceRule::new())
+            ),
+            (
+                StandardTextModifier::Cite.identifier().clone(),
+                Box::new(HtmlCiteRule::new())
             ),
         ]);
 

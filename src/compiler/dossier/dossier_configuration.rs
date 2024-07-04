@@ -3,7 +3,7 @@ mod dossier_configuration_compilation;
 mod dossier_configuration_path_reference;
 mod dossier_configuration_path_reference_manager;
 mod dossier_configuration_table_of_contents;
-mod dossier_configuration_bibliography;
+pub mod dossier_configuration_bibliography;
 
 use std::collections::HashMap;
 use std::io;

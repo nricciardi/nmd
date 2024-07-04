@@ -394,12 +394,13 @@ body {
 /* TOC */
 
 .toc {
-    line-height: 2vh;   
+    line-height: 2vh;
 }
 
 .toc-title {
-    font-size: large;
+    font-size: xx-large;
     font-weight: bold;
+    margin-bottom: 2vh;
 }
 
 .toc-body {
@@ -424,3 +425,82 @@ body {
     content: "-";
 }
 
+/* BIBLIOGRAPHY */
+
+.bibliography {
+    line-height: 2vh;
+
+    page-break-before: always;
+}
+
+.bibliography-title {
+    font-size: xx-large;
+    font-weight: bold;
+    margin-bottom: 2vh;
+
+    page-break-after: avoid;
+}
+
+.bibliography-body {
+    list-style-type: none;
+    padding: 0;
+
+    page-break-inside: avoid;
+}
+
+.bibliography-item {
+    margin: 1vh 0 0 1vh;
+    font-size: small;
+}
+
+.bibliography-item-title {
+    font-size: x-large;
+    font-style: italic;
+    margin-left: 1vw;
+    margin-bottom: 0.5vh;
+}
+
+.bibliography-item-title::before {
+    content: '"';
+}
+
+.bibliography-item-title::after {
+    content: '"';
+}
+
+.bibliography-item-authors {
+    font-size: medium;
+    margin-left: 2vw;
+}
+
+.bibliography-item-url {
+    text-decoration: underline;
+    margin-left: 2vw;
+}
+
+.bibliography-item-description {
+    margin-left: 2vw;
+}
+
+.bibliography-item-year {
+    margin-left: 2vw;
+}
+
+/* CITE */
+
+.cite {
+    text-decoration: none;
+    color: black;
+}
+
+.cite::before {
+    content: '[';
+    margin-left: 0.2rem;
+    margin-right: 0.05rem;
+}
+
+.cite::after {
+    content: ']';
+    margin-right: 0.2rem;
+    margin-left: 0.05rem;
+}

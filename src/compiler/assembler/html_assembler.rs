@@ -211,6 +211,12 @@ impl Assembler for HtmlAssembler {
             }
         }
 
+        if let Some(bib) = dossier.bibliography() {
+            if let Some(parsed_bib) = bib.parsed_content() {
+                page.add_raw(parsed_bib.parsed_content());
+            }
+        }
+
         let document_name = file_utility::build_output_file_name(dossier.name(), "html");
 
         artifact.add_document(&document_name, &page.to_html_string())?;

@@ -5,7 +5,7 @@ pub mod html_extended_block_quote_rule;
 pub mod html_greek_letter_rule;
 pub mod reference_rule;
 pub mod html_table_rule;
-pub mod html_bibliography_rule;
+pub mod html_cite_rule;
 pub mod constants;
 
 

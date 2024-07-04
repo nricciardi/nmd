@@ -72,11 +72,12 @@ impl DossierManager {
 
         log::info!("resetting dossier configuration...");
 
-        let ex_dc = DossierConfiguration::try_from(&dossier_path)?;
-
         let mut dc: DossierConfiguration = DossierConfiguration::default();
 
         if preserve_documents_list {
+
+            let ex_dc = DossierConfiguration::try_from(&dossier_path)?;
+
             dc.set_raw_documents_paths(ex_dc.raw_documents_paths().clone());
             log::info!("documents list will be preserved")
         }

@@ -8,6 +8,7 @@ use std::sync::{Arc, RwLock};
 use std::thread;
 
 use chapter_tag::ChapterTag;
+use getset::{Getters, Setters};
 use rayon::iter::{IntoParallelRefMutIterator, ParallelIterator};
 
 use crate::compiler::codex::Codex;
@@ -22,14 +23,20 @@ use self::heading::Heading;
 pub use self::paragraph::Paragraph;
 
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Getters, Setters)]
 pub struct Chapter {
+
+    #[getset(get = "pub", set = "pub")]
     heading: Heading,
+
+    #[getset(get = "pub", set = "pub")]
     tags: Vec<ChapterTag>,
+    
+    #[getset(get = "pub", set = "pub")]
     paragraphs: Vec<Paragraph>,
 }
 
-#[allow(dead_code)]
+
 impl Chapter {
 
     pub fn new(heading: Heading, tags: Vec<ChapterTag>, paragraphs: Vec<Paragraph>) -> Self {
@@ -39,31 +46,6 @@ impl Chapter {
             paragraphs
         }
     }
-
-    pub fn heading(&self) -> &Heading {
-        &self.heading
-    }
-
-    pub fn set_heading(&mut self, heading: Heading) -> () {
-        self.heading = heading
-    }
-
-    pub fn paragraphs(&self) -> &Vec<Paragraph> {
-        &self.paragraphs
-    }
-
-    pub fn set_paragraphs(&mut self, paragraphs: Vec<Paragraph>) {
-        self.paragraphs = paragraphs
-    }
-
-    pub fn tags(&self) -> &Vec<ChapterTag> {
-        &self.tags
-    }
-
-    pub fn set_tags(&mut self, tags: Vec<ChapterTag>) -> () {
-        self.tags = tags
-    }
-
 }
 
 

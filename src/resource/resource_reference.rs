@@ -120,7 +120,7 @@ impl ResourceReference {
         
     }
 
-    pub fn of_internal_without_sharp(raw: &str, document_name_if_missed: Option<&str>) -> Result<Self, ResourceReferenceError> {
+    pub fn of_internal_from_without_sharp(raw: &str, document_name_if_missed: Option<&str>) -> Result<Self, ResourceReferenceError> {
 
         let raw_with_sharp = format!("#{}", raw);
 

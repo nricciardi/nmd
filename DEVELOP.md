@@ -35,7 +35,6 @@
 - [x] Metadata
 - [x] Reference
 - [x] Table of contents without page numbers
-- [ ] Cover page
 - [ ] Bibliography
 
 ### Known issues
@@ -49,6 +48,7 @@
 ### Planned Features
 
 - [ ] All modifiers
+- [ ] Use `getset` crate
 - [ ] Possibility to use a different dossier configuration name
 - [ ] PDF compile format
 - [ ] Vintage style (typewriter)
@@ -68,4 +68,5 @@
 - [x] Include all .nmd file in running directory as default option in dossier configuration
 - [ ] Compile single files
 - [ ] Table of contents with page numbers
+- [ ] Cover page
 

@@ -5,6 +5,7 @@ use std::{borrow::{Borrow, BorrowMut}, path::PathBuf, sync::{Arc, RwLock}, time:
 
 use document::chapter::{self, heading::Heading};
 pub use document::{Document, DocumentError};
+use getset::{Getters, Setters};
 use rayon::{iter::{IntoParallelRefMutIterator, ParallelIterator}, slice::IterMut};
 use thiserror::Error;
 
@@ -12,7 +13,7 @@ use crate::{compiler::table_of_contents::content_tree::{ContentTree, ContentTree
 
 use self::dossier_configuration::DossierConfiguration;
 
-use super::{codex::Codex, output_format::OutputFormat, parsable::Parsable, parsing::{parsing_configuration::{parsing_configuration_overlay::ParsingConfigurationOverLay, ParsingConfiguration}, parsing_error::ParsingError, parsing_metadata::ParsingMetadata}, table_of_contents::TableOfContents};
+use super::{bibliography::Bibliography, codex::Codex, output_format::OutputFormat, parsable::Parsable, parsing::{parsing_configuration::{parsing_configuration_overlay::ParsingConfigurationOverLay, ParsingConfiguration}, parsing_error::ParsingError, parsing_metadata::ParsingMetadata}, table_of_contents::TableOfContents};
 
 
 pub const ASSETS_DIR: &str = "assets";
@@ -29,39 +30,36 @@ pub enum DossierError {
 
 
 /// NMD Dossier struct. It has own documents list
+#[derive(Debug, Getters, Setters)]
 pub struct Dossier {
+
+    #[getset(get = "pub", set = "pub")]
     configuration: DossierConfiguration,
+
+    #[getset(get = "pub", set = "pub")]
     table_of_contents: Option<TableOfContents>,
-    documents: Vec<Document>
+
+    #[getset(get = "pub", set = "pub")]
+    documents: Vec<Document>,
+
+    #[getset(get = "pub", set = "pub")]
+    bibliography: Option<Bibliography>,
 }
 
 impl Dossier {
 
     pub fn new(configuration: DossierConfiguration, documents: Vec<Document>) -> Self {
 
-        log::warn!("{:#?}", configuration);
-
         Self {
             configuration,
             table_of_contents: None,
-            documents
+            documents,
+            bibliography: None,
         }
     }
 
     pub fn name(&self) -> &String {
         self.configuration.name()
-    }
-
-    pub fn documents(&self) -> &Vec<Document> {
-        &self.documents
-    }
-
-    pub fn configuration(&self) -> &DossierConfiguration {
-        &self.configuration
-    }
-
-    pub fn table_of_contents(&self) -> &Option<TableOfContents> {
-        &self.table_of_contents
     }
 }
 
@@ -139,6 +137,17 @@ impl Parsable for Dossier {
             table_of_contents.parse(format, Arc::clone(&codex), Arc::clone(&parsing_configuration), Arc::clone(&parsing_configuration_overlay))?;
         
             self.table_of_contents = Some(table_of_contents);
+        }
+
+        if self.configuration.bibliography().include_in_output() {
+            let mut bibliography = Bibliography::new(
+                self.configuration.bibliography().title().clone(),
+                self.configuration.bibliography().records().clone()
+            );
+
+            bibliography.parse(format, Arc::clone(&codex), Arc::clone(&parsing_configuration), Arc::clone(&parsing_configuration_overlay))?;
+        
+            self.bibliography = Some(bibliography);
         }
 
         Ok(())

@@ -60,9 +60,9 @@ impl TableOfContents {
         let mut outcome = ParsingOutcome::new_empty();
 
         outcome.add_fixed_part(String::from(r#"<section class="toc">"#));
-        outcome.add_fixed_part(String::from(r#"<span class="toc-title">"#));
+        outcome.add_fixed_part(String::from(r#"<div class="toc-title">"#));
         outcome.append_parsing_outcome(&mut Parser::parse_text(&codex, &self.title, Arc::clone(&parsing_configuration), Arc::clone(&parsing_configuration_overlay))?);
-        outcome.add_fixed_part(String::from(r#"</span>"#));
+        outcome.add_fixed_part(String::from(r#"</div>"#));
         outcome.add_fixed_part(String::from(r#"<ul class="toc-body">"#));
 
         let mut total_li = 0;

@@ -192,7 +192,7 @@ impl HtmlImageRule {
                     let document_name = parsing_configuration.metadata().document_name().as_ref().unwrap();
 
                     if let Some(id) = captures.get(2) {
-                        let id = ResourceReference::of_internal_without_sharp(id.as_str(), Some(document_name)).unwrap();
+                        let id = ResourceReference::of_internal_from_without_sharp(id.as_str(), Some(document_name)).unwrap();
 
                         return Self::build_img(src.as_str(), Some(label.as_str()), Some(&parsed_label.parsed_content()), Some(id), vec!["image"], style, &parsing_configuration);
 
@@ -229,7 +229,7 @@ impl HtmlImageRule {
             let id: Option<ResourceReference>;
 
             if let Some(_id) = captures.get(2) {
-                id = Some(ResourceReference::of_internal_without_sharp(_id.as_str(), Some(document_name)).unwrap());
+                id = Some(ResourceReference::of_internal_from_without_sharp(_id.as_str(), Some(document_name)).unwrap());
             } else {
                 id = None;
             }

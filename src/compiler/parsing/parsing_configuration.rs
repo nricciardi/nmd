@@ -3,7 +3,9 @@ pub mod parsing_configuration_overlay;
 
 use std::{collections::HashMap, ops::Add, path::PathBuf};
 
-use crate::{compiler::compilation_configuration::CompilationConfiguration, resource::text_reference::TextReferenceMap};
+use getset::{CopyGetters, Getters, MutGetters, Setters};
+
+use crate::{compiler::{bibliography::Bibliography, compilation_configuration::CompilationConfiguration}, resource::text_reference::TextReferenceMap};
 
 use self::list_bullet_configuration_record::ListBulletConfigurationRecord;
 
@@ -13,31 +15,53 @@ use super::parsing_metadata::ParsingMetadata;
 
 
 /// Struct which contains all information about possible parsing options 
-#[derive(Clone, Debug)]
+#[derive(Debug, Getters, CopyGetters, MutGetters, Setters, Clone)]
 pub struct ParsingConfiguration {
 
+    #[getset(get = "pub", set = "pub")]
     input_location: PathBuf,
+
+    #[getset(get = "pub", set = "pub")]
     output_location: PathBuf,
 
+    #[getset(get_copy = "pub", set = "pub")]
     embed_local_image: bool,
+
+    #[getset(get_copy = "pub", set = "pub")]
     embed_remote_image: bool,
+    
+    #[getset(get_copy = "pub", set = "pub")]
     compress_embed_image: bool,
+
+    #[getset(get_copy = "pub", set = "pub")]
     strict_image_src_check: bool,
 
+    #[getset(get = "pub", get_mut = "pub", set = "pub")]
     metadata: ParsingMetadata,
 
+    #[getset(get = "pub", set = "pub")]
     excluded_modifiers: ModifiersBucket,
 
+    #[getset(get_copy = "pub", set = "pub")]
     parallelization: bool,
 
+    #[getset(get = "pub", set = "pub")]
     list_bullets_configuration: Vec<ListBulletConfigurationRecord>,
+    
+    #[getset(get_copy = "pub", set = "pub")]
     strict_list_check: bool,
 
+    #[getset(get_copy = "pub", set = "pub")]
     strict_focus_block_check: bool,
 
+    #[getset(get = "pub", set = "pub")]
     references: TextReferenceMap,
 
+    #[getset(get_copy = "pub", set = "pub")]
     fast_draft: bool,
+
+    #[getset(get = "pub", set = "pub")]
+    bibliography: Option<Bibliography>,
 }
 
 impl ParsingConfiguration {
@@ -45,7 +69,7 @@ impl ParsingConfiguration {
     pub fn new(input_location: PathBuf, output_location: PathBuf, embed_local_image: bool, embed_remote_image: bool, 
                 compress_embed_image: bool, strict_image_src_check: bool, metadata: ParsingMetadata, excluded_modifiers: ModifiersBucket, 
                 parallelization: bool, list_bullets_configuration: Vec<ListBulletConfigurationRecord>, strict_list_check: bool, 
-                strict_focus_block_check: bool, references: TextReferenceMap, fast_draft: bool) -> Self {
+                strict_focus_block_check: bool, references: TextReferenceMap, fast_draft: bool, bibliography: Option<Bibliography>,) -> Self {
 
         Self {
             input_location,
@@ -61,124 +85,9 @@ impl ParsingConfiguration {
             strict_list_check,
             strict_focus_block_check,
             references,
-            fast_draft
+            fast_draft,
+            bibliography
         }
-    }
-
-    pub fn input_location(&self) -> &PathBuf {
-        &self.input_location
-    }
-
-    pub fn output_location(&self) -> &PathBuf {
-        &self.output_location
-    }
-
-    pub fn embed_local_image(&self) -> bool {
-        self.embed_local_image
-    }
-
-    pub fn embed_remote_image(&self) -> bool {
-        self.embed_remote_image
-    }
-
-    pub fn compress_embed_image(&self) -> bool {
-        self.compress_embed_image
-    }
-
-    pub fn strict_image_src_check(&self) -> bool {
-        self.strict_image_src_check
-    }
-
-    pub fn metadata(&self) -> &ParsingMetadata {
-        &self.metadata
-    }
-
-    pub fn metadata_mut(&mut self) -> &mut ParsingMetadata {
-        &mut self.metadata
-    }
-
-    pub fn modifiers_excluded(&self) -> &ModifiersBucket {
-        &self.excluded_modifiers
-    }
-
-    pub fn parallelization(&self) -> bool {
-        self.parallelization
-    }
-
-    pub fn list_bullets_configuration(&self) -> &Vec<ListBulletConfigurationRecord> {
-        &self.list_bullets_configuration
-    }
-
-    pub fn strict_list_check(&self) -> bool {
-        self.strict_list_check
-    }
-
-    pub fn strict_focus_block_check(&self) -> bool {
-        self.strict_focus_block_check
-    }
-
-    pub fn references(&self) -> &TextReferenceMap {
-        &self.references
-    }
-
-    pub fn fast_draft(&self) -> bool {
-        self.fast_draft
-    }
-
-    pub fn set_input_location(&mut self, new_input_location: PathBuf) {
-        self.input_location = new_input_location;
-    }
-
-    pub fn set_output_location(&mut self, new_output_location: PathBuf) {
-        self.output_location = new_output_location;
-    }
-
-    pub fn set_embed_local_image(&mut self, new_embed_local_image: bool) {
-        self.embed_local_image = new_embed_local_image;
-    }
-
-    pub fn set_embed_remote_image(&mut self, new_embed_remote_image: bool) {
-        self.embed_remote_image = new_embed_remote_image;
-    }
-
-    pub fn set_compress_embed_image(&mut self, compress_embed_image: bool) {
-        self.compress_embed_image = compress_embed_image;
-    }
-
-    pub fn set_strict_image_src_check(&mut self, new_strict_image_src_check: bool) {
-        self.strict_image_src_check = new_strict_image_src_check;
-    }
-
-    pub fn set_metadata(&mut self, new_metadata: ParsingMetadata) {
-        self.metadata = new_metadata;
-    }
-
-    pub fn set_excluded_modifiers(&mut self, modifiers_excluded: ModifiersBucket) {
-        self.excluded_modifiers = modifiers_excluded
-    }
-
-    pub fn add_excluded_modifiers(&mut self, modifiers_excluded: ModifiersBucket) {
-        self.excluded_modifiers = self.excluded_modifiers.clone().add(modifiers_excluded)
-    }
-
-    pub fn set_parallelization(&mut self, value: bool) {
-        self.parallelization = value
-    }
-
-    pub fn set_list_bullets_configuration(&mut self, value: Vec<ListBulletConfigurationRecord>) {
-        self.list_bullets_configuration = value
-    }
-
-    pub fn set_strict_list_check(&mut self, strict_list_check: bool) {
-        self.strict_list_check = strict_list_check;
-    }
-
-    pub fn set_strict_focus_block_check(&mut self, strict_focus_block_check: bool) {
-        self.strict_focus_block_check = strict_focus_block_check;
-    }
-
-    pub fn set_fast_draft(&mut self, value: bool) {
-        self.fast_draft = value;
     }
 }
 
@@ -199,6 +108,7 @@ impl Default for ParsingConfiguration {
             strict_focus_block_check: false,
             references: HashMap::new(),
             fast_draft: false,
+            bibliography: None,
         }
     }
 }
@@ -217,6 +127,7 @@ impl From<CompilationConfiguration> for ParsingConfiguration {
             parallelization: compilation_configuration.parallelization().clone().unwrap(),
             references: compilation_configuration.references().clone().unwrap(),
             fast_draft: compilation_configuration.fast_draft(),
+            bibliography: compilation_configuration.bibliography().clone(),
             
             ..Default::default()
         }

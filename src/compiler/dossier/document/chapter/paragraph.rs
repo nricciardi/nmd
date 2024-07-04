@@ -1,5 +1,6 @@
 use std::{fmt::Display, sync::{Arc, RwLock}};
 
+use getset::{Getters, Setters};
 use regex::Regex;
 use thiserror::Error;
 
@@ -17,10 +18,16 @@ pub enum ParagraphError {
 
 pub type ParagraphType = ModifierIdentifier;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Getters, Setters, Clone)]
 pub struct Paragraph {
+
+    #[getset(get = "pub", set = "pub")]
     content: String,
+
+    #[getset(get = "pub", set = "pub")]
     parsed_content: Option<ParsingOutcome>,
+
+    #[getset(get = "pub", set = "pub")]
     paragraph_type: ParagraphType,
 }
 
@@ -34,16 +41,8 @@ impl Paragraph {
         }
     }
 
-    pub fn content(&self) -> &String {
-        &self.content
-    }
-
     pub fn contains_only_newlines(&self) -> bool {
         self.content.chars().all(|c| c == '\n' || c == '\r')
-    }
-
-    pub fn paragraph_type(&self) -> &ParagraphType {
-        &self.paragraph_type
     }
 }
 

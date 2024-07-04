@@ -8,7 +8,8 @@
         - [toc](#toc)
         - [documents](#documents)
         - [style](#style)
-        - [metadata](#metadata)
+        - [references](#references)
+        - [bibliography](#bibliography)
         - [compilation](#compilation)
 - [NMD Syntax](#nmd-syntax)
   - [Heading (Title of a chapter)](#heading-title-of-a-chapter)
@@ -40,6 +41,7 @@
       - [Abridged bookmark](#abridged-bookmark)
       - [Bookmark](#bookmark-1)
       - [Todo](#todo)
+    - [Cite](#cite)
   - [Paragraph modifier](#paragraph-modifier)
     - [Embedded style](#embedded-style-1)
     - [Image](#image)
@@ -118,7 +120,12 @@ style:
   styles: []
   list_bullets_configuration: []
 
-metadata: {}
+references: {}
+
+bibliography:
+  title: Bibliography
+  records: {}
+  include_in_output: false
 
 compilation:
   embed_local_image: true
@@ -163,9 +170,44 @@ To customize table of contents there are some classes: `toc`, `toc-title`, `toc-
 
 `list_bullets_configuration` is described in [list section](#list)
 
-###### metadata
+###### references
 
-`metadata` is **not** used now. **[WIP]**
+`references` allows to specify dossier variables.
+
+
+###### bibliography
+
+Each bibliography record has:
+
+- `title` (**mandatory**)
+- `year`
+- `authors`
+- `description`
+- `url`
+
+Style classes: `bibliography`, `bibliography-title`, `bibliography-body`, `bibliography-item`, `bibliography-item-title`, `bibliography-item-authors`, `bibliography-item-year`, `bibliography-item-url`
+
+For example:
+
+```
+bibliography:
+  title: Bibliography
+  records: 
+    bib1:
+      title: "bib1"
+    bib2:
+      title: "bib1"
+      authors:
+        - A1
+        - A2
+        - A3
+      year: 2024
+    bib3:
+      title: "bib1"
+      description: "bib3 description"
+  include_in_output: true
+```
+
 
 ###### compilation
 
@@ -173,7 +215,7 @@ In `compilation` section you can specified the default values to use during comp
 
 - `embed_local_image` (boolean): local images (specified by local path) are inserted in the output without reference, but embedded 
 - `embed_remote_image` (boolean): remote images (specified by remote path, e.g. URL) are inserted in the output without reference, but embedded 
-- `compress_embed_image` (boolean) **[WIP]**: compress embedded images
+- `compress_embed_image` (boolean): compress embedded images
 - `strict_image_src_check` (boolean): apply a strict check to image sources
 - `parallelization` (boolean): if `true` parallelize execution of compilation
 - `use_remote_addons` (boolean): if `true` use CDN instead of local CSS/Javascript to include third part library
@@ -583,17 +625,18 @@ this is a multiline todo
 :TODO
 ```
 
+#### Cite
 
+**Style class**: `cite`
 
-
+```
+some text^[bibliography-key]
+```
 
 
 
 
 ### Paragraph modifier
-
-TODO
-
 
 #### Embedded style
 

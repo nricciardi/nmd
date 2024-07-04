@@ -34,6 +34,7 @@ pub enum StandardTextModifier {
     GreekLetter,
     Escape,
     Reference,
+    Cite,
 }
 
 impl StandardTextModifier {
@@ -71,6 +72,7 @@ impl StandardTextModifier {
             Self::CheckboxChecked,
             Self::Emoji,
             Self::Reference,
+            Self::Cite,
         ]
     }
 
@@ -105,6 +107,7 @@ impl StandardTextModifier {
             Self::GreekLetter => String::from("greek-letter"),
             Self::Escape => String::from("escape"),
             Self::Reference => String::from("reference"),
+            Self::Cite => String::from("cite"),
 
             _ => {
 
@@ -145,6 +148,7 @@ impl StandardTextModifier {
             Self::GreekLetter => String::from(r"%(.*?)%"),        // if it changes, fix greek letters rules
             Self::Escape => String::from(r"\\([\*\+\\~%\^\$@=\[\]!<>\{\}\(\)#-_\|\?&]+)"),
             Self::Reference => String::from(r"&([\w-]+)&"),
+            Self::Cite => String::from(r"\^\[([\w_]+)\]"),
             
             _ => {
                 log::warn!("there is NOT a modifier pattern for {:#?}", self);
@@ -162,6 +166,7 @@ impl StandardTextModifier {
             Self::GreekLetter => ModifiersBucket::All,
             Self::Escape => ModifiersBucket::All,
             Self::Reference => ModifiersBucket::All,
+            Self::Cite => ModifiersBucket::All,
             _ => ModifiersBucket::None
         }
     }

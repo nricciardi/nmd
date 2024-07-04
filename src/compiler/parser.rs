@@ -26,7 +26,7 @@ impl Parser {
     /// Parse a text (string) using `Codex` rules and `ParsingConfiguration` options 
     pub fn parse_text(codex: &Codex, content: &str, parsing_configuration: Arc<RwLock<ParsingConfiguration>>, parsing_configuration_overlay: Arc<Option<ParsingConfigurationOverLay>>) -> Result<ParsingOutcome, ParsingError> {
 
-        let excluded_modifiers = parsing_configuration.read().unwrap().modifiers_excluded().clone();
+        let excluded_modifiers = parsing_configuration.read().unwrap().excluded_modifiers().clone();
 
         Parser::parse_text_excluding_modifiers(codex, content, excluded_modifiers, Arc::clone(&parsing_configuration), parsing_configuration_overlay)
     }

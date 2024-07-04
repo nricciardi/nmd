@@ -1,30 +1,55 @@
 use std::{clone, collections::{HashMap, HashSet}, path::PathBuf};
 
+use getset::{CopyGetters, Getters, MutGetters, Setters};
+
 use crate::resource::text_reference::TextReferenceMap;
 
-use super::{codex::{codex_configuration::CodexConfiguration, Codex}, dossier::dossier_configuration::DossierConfiguration, output_format::OutputFormat, parsing::parsing_configuration::ParsingConfiguration};
+use super::{bibliography::Bibliography, codex::{codex_configuration::CodexConfiguration, Codex}, dossier::dossier_configuration::DossierConfiguration, output_format::OutputFormat, parsing::parsing_configuration::ParsingConfiguration};
 
 
 
 /// Struct which contains all information about possible compilation options. It is used to wrap specific user requests for compilation 
-#[derive(Clone, Debug)]
+#[derive(Debug, Getters, CopyGetters, MutGetters, Setters, Clone)]
 pub struct CompilationConfiguration {
+
+    #[getset(get = "pub", set = "pub")]
     format: OutputFormat,
+
+    #[getset(get = "pub", set = "pub")]
     input_location: PathBuf,
+
+    #[getset(get = "pub", set = "pub")]
     output_location: PathBuf,
 
+    #[getset(get_copy = "pub", set = "pub")]
     fast_draft: bool,
+
+    #[getset(get = "pub", set = "pub")]
     embed_local_image: Option<bool>,
+
+    #[getset(get = "pub", set = "pub")]
     embed_remote_image: Option<bool>,
+
+    #[getset(get = "pub", set = "pub")]
     compress_embed_image: Option<bool>,
+
+    #[getset(get = "pub", set = "pub")]
     strict_image_src_check: Option<bool>,
 
+    #[getset(get = "pub", set = "pub")]
     parallelization: Option<bool>,
+
+    #[getset(get = "pub", set = "pub")]
     use_remote_addons: Option<bool>,
+
+    #[getset(get = "pub", set = "pub")]
     references: Option<TextReferenceMap>,
 
-    documents_subset_to_compile: Option<HashSet<String>>
-
+    #[getset(get = "pub", set = "pub")]
+    documents_subset_to_compile: Option<HashSet<String>>,
+    
+    #[getset(get = "pub", set = "pub")]
+    bibliography: Option<Bibliography>,
 }
 
 impl CompilationConfiguration {
@@ -38,10 +63,6 @@ impl CompilationConfiguration {
         }
     }
 
-    pub fn format(&self) -> &OutputFormat {
-        &self.format
-    }
-
     pub fn codex(&self) -> Codex {
         Codex::from(&self.format, CodexConfiguration::default())
     }
@@ -49,128 +70,41 @@ impl CompilationConfiguration {
     pub fn parsing_configuration(&self) -> ParsingConfiguration {
         ParsingConfiguration::from(self.clone())
     }
-
-    pub fn input_location(&self) -> &PathBuf {
-        &self.input_location
-    }
-
-    pub fn output_location(&self) -> &PathBuf {
-        &self.output_location
-    }
-
-    pub fn set_format(&mut self, format: OutputFormat) {
-        self.format = format
-    }
-
-    pub fn set_input_location(&mut self, path: PathBuf) {
-        self.input_location = path
-    }
-
-    pub fn set_output_location(&mut self, path: PathBuf) {
-        self.output_location = path
-    }
-
-    pub fn embed_local_image(&self) -> Option<bool> {
-        self.embed_local_image
-    }
-
-    pub fn embed_remote_image(&self) -> Option<bool> {
-        self.embed_remote_image
-    }
-
-    pub fn compress_embed_image(&self) -> Option<bool> {
-        self.compress_embed_image
-    }
-
-    pub fn parallelization(&self) -> Option<bool> {
-        self.parallelization
-    }
-
-    pub fn use_remote_addons(&self) -> Option<bool> {
-        self.use_remote_addons
-    }
-
-    pub fn references(&self) -> &Option<TextReferenceMap> {
-        &self.references
-    }
-
-    pub fn fast_draft(&self) -> bool {
-        self.fast_draft
-    }
-
-    pub fn documents_subset_to_compile(&self) -> &Option<HashSet<String>> {
-        &self.documents_subset_to_compile
-    }
-
-    pub fn strict_image_src_check(&self) -> Option<bool> {
-        self.strict_image_src_check
-    }
-    pub fn set_embed_local_image(&mut self, value: bool) {
-        self.embed_local_image = Some(value);
-    }
-
-    pub fn set_embed_remote_image(&mut self, value: bool) {
-        self.embed_remote_image = Some(value);
-    }
-
-    pub fn set_compress_embed_image(&mut self, value: bool) {
-        self.compress_embed_image = Some(value);
-    }
-
-    pub fn set_strict_image_src_check(&mut self, value: bool) {
-        self.strict_image_src_check = Some(value);
-    }
-
-    pub fn set_parallelization(&mut self, value: bool) {
-        self.parallelization = Some(value);
-    }
-
-    pub fn set_use_remote_addons(&mut self, value: bool) {
-        self.use_remote_addons = Some(value);
-    }
-
-    pub fn set_references(&mut self, references: TextReferenceMap) {
-        self.references = Some(references)
-    }
-
-    pub fn set_fast_draft(&mut self, value: bool) {
-        self.fast_draft = value;
-    }
-
-    pub fn set_documents_subset_to_compile(&mut self, d: Option<HashSet<String>>) {
-        self.documents_subset_to_compile = d;
-    }
 }
 
 impl CompilationConfiguration {
     pub fn merge_dossier_configuration(&mut self, dossier_configuration: &DossierConfiguration) {
 
         if self.embed_local_image().is_none() {
-            self.set_embed_local_image(dossier_configuration.compilation().embed_local_image().clone());
+            self.set_embed_local_image(Some(dossier_configuration.compilation().embed_local_image().clone()));
         }
 
         if self.embed_remote_image().is_none() {
-            self.set_embed_remote_image(dossier_configuration.compilation().embed_remote_image().clone());
+            self.set_embed_remote_image(Some(dossier_configuration.compilation().embed_remote_image().clone()));
         }
 
         if self.compress_embed_image().is_none() {
-            self.set_compress_embed_image(dossier_configuration.compilation().compress_embed_image().clone());
+            self.set_compress_embed_image(Some(dossier_configuration.compilation().compress_embed_image().clone()));
         }
 
         if self.use_remote_addons().is_none() {
-            self.set_use_remote_addons(dossier_configuration.compilation().use_remote_addons().clone());
+            self.set_use_remote_addons(Some(dossier_configuration.compilation().use_remote_addons().clone()));
         }
 
         if self.parallelization().is_none() {
-            self.set_parallelization(dossier_configuration.compilation().parallelization().clone());
+            self.set_parallelization(Some(dossier_configuration.compilation().parallelization().clone()));
         }
 
         if self.strict_image_src_check().is_none() {
-            self.set_strict_image_src_check(dossier_configuration.compilation().strict_image_src_check().clone());
+            self.set_strict_image_src_check(Some(dossier_configuration.compilation().strict_image_src_check().clone()));
         }
 
         if self.references().is_none() {
-            self.set_references(dossier_configuration.references().clone())
+            self.set_references(Some(dossier_configuration.references().clone()));
+        }
+
+        if self.bibliography().is_none() {
+            self.set_bibliography(Some(Bibliography::from(dossier_configuration.bibliography())));
         }
     }
 }
@@ -190,6 +124,7 @@ impl Default for CompilationConfiguration {
             use_remote_addons: None,
             references: None,
             documents_subset_to_compile: None,
+            bibliography: None,
         }
     }
 }
