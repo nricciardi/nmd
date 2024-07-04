@@ -82,6 +82,11 @@ impl HtmlTableRule {
                 continue;
             }
 
+            if cell.starts_with("-") && cell.ends_with("-") {
+                alignments[index] = TableCellAlignment::default();
+                continue;
+            }
+
             return None;
         }
 
@@ -217,9 +222,9 @@ impl HtmlTableRule {
         if let Some(header_cells) = table.header() {
 
 
-            html_table = html_table.with_thead_attributes(vec![
-                                        ("class", "table-header")
-                                    ]);
+            html_table.add_thead_attributes(vec![
+                                                ("class", "table-header")
+                                            ]);
 
             let mut html_table_header = HtmlTableRow::new()
                                                     .with_attributes(vec![
@@ -251,14 +256,18 @@ impl HtmlTableRule {
         // TODO: use embedded add_tfoot when available
         if let Some(footer_cells) = table.footer() {
 
+            html_table.add_tfoot_attributes(vec![
+                ("class", "table-footer")
+            ]);
+
             let mut html_table_footer = HtmlTableRow::new()
                                                 .with_attributes(vec![
-                                                    ("class", "table-footer")
+                                                    ("class", "table-footer-row")
                                                 ]);
 
             Self::load_html_row(&mut html_table_footer, footer_cells, codex, Arc::clone(&parsing_configuration)).unwrap();
 
-            html_table.add_custom_body_row(html_table_footer);
+            html_table.add_custom_footer_row(html_table_footer);
         }
 
         if let Some(c) = caption {
@@ -314,7 +323,6 @@ impl ParsingRule for HtmlTableRule {
                         id = Some(ResourceReference::of_internal_from_without_sharp(&caption.clone().unwrap(), Some(document_name)).unwrap().build());
                     }
                 }
-
             }
 
             let row = Self::extract_table_row_content_from_line(line);
