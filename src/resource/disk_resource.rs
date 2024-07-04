@@ -40,6 +40,10 @@ impl TryFrom<PathBuf> for DiskResource {
             return Err(ResourceError::InvalidResourceVerbose(format!("{} is a directory", location.to_string_lossy())))
         }
 
+        if !location.exists() {
+            return Err(ResourceError::InvalidResourceVerbose(format!("{} not exists", location.to_string_lossy()))) 
+        }
+
         if let Some(name) = location.file_name() {
             Ok(Self {
                 name: name.to_string_lossy().to_string(),

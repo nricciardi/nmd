@@ -302,12 +302,15 @@ impl ParsingRule for HtmlTableRule {
         let mut alignments: Option<Vec<TableCellAlignment>> = None;
         let mut max_row_len: usize = 0;
         let mut there_is_header: bool = false;
+        let mut there_is_footer: bool = false;
         let mut id: Option<String> = None;
         let mut caption: Option<String> = None;
         let mut style: Option<String> = None;
         
+        let lines = content.trim().lines();
+        let lines_n = lines.clone().count();
 
-        for line in content.lines() {
+        for (index, line) in lines.enumerate() {
 
             // check if there is caption
             let trim_line = line.trim_start();
@@ -345,6 +348,10 @@ impl ParsingRule for HtmlTableRule {
                     there_is_header = true;
                 }
 
+                if index == lines_n - 2 {
+                    there_is_footer = true;
+                }
+
                 while aligns.len() < max_row_len {
                     aligns.push(TableCellAlignment::default());
                 }
@@ -364,26 +371,8 @@ impl ParsingRule for HtmlTableRule {
         }
 
         // check if there is footer
-        if table.body().len() > 2 {
-
-            let second_last_row_index = table.body().len() - 2;
-
-            let second_last_row = table.body().get(second_last_row_index).unwrap();
-
-            if  second_last_row.len() == 1 {
-
-                let first_cell = second_last_row.get(0).unwrap();
-
-                match first_cell {
-                    TableCell::None => (),
-                    TableCell::ContentCell { content, alignment: _ } => {
-                        if content.chars().all(|c| c.eq(&'-')) {
-                            table.body_mut().remove(second_last_row_index);
-                            table.shift_last_body_row_to_footer()
-                        }
-                    },
-                }                
-            }
+        if there_is_footer {
+            table.shift_last_body_row_to_footer();
         }
 
         
@@ -392,5 +381,37 @@ impl ParsingRule for HtmlTableRule {
     
     fn search_pattern_regex(&self) -> &Regex {
         &self.search_pattern_regex
+    }
+}
+
+
+#[cfg(test)]
+mod test {
+    use std::sync::{Arc, RwLock};
+
+    use crate::compiler::{codex::{self, codex_configuration::CodexConfiguration, Codex}, parsing::{parsing_configuration::ParsingConfiguration, parsing_rule::ParsingRule}};
+
+    use super::HtmlTableRule;
+
+    #[test]
+    fn test() {
+        let nmd_table = r#"
+|                                                           | $x_1$ | $...$ | $x_n$ | $s_1$ | $...$ | $s_m$ | $a_1$ | $...$ |
+|-----------------------------------------------------------|:-----:|:-----:|:-----:|:-----:|:-----:|-------|-------|:-----:|
+| Riga avente $1$ nella colonna della variabile artificiale |  $0$  |  $0$  |  $0$  |  $0$  |  $0$  |  $0$  |  $1$  |  $0$  |
+|---|
+||footer|        
+"#.trim();
+
+
+        let rule = HtmlTableRule::new();
+        let codex = Codex::of_html(CodexConfiguration::default());
+        let parsing_configuration = Arc::new(RwLock::new(ParsingConfiguration::default()));
+
+        let outcome = rule.parse(nmd_table, &codex, parsing_configuration).unwrap().parsed_content();
+
+        assert!(outcome.contains("<thead"));
+        assert!(outcome.contains("<tbody"));
+        assert!(outcome.contains("<tfoot"));
     }
 }
