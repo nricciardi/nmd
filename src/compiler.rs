@@ -11,6 +11,7 @@ pub mod codex;
 pub mod parsable;
 pub mod parsing;
 pub mod table_of_contents;
+pub mod bibliography;
 
 use std::{sync::{mpsc::{channel, RecvError}, Arc, RwLock}, thread, time::{Instant, SystemTime}};
 

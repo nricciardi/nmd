@@ -14,9 +14,10 @@ keywords = ["compiler", "nmd", "markdown"]
 [dependencies]
 anyhow = "1.0.75"
 base64 = "0.21.5"
-build_html = "2.4.0"
+build_html = "2.5.0"
 clap = "4.4.18"
 env_logger = "0.10.1"
+getset = "0.1.2"
 image = "0.24.8"
 log = "0.4.20"
 notify = "6.1.1"

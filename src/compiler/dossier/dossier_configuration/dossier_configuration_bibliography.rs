@@ -1,17 +1,21 @@
+use std::collections::{BTreeMap, HashMap};
+
 use serde::{Deserialize, Serialize};
 
-
-pub type DossierConfigurationBibliography = Vec<DossierConfigurationBibliographyEntry>;
+use crate::compiler::bibliography::bibliography_entry::BibliographyEntry;
 
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
-pub struct DossierConfigurationBibliographyEntry {
+pub struct DossierConfigurationBibliography {
     title: String,
-    year: Option<u32>,
-    authors: Option<Vec<String>>,
-    description: Option<String>
+    entries: BTreeMap<String, BibliographyEntry>,
 }
 
-impl DossierConfigurationBibliographyEntry {
-
+impl Default for DossierConfigurationBibliography {
+    fn default() -> Self {
+        Self {
+            title: String::from("Bibliography"),
+            entries: Default::default()
+        }
+    }
 }

@@ -5,10 +5,12 @@ pub mod html_extended_block_quote_rule;
 pub mod html_greek_letter_rule;
 pub mod reference_rule;
 pub mod html_table_rule;
+pub mod html_bibliography_rule;
 pub mod constants;
 
+
 use std::{fmt::Debug, sync::{Arc, RwLock}};
-use regex::{Match, Matches, Regex};
+use regex::{Match, Regex};
 
 use crate::compiler::codex::Codex;
 

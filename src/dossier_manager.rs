@@ -38,7 +38,13 @@ impl DossierManager {
     }
 
     /// Add document to dossier. Create file if it doesn't exist.
-    pub fn add_document(&self, filename: &String, content: &str) -> Result<(), DossierManagerError> {
+    pub fn add_document(&self, filename: &str, content: &str) -> Result<(), DossierManagerError> {
+
+        let mut filename = String::from(filename);
+
+        while filename.ends_with(&format!(".{}", NMD_EXTENSION)) {
+            filename.remove(filename.len() - 1);
+        }
 
         let filename = file_utility::build_output_file_name(&filename, NMD_EXTENSION);
 

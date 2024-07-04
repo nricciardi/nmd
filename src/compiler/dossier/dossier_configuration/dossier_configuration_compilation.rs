@@ -10,7 +10,6 @@ fn no() -> bool {
 }
 
 
-#[allow(dead_code)]
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct DossierConfigurationCompilation {
     #[serde(default = "yes")]
