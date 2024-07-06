@@ -42,8 +42,11 @@ impl DossierManager {
 
         let mut filename = String::from(filename);
 
-        while filename.ends_with(&format!(".{}", NMD_EXTENSION)) {
-            filename.remove(filename.len() - 1);
+        if filename.ends_with(NMD_EXTENSION) {
+            for _ in 0..NMD_EXTENSION.len() + 1  {
+
+                filename.remove(filename.len() - 1);
+            }
         }
 
         let filename = file_utility::build_output_file_name(&filename, NMD_EXTENSION);

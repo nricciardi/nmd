@@ -195,6 +195,10 @@ impl Loader {
 
     pub fn load_document_from_path(&self, codex: &Codex, path_buf: &PathBuf) -> Result<Document, LoadError> {
 
+        if !path_buf.exists() {
+            return Err(LoadError::ResourceError(ResourceError::InvalidResourceVerbose(format!("{} not exists", path_buf.to_string_lossy())))) 
+        }
+
         let resource = DiskResource::try_from(path_buf.clone())?;
 
         let content = resource.content()?;

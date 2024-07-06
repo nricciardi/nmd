@@ -47,7 +47,10 @@ impl Generator {
 
         } else {
             if !configuration.force_generation() {
-                return Err(ResourceError::ResourceNotFound(configuration.path().to_string_lossy().to_string()))
+
+                log::warn!("consider to use force flag");
+
+                return Err(ResourceError::ResourceNotFound(format!("{}", configuration.path().to_string_lossy())))
             }
 
             if let Err(err) = fs::create_dir_all(&configuration.path()) {

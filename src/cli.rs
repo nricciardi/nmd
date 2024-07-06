@@ -196,6 +196,7 @@ impl NmdCli {
                             .help("insert dossier path")
                             .action(ArgAction::Append)
                             .default_value(".")
+                            .required(true)
                     )
                     .subcommand(
                         Command::new("add")
@@ -275,37 +276,23 @@ impl NmdCli {
 
                 let mut compilation_configuration = CompilationConfiguration::default();
                 
-                if let Some(mut format) = compile_dossier_matches.get_many::<String>("format") {
+                if let Some(format) = compile_dossier_matches.get_one::<String>("format") {
                     
-                    if format.len() != 1 {
-                        return Err(NmdCliError::MoreThanOneValue("format".to_string()));
-                    }
-                    
-                    let format = OutputFormat::from_str(format.nth(0).unwrap())?;
+                    let format = OutputFormat::from_str(format)?;
 
                     compilation_configuration.set_format(format);
                 }
 
-                if let Some(mut input_path) = compile_dossier_matches.get_many::<String>("input-dossier-path") {
-                    
-                    if input_path.len() != 1 {
-                        return Err(NmdCliError::MoreThanOneValue("input-dossier-path".to_string()));
-                    }
-                    
-                    
-                    let input_path = PathBuf::from(input_path.nth(0).unwrap());
+                if let Some(input_path) = compile_dossier_matches.get_one::<String>("input-dossier-path") {
+                                        
+                    let input_path = PathBuf::from(input_path);
 
                     compilation_configuration.set_input_location(input_path);
                 }
 
-                if let Some(mut output_path) = compile_dossier_matches.get_many::<String>("output-directory-path") {
+                if let Some(output_path) = compile_dossier_matches.get_one::<String>("output-directory-path") {
                     
-                    if output_path.len() != 1 {
-                        return Err(NmdCliError::MoreThanOneValue("output-directory-path".to_string()));
-                    }
-                    
-                    
-                    let output_path = PathBuf::from(output_path.nth(0).unwrap());
+                    let output_path = PathBuf::from(output_path);
 
                     compilation_configuration.set_output_location(output_path);
 
@@ -330,14 +317,9 @@ impl NmdCli {
 
                 let watcher_time: u64;
 
-                if let Some(mut wt) = compile_dossier_matches.get_many::<String>("watcher-time") {
-                    
-                    if wt.len() != 1 {
-                        return Err(NmdCliError::MoreThanOneValue("watcher-time".to_string()));
-                    }
-                    
-                    
-                    watcher_time = wt.nth(0).unwrap().parse::<u64>().unwrap();
+                if let Some(wt) = compile_dossier_matches.get_one::<String>("watcher-time") {
+                                        
+                    watcher_time = wt.parse::<u64>().unwrap();
 
                 } else {
                     watcher_time = MINIMUM_WATCHER_TIME;
@@ -367,27 +349,17 @@ impl NmdCli {
                 
                 let mut generator_configuration = GeneratorConfiguration::default();
 
-                if let Some(mut input_path) = generate_dossier_matches.get_many::<String>("path") {
-                    
-                    if input_path.len() != 1 {
-                        return Err(NmdCliError::MoreThanOneValue("path".to_string()));
-                    }
-                    
-                    
-                    let input_path = PathBuf::from(input_path.nth(0).unwrap());
+                if let Some(input_path) = generate_dossier_matches.get_one::<String>("path") {
+                     
+                    let input_path = PathBuf::from(input_path);
 
                     generator_configuration.set_path(input_path);
                 }
 
                 let md_file_path: Option<PathBuf>;
-                if let Some(mut md_fp) = generate_dossier_matches.get_many::<String>("from-md") {
+                if let Some(md_fp) = generate_dossier_matches.get_one::<String>("from-md") {
                     
-                    if md_fp.len() != 1 {
-                        return Err(NmdCliError::MoreThanOneValue("from-md".to_string()));
-                    }
-                    
-                    
-                    md_file_path = Some(PathBuf::from(md_fp.nth(0).unwrap()));
+                    md_file_path = Some(PathBuf::from(md_fp));
                 
                 } else {
                     md_file_path = None;
@@ -416,13 +388,9 @@ impl NmdCli {
 
         let dossier_path: Option<PathBuf>;
 
-        if let Some(mut dp) = matches.get_many::<String>("dossier-path") {
+        if let Some(dp) = matches.get_one::<String>("dossier-path") {
                     
-            if dp.len() != 1 {
-                return Err(NmdCliError::MoreThanOneValue("dossier-path".to_string()));
-            }
-
-            dossier_path = Some(PathBuf::from(dp.nth(0).unwrap()));
+            dossier_path = Some(PathBuf::from(dp));
         
         } else {
             
@@ -432,14 +400,10 @@ impl NmdCli {
         match matches.subcommand() {
             Some(("add", add_dossier_matches)) => {
 
-                if let Some(mut dp) = dossier_path {
+                if let Some(dp) = dossier_path {
                     
                     if let Some(document_names) = add_dossier_matches.get_many::<String>("document-name") {
                     
-                        if document_names.len() < 1 {
-                            return Err(NmdCliError::MoreThanOneValue("document-name".to_string()));
-                        }
-
                         let dossier_manager_configuration = DossierManagerConfiguration::new(dp);
 
                         let dossier_manager = DossierManager::new(dossier_manager_configuration);
