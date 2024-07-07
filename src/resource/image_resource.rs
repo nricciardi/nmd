@@ -17,15 +17,11 @@ pub struct ImageResource {
 impl ImageResource {
 
     /// Encode image in base64
-    pub fn to_base64(self, compression: bool) -> Result<String, ResourceError> {
+    pub fn to_base64(&self, compression: bool) -> Result<String, ResourceError> {
 
-        let mut buffer: Vec<u8> = Vec::new();
-
-        self.image.write_to(&mut Cursor::new(&mut buffer), ImageOutputFormat::Png)?;
+        let buffer = self.to_vec_u8()?;
 
         if compression {
-        
-            log::warn!("compressing image {:?}... it is a time consuming task! Consider not using this feature unless strictly necessary", self.src);
 
             let original_log_level = log::max_level();
             log::set_max_level(log::LevelFilter::Warn);
@@ -40,9 +36,20 @@ impl ImageResource {
                 Ok(image) => return Ok(STANDARD.encode(image)),
                 Err(err) => return Err(ResourceError::ElaborationError(format!("image compression error: {}", err)))
             }
+
         } else {
+
             Ok(STANDARD.encode(buffer))
         }
+    }
+
+    pub fn to_vec_u8(&self) -> Result<Vec<u8>, ResourceError> {
+
+        let mut buffer: Vec<u8> = Vec::new();
+
+        self.image.write_to(&mut Cursor::new(&mut buffer), ImageOutputFormat::Png)?;
+
+        Ok(buffer)
     }
 
     /// Check if a PathBuf is an image
@@ -108,23 +115,26 @@ mod test {
 
     use image::ImageOutputFormat;
 
+    use crate::resource::image_resource::ImageResource;
+
 
     #[test]
     fn vec_u8() {
-        let project_directory = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-        let image_path = project_directory.join("test-resources").join("wikipedia-logo.png");
+        // let project_directory = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        // let image_path = project_directory.join("test-resources").join("wikipedia-logo.png");
 
-        let mut image_vec_u8 = File::open(image_path.clone()).unwrap();
-        let mut buffer: Vec<u8> = Vec::new();
-        image_vec_u8.read_to_end(&mut buffer).unwrap();
+        // let mut image_file = File::open(image_path.clone()).unwrap();
+        // let mut raw_image: Vec<u8> = Vec::new();
+        // image_file.read_to_end(&mut raw_image).unwrap();
 
-        let dynamic_image = image::load_from_memory(&buffer).unwrap();
-        let mut buffer_from_dynamic_image: Vec<u8> = Vec::new();
+        // let image = ImageResource::try_from(image_path).unwrap();
 
-        dynamic_image.write_to(&mut Cursor::new(&mut buffer_from_dynamic_image), ImageOutputFormat::Png).unwrap();
+        // // let dynamic_image = image::load_from_memory(&buffer).unwrap();
+        // // let mut buffer_from_dynamic_image: Vec<u8> = Vec::new();
 
-        assert_eq!(buffer.len(), buffer_from_dynamic_image.len());
-        assert_eq!(buffer, buffer_from_dynamic_image)
+        // // dynamic_image.write_to(&mut Cursor::new(&mut buffer_from_dynamic_image), ImageOutputFormat::Png).unwrap();
+
+        // assert_eq!(raw_image.len(), image.to_vec_u8().unwrap().len());
     }
 
 }

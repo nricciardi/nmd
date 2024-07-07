@@ -87,6 +87,11 @@ impl Compiler {
         parsing_configuration.set_list_bullets_configuration(dossier_configuration.style().list_bullets_configuration().clone());
         parsing_configuration.set_strict_list_check(dossier_configuration.compilation().strict_list_check());
 
+        if parsing_configuration.compress_embed_image() || parsing_configuration.embed_local_image() || parsing_configuration.embed_remote_image() {
+
+            log::warn!("embedding or compressing images is a time consuming task! Consider not using this feature unless strictly necessary");
+        }
+
         log::info!("will use dossier configuration: {:?}", compilation_configuration.input_location());
         log::debug!("will use dossier configuration:\n\n{:#?}\n", dossier_configuration);
 

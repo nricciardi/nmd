@@ -398,12 +398,16 @@ mod test {
 
         let image_rule = HtmlImageRule::new(StandardParagraphModifier::Image.identifier());
 
-        let nmd_text = format!(r"![image1]({})", img_src.as_os_str().to_string_lossy());
+        let nmd_text = format!("\n\n![image1]({})\n\n", img_src.as_os_str().to_string_lossy());
 
         let codex = Codex::of_html(CodexConfiguration::default());
 
-        let parsed_content = image_rule.parse(nmd_text.as_str(), &codex, Arc::new(RwLock::new(ParsingConfiguration::default()))).unwrap();
+        let mut pc = ParsingConfiguration::default();
+
+        pc.metadata_mut().set_document_name(Some(String::from("test")));
+
+        let parsed_content = image_rule.parse(nmd_text.as_str(), &codex, Arc::new(RwLock::new(pc))).unwrap();
         
-        assert!(!parsed_content.parsed_content().is_empty())
+        assert!(parsed_content.parts().len() > 0)
     }
 }

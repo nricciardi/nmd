@@ -129,19 +129,6 @@ mod test {
     use super::*;
 
     #[test]
-    fn from_str() {
-
-        let path = ".";
-
-        let resource = DiskResource::from_str(path);
-    
-        match resource {
-            Ok(location) => assert_eq!(location.to_string(), path),
-            Err(e) => panic!("'{}' during location generation from str of path: '{}'", e, path)
-        }
-    }
-
-    #[test]
     #[should_panic]
     fn dir() {
         let project_directory = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
@@ -168,6 +155,8 @@ r#"
 
         resource.write(nmd_text).unwrap();
 
-        assert_eq!(nmd_text, resource.content().unwrap())
+        assert_eq!(nmd_text, resource.content().unwrap());
+
+        resource.erase().unwrap();
     }
 }

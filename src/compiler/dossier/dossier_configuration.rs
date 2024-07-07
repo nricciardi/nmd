@@ -303,6 +303,6 @@ mod test {
 
         let configuration = DossierConfiguration::try_from(&nmd_dossier_path).unwrap();
 
-        assert_eq!(configuration.raw_documents_paths()[0], nmd_dossier_path.join("d1.nmd").to_string_lossy().to_string())
+        assert_eq!(configuration.documents_paths()[0], nmd_dossier_path.join("d1.nmd").to_string_lossy().to_string())
     }
 }
