@@ -1,6 +1,6 @@
 
 /// NMD version
-pub const VERSION: &str = "0.33.1";
+pub const VERSION: &str = "0.33.2";
 
 
 pub const DOSSIER_CONFIGURATION_YAML_FILE_NAME: &str = "nmd.yml";
