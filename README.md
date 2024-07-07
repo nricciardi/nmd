@@ -72,14 +72,16 @@ Why stick to Markdown when you can be cool using **NMD**?
 
 ## Getting Started
 
+Do you want **migrate from Markdown to New Markdown** easily and quickly? Read [how to do that](#markdown-to-new-markdown) using CLI!
+
 ### TL;DR
 
 ```shell
 nmd generate dossier -p dossier/input/path -f -w
 
-nmd dossier add -p dossier/input/path -d new-document.nmd
+nmd dossier -p dossier/input/path add -d new-document.nmd
 
-nmd compile dossier -f html -i dossier/input/path -o artifact/output/path
+nmd compile dossier -i dossier/input/path
 ```
 
 ### Installation
