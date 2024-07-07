@@ -49,7 +49,7 @@ impl DossierManager {
             }
         }
 
-        let filename = file_utility::build_output_file_name(&filename, NMD_EXTENSION);
+        let filename = file_utility::build_output_file_name(&filename, Some(NMD_EXTENSION));
 
         let mut dossier_configuration = DossierConfiguration::try_from(self.configuration.dossier_path())?;
 

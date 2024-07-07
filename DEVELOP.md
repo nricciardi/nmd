@@ -48,7 +48,8 @@
 ### Planned Features
 
 - [ ] All modifiers
-- [ ] Use `getset` crate
+- [x] Use `getset` crate
+- [ ] embed_remote_image
 - [ ] Possibility to use a different dossier configuration name
 - [ ] PDF compile format
 - [ ] Vintage style (typewriter)
@@ -69,4 +70,4 @@
 - [ ] Compile single files
 - [ ] Table of contents with page numbers
 - [ ] Cover page
-
+- [ ] VS Code extension (https://dev.to/salesforceeng/how-to-build-a-vs-code-extension-for-markdown-preview-using-remark-processor-1169)

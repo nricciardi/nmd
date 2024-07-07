@@ -5,11 +5,11 @@ use once_cell::sync::Lazy;
 use regex::Regex;
 
 use self::generator_configuration::GeneratorConfiguration;
-use crate::{compiler::dossier::{self, dossier_configuration::DossierConfiguration}, constants::DOSSIER_CONFIGURATION_YAML_FILE_NAME, dossier_manager::{dossier_manager_configuration::DossierManagerConfiguration, DossierManager}, resource::{disk_resource::DiskResource, Resource, ResourceError}, utility::file_utility::{self, read_file_content}};
+use crate::{compiler::{codex::modifier::constants::NEW_LINE, dossier::{self, dossier_configuration::DossierConfiguration}}, constants::DOSSIER_CONFIGURATION_YAML_FILE_NAME, dossier_manager::{dossier_manager_configuration::DossierManagerConfiguration, DossierManager}, resource::{disk_resource::DiskResource, Resource, ResourceError}, utility::file_utility::{self, read_file_content}};
 
 pub const WELCOME_FILE_NAME: &str = "welcome.nmd";
 
-static SEARCH_HEADING_1_REGEX: Lazy<Regex> = Lazy::new(|| Regex::new(r"(?m:^#[ ]?([\w ]+))").unwrap());
+static SEARCH_HEADING_1_REGEX: Lazy<Regex> = Lazy::new(|| Regex::new(r"(?:^#[^#][ ]*(.+))").unwrap());
 
 
 pub struct Generator {
@@ -126,15 +126,17 @@ impl Generator {
         let mut current_nmd_file_content = String::new();
         let mut current_nmd_file_name: Option<String> = None;
 
-        let newline = match std::env::consts::OS {
-            "windows" => "\r\n",
-            _ => "\n",
-        };
-
         let mut document_names: HashMap<String, u32> = HashMap::new();
 
+        let mut in_code_block = false;
+
         for line in markdown_file_content.lines() {
-            if SEARCH_HEADING_1_REGEX.is_match(line) {
+
+            if line.starts_with("```") {
+                in_code_block = !in_code_block;
+            }
+
+            if !in_code_block && SEARCH_HEADING_1_REGEX.is_match(line) {
 
                 log::info!("new header 1 found, generating new document...");
 
@@ -142,17 +144,20 @@ impl Generator {
 
                     let mut file_name = String::from(file_name);
 
+                    let n = *document_names.get(&file_name).unwrap_or(&0) + 1;
+                    document_names.insert(file_name.clone(), n);
+
                     if let Some(n) = document_names.get(&file_name) {
 
-                        if *n > 1 {
+                        let n = *n;
+
+                        if n > 1 {
                             file_name = format!("{}-{}", file_name, n);
                         }
 
+                    } else {
+                        unreachable!();
                     }
-                    
-                    let n = document_names.get(&file_name).unwrap_or(&1);
-                    document_names.insert(file_name.clone(), *n);
-                    
 
                     dossier_manager.add_document(&file_name, &current_nmd_file_content).unwrap();
                     current_nmd_file_content.clear();
@@ -162,7 +167,7 @@ impl Generator {
 
             }
 
-            current_nmd_file_content.push_str(&format!("{}{}", line, newline));
+            current_nmd_file_content.push_str(&format!("{}{}", line, NEW_LINE));
             
         }
         

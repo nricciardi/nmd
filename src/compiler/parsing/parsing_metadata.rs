@@ -1,8 +1,14 @@
+use getset::{Getters, Setters};
 
 
-#[derive(Clone, Debug, Default)]
+
+#[derive(Clone, Debug, Default, Getters, Setters)]
 pub struct ParsingMetadata {
+
+    #[getset(get = "pub", set = "pub")]
     dossier_name: Option<String>,
+
+    #[getset(get = "pub", set = "pub")]
     document_name: Option<String>
 }
 
@@ -12,21 +18,5 @@ impl ParsingMetadata {
             document_name: None,
             dossier_name: None
         }
-    }
-
-    pub fn dossier_name(&self) -> &Option<String> {
-        &self.dossier_name
-    }
-
-    pub fn document_name(&self) -> &Option<String> {
-        &self.document_name
-    }
-
-    pub fn set_dossier_name(&mut self, dossier_name: Option<String>) {
-        self.dossier_name = dossier_name
-    }
-
-    pub fn set_document_name(&mut self, document_name: Option<String>) {
-        self.document_name = document_name
     }
 }

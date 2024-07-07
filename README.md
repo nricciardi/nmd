@@ -10,6 +10,7 @@ NMD stands for **New MarkDown**, or for friends, *Nicola MarkDown* (if Stephen B
 - [New MarkDown \[BETA\]](#new-markdown-beta)
   - [Overview](#overview)
     - [Why NMD?](#why-nmd)
+      - [Performance](#performance)
       - [Extended Syntax](#extended-syntax)
       - [Order with Integrated Dossiers](#order-with-integrated-dossiers)
       - [Predefined Styles and Customization](#predefined-styles-and-customization)
@@ -38,6 +39,10 @@ NMD is a custom Markdown dialect designed to enhance the classic Markdown syntax
 NMD is full compatible with CommonMark standard.
 
 ### Why NMD?
+
+#### Performance
+
+Being developed in Rust, NMD has incredible performance. In single thread mode, NMD is 10 times faster than the compiler for VS Code, while in multi thread mode it is **20 times faster**!
 
 #### Extended Syntax
 

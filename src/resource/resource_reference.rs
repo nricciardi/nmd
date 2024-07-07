@@ -1,5 +1,6 @@
 use std::str::FromStr;
 
+use getset::{Getters, Setters};
 use once_cell::sync::Lazy;
 use regex::Regex;
 use serde::de::value;
@@ -42,9 +43,12 @@ pub enum ResourceReferenceType {
 /// An internal resource is composed by "document name" (where there is the resource) and the resource ID.
 /// 
 /// An external resource is interpreted "as it is"
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Getters, Setters)]
 pub struct ResourceReference {
+
+    #[getset(get = "pub", set = "pub")]
     value: String,
+
     ref_type: ResourceReferenceType
 }
 
@@ -54,14 +58,6 @@ impl ResourceReference {
             value: String::from(value),
             ref_type
         }
-    }
-
-    pub fn value(&self) -> &String {
-        &self.value
-    }
-
-    pub fn set_value(&mut self, value: String) {
-        self.value = value
     }
 
     pub fn of_url(raw: &str) -> Result<Self, ResourceReferenceError> {

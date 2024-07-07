@@ -1,4 +1,6 @@
+use std::fs;
 use std::sync::{RwLock, RwLockReadGuard};
+use std::thread::panicking;
 use std::{path::PathBuf, sync::Arc};
 
 use build_html::{Container, Html, HtmlContainer};
@@ -113,7 +115,7 @@ impl HtmlImageRule {
 
     fn build_img(src: &str, alt: Option<&str>, caption: Option<&str>, id: Option<ResourceReference>, img_classes: Vec<&str>, figure_style: Option<String>, parsing_configuration: &RwLockReadGuard<ParsingConfiguration>) -> String {
 
-        if RemoteResource::is_valid_remote_resource(src) {
+        if RemoteResource::is_valid_remote_resource(src) {          // remote image (e.g. URL)
 
             if parsing_configuration.embed_remote_image() {
 
@@ -126,7 +128,13 @@ impl HtmlImageRule {
                 return Self::create_figure_img(src.as_str(), alt, caption, id, img_classes, figure_style)
             }
 
-        } else {
+        } else {                // local image
+
+            let create_local_not_embed_figure_img = |src: PathBuf| {
+                let local_not_embed_src = fs::canonicalize(src).unwrap();
+
+                return Self::create_figure_img(local_not_embed_src.to_str().unwrap(), alt, caption, id.clone(), img_classes.clone(), figure_style.clone());
+            };
 
             let mut src_path_buf = PathBuf::from(src);
 
@@ -145,12 +153,37 @@ impl HtmlImageRule {
             }
 
             if src_path_buf.exists() {
-            
-                let image = ImageResource::try_from(src_path_buf).unwrap();
 
-                let base64_image = image.to_base64(parsing_configuration.compress_embed_image());
+                if parsing_configuration.embed_local_image() {
 
-                return Self::create_figure_img(format!("data:image/png;base64,{}", base64_image.unwrap()).as_str(), alt, caption, id, img_classes, figure_style);
+                    let image_res = ImageResource::try_from(src_path_buf.clone());
+
+                    if let Ok(image) = image_res {
+    
+                        let base64_image = image.to_base64(parsing_configuration.compress_embed_image());
+        
+                        return Self::create_figure_img(format!("data:image/png;base64,{}", base64_image.unwrap()).as_str(), alt, caption, id, img_classes, figure_style);
+        
+                    
+                    } else {
+                        if parsing_configuration.strict_image_src_check() {
+
+                            image_res.err().unwrap();
+                            unreachable!()
+
+                        } else {
+
+                            log::warn!("{:?} will be parse as local not embed image due to an error", src_path_buf);
+
+                            return create_local_not_embed_figure_img(src_path_buf);
+                        }
+                    }
+
+                    
+                } else {        // local not embed
+                    return create_local_not_embed_figure_img(src_path_buf);
+                }
+
 
             } else if parsing_configuration.strict_image_src_check() {
 

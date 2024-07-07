@@ -1,13 +1,22 @@
 use std::{ffi::OsStr, path::PathBuf};
 
+use getset::{CopyGetters, Getters, Setters};
+
 use crate::compiler::{dossier::dossier_configuration::{self, DossierConfiguration}, theme::Theme};
 
-#[derive(Debug)]
+#[derive(Debug, Getters, CopyGetters, Setters)]
 pub struct AssemblerConfiguration {
+
+    #[getset(get = "pub", set = "pub")]
     output_location: PathBuf,
+
+    #[getset(get = "pub", set = "pub")]
     theme: Theme,
+
+    #[getset(get_copy = "pub", set = "pub")]
     use_remote_addons: bool,
 
+    #[getset(get_copy = "pub", set = "pub")]
     parallelization: bool,
 
 }
@@ -21,34 +30,6 @@ impl AssemblerConfiguration {
             use_remote_addons,
             parallelization
         }
-    }
-
-    pub fn output_location(&self) -> &PathBuf {
-        &self.output_location
-    }
-
-    pub fn theme(&self) -> &Theme {
-        &self.theme
-    }
-    
-    pub fn use_remote_addons(&self) -> bool {
-        self.use_remote_addons
-    }
-
-    pub fn parallelization(&self) -> bool {
-        self.parallelization
-    }
-
-    pub fn set_output_location(&mut self, value: PathBuf) {
-        self.output_location = value
-    }
-
-    pub fn set_theme(&mut self, value: Theme) {
-        self.theme = value
-    }
-
-    pub fn set_use_remote_addons(&mut self, value: bool) {
-        self.use_remote_addons = value
     }
 }
 
