@@ -1,5 +1,6 @@
 use std::path::PathBuf;
 
+use getset::{Getters, Setters};
 use serde::{Deserialize, Serialize};
 
 use crate::compiler::{parsing::parsing_configuration::list_bullet_configuration_record::{self, ListBulletConfigurationRecord}, theme::Theme};
@@ -10,16 +11,19 @@ const STYLE_PREFIX: &str = "./assets/styles";
 
 
 #[allow(dead_code)]
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize, Getters, Setters)]
 pub struct DossierConfigurationStyle {
 
     #[serde(default)]
+    #[getset(get = "pub", set = "pub")]
     theme: Theme,
 
     #[serde(default)]
+    #[getset(get = "pub", set = "pub")]
     styles: Vec<DossierConfigurationRawPathReference>,
 
     #[serde(default = "default_list_bullets")]
+    #[getset(get = "pub", set = "pub")]
     list_bullets_configuration: Vec<ListBulletConfigurationRecord> 
 }
 
@@ -28,13 +32,6 @@ fn default_list_bullets() -> Vec<ListBulletConfigurationRecord> {
 }
 
 impl DossierConfigurationStyle {
-    pub fn theme(&self) -> &Theme {
-        &self.theme
-    }
-
-    pub fn list_bullets_configuration(&self) -> &Vec<ListBulletConfigurationRecord> {
-        &self.list_bullets_configuration
-    }
 
     pub fn styles_references(&self) -> Vec<DossierConfigurationPathReference> {
 

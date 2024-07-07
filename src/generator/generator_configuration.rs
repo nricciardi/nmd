@@ -1,10 +1,24 @@
 use std::path::PathBuf;
 
+use getset::{CopyGetters, Getters, Setters};
+
+
+#[derive(Debug, Clone, Getters, CopyGetters, Setters)]
 pub struct GeneratorConfiguration {
+
+    #[getset(get = "pub", set = "pub")]
     path: PathBuf,
+
+    #[getset(get_copy = "pub", set = "pub")]
     force_generation: bool,
+
+    #[getset(get_copy = "pub", set = "pub")]
     welcome: bool,
+
+    #[getset(get_copy = "pub", set = "pub")]
     gitkeep: bool,
+
+    #[getset(get_copy = "pub", set = "pub")]
     evaluate_existing_files: bool,
 }
 
@@ -20,45 +34,6 @@ impl GeneratorConfiguration {
         }
     }
 
-    pub fn path(&self) -> &PathBuf {
-        &self.path
-    }
-
-    pub fn set_path(&mut self, new_input_path: PathBuf) {
-        self.path = new_input_path;
-    }
-
-    pub fn force_generation(&self) -> bool {
-        self.force_generation
-    }
-
-    pub fn set_force_generation(&mut self, new_force: bool) {
-        self.force_generation = new_force;
-    }
-
-    pub fn welcome(&self) -> bool {
-        self.welcome
-    }
-
-    pub fn set_welcome(&mut self, new_welcome: bool) {
-        self.welcome = new_welcome;
-    }
-
-    pub fn gitkeep(&self) -> bool {
-        self.gitkeep
-    }
-
-    pub fn set_gitkeep(&mut self, gitkeep: bool) {
-        self.gitkeep = gitkeep;
-    }
-
-    pub fn evaluate_existing_files(&self) -> bool {
-        self.evaluate_existing_files
-    }
-
-    pub fn set_evaluate_existing_files(&mut self, evaluate_existing_files: bool) {
-        self.evaluate_existing_files = evaluate_existing_files;
-    }
 }
 
 impl Default for GeneratorConfiguration {

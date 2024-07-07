@@ -40,8 +40,34 @@ pub fn create_file_with_content(file_path: &PathBuf, content: &str) -> Result<()
 }
 
 /// Generate a new file name String using passed base and extension arguments
-pub fn build_output_file_name(base: &str, ext: &str) -> String {
-    format!("{}.{}", base, ext).replace(" ", "-").to_ascii_lowercase()
+pub fn build_output_file_name(base: &str, ext: Option<&str>) -> String {
+
+    let base: Vec<char> = base.chars()
+                                .filter(|c| c.is_alphanumeric() || c.eq(&'_') || c.eq(&'-') || c.eq(&' ') || c.eq(&'.'))
+                                .map(|c| c.to_ascii_lowercase())
+                                .collect();
+
+    let base = String::from_iter(base);
+
+    let base: Vec<char> = base.trim().chars().map(|c| {
+                                    if c.eq(&' ') {
+                                        return '-';
+                                    }
+
+                                    c
+                                })
+                                .collect();
+
+    let base = String::from_iter(base);
+
+    if let Some(ext) = ext {
+
+        return format!("{}.{}", base, ext);
+
+    } else {
+
+        return base;
+    }
 }
 
 pub fn all_files_in_dir(dir_path: &PathBuf, exts: &Vec<String>) -> Result<Vec<PathBuf>, io::Error> {

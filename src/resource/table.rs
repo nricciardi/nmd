@@ -1,3 +1,5 @@
+use getset::{Getters, MutGetters, Setters};
+
 
 #[derive(Debug, Clone, Default)]
 pub enum TableCellAlignment {
@@ -16,10 +18,16 @@ pub enum TableCell {
 
 
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Getters, MutGetters, Setters)]
 pub struct Table {
+
+    #[getset(get = "pub", set = "pub")]
     header: Option<Vec<TableCell>>,
+
+    #[getset(get = "pub", get_mut = "pub", set = "pub")]
     body: Vec<Vec<TableCell>>,
+
+    #[getset(get = "pub", set = "pub")]
     footer: Option<Vec<TableCell>>
 }
 
@@ -32,32 +40,16 @@ impl Table {
         }
     }
 
-    pub fn header(&self) -> &Option<Vec<TableCell>> {
-        &self.header
-    }
-
-    pub fn body(&self) -> &Vec<Vec<TableCell>> {
-        &self.body
-    }
-
-    pub fn body_mut(&mut self) -> &mut Vec<Vec<TableCell>> {
-        &mut self.body
-    }
-
-    pub fn footer(&self) -> &Option<Vec<TableCell>> {
-        &self.footer
-    }
-
     pub fn append_to_body(&mut self, row: Vec<TableCell>) {
+        
         self.body.push(row);
     }
 
     pub fn shift_first_body_row_to_header(&mut self) {
+
         let first_row = self.body.remove(0);
 
         self.header = Some(first_row.clone());
-
-        
 
     }
 

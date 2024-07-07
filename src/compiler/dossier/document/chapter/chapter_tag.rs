@@ -1,14 +1,19 @@
 use std::str::FromStr;
 
+use getset::{Getters, Setters};
 use once_cell::sync::Lazy;
 use regex::Regex;
 
 static FROM_STR_PATTERN_REGEX: Lazy<Regex> = Lazy::new(|| Regex::new(r"@(\w+) (.*)").unwrap());
 
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Getters, Setters)]
 pub struct ChapterTag {
+
+    #[getset(get = "pub", set = "pub")]
     key: ChapterTagKey,
+
+    #[getset(get = "pub", set = "pub")]
     value: Option<String>
 }
 
@@ -37,24 +42,6 @@ impl FromStr for ChapterTagKey {
 
             _ => Err(format!("chapter key '{}' not found", s))
         }
-    }
-}
-
-impl ChapterTag {
-    pub fn key(&self) -> &ChapterTagKey {
-        &self.key
-    }
-
-    pub fn value(&self) -> &Option<String> {
-        &self.value
-    }
-
-    pub fn set_key(&mut self, key: ChapterTagKey) {
-        self.key = key
-    }
-
-    pub fn set_value(&mut self, value: Option<String>) {
-        self.value = value
     }
 }
 

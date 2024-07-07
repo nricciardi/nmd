@@ -3,6 +3,7 @@ pub mod content_tree;
 use std::sync::{Arc, RwLock};
 
 use content_tree::ContentTree;
+use getset::{CopyGetters, Getters, Setters};
 
 use crate::resource::resource_reference::ResourceReference;
 
@@ -13,13 +14,25 @@ pub const TOC_INDENTATION: &str = r#"<span class="toc-item-indentation"></span>"
 
 
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Getters, CopyGetters, Setters)]
 pub struct TableOfContents {
+
+    #[getset(get = "pub", set = "pub")]
     title: String,
+
+    #[getset(get_copy = "pub", set = "pub")]
     page_numbers: bool,
+
+    #[getset(get_copy = "pub", set = "pub")]
     plain: bool,
+
+    #[getset(get = "pub", set = "pub")]
     maximum_heading_level: usize,
+
+    #[getset(get = "pub", set = "pub")]
     headings: Vec<Heading>,
+
+    #[getset(get = "pub", set = "pub")]
     parsed_content: Option<ParsingOutcome>,
 }
 
@@ -33,26 +46,6 @@ impl TableOfContents {
             headings,
             parsed_content: None
         }
-    }
-
-    pub fn title(&self) -> &String {
-        &self.title
-    }
-
-    pub fn plain(&self) -> bool {
-        self.plain
-    }
-
-    pub fn page_numbers(&self) -> bool {
-        self.page_numbers
-    }
-
-    pub fn maximum_heading_level(&self) -> usize {
-        self.maximum_heading_level
-    }
-
-    pub fn parsed_content(&self) -> &Option<ParsingOutcome> {
-        &self.parsed_content
     }
 
     fn standard_html_parse(&mut self, plain: bool, codex: Arc<Codex>, parsing_configuration: Arc<RwLock<ParsingConfiguration>>, parsing_configuration_overlay: Arc<Option<ParsingConfigurationOverLay>>) -> Result<(), ParsingError> {

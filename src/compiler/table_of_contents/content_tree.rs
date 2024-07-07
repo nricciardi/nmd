@@ -1,5 +1,7 @@
 use std::convert::Infallible;
 
+use getset::{Getters, MutGetters, Setters};
+
 
 #[derive(Debug, Clone)]
 pub struct ContentTree<T> {
@@ -20,9 +22,13 @@ impl<T> ContentTree<T> {
 }
 
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Getters, MutGetters, Setters)]
 pub struct ContentTreeNode<T> {
+
+    #[getset(get = "pub", get_mut = "pub", set = "pub")]
     content: T,
+
+    #[getset(get = "pub", get_mut = "pub", set = "pub")]
     sub_nodes: Vec<ContentTreeNode<T>>,
 }
 
@@ -36,22 +42,6 @@ impl<T> ContentTreeNode<T> {
 
     pub fn new_leaf(content: T) -> Self {
         Self::new(content, vec![])
-    }
-
-    pub fn content(&self) -> &T {
-        &self.content
-    }
-
-    pub fn sub_nodes(&self) -> &Vec<ContentTreeNode<T>> {
-        &self.sub_nodes
-    }
-
-    pub fn sub_contents_mut(&mut self) -> &mut Vec<ContentTreeNode<T>> {
-        &mut self.sub_nodes
-    }
-
-    pub fn set_sub_nodes(&mut self, sub_contents: Vec<ContentTreeNode<T>>) {
-        self.sub_nodes = sub_contents
     }
 
     /// Return true is a leaf (`sub_contents.len() == 0`), else false
@@ -77,18 +67,20 @@ impl<T: Clone> ContentTreeNode<T> {
         contents
     }
 
-    fn walk_depth_first_rec<O, E>(node: &ContentTreeNode<T>, f: &mut dyn FnMut(&ContentTreeNode<T>, usize) -> Result<O, E>, current_lv: usize) {
+    fn walk_depth_first_rec<O, E>(node: &ContentTreeNode<T>, f: &mut dyn FnMut(&ContentTreeNode<T>, usize) -> Result<O, E>, current_lv: usize) -> Result<(), E> {
 
-        f(node, current_lv);
+        f(node, current_lv)?;
 
         if node.is_leaf() {
-            return;
+            return Ok(());
         }
 
         for sub_node in node.sub_nodes() {
 
             Self::walk_depth_first_rec(sub_node, f, current_lv + 1);
         }
+
+        Ok(())
     }
 
     pub fn walk_depth_first_applying<O, E>(&self, f: &mut dyn FnMut(&ContentTreeNode<T>, usize) -> Result<O, E>) {

@@ -217,7 +217,7 @@ impl Assembler for HtmlAssembler {
             }
         }
 
-        let document_name = file_utility::build_output_file_name(dossier.name(), "html");
+        let document_name = file_utility::build_output_file_name(dossier.name(), Some("html"));
 
         artifact.add_document(&document_name, &page.to_html_string())?;
 

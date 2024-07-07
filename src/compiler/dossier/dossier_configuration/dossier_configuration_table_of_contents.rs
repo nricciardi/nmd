@@ -1,35 +1,24 @@
+use getset::{CopyGetters, Getters, Setters};
 use serde::{Deserialize, Serialize};
 
 
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize, Getters, CopyGetters, Setters)]
 pub struct DossierConfigurationTableOfContents {
+
+    #[getset(get = "pub", set = "pub")]
     title: String,
+
+    #[getset(get_copy = "pub", set = "pub")]
     include_in_output: bool,
+
+    #[getset(get_copy = "pub", set = "pub")]
     page_numbers: bool,
+
+    #[getset(get_copy = "pub", set = "pub")]
     plain: bool,
+
+    #[getset(get_copy = "pub", set = "pub")]
     maximum_heading_level: usize,
-}
-
-impl DossierConfigurationTableOfContents {
-    pub fn title(&self) -> &String {
-        &self.title
-    }
-
-    pub fn page_numbers(&self) -> bool {
-        self.page_numbers
-    }
-
-    pub fn maximum_heading_level(&self) -> usize {
-        self.maximum_heading_level
-    }
-
-    pub fn include_in_output(&self) -> bool {
-        self.include_in_output
-    }
-
-    pub fn plain(&self) -> bool {
-        self.plain
-    }
 }
 
 impl Default for DossierConfigurationTableOfContents {

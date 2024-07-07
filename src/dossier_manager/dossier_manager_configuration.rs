@@ -1,7 +1,11 @@
 use std::path::PathBuf;
 
-#[derive(Debug)]
+use getset::{Getters, Setters};
+
+#[derive(Debug, Clone, Getters, Setters)]
 pub struct DossierManagerConfiguration {
+
+    #[getset(get = "pub", set = "pub")]
     dossier_path: PathBuf
 }
 
@@ -10,10 +14,6 @@ impl DossierManagerConfiguration {
         Self {
             dossier_path
         }
-    }
-
-    pub fn dossier_path(&self) -> &PathBuf {
-        &self.dossier_path
     }
 }
 

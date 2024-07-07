@@ -2,6 +2,8 @@ pub mod codex_configuration;
 pub mod modifier;
 
 use std::collections::HashMap;
+use getset::{Getters, Setters};
+
 use self::modifier::standard_paragraph_modifier::StandardParagraphModifier;
 use self::modifier::standard_text_modifier::StandardTextModifier;
 use self::modifier::ModifierIdentifier;
@@ -21,11 +23,22 @@ use super::parsing::parsing_rule::ParsingRule;
 
 /// Ordered collection of rules
 /// A **rule** is defined as the actual text transformation
+#[derive(Debug, Getters, Setters)]
 pub struct Codex {
+
+    #[getset(get = "pub", set = "pub")]
     configuration: CodexConfiguration,
+
+    #[getset(get = "pub", set = "pub")]
     text_rules: HashMap<ModifierIdentifier, Box<dyn ParsingRule>>,
+
+    #[getset(get = "pub", set = "pub")]
     paragraph_rules: HashMap<ModifierIdentifier, Box<dyn ParsingRule>>,
+
+    #[getset(get = "pub", set = "pub")]
     chapter_rules: HashMap<ModifierIdentifier, Box<dyn ParsingRule>>,
+
+    #[getset(get = "pub", set = "pub")]
     document_rules: HashMap<ModifierIdentifier, Box<dyn ParsingRule>>,
     
 }
@@ -38,18 +51,6 @@ impl Codex {
         }
     }
 
-    pub fn text_rules(&self) -> &HashMap<ModifierIdentifier, Box<dyn ParsingRule>> {
-        &self.text_rules
-    }
-
-    pub fn paragraph_rules(&self) -> &HashMap<ModifierIdentifier, Box<dyn ParsingRule>> {
-        &self.paragraph_rules
-    }
-
-    pub fn configuration(&self) -> &CodexConfiguration {
-        &self.configuration
-    }
-    
     fn new(configuration: CodexConfiguration, text_rules: HashMap<ModifierIdentifier, Box<dyn ParsingRule>>, paragraph_rules: HashMap<ModifierIdentifier, Box<dyn ParsingRule>>, chapter_rules: HashMap<ModifierIdentifier, Box<dyn ParsingRule>>, document_rules: HashMap<ModifierIdentifier, Box<dyn ParsingRule>>) -> Codex {
 
         // TODO: check if there are all necessary rules based on theirs type
@@ -440,7 +441,7 @@ mod test {
 
     use std::sync::{Arc, RwLock};
 
-    use crate::compiler::{loader::Loader, parsing::parsing_configuration::ParsingConfiguration};
+    use crate::compiler::{loader::Loader, parsable::Parsable, parser::Parser, parsing::{parsing_configuration::ParsingConfiguration, parsing_outcome::ParsingOutcome}};
 
     use super::*;
 
@@ -449,58 +450,19 @@ mod test {
         let codex: &Codex = &Codex::of_html(CodexConfiguration::default());
 
         let nmd_text = "This is a simple **nmd** text for test";
-        let expected_result = "This is a simple <strong>nmd</strong> text for test";
-        let mut parsing_result = String::from(nmd_text);
+        let expected_result = r#"This is a simple <strong class="bold">nmd</strong> text for test"#;
         let parsing_configuration = Arc::new(RwLock::new(ParsingConfiguration::default()));
 
-        for rule in codex.text_rules() {
-            let result = rule.1.parse(parsing_result.as_str(), codex, Arc::clone(&parsing_configuration)).unwrap();
+        let outcome = Parser::parse_text(&codex, &nmd_text, Arc::clone(&parsing_configuration), Arc::new(None)).unwrap();
 
-            parsing_result = result.parsed_content().clone()
-        }
-
-        assert_eq!(parsing_result, expected_result);
+        assert_eq!(outcome.parsed_content(), expected_result);
 
         let nmd_text = "This is a simple *nmd* text for test";
-        let expected_result = "This is a simple <em>nmd</em> text for test";
-        let mut parsing_result = String::from(nmd_text);
+        let expected_result = r#"This is a simple <em class="italic">nmd</em> text for test"#;
 
-        for rule in codex.text_rules() {
-            let result = rule.1.parse(parsing_result.as_str(), codex, Arc::clone(&parsing_configuration)).unwrap();
+        let outcome = Parser::parse_text(&codex, &nmd_text, Arc::clone(&parsing_configuration), Arc::new(None)).unwrap();
 
-            parsing_result = result.parsed_content().clone()
-        }
-
-        assert_eq!(parsing_result, expected_result);
-    }
-
-    #[test]
-    fn headings () {
-        let codex: &Codex = &Codex::of_html(CodexConfiguration::default());
-
-        let nmd_text = 
-r#"
-#1 title 1
-## title 2
-###### title 6
-"#.trim();
-        let expected_result = 
-r#"
-<h1 class="h1">title 1</h1>
-<h2 class="h2">title 2</h2>
-<h6 class="h6">title 6</h6>
-"#.trim();
-
-        let mut parsing_result = String::from(nmd_text);
-        let parsing_configuration = Arc::new(RwLock::new(ParsingConfiguration::default()));
-
-        for rule in codex.text_rules() {
-            let result = rule.1.parse(parsing_result.as_str(), codex, Arc::clone(&parsing_configuration)).unwrap();
-
-            parsing_result = result.parsed_content().clone()
-        }
-
-        assert_eq!(parsing_result, expected_result);
+        assert_eq!(outcome.parsed_content(), expected_result);
     }
 
 

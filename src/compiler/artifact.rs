@@ -2,6 +2,7 @@ pub mod artifact_assets;
 
 use std::path::PathBuf;
 
+use getset::{Getters, Setters};
 use rayon::iter::{IntoParallelRefMutIterator, ParallelIterator};
 use thiserror::Error;
 
@@ -25,9 +26,16 @@ pub enum ArtifactError {
 
 
 /// Final compilation result
+#[derive(Debug, Getters, Setters)]
 pub struct Artifact {
+
+    #[getset(get = "pub", set = "pub")]
     assets: Option<ArtifactAssets>,
+
+    #[getset(get = "pub", set = "pub")]
     documents: Vec<CachedDiskResource>,
+
+    #[getset(get = "pub", set = "pub")]
     output_path: PathBuf
 }
 
@@ -46,18 +54,6 @@ impl Artifact {
             documents: Vec::new(),
             output_path
         })
-    }
-
-    pub fn assets(&self) -> &Option<ArtifactAssets> {
-        &self.assets
-    }
-
-    pub fn documents(&self) -> &Vec<CachedDiskResource> {
-        &self.documents
-    }
-
-    fn set_documents(&mut self, documents: Vec<CachedDiskResource>) -> () {
-        self.documents = documents
     }
 
     pub fn add_document(&mut self, document_name: &String, document_content: &String) -> Result<(), ArtifactError> {
