@@ -4,7 +4,7 @@ use std::sync::{Arc, RwLock};
 
 use crate::compiler::codex::Codex;
 
-use super::{output_format::OutputFormat, parsing::{parsing_configuration::{parsing_configuration_overlay::ParsingConfigurationOverLay, ParsingConfiguration}, parsing_error::ParsingError, parsing_metadata::ParsingMetadata}};
+use super::{output_format::OutputFormat, parsing::{parsing_configuration::{parsing_configuration_overlay::ParsingConfigurationOverLay, ParsingConfiguration}, parsing_error::ParsingError}};
 
 
 pub trait Parsable {

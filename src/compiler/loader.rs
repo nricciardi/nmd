@@ -1,11 +1,10 @@
-use std::borrow::Borrow;
 use std::collections::HashSet;
-use std::{cmp, io};
+use std::io;
 use std::path::PathBuf;
 use std::str::FromStr;
 
 use once_cell::sync::Lazy;
-use rayon::iter::{IndexedParallelIterator, IntoParallelIterator, IntoParallelRefIterator, ParallelBridge, ParallelIterator};
+use rayon::iter::{IndexedParallelIterator, IntoParallelRefIterator, ParallelIterator};
 use rayon::slice::ParallelSliceMut;
 use regex::Regex;
 use thiserror::Error;
@@ -137,7 +136,7 @@ impl Loader {
 
             log::debug!("load chapter {:?}", chapter_borders[index]);
 
-            let start = chapter_borders[index].0;
+            let _start = chapter_borders[index].0;
             let end = chapter_borders[index].1;
             let raw_content = &chapter_borders[index].2;
 

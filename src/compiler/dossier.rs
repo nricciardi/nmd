@@ -1,19 +1,19 @@
 pub mod document;
 pub mod dossier_configuration;
 
-use std::{borrow::{Borrow, BorrowMut}, path::PathBuf, sync::{Arc, RwLock}, time::Instant};
+use std::{sync::{Arc, RwLock}, time::Instant};
 
-use document::chapter::{self, heading::Heading};
+use document::chapter::heading::Heading;
 pub use document::{Document, DocumentError};
 use getset::{Getters, Setters};
-use rayon::{iter::{IntoParallelRefMutIterator, ParallelIterator}, slice::IterMut};
+use rayon::iter::{IntoParallelRefMutIterator, ParallelIterator};
 use thiserror::Error;
 
-use crate::{compiler::table_of_contents::content_tree::{ContentTree, ContentTreeNode}, resource::ResourceError};
+use crate::resource::ResourceError;
 
 use self::dossier_configuration::DossierConfiguration;
 
-use super::{bibliography::Bibliography, codex::Codex, output_format::OutputFormat, parsable::Parsable, parsing::{parsing_configuration::{parsing_configuration_overlay::ParsingConfigurationOverLay, ParsingConfiguration}, parsing_error::ParsingError, parsing_metadata::ParsingMetadata}, table_of_contents::TableOfContents};
+use super::{bibliography::Bibliography, codex::Codex, output_format::OutputFormat, parsable::Parsable, parsing::{parsing_configuration::{parsing_configuration_overlay::ParsingConfigurationOverLay, ParsingConfiguration}, parsing_error::ParsingError}, table_of_contents::TableOfContents};
 
 
 pub const ASSETS_DIR: &str = "assets";

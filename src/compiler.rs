@@ -212,7 +212,7 @@ impl Compiler {
 
                                 let compilation_configuration = compilation_configuration.clone();
     
-                                let thread_res = thread::spawn(|| {
+                                let _thread_res = thread::spawn(|| {
                                     let compilation_result = Self::compile_dossier(compilation_configuration);
     
                                     match compilation_result {

@@ -105,7 +105,7 @@ impl Debug for ReplacementRule<String> {
 impl ParsingRule for ReplacementRule<String> {
 
     /// Parse the content using internal search and replacement pattern
-    fn standard_parse(&self, content: &str, codex: &Codex, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError> {
+    fn standard_parse(&self, content: &str, _codex: &Codex, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError> {
 
         log::debug!("parsing:\n{}\nusing '{}'->'{:?}' (newline fix: {}, id_at: {:?})", content, self.search_pattern(), self.replacer_parts, self.newline_fix_pattern.is_some(), self.reference_at);
 
@@ -202,7 +202,7 @@ impl<F> ParsingRule for ReplacementRule<F>
 where F: 'static + Sync + Send + Fn(&Captures) -> String {
 
     /// Parse the content using internal search and replacement pattern
-    fn standard_parse(&self, content: &str, codex: &Codex, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError> {
+    fn standard_parse(&self, content: &str, _codex: &Codex, _parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError> {
 
         log::debug!("parsing:\n{}\nusing '{}' (newline fix: {}, id_at: {:?})", content, self.search_pattern(), self.newline_fix_pattern.is_some(), self.reference_at);
 

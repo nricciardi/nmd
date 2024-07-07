@@ -1,12 +1,9 @@
-use std::str::FromStr;
-
 use getset::{Getters, Setters};
 use once_cell::sync::Lazy;
 use regex::Regex;
-use serde::de::value;
 use thiserror::Error;
 
-use crate::{compiler::dossier::document, resource::remote_resource::RemoteResource, utility::file_utility};
+use crate::{resource::remote_resource::RemoteResource, utility::file_utility};
 
 static OF_INTERNAL_RESOURCE_REGEX: Lazy<Regex> = Lazy::new(|| Regex::new(r"(.*)?#(.*)").unwrap());
 

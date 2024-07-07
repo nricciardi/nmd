@@ -1,13 +1,13 @@
 pub mod bibliography_record;
 
-use std::{collections::{BTreeMap, HashMap}, sync::{Arc, RwLock}};
+use std::{collections::BTreeMap, sync::{Arc, RwLock}};
 
 use bibliography_record::BibliographyRecord;
 use getset::{Getters, Setters};
 
 use crate::resource::resource_reference::{ResourceReference, ResourceReferenceError};
 
-use super::{codex::Codex, dossier::{self, document::chapter::heading::Heading, dossier_configuration::dossier_configuration_bibliography::DossierConfigurationBibliography, Dossier}, output_format::OutputFormat, parsable::Parsable, parser::Parser, parsing::{parsing_configuration::{parsing_configuration_overlay::ParsingConfigurationOverLay, ParsingConfiguration}, parsing_error::ParsingError, parsing_outcome::ParsingOutcome}};
+use super::{codex::Codex, dossier::dossier_configuration::dossier_configuration_bibliography::DossierConfigurationBibliography, output_format::OutputFormat, parsable::Parsable, parser::Parser, parsing::{parsing_configuration::{parsing_configuration_overlay::ParsingConfigurationOverLay, ParsingConfiguration}, parsing_error::ParsingError, parsing_outcome::ParsingOutcome}};
 
 
 pub const BIBLIOGRAPHY_FICTITIOUS_DOCUMENT: &str = "bibliography";
@@ -56,7 +56,7 @@ impl Bibliography {
 }
 
 impl Parsable for Bibliography {
-    fn standard_parse(&mut self, format: &OutputFormat, codex: Arc<Codex>, parsing_configuration: Arc<RwLock<ParsingConfiguration>>, parsing_configuration_overlay: Arc<Option<ParsingConfigurationOverLay>>) -> Result<(), ParsingError> {
+    fn standard_parse(&mut self, _format: &OutputFormat, codex: Arc<Codex>, parsing_configuration: Arc<RwLock<ParsingConfiguration>>, parsing_configuration_overlay: Arc<Option<ParsingConfigurationOverLay>>) -> Result<(), ParsingError> {
         
         log::info!("parsing bibliography...");
 

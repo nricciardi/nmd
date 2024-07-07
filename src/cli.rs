@@ -3,7 +3,6 @@
 use std::collections::HashSet;
 use std::{path::PathBuf, str::FromStr};
 
-use clap::builder::OsStr;
 use clap::{Arg, ArgAction, ArgMatches, Command};
 use crate::compiler::Compiler;
 use crate::compiler::{output_format::OutputFormatError, CompilationError};

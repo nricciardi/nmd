@@ -2,8 +2,6 @@ use std::fs::{self, File};
 use std::io::{self, Read, Write};
 use std::path::{Path, PathBuf};
 
-use clap::builder::OsStr;
-
 
 /// Return entirely file content 
 pub fn read_file_content(file_path_buf: &PathBuf) -> Result<String, io::Error> {

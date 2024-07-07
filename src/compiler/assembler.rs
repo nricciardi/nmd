@@ -4,7 +4,7 @@ use crate::resource::ResourceError;
 
 use self::{html_assembler::HtmlAssembler, assembler_configuration::AssemblerConfiguration};
 
-use super::{artifact::{Artifact, ArtifactError}, codex::Codex, dossier::{Document, Dossier}, output_format::OutputFormat, parsable::parsed_content_accessor::ParsedContentAccessor, parsing::parsing_error::ParsingError};
+use super::{artifact::{Artifact, ArtifactError}, dossier::{Document, Dossier}, output_format::OutputFormat, parsing::parsing_error::ParsingError};
 
 pub mod html_assembler;
 pub mod assembler_configuration;

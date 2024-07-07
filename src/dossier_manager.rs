@@ -2,7 +2,7 @@ use std::{io, path::PathBuf};
 
 use thiserror::Error;
 
-use crate::{compiler::{dossier::{dossier_configuration::{self, DossierConfiguration}, Dossier}, loader::Loader}, constants::{DOSSIER_CONFIGURATION_YAML_FILE_NAME, NMD_EXTENSION}, resource::ResourceError, utility::file_utility};
+use crate::{compiler::dossier::dossier_configuration::DossierConfiguration, constants::{DOSSIER_CONFIGURATION_YAML_FILE_NAME, NMD_EXTENSION}, resource::ResourceError, utility::file_utility};
 
 use self::dossier_manager_configuration::DossierManagerConfiguration;
 

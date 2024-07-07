@@ -6,7 +6,7 @@ use build_html::TableRow as HtmlTableRow;
 use once_cell::sync::Lazy;
 use regex::Regex;
 
-use crate::{compiler::{codex::{modifier::{constants::IDENTIFIER_PATTERN, standard_paragraph_modifier::StandardParagraphModifier, standard_text_modifier::StandardTextModifier}, Codex}, parser::Parser, parsing::{parsing_configuration::ParsingConfiguration, parsing_error::ParsingError, parsing_outcome::ParsingOutcome}}, resource::{resource_reference::ResourceReference, table::{self, Table, TableCell, TableCellAlignment}}};
+use crate::{compiler::{codex::{modifier::{constants::IDENTIFIER_PATTERN, standard_paragraph_modifier::StandardParagraphModifier}, Codex}, parser::Parser, parsing::{parsing_configuration::ParsingConfiguration, parsing_error::ParsingError, parsing_outcome::ParsingOutcome}}, resource::{resource_reference::ResourceReference, table::{Table, TableCell, TableCellAlignment}}};
 
 use super::ParsingRule;
 
@@ -389,7 +389,7 @@ impl ParsingRule for HtmlTableRule {
 mod test {
     use std::sync::{Arc, RwLock};
 
-    use crate::compiler::{codex::{self, codex_configuration::CodexConfiguration, Codex}, parsing::{parsing_configuration::ParsingConfiguration, parsing_rule::ParsingRule}};
+    use crate::compiler::{codex::{codex_configuration::CodexConfiguration, Codex}, parsing::{parsing_configuration::ParsingConfiguration, parsing_rule::ParsingRule}};
 
     use super::HtmlTableRule;
 

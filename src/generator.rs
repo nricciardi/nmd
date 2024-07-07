@@ -1,6 +1,6 @@
 pub mod generator_configuration;
 
-use std::{collections::{HashMap, HashSet}, fs, path::PathBuf};
+use std::{collections::HashMap, fs, path::PathBuf};
 use once_cell::sync::Lazy;
 use regex::Regex;
 

@@ -1,7 +1,8 @@
-use std::{fs::File, io::{Cursor, Read}, path::PathBuf, str::FromStr};
+use std::{io::Cursor, path::PathBuf, str::FromStr};
 
 use base64::{engine::general_purpose::STANDARD, Engine};
-use image::{codecs::jpeg, DynamicImage, ImageOutputFormat};
+use getset::{Getters, Setters};
+use image::{DynamicImage, ImageOutputFormat};
 use oxipng::Options;
 
 use super::ResourceError;
@@ -9,8 +10,13 @@ use image::io::Reader as ImageReader;
 
 
 /// Image resource to manipulate images
+#[derive(Debug, Getters, Setters)]
 pub struct ImageResource {
+
+    #[getset(get = "pub", set = "pub")]
     src: PathBuf,
+
+    #[getset(get = "pub", set = "pub")]
     image: DynamicImage,
 }
 
@@ -111,11 +117,11 @@ impl FromStr for ImageResource {
 
 #[cfg(test)]
 mod test {
-    use std::{fs::File, io::{Cursor, Read}, path::PathBuf};
+    // use std::{fs::File, io::{Cursor, Read}, path::PathBuf};
 
-    use image::ImageOutputFormat;
+    // use image::ImageOutputFormat;
 
-    use crate::resource::image_resource::ImageResource;
+    // use crate::resource::image_resource::ImageResource;
 
 
     #[test]

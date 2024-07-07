@@ -1,4 +1,4 @@
-use std::{collections::HashMap, fmt::Debug, sync::{Arc, RwLock}};
+use std::{fmt::Debug, sync::{Arc, RwLock}};
 
 use regex::{Captures, Regex};
 
@@ -33,7 +33,7 @@ impl ParsingRule for ReferenceRule {
         &self.search_pattern
     }
 
-    fn standard_parse(&self, content: &str, codex: &Codex, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError> {
+    fn standard_parse(&self, content: &str, _codex: &Codex, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError> {
         
         let parsed_content = self.search_pattern_regex.replace_all(content, |capture: &Captures| {
 

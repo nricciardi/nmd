@@ -32,8 +32,8 @@ impl Parser {
     }
 
     /// Parse a text (string) using `Codex` rules and `ParsingConfiguration` options, excluding a set of modifiers
-    pub fn parse_text_excluding_modifiers(codex: &Codex, content: &str, mut excluded_modifiers: ModifiersBucket, 
-        parsing_configuration: Arc<RwLock<ParsingConfiguration>>, parsing_configuration_overlay: Arc<Option<ParsingConfigurationOverLay>>) -> Result<ParsingOutcome, ParsingError> {
+    pub fn parse_text_excluding_modifiers(codex: &Codex, content: &str, excluded_modifiers: ModifiersBucket, 
+        parsing_configuration: Arc<RwLock<ParsingConfiguration>>, _parsing_configuration_overlay: Arc<Option<ParsingConfigurationOverLay>>) -> Result<ParsingOutcome, ParsingError> {
 
         log::debug!("start to parse content:\n{}\nexcluding: {:?}", content, excluded_modifiers);
 

@@ -37,7 +37,7 @@ impl FromStr for RemoteResource {
             Ok(url) => Ok(Self {
                 url
             }),
-            Err(e) => Err(ResourceError::InvalidResourceVerbose(format!("{} is an invalid url", url)))
+            Err(_) => Err(ResourceError::InvalidResourceVerbose(format!("{} is an invalid url", url)))
         }
         
     }
@@ -46,11 +46,11 @@ impl FromStr for RemoteResource {
 impl Resource for RemoteResource {
     type LocationType = Url;
 
-    fn write(&mut self, content: &str) -> Result<(), super::ResourceError> {
+    fn write(&mut self, _content: &str) -> Result<(), super::ResourceError> {
         todo!()
     }
 
-    fn append(&mut self, content: &str) -> Result<(), super::ResourceError> {
+    fn append(&mut self, _content: &str) -> Result<(), super::ResourceError> {
         todo!()
     }
 

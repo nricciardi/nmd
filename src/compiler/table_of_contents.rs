@@ -1,13 +1,8 @@
 pub mod content_tree;
 
 use std::sync::{Arc, RwLock};
-
-use content_tree::ContentTree;
 use getset::{CopyGetters, Getters, Setters};
-
-use crate::resource::resource_reference::ResourceReference;
-
-use super::{codex::Codex, dossier::{self, document::chapter::heading::Heading, Dossier}, output_format::OutputFormat, parsable::Parsable, parser::Parser, parsing::{parsing_configuration::{parsing_configuration_overlay::ParsingConfigurationOverLay, ParsingConfiguration}, parsing_error::ParsingError, parsing_outcome::ParsingOutcome}};
+use super::{codex::Codex, dossier::document::chapter::heading::Heading, output_format::OutputFormat, parsable::Parsable, parser::Parser, parsing::{parsing_configuration::{parsing_configuration_overlay::ParsingConfigurationOverLay, ParsingConfiguration}, parsing_error::ParsingError, parsing_outcome::ParsingOutcome}};
 
 
 pub const TOC_INDENTATION: &str = r#"<span class="toc-item-indentation"></span>"#;

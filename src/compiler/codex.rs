@@ -441,7 +441,7 @@ mod test {
 
     use std::sync::{Arc, RwLock};
 
-    use crate::compiler::{loader::Loader, parsable::Parsable, parser::Parser, parsing::{parsing_configuration::ParsingConfiguration, parsing_outcome::ParsingOutcome}};
+    use crate::compiler::{loader::Loader, parser::Parser, parsing::parsing_configuration::ParsingConfiguration};
 
     use super::*;
 

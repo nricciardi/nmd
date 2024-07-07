@@ -58,11 +58,11 @@ impl<T: Clone> ContentTreeNode<T> {
     pub fn walk_depth_first(&self) -> Vec<T> {
         let mut contents: Vec<T> = Vec::new();
 
-        Self::walk_depth_first_rec(&self, &mut |node: &ContentTreeNode<T>, current_lv: usize| -> Result<(), Infallible> {
+        Self::walk_depth_first_rec(&self, &mut |node: &ContentTreeNode<T>, _current_lv: usize| -> Result<(), Infallible> {
             contents.push(node.content().clone());
 
             Ok(())
-        }, 0);
+        }, 0).unwrap();
 
         contents
     }
@@ -77,14 +77,16 @@ impl<T: Clone> ContentTreeNode<T> {
 
         for sub_node in node.sub_nodes() {
 
-            Self::walk_depth_first_rec(sub_node, f, current_lv + 1);
+            Self::walk_depth_first_rec(sub_node, f, current_lv + 1)?;
         }
 
         Ok(())
     }
 
-    pub fn walk_depth_first_applying<O, E>(&self, f: &mut dyn FnMut(&ContentTreeNode<T>, usize) -> Result<O, E>) {
-        Self::walk_depth_first_rec(&self, f, 0);
+    pub fn walk_depth_first_applying<O, E>(&self, f: &mut dyn FnMut(&ContentTreeNode<T>, usize) -> Result<O, E>) -> Result<(), E> {
+        Self::walk_depth_first_rec(&self, f, 0)?;
+
+        Ok(())
     }
 }
 
