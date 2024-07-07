@@ -1,3 +1,5 @@
+![Logo](logo/logo.png)
+
 # New MarkDown [BETA]
 
 **New way to write in markdown**
