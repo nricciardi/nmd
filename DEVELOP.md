@@ -37,17 +37,10 @@
 - [x] Table of contents without page numbers
 - [x] Bibliography
 
-### Known issues
-
-- [x] `nmd dossier add` transform relative paths to absolute paths
-- [x] `nmd dossier add` save only 2 paths
-- [x] Chapter body are not parsed on Windows
-- [ ] `* words *` works
-- [x] Table footer doesn't use `tfoot` in HTML format (caused by `build_html` crate)
-
 ### Planned Features
 
 - [ ] All modifiers
+- [ ] `* words *`
 - [x] Use `getset` crate
 - [ ] embed_remote_image
 - [ ] Possibility to use a different dossier configuration name

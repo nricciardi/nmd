@@ -46,8 +46,8 @@ pub struct DossierConfigurationCompilation {
 impl Default for DossierConfigurationCompilation {
     fn default() -> Self {
         Self {
-            embed_local_image: true,
-            embed_remote_image: true,
+            embed_local_image: false,
+            embed_remote_image: false,
             compress_embed_image: false,
             strict_image_src_check: true,
             parallelization: true,

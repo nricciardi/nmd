@@ -29,6 +29,7 @@ NMD stands for **New MarkDown**, or for friends, *Nicola MarkDown* (if Stephen B
         - [HTML](#html)
   - [Develop](#develop)
   - [NMD Syntax](#nmd-syntax)
+    - [Known issues](#known-issues)
   - [Author](#author)
   - [Contributing](#contributing)
   - [License](#license)
@@ -175,6 +176,11 @@ Develop [check list](DEVELOP.md)
 
 > [!WARNING]
 > NMD syntax is working in progress yet, you can contribute following [contribution guidelines](CONTRIBUTING.md)!
+
+
+### Known issues
+
+Embed SVG images is not support. 
 
 ## Author
 

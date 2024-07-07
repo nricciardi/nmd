@@ -25,7 +25,7 @@ impl Default for DossierConfigurationTableOfContents {
     fn default() -> Self {
         Self {
             title: String::from("Table of contents"),
-            include_in_output: false,
+            include_in_output: true,
             page_numbers: false,
             plain: false,
             maximum_heading_level: 4
