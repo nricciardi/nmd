@@ -5,7 +5,7 @@
 **New way to write in markdown**
 
 [![License](https://img.shields.io/badge/license-GPL3-green.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v0.33.2-blue.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-v0.33.3-blue.svg)](CHANGELOG.md)
 
 NMD stands for **New MarkDown**, or for friends, *Nicola MarkDown* (if Stephen Bourne can name a shell, why can't I name mine NMD?)
 
@@ -29,7 +29,6 @@ NMD stands for **New MarkDown**, or for friends, *Nicola MarkDown* (if Stephen B
         - [HTML](#html)
   - [Develop](#develop)
   - [NMD Syntax](#nmd-syntax)
-    - [Known issues](#known-issues)
   - [Author](#author)
   - [Contributing](#contributing)
   - [License](#license)
@@ -177,10 +176,6 @@ Develop [check list](DEVELOP.md)
 > [!WARNING]
 > NMD syntax is working in progress yet, you can contribute following [contribution guidelines](CONTRIBUTING.md)!
 
-
-### Known issues
-
-Embed SVG images is not support. 
 
 ## Author
 
