@@ -198,7 +198,7 @@ impl FromStr for ImageResource {
     type Err = ResourceError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(Self::new(PathBuf::from(s), None, None))
+        Ok(Self::new(PathBuf::from(s), None, None).inferring_mime_type()?)
     }
 }
 
