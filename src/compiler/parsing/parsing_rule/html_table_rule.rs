@@ -6,9 +6,9 @@ use build_html::TableRow as HtmlTableRow;
 use once_cell::sync::Lazy;
 use regex::Regex;
 
-use crate::{compiler::{codex::{modifier::{constants::IDENTIFIER_PATTERN, standard_paragraph_modifier::StandardParagraphModifier}, Codex}, parser::Parser, parsing::{parsing_configuration::ParsingConfiguration, parsing_error::ParsingError, parsing_outcome::ParsingOutcome}}, resource::{resource_reference::ResourceReference, table::{Table, TableCell, TableCellAlignment}}};
+use crate::{compiler::{codex::{modifier::{constants::IDENTIFIER_PATTERN, standard_paragraph_modifier::StandardParagraphModifier}, Codex}, parser::Parser, parsing::{parsing_configuration::ParsingConfiguration, parsing_error::ParsingError, parsing_outcome::ParsingOutcome}}, resource::{resource_reference::ResourceReference, table::{Table, TableCell, TableCellAlignment}}, utility::text_utility};
 
-use super::ParsingRule;
+use super::{constants::ESCAPE_HTML, ParsingRule};
 
 
 /// (caption, id, style)
@@ -158,12 +158,16 @@ impl HtmlTableRule {
                         TableCellAlignment::Right => String::from("table-right-cell"),
                     };
 
+                    let content = Parser::parse_text(codex, content, Arc::clone(&parsing_configuration), Arc::new(None))?.parsed_content();
+
+                    let content = text_utility::replace(&content, &ESCAPE_HTML);
+
                     html_row.add_cell(
                         HtmlTableCell::new(build_html::TableCellType::Data)
                                     .with_attributes(vec![
                                         ("class", format!("table-cell {}", align_class).as_str())
                                     ])
-                                    .with_raw(Parser::parse_text(codex, content, Arc::clone(&parsing_configuration), Arc::new(None))?.parsed_content())
+                                    .with_raw(content)
                     );       
                 },
             }

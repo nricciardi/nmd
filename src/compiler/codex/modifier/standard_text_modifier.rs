@@ -2,8 +2,7 @@ use super::{base_modifier::BaseModifier, constants::NEW_LINE, modifiers_bucket::
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum StandardTextModifier {
-
-    // CONTENT MODIFIERs
+    
     BoldStarVersion,
     BoldUnderscoreVersion,
     ItalicStarVersion,

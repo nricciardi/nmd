@@ -257,7 +257,9 @@ impl Assembler for HtmlAssembler {
                         div_chapter = div_chapter.with_attributes(vec![("class", tag.value().as_ref().unwrap().as_str())])
                     },
 
-                    _ => ()
+                    _ => {
+                        log::warn!("chapter tag key not supported yet")
+                    }
                 }
             }
 
@@ -275,7 +277,13 @@ impl Assembler for HtmlAssembler {
             for paragraph in chapter.paragraphs() {
                 if let Some(parsed_content) = paragraph.parsed_content().as_ref() {
 
-                    div_chapter_content.push_str(&parsed_content.parsed_content());
+                    let parsed_content = parsed_content.parsed_content();
+
+                    if parsed_content.is_empty() {
+                        continue;
+                    }
+
+                    div_chapter_content.push_str(&parsed_content);
     
                 } else {
                     return Err(AssemblerError::ParsedContentNotFound)

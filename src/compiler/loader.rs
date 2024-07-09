@@ -268,6 +268,11 @@ impl Loader {
                     return
                 }
 
+                if matched_str.is_empty() {
+                    log::debug!("paragraph discarded because empty");
+                    return;
+                }
+
                 let paragraph = Paragraph::new(matched_str, paragraph_modifier.identifier().clone());
 
                 if !paragraph.contains_only_newlines() {

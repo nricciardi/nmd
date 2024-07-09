@@ -1,6 +1,6 @@
 use thiserror::Error;
 
-use crate::resource::resource_reference::ResourceReferenceError;
+use crate::resource::{resource_reference::ResourceReferenceError, ResourceError};
 
 #[derive(Error, Debug)]
 pub enum ParsingError {
@@ -18,6 +18,9 @@ pub enum ParsingError {
 
     #[error(transparent)]
     ReferenceError(#[from] ResourceReferenceError),
+
+    #[error(transparent)]
+    ResourceError(#[from] ResourceError),
 
     #[error("unknown error occurs")]
     Unknown,

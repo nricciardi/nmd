@@ -1,9 +1,11 @@
-use std::{io::Cursor, path::PathBuf, str::FromStr};
+use std::{fs::File, io::{Cursor, Read}, path::PathBuf, str::FromStr};
 
 use base64::{engine::general_purpose::STANDARD, Engine};
 use getset::{Getters, Setters};
-use image::{DynamicImage, ImageOutputFormat};
+use image::{error::UnsupportedError, DynamicImage, ImageOutputFormat};
 use oxipng::Options;
+
+use crate::compiler::dossier;
 
 use super::ResourceError;
 use image::io::Reader as ImageReader;
@@ -17,10 +19,85 @@ pub struct ImageResource {
     src: PathBuf,
 
     #[getset(get = "pub", set = "pub")]
-    image: DynamicImage,
+    mime_type: Option<String>,
+
+    #[getset(get = "pub", set = "pub")]
+    caption: Option<String>,
+
+    #[getset(get = "pub", set = "pub")]
+    label: Option<String>,
+
+    // #[getset(get = "pub", set = "pub")]
+    // image: DynamicImage,
 }
 
 impl ImageResource {
+
+    pub fn new(src: PathBuf, caption: Option<String>, label: Option<String>) -> Self {
+
+        Self {
+            src,
+            mime_type: None,
+            caption,
+            label
+        }
+    }
+
+    pub fn inferring_mime_type(mut self) -> Result<Self, ResourceError> {
+
+        let mime_type = infer::get_from_path(&self.src)?;
+
+        if let Some(t) = mime_type {
+
+            let mut mime_type = t.mime_type().to_string();
+
+            // work-around svg+xml
+            if mime_type.contains("text/xml") {
+                mime_type = String::from("image/svg+xml");
+            }
+
+            self.set_mime_type(Some(mime_type));
+
+            return Ok(self);
+
+        } else {
+            return Err(ResourceError::InvalidResourceVerbose(format!("image {:?} mime type not found", self.src)));
+        }
+    }
+
+    pub fn elaborating_relative_path(mut self, base_location: &PathBuf) -> Self {
+        if self.src().is_relative() {
+
+            self.set_src(base_location.join(self.src()));
+
+            if !self.src().exists() {
+
+                log::debug!("{:?} not found, try adding images directory path", self.src());
+
+                let image_file_name = self.src().file_name().unwrap();
+
+                self.set_src(base_location.join(dossier::ASSETS_DIR).join(dossier::IMAGES_DIR).join(image_file_name));
+            }
+        }
+
+        self
+    }
+
+    // pub fn try_guess_format(&mut self) -> Result<(), ResourceError> {
+
+    //     let image_res = ImageReader::open(self.src.clone());
+
+    //     if let Ok(img) = image_res {
+    //         if let Ok(img) = img.with_guessed_format() {
+
+    //             self.mime_type = Some(img.format().unwrap().to_mime_type().to_string());
+
+    //             return Ok(());
+    //         }
+    //     }
+
+    //     Err(ResourceError::InvalidResourceVerbose(format!("unrecognized format image {:?}", self.src)))
+    // }
 
     /// Encode image in base64
     pub fn to_base64(&self, compression: bool) -> Result<String, ResourceError> {
@@ -51,11 +128,17 @@ impl ImageResource {
 
     pub fn to_vec_u8(&self) -> Result<Vec<u8>, ResourceError> {
 
-        let mut buffer: Vec<u8> = Vec::new();
+        // let mut buffer: Vec<u8> = Vec::new();
 
-        self.image.write_to(&mut Cursor::new(&mut buffer), ImageOutputFormat::Png)?;
+        // self.image.write_to(&mut Cursor::new(&mut buffer), ImageOutputFormat::Png)?;
 
-        Ok(buffer)
+        // Ok(buffer)
+
+        let mut image_file = File::open(self.src.clone())?;
+        let mut raw_image: Vec<u8> = Vec::new();
+        image_file.read_to_end(&mut raw_image)?;
+
+        Ok(raw_image)
     }
 
     /// Check if a PathBuf is an image
@@ -71,47 +154,51 @@ impl ImageResource {
     }
 }
 
-impl TryFrom<PathBuf> for ImageResource {
-    type Error = ResourceError;
+// impl TryFrom<PathBuf> for ImageResource {
+//     type Error = ResourceError;
 
-    fn try_from(path: PathBuf) -> Result<Self, Self::Error> {
+//     fn try_from(path: PathBuf) -> Result<Self, Self::Error> {
 
-        // TODO: open is a time consuming operation
-        let image = ImageReader::open(path.clone())?.decode();
+//         // TODO: open is a time consuming operation
+//         // let image = ImageReader::open(path.clone())?.decode();
 
-        if image.is_err() {
+//         // if image.is_err() {
 
-            let e = image.err().unwrap();
+//         //     let e = image.err().unwrap();
 
-            log::error!("error occurs during image opening ({:?}): {}", path, e);
+//         //     log::error!("error occurs during image opening ({:?}): {}", path, e);
             
-            return Err(ResourceError::ImageError(e))
-        }
+//         //     return Err(ResourceError::ImageError(e))
+//         // }
 
-        let image = image?;
+//         // let image = image?;
 
-        Ok(Self {
-            src: path,
-            image
-        })
-    }
-}
+//         Ok(Self {
+//             format: path.extension().unwrap().to_str().unwrap().to_string(),
+//             src: path,
+//             built_src: None,
+//             caption: None,
+//             label: None
+//             // image
+//         })
+//     }
+// }
 
-impl TryFrom<String> for ImageResource {
-    type Error = ResourceError;
+// impl TryFrom<String> for ImageResource {
+//     type Error = ResourceError;
 
-    fn try_from(path: String) -> Result<Self, Self::Error> {
-        let path = PathBuf::from(path);
+//     fn try_from(path: String) -> Result<Self, Self::Error> {
+//         let path = PathBuf::from(path);
 
-        Self::try_from(path)
-    }
-}
+//         Self::try_from(path)
+//     }
+// }
 
 impl FromStr for ImageResource {
     type Err = ResourceError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Self::try_from(String::from(s))
+        Ok(Self::new(PathBuf::from(s), None, None))
     }
 }
 

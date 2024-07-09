@@ -51,6 +51,8 @@ impl Parsable for Paragraph {
 
         let parsing_outcome = Parser::parse_paragraph(&codex, self, Arc::clone(&parsing_configuration), parsing_configuration_overlay)?;
 
+        log::debug!("end to parse paragraph:\n{:#?}", parsing_outcome);
+
         self.parsed_content = Some(parsing_outcome);
 
         Ok(())

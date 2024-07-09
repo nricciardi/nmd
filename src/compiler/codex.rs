@@ -3,6 +3,7 @@ pub mod modifier;
 
 use std::collections::HashMap;
 use getset::{Getters, Setters};
+use regex::Regex;
 
 use self::modifier::standard_paragraph_modifier::StandardParagraphModifier;
 use self::modifier::standard_text_modifier::StandardTextModifier;
@@ -10,6 +11,7 @@ use self::modifier::ModifierIdentifier;
 use crate::compiler::output_format::OutputFormat;
 use self::codex_configuration::CodexConfiguration;
 
+use super::parsing::parsing_rule::constants::ESCAPE_HTML;
 use super::parsing::parsing_rule::html_cite_rule::HtmlCiteRule;
 use super::parsing::parsing_rule::html_extended_block_quote_rule::HtmlExtendedBlockQuoteRule;
 use super::parsing::parsing_rule::html_greek_letter_rule::HtmlGreekLettersRule;
@@ -74,7 +76,7 @@ impl Codex {
                     ReplacementRuleReplacerPart::new_fixed(String::from(r#"<div class="todo"><div class="todo-title"></div><div class="todo-description">"#)),
                     ReplacementRuleReplacerPart::new_mutable(String::from(r#"$1"#)),
                     ReplacementRuleReplacerPart::new_fixed(String::from(r#"</div></div>"#)),
-                ])) as Box<dyn ParsingRule>,
+                ]).with_pre_replacing(ESCAPE_HTML.clone())) as Box<dyn ParsingRule>,
             ),
             (
                 StandardTextModifier::BookmarkWithId.identifier().clone(),
@@ -84,7 +86,7 @@ impl Codex {
                     ReplacementRuleReplacerPart::new_fixed(String::from(r#"</div><div class="bookmark-description">"#)),
                     ReplacementRuleReplacerPart::new_fixed(String::from(r#"$3"#)),
                     ReplacementRuleReplacerPart::new_fixed(String::from(r#"</div></div>"#)),
-                ])),
+                ]).with_pre_replacing(ESCAPE_HTML.clone()))
             ),
             (
                 StandardTextModifier::Bookmark.identifier().clone(),
@@ -94,7 +96,7 @@ impl Codex {
                     ReplacementRuleReplacerPart::new_fixed(String::from(r#"</div><div class="bookmark-description">"#)),
                     ReplacementRuleReplacerPart::new_mutable(String::from(r#"$2"#)),
                     ReplacementRuleReplacerPart::new_fixed(String::from(r#"</div></div>"#)),
-                ])),
+                ]).with_pre_replacing(ESCAPE_HTML.clone()))
             ),
             (
                 StandardTextModifier::GreekLetter.identifier().clone(),
@@ -107,7 +109,7 @@ impl Codex {
                     ReplacementRuleReplacerPart::new_fixed(String::from(r#"><div class="abridged-bookmark-title">"#)),
                     ReplacementRuleReplacerPart::new_mutable(String::from(r#"$1"#)),
                     ReplacementRuleReplacerPart::new_fixed(String::from(r#"</div></div>"#)),
-                ])),
+                ]).with_pre_replacing(ESCAPE_HTML.clone()))
             ),
             (
                 StandardTextModifier::AbridgedBookmark.identifier().clone(),
@@ -115,7 +117,7 @@ impl Codex {
                     ReplacementRuleReplacerPart::new_fixed(String::from(r#"<div class="abridged-bookmark"><div class="abridged-bookmark-title">"#)),
                     ReplacementRuleReplacerPart::new_mutable(String::from(r#"$1"#)),
                     ReplacementRuleReplacerPart::new_fixed(String::from(r#"</div></div>"#)),
-                ])),
+                ]).with_pre_replacing(ESCAPE_HTML.clone()))
             ),
             (
                 StandardTextModifier::EmbeddedStyleWithId.identifier().clone(),
@@ -123,7 +125,7 @@ impl Codex {
                     ReplacementRuleReplacerPart::new_fixed(String::from(r#"<span class="identifier embedded-style" id="$2" style="$3">"#)).with_references_at(vec![2]),
                     ReplacementRuleReplacerPart::new_mutable(String::from(r#"$1"#)),
                     ReplacementRuleReplacerPart::new_fixed(String::from(r#"</span>"#)),
-                ])),
+                ]).with_pre_replacing(ESCAPE_HTML.clone()))
             ),
             (
                 StandardTextModifier::EmbeddedStyle.identifier().clone(),
@@ -131,7 +133,7 @@ impl Codex {
                     ReplacementRuleReplacerPart::new_fixed(String::from(r#"<span class="embedded-style" style="$2">"#)),
                     ReplacementRuleReplacerPart::new_mutable(String::from(r#"$1"#)),
                     ReplacementRuleReplacerPart::new_fixed(String::from(r#"</span>"#)),
-                ])),
+                ]).with_pre_replacing(ESCAPE_HTML.clone()))
             ),
             (
                 StandardTextModifier::AbridgedEmbeddedStyleWithId.identifier().clone(),
@@ -139,7 +141,7 @@ impl Codex {
                     ReplacementRuleReplacerPart::new_fixed(String::from(r#"<span class="identifier abridged-embedded-style" id="$2" style="color: $3; background-color: $4; font-family: $5;">"#)).with_references_at(vec![2]),
                     ReplacementRuleReplacerPart::new_mutable(String::from(r#"$1"#)),
                     ReplacementRuleReplacerPart::new_fixed(String::from(r#"</span>"#)),
-                ])),
+                ]).with_pre_replacing(ESCAPE_HTML.clone()))
             ),
             (
                 StandardTextModifier::AbridgedEmbeddedStyle.identifier().clone(),
@@ -147,7 +149,7 @@ impl Codex {
                     ReplacementRuleReplacerPart::new_fixed(String::from(r#"<span class="abridged-embedded-style" style="color: $2; background-color: $3; font-family: $4;">"#)),
                     ReplacementRuleReplacerPart::new_mutable(String::from(r#"$1"#)),
                     ReplacementRuleReplacerPart::new_fixed(String::from(r#"</span>"#)),
-                ])),
+                ]).with_pre_replacing(ESCAPE_HTML.clone()))
             ),
             (
                 StandardTextModifier::Identifier.identifier().clone(),
@@ -155,7 +157,7 @@ impl Codex {
                     ReplacementRuleReplacerPart::new_fixed(String::from(r#"<span class="identifier" id="$2">"#)).with_references_at(vec![2]),
                     ReplacementRuleReplacerPart::new_mutable(String::from(r#"$1"#)),
                     ReplacementRuleReplacerPart::new_fixed(String::from(r#"</span>"#)),
-                ])),
+                ]).with_pre_replacing(ESCAPE_HTML.clone()))
             ),
             (
                 StandardTextModifier::Highlight.identifier().clone(),
@@ -163,7 +165,7 @@ impl Codex {
                     ReplacementRuleReplacerPart::new_fixed(String::from(r#"<mark class="highlight">"#)),
                     ReplacementRuleReplacerPart::new_mutable(String::from(r#"$1"#)),
                     ReplacementRuleReplacerPart::new_fixed(String::from(r#"</mark>"#)),
-                ])),
+                ]).with_pre_replacing(ESCAPE_HTML.clone()))
             ),
             (
                 StandardTextModifier::InlineMath.identifier().clone(),
@@ -171,7 +173,7 @@ impl Codex {
                     ReplacementRuleReplacerPart::new_fixed(String::from(r#"<span class="inline-math">$$"#)),
                     ReplacementRuleReplacerPart::new_mutable(String::from(r#"$1"#)),
                     ReplacementRuleReplacerPart::new_fixed(String::from(r#"$$</span>"#)),
-                ])),
+                ]).with_pre_replacing(ESCAPE_HTML.clone()))
             ),
             (
                 StandardTextModifier::InlineCode.identifier().clone(),
@@ -179,7 +181,7 @@ impl Codex {
                     ReplacementRuleReplacerPart::new_fixed(String::from(r#"<code class="language-markup inline-code">"#)),
                     ReplacementRuleReplacerPart::new_mutable(String::from(r#"$1"#)),
                     ReplacementRuleReplacerPart::new_fixed(String::from(r#"</code>"#)),
-                ])),
+                ]).with_pre_replacing(ESCAPE_HTML.clone()))
             ),
             (
                 StandardTextModifier::BoldStarVersion.identifier().clone(),
@@ -187,7 +189,7 @@ impl Codex {
                     ReplacementRuleReplacerPart::new_fixed(String::from(r#"<strong class="bold">"#)),
                     ReplacementRuleReplacerPart::new_mutable(String::from(r#"$1"#)),
                     ReplacementRuleReplacerPart::new_fixed(String::from(r#"</strong>"#)),
-                ])),
+                ]).with_pre_replacing(ESCAPE_HTML.clone()))
             ),
             (
                 StandardTextModifier::BoldUnderscoreVersion.identifier().clone(),
@@ -195,7 +197,7 @@ impl Codex {
                     ReplacementRuleReplacerPart::new_fixed(String::from(r#"<strong class="bold">"#)),
                     ReplacementRuleReplacerPart::new_mutable(String::from(r#"$1"#)),
                     ReplacementRuleReplacerPart::new_fixed(String::from(r#"</strong>"#)),
-                ])),
+                ]).with_pre_replacing(ESCAPE_HTML.clone()))
             ),
             (
                 StandardTextModifier::ItalicStarVersion.identifier().clone(),
@@ -203,7 +205,7 @@ impl Codex {
                     ReplacementRuleReplacerPart::new_fixed(String::from(r#"<em class="italic">"#)),
                     ReplacementRuleReplacerPart::new_mutable(String::from(r#"$1"#)),
                     ReplacementRuleReplacerPart::new_fixed(String::from(r#"</em>"#)),
-                ])),
+                ]).with_pre_replacing(ESCAPE_HTML.clone()))
             ),
             (
                 StandardTextModifier::ItalicUnderscoreVersion.identifier().clone(),
@@ -211,7 +213,7 @@ impl Codex {
                     ReplacementRuleReplacerPart::new_fixed(String::from(r#"<em class="italic">"#)),
                     ReplacementRuleReplacerPart::new_mutable(String::from(r#"$1"#)),
                     ReplacementRuleReplacerPart::new_fixed(String::from(r#"</em>"#)),
-                ])),
+                ]).with_pre_replacing(ESCAPE_HTML.clone()))
             ),
             (
                 StandardTextModifier::Strikethrough.identifier().clone(),
@@ -219,7 +221,7 @@ impl Codex {
                     ReplacementRuleReplacerPart::new_fixed(String::from(r#"<del class="strikethrough">"#)),
                     ReplacementRuleReplacerPart::new_mutable(String::from(r#"$1"#)),
                     ReplacementRuleReplacerPart::new_fixed(String::from(r#"</del>"#)),
-                ])),
+                ]).with_pre_replacing(ESCAPE_HTML.clone()))
             ),
             (
                 StandardTextModifier::Underlined.identifier().clone(),
@@ -227,7 +229,7 @@ impl Codex {
                     ReplacementRuleReplacerPart::new_fixed(String::from(r#"<u class="underlined">"#)),
                     ReplacementRuleReplacerPart::new_mutable(String::from(r#"$1"#)),
                     ReplacementRuleReplacerPart::new_fixed(String::from(r#"</u>"#)),
-                ])),
+                ]).with_pre_replacing(ESCAPE_HTML.clone()))
             ),
             (
                 StandardTextModifier::Superscript.identifier().clone(),
@@ -235,7 +237,7 @@ impl Codex {
                     ReplacementRuleReplacerPart::new_fixed(String::from(r#"<sup class="superscript">"#)),
                     ReplacementRuleReplacerPart::new_mutable(String::from(r#"$1"#)),
                     ReplacementRuleReplacerPart::new_fixed(String::from(r#"</sup>"#)),
-                ])),
+                ]).with_pre_replacing(ESCAPE_HTML.clone()))
             ),
             (
                 StandardTextModifier::Subscript.identifier().clone(),
@@ -243,7 +245,7 @@ impl Codex {
                     ReplacementRuleReplacerPart::new_fixed(String::from(r#"<sub class="subscript">"#)),
                     ReplacementRuleReplacerPart::new_mutable(String::from(r#"$1"#)),
                     ReplacementRuleReplacerPart::new_fixed(String::from(r#"</sub>"#)),
-                ])),
+                ]).with_pre_replacing(ESCAPE_HTML.clone()))
             ),
             (
                 StandardTextModifier::Link.identifier().clone(),
@@ -251,7 +253,7 @@ impl Codex {
                     ReplacementRuleReplacerPart::new_fixed(String::from(r#"<a href="$2" class="link">"#)).with_references_at(vec![2]),
                     ReplacementRuleReplacerPart::new_mutable(String::from(r#"$1"#)),
                     ReplacementRuleReplacerPart::new_fixed(String::from(r#"</a>"#)),
-                ])),
+                ]).with_pre_replacing(ESCAPE_HTML.clone()))
             ),
             (
                 StandardTextModifier::Comment.identifier().clone(),
@@ -259,7 +261,7 @@ impl Codex {
                     ReplacementRuleReplacerPart::new_fixed(String::from(r#"<!-- "#)),
                     ReplacementRuleReplacerPart::new_mutable(String::from(r#"$1"#)),
                     ReplacementRuleReplacerPart::new_fixed(String::from(r#" -->"#)),
-                ])),
+                ]).with_pre_replacing(ESCAPE_HTML.clone()))
             ),
             (
                 StandardTextModifier::Checkbox.identifier().clone(),
@@ -271,13 +273,13 @@ impl Codex {
                 StandardTextModifier::CheckboxChecked.identifier().clone(),
                 Box::new(ReplacementRule::new(StandardTextModifier::CheckboxChecked.modifier_pattern().clone(), vec![
                     ReplacementRuleReplacerPart::new_fixed(String::from(r#"<div class="checkbox checkbox-checked"></div>"#)),
-                ])),
+                ]).with_pre_replacing(ESCAPE_HTML.clone()))
             ),
             (
                 StandardTextModifier::Emoji.identifier().clone(),
                 Box::new(ReplacementRule::new(StandardTextModifier::Emoji.modifier_pattern().clone(), vec![
                     ReplacementRuleReplacerPart::new_fixed(String::from(r#"<i class="em-svg em-${1}" aria-role="presentation"></i>"#)),
-                ])),
+                ]).with_pre_replacing(ESCAPE_HTML.clone()))
             ),
             (
                 StandardTextModifier::Escape.identifier().clone(),
@@ -332,7 +334,7 @@ impl Codex {
                     ReplacementRuleReplacerPart::new_fixed(String::from(r#"<div class="todo abridged-todo"><div class="todo-title"></div><div class="todo-description">"#)),
                     ReplacementRuleReplacerPart::new_mutable(String::from(r#"$1"#)),
                     ReplacementRuleReplacerPart::new_fixed(String::from(r#"</div></div>"#)),
-                ])),
+                ]).with_pre_replacing(ESCAPE_HTML.clone()))
             ),
             (
                 StandardParagraphModifier::MultilineTodo.identifier().clone(),
@@ -340,7 +342,7 @@ impl Codex {
                     ReplacementRuleReplacerPart::new_fixed(String::from(r#"<div class="todo multiline-todo"><div class="todo-title"></div><div class="todo-description">"#)),
                     ReplacementRuleReplacerPart::new_mutable(String::from(r#"$1"#)),
                     ReplacementRuleReplacerPart::new_fixed(String::from(r#"</div></div>"#)),
-                ])),
+                ]).with_pre_replacing(ESCAPE_HTML.clone()))
             ),
             (
                 StandardParagraphModifier::AbridgedEmbeddedParagraphStyle.identifier().clone(),
@@ -366,7 +368,7 @@ impl Codex {
                 StandardParagraphModifier::MathBlock.identifier().clone(),
                 Box::new(ReplacementRule::new(StandardParagraphModifier::MathBlock.modifier_pattern().clone(), vec![
                     ReplacementRuleReplacerPart::new_fixed(String::from(r#"<p class="math-block">$$$$${1}$$$$</p>"#))
-                ])),
+                ]).with_pre_replacing(ESCAPE_HTML.clone()))
             ),
             (
                 StandardParagraphModifier::Image.identifier().clone(),
@@ -384,7 +386,7 @@ impl Codex {
                 StandardParagraphModifier::CodeBlock.identifier().clone(),
                 Box::new(ReplacementRule::new(StandardParagraphModifier::CodeBlock.modifier_pattern().clone(), vec![
                     ReplacementRuleReplacerPart::new_fixed(String::from(r#"<pre><code class="language-${1} code-block">$2</code></pre>"#))
-                ])),
+                ]).with_pre_replacing(ESCAPE_HTML.clone()))
             ),
             (
                 StandardParagraphModifier::List.identifier().clone(),

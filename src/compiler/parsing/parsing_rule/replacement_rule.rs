@@ -1,6 +1,8 @@
+use std::collections::HashMap;
 use std::fmt::Debug;
 use std::sync::{Arc, RwLock};
 
+use getset::{Getters, Setters};
 use log;
 use regex::{Captures, Regex, Replacer};
 
@@ -10,6 +12,7 @@ use crate::compiler::parsing::parsing_error::ParsingError;
 use crate::compiler::parsing::parsing_outcome::{ParsingOutcome, ParsingOutcomePart};
 use crate::compiler::parsing::parsing_rule::constants::DOUBLE_NEW_LINE_REGEX;
 use crate::resource::resource_reference::ResourceReference;
+use crate::utility::text_utility;
 
 use super::ParsingRule;
 
@@ -65,12 +68,26 @@ impl<R: Replacer> ReplacementRuleReplacerPart<R> {
 
 
 /// Rule to replace a NMD text based on a specific pattern matching rule
+#[derive(Getters, Setters)]
 pub struct ReplacementRule<R: Replacer> {
+
+    #[getset(set)]
     search_pattern: String,
+
+    #[getset(set)]
     search_pattern_regex: Regex,
+
+    #[getset(get = "pub", set)]
     replacer_parts: Vec<ReplacementRuleReplacerPart<R>>,
+
+    #[getset(get = "pub", set)]
     newline_fix_pattern: Option<String>,
+
+    #[getset(get = "pub", set)]
     reference_at: Option<usize>,
+
+    #[getset(get = "pub", set)]
+    pre_replacing: Option<Vec<(Regex, String)>>,
 }
 
 impl<R: Replacer> ReplacementRule<R> {
@@ -85,12 +102,20 @@ impl<R: Replacer> ReplacementRule<R> {
             search_pattern: searching_pattern,
             replacer_parts: replacers,
             newline_fix_pattern: None,
-            reference_at: None
+            reference_at: None,
+            pre_replacing: None,
         }
     }
 
     pub fn with_newline_fix(mut self, pattern: String) -> Self {
         self.newline_fix_pattern = Some(pattern);
+
+        self
+    }
+
+    pub fn with_pre_replacing(mut self, pre_replacing: Vec<(Regex, String)>) -> Self {
+
+        self.set_pre_replacing(Some(pre_replacing));
 
         self
     }
@@ -153,8 +178,18 @@ impl ParsingRule for ReplacementRule<String> {
                     outcome.add_fixed_part(parsed_content.to_string());
     
                 } else {
+
+                    let pc: String;
+
+                    if let Some(r) = &self.pre_replacing {
+
+                        pc = text_utility::replace(&parsed_content.to_string(), r);
+
+                    } else {
+                        pc = parsed_content.to_string();
+                    }
     
-                    outcome.add_mutable_part(parsed_content.to_string());
+                    outcome.add_mutable_part(pc);
                 }
             }
             

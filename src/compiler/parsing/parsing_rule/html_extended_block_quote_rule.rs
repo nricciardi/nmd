@@ -3,9 +3,9 @@ use std::sync::{Arc, RwLock};
 use once_cell::sync::Lazy;
 use regex::Regex;
 
-use crate::compiler::{codex::{modifier::{constants::NEW_LINE, modifiers_bucket::ModifiersBucket, standard_paragraph_modifier::StandardParagraphModifier, Modifier}, Codex}, parsing::{parsing_configuration::ParsingConfiguration, parsing_error::ParsingError, parsing_outcome::{ParsingOutcome, ParsingOutcomePart}}};
+use crate::{compiler::{codex::{modifier::{constants::NEW_LINE, modifiers_bucket::ModifiersBucket, standard_paragraph_modifier::StandardParagraphModifier, Modifier}, Codex}, parsing::{parsing_configuration::ParsingConfiguration, parsing_error::ParsingError, parsing_outcome::{ParsingOutcome, ParsingOutcomePart}}}, utility::text_utility};
 
-use super::{constants::DOUBLE_NEW_LINE_REGEX, ParsingRule};
+use super::{constants::{DOUBLE_NEW_LINE_REGEX, ESCAPE_HTML}, ParsingRule};
 
 static CHECK_EXTENDED_BLOCK_QUOTE_REGEX: Lazy<Regex> = Lazy::new(|| Regex::new(r"(?:^(?m:^> \[!(.*)\]))").unwrap());
 
@@ -74,7 +74,7 @@ impl ParsingRule for HtmlExtendedBlockQuoteRule {
                 <div class="focus-quote-block focus-quote-block-{}">
                 <div class="focus-quote-block-title focus-quote-block-{}-title"></div>
                 <div class="focus-quote-block-description focus-quote-block-{}-description">"#, quote_type, quote_type, quote_type) },
-            ParsingOutcomePart::Mutable { content: tag_body },
+            ParsingOutcomePart::Mutable { content: text_utility::replace(&tag_body, &ESCAPE_HTML) },
             ParsingOutcomePart::Fixed { content: String::from("</div></div>") }
         ]);
 

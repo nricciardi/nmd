@@ -127,9 +127,7 @@ impl NmdCli {
                                             .help("compile only a documents subset")
                                             .action(ArgAction::Append)
                                         )
-
                                 )
-                                
                 )
                 .subcommand(
                     Command::new("generate")
