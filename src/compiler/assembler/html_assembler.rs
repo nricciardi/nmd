@@ -1,9 +1,9 @@
-use std::{str::FromStr, sync::{Arc, Mutex}};
+use std::{path::PathBuf, str::FromStr, sync::{Arc, Mutex}};
 
 use build_html::{HtmlPage, HtmlContainer, Html, Container};
 use rayon::iter::{IndexedParallelIterator, IntoParallelRefIterator, ParallelIterator};
 
-use crate::{compiler::{artifact::Artifact, dossier::{document::chapter::chapter_tag::ChapterTagKey, Dossier}, parsable::parsed_content_accessor::ParsedContentAccessor, theme::Theme}, resource::{disk_resource, dynamic_resource::DynamicResource, remote_resource, Resource, ResourceError}, utility::file_utility};
+use crate::{compiler::{artifact::Artifact, dossier::{document::chapter::chapter_tag::ChapterTagKey, Document, Dossier}, parsable::parsed_content_accessor::ParsedContentAccessor, theme::Theme}, resource::{disk_resource, dynamic_resource::DynamicResource, remote_resource, Resource, ResourceError}, utility::file_utility};
 
 use super::{Assembler, AssemblerError, assembler_configuration::AssemblerConfiguration};
 
@@ -132,7 +132,14 @@ impl Assembler for HtmlAssembler {
             return Err(AssemblerError::TooFewElements("there are no documents".to_string()))
         }
 
-        let mut artifact = Artifact::new(self.configuration.output_location().clone())?;
+        let dossier_name = file_utility::build_output_file_name(dossier.name(), Some("html"));
+        let mut output = self.configuration.output_location().clone();
+
+        if output.is_dir() {
+            output = output.join(dossier_name);
+        }
+
+        let mut artifact = Artifact::new(output)?;
 
         let mut page = HtmlPage::new()
                                 .with_title(dossier.name())
@@ -185,7 +192,7 @@ impl Assembler for HtmlAssembler {
             let mut assembled_documents: Vec<Result<String, AssemblerError>> = Vec::new();
 
             dossier.documents().par_iter().map(|document| {
-                self.assemble_document(document)
+                self.assemble_document_into_string(document)
             }).collect_into_vec(&mut assembled_documents);
 
             for assembled_document in assembled_documents {
@@ -205,7 +212,7 @@ impl Assembler for HtmlAssembler {
                                                 .with_attributes(vec![
                                                     ("class", "document")
                                                 ])
-                                                .with_raw(self.assemble_document(document)?);
+                                                .with_raw(self.assemble_document_into_string(document)?);
     
                 page.add_container(section);
             }
@@ -217,15 +224,12 @@ impl Assembler for HtmlAssembler {
             }
         }
 
-        let document_name = file_utility::build_output_file_name(dossier.name(), Some("html"));
-
-        artifact.add_document(&document_name, &page.to_html_string())?;
-
+        artifact.content_mut().write(&page.to_html_string())?;
 
         Ok(artifact)
     }
     
-    fn assemble_document(&self, document: &crate::compiler::dossier::Document) -> Result<String, AssemblerError> {
+    fn assemble_document_into_string(&self, document: &Document) -> Result<String, AssemblerError> {
         let mut result = String::new();
 
         for paragraph in document.preamble() {

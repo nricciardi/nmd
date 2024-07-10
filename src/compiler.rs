@@ -15,9 +15,10 @@ pub mod bibliography;
 
 use std::{sync::{mpsc::{channel, RecvError}, Arc, RwLock}, thread, time::{Instant, SystemTime}};
 
-use dossier::{dossier_configuration::DossierConfiguration, Dossier};
+use dossier::{dossier_configuration::DossierConfiguration, Document, Dossier};
 use notify::{RecursiveMode, Watcher};
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
+use theme::Theme;
 use thiserror::Error;
 use crate::{compiler::{dumpable::{DumpError, Dumpable}, loader::Loader, parsable::Parsable}, constants::{DOSSIER_CONFIGURATION_JSON_FILE_NAME, DOSSIER_CONFIGURATION_YAML_FILE_NAME}};
 use self::{assembler::{assembler_configuration::AssemblerConfiguration, AssemblerError}, compilation_configuration::CompilationConfiguration, loader::LoadError, parsing::parsing_error::ParsingError};
@@ -53,7 +54,8 @@ pub struct Compiler {
 
 impl Compiler {
 
-    /// Standard dossier compilation based on CompilationConfiguration
+    /// Standard dossier compilation based on CompilationConfiguration.
+    /// It loads, parses and dumps dossier
     pub fn compile_dossier(mut compilation_configuration: CompilationConfiguration) -> Result<(), CompilationError> {
 
         log::info!("start to compile dossier");
@@ -117,7 +119,7 @@ impl Compiler {
 
         let assembler = assembler::from(compilation_configuration.format().clone(), assembler_configuration);
 
-        let mut artifact = assembler.assemble_dossier(/*&*codex,*/ &dossier)?;
+        let mut artifact = assembler.assemble_dossier(&dossier)?;
 
         log::info!("end to assembly (assembly time {} ms)", assembly_time.elapsed().as_millis());
 
@@ -131,7 +133,7 @@ impl Compiler {
     /// Watch filesystem and compile dossier if any changes occur
     /// 
     /// - min_elapsed_time_between_events_in_secs is the minimum time interval between two compilation
-    pub fn watch_compile(compilation_configuration: CompilationConfiguration, min_elapsed_time_between_events_in_secs: u64) -> Result<(), CompilationError> {
+    pub fn watch_compile_dossier(compilation_configuration: CompilationConfiguration, min_elapsed_time_between_events_in_secs: u64) -> Result<(), CompilationError> {
 
         let (tx, rx) = channel();
 
@@ -237,11 +239,76 @@ impl Compiler {
                     return Err(CompilationError::WatcherChannelError(err))
                 },
             }
-        }
-
-        
+        }        
         
     }
+
+    /// Standard file compilation based on CompilationConfiguration.
+    /// It loads, parses and dumps dossier
+    pub fn compile_file(mut compilation_configuration: CompilationConfiguration) -> Result<(), CompilationError> {
+
+        log::info!("start to compile dossier");
+
+        let compile_start = Instant::now();
+
+        log::info!("compilation configuration (this will override dossier compilation configuration):\n\n{:#?}\n", compilation_configuration);
+
+        let codex = compilation_configuration.codex();
+
+        let loader = Loader::new();
+
+        let mut document: Document = loader.load_document_from_path(&codex, compilation_configuration.input_location())?;
+
+        log::info!("document loaded in {} ms", compile_start.elapsed().as_millis());
+
+        compilation_configuration.fill_with_default();
+
+        let parsing_configuration = compilation_configuration.parsing_configuration();
+
+        if parsing_configuration.compress_embed_image() || parsing_configuration.embed_local_image() || parsing_configuration.embed_remote_image() {
+
+            log::warn!("embedding or compressing images is a time consuming task! Consider not using this feature unless strictly necessary");
+        }
+
+        log::info!("will use dossier configuration: {:?}", compilation_configuration.input_location());
+
+        let mut assembler_configuration = AssemblerConfiguration::default();
+        
+        log::info!("parsing...");
+        log::debug!("parsing configuration:\n{:#?}\n", parsing_configuration);
+        
+        if parsing_configuration.fast_draft() {
+            log::info!("fast draft!")
+        }
+
+        let codex = Arc::new(codex);
+
+        document.parse(compilation_configuration.format(), Arc::clone(&codex), Arc::new(RwLock::new(parsing_configuration)), Arc::new(None))?;
+
+        assembler_configuration.set_output_location(compilation_configuration.output_location().clone());
+        assembler_configuration.set_theme(compilation_configuration.theme().clone().unwrap_or(Theme::default()));
+
+        log::info!("assembling...");
+
+        let assembly_time = Instant::now();
+
+        let assembler = assembler::from(compilation_configuration.format().clone(), assembler_configuration);
+
+        let mut artifact = assembler.assemble_document(compilation_configuration.output_location().clone(), &document)?;
+
+        log::info!("end to assembly (assembly time {} ms)", assembly_time.elapsed().as_millis());
+
+        artifact.dump()?;
+
+        log::info!("end to compile dossier (compile time: {} ms)", compile_start.elapsed().as_millis());
+
+        Ok(())
+    }
+
+    pub fn watch_compile_file(compilation_configuration: CompilationConfiguration, min_elapsed_time_between_events_in_secs: u64) -> Result<(), CompilationError> {
+        todo!()
+    }
+
 }
 
 #[cfg(test)]

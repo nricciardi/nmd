@@ -8,7 +8,6 @@ pub mod text_reference;
 pub mod table;
 
 use std::{str::FromStr, io::{self}};
-use ::image::ImageError;
 use thiserror::Error;
 
 
@@ -32,9 +31,6 @@ pub enum ResourceError {
 
     #[error(transparent)]
     IoError(#[from] io::Error),
-
-    #[error(transparent)]
-    ImageError(#[from] ImageError),
     
     #[error("elaboration error: {0}")]
     ElaborationError(String),

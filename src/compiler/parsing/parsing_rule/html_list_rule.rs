@@ -3,7 +3,7 @@ use std::sync::{Arc, RwLock};
 use once_cell::sync::Lazy;
 use regex::Regex;
 
-use crate::{compiler::{codex::{modifier::standard_paragraph_modifier::StandardParagraphModifier, Codex}, parsing::{parsing_configuration::{list_bullet_configuration_record::{self, ListBulletConfigurationRecord}, ParsingConfiguration}, parsing_error::ParsingError, parsing_metadata::ParsingMetadata, parsing_outcome::ParsingOutcome}}, utility::text_utility};
+use crate::{compiler::{codex::{modifier::standard_paragraph_modifier::StandardParagraphModifier, Codex}, parsing::{parsing_configuration::{list_bullet_configuration_record::{self, ListBulletConfigurationRecord}, ParsingConfiguration}, parsing_error::ParsingError, parsing_outcome::ParsingOutcome}}, utility::text_utility};
 
 use super::{constants::{ESCAPE_HTML, SPACE_TAB_EQUIVALENCE}, ParsingRule};
 
@@ -67,7 +67,7 @@ impl ParsingRule for HtmlListRule {
         &self.search_pattern
     }
 
-    fn standard_parse(&self, content: &str, codex: &Codex, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError> {
+    fn standard_parse(&self, content: &str, _codex: &Codex, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError> {
         
         let mut parsing_outcome = ParsingOutcome::new_empty();
 
@@ -159,11 +159,11 @@ mod test {
        
        let rule = HtmlListRule::new();
 
-       let regex = Regex::new(rule.search_pattern()).unwrap();
+       let _ = Regex::new(rule.search_pattern()).unwrap();
 
        let codex = Codex::of_html(CodexConfiguration::default());
 
-       let outcome = rule.parse(nmd_text, &codex, Arc::new(RwLock::new(ParsingConfiguration::default()))).unwrap();
+       let _ = rule.parse(nmd_text, &codex, Arc::new(RwLock::new(ParsingConfiguration::default()))).unwrap();
 
     }
 }

@@ -5,7 +5,7 @@ use thiserror::Error;
 #[derive(Error, Debug)]
 pub enum OutputFormatError {
     #[error("unsupported format: {0}")]
-    UnsupportedFormat(String)
+    Unsupported(String)
 }
 
 /// Set of supported formats
@@ -21,8 +21,9 @@ impl FromStr for OutputFormat {
 
     fn from_str(format: &str) -> Result<Self, Self::Err> {
         match format.to_lowercase().as_str() {
-            "html" => Ok(OutputFormat::Html),
-            _ => Err(OutputFormatError::UnsupportedFormat(String::from(format))),
+            "html" => Ok(Self::Html),
+            
+            _ => Err(OutputFormatError::Unsupported(String::from(format))),
         }
     }
 }

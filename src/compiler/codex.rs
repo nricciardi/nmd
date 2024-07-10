@@ -3,7 +3,6 @@ pub mod modifier;
 
 use std::collections::HashMap;
 use getset::{Getters, Setters};
-use regex::Regex;
 
 use self::modifier::standard_paragraph_modifier::StandardParagraphModifier;
 use self::modifier::standard_text_modifier::StandardTextModifier;

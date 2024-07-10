@@ -4,6 +4,7 @@ use std::collections::HashSet;
 use std::{path::PathBuf, str::FromStr};
 
 use clap::{Arg, ArgAction, ArgMatches, Command};
+use crate::compiler::theme::{Theme, ThemeError};
 use crate::compiler::Compiler;
 use crate::compiler::{output_format::OutputFormatError, CompilationError};
 use crate::constants::{MINIMUM_WATCHER_TIME, VERSION};
@@ -27,6 +28,9 @@ pub enum NmdCliError {
 
     #[error(transparent)]
     OutputFormatError(#[from] OutputFormatError),
+
+    #[error(transparent)]
+    ThemeError(#[from] ThemeError),
 
     #[error(transparent)]
     VerboseLevelError(#[from] ParseLevelError),
@@ -69,19 +73,46 @@ impl NmdCli {
                                 .about("Compile an NMD resource")
                                 .short_flag('c')
                                 .subcommand_required(true)
+                                .arg(
+                                    Arg::new("format")
+                                    .short('f')
+                                    .long("format")
+                                    .help("output format")
+                                    .action(ArgAction::Set)
+                                    .num_args(1)
+                                    .default_value("html")
+                                )
+                                .arg(
+                                    Arg::new("theme")
+                                        .short('m')
+                                        .long("theme")
+                                        .help("set theme")
+                                        .action(ArgAction::Set)
+                                        .num_args(1)
+                                )
+                                .arg(
+                                    Arg::new("watch")
+                                        .short('w')
+                                        .long("watch")
+                                        .help("set to compile if files change")
+                                        .action(ArgAction::SetTrue)
+                                )
+                                .arg(
+                                    Arg::new("watcher-time")
+                                        .short('t')
+                                        .long("watcher-time")
+                                        .help("set minimum watcher time interval")
+                                        .action(ArgAction::Set)
+                                )
+                                .arg(
+                                    Arg::new("fast-draft")
+                                    .long("fast-draft")
+                                    .help("fast draft instead of complete compilation")
+                                    .action(ArgAction::SetTrue)
+                                )
                                 .subcommand(
                                     Command::new("dossier")
                                         .about("Compile NMD dossier")
-                                        .short_flag('d')
-                                        .arg(
-                                            Arg::new("format")
-                                            .short('f')
-                                            .long("format")
-                                            .help("output format")
-                                            .action(ArgAction::Set)
-                                            .num_args(1)
-                                            .default_value("html")
-                                        )
                                         .arg(
                                             Arg::new("input-dossier-path")
                                             .short('i')
@@ -101,31 +132,33 @@ impl NmdCli {
                                             .num_args(1)
                                         )
                                         .arg(
-                                            Arg::new("watch")
-                                                .short('w')
-                                                .long("watch")
-                                                .help("set to compile if files change")
-                                                .action(ArgAction::SetTrue)
-                                        )
-                                        .arg(
-                                            Arg::new("watcher-time")
-                                                .short('t')
-                                                .long("watcher-time")
-                                                .help("set minimum watcher time interval")
-                                                .action(ArgAction::Set)
-                                        )
-                                        .arg(
-                                            Arg::new("fast-draft")
-                                            .long("fast-draft")
-                                            .help("fast draft instead of complete compilation")
-                                            .action(ArgAction::SetTrue)
-                                        )
-                                        .arg(
                                             Arg::new("documents-subset")
                                             .short('s')
                                             .long("documents-subset")
                                             .help("compile only a documents subset")
                                             .action(ArgAction::Append)
+                                        )
+                                )
+                                .subcommand(
+                                    Command::new("file")
+                                        .about("Compile single NMD file")
+                                        .arg(
+                                            Arg::new("input-file-path")
+                                            .short('i')
+                                            .long("input-file-path")
+                                            .help("input file path")
+                                            .action(ArgAction::Set)
+                                            .num_args(1)
+                                            .default_value(".")
+
+                                        )
+                                        .arg(
+                                            Arg::new("output-file-path")
+                                            .short('o')
+                                            .long("output-file-path")
+                                            .help("output file path")
+                                            .action(ArgAction::Set)
+                                            .num_args(1)
                                         )
                                 )
                 )
@@ -268,17 +301,40 @@ impl NmdCli {
 
     fn handle_compile_command(matches: &ArgMatches) -> Result<(), NmdCliError> {
 
+        let mut compilation_configuration = CompilationConfiguration::default();
+                
+        if let Some(format) = matches.get_one::<String>("format") {
+                    
+            let format = OutputFormat::from_str(format)?;
+
+            compilation_configuration.set_format(format);
+        }
+
+        if let Some(theme) = matches.get_one::<String>("theme") {
+                    
+            let theme = Theme::from_str(theme)?;
+
+            compilation_configuration.set_theme(Some(theme));
+        }
+
+        let watcher_time: u64;
+
+        if let Some(wt) = matches.get_one::<String>("watcher-time") {
+                                
+            watcher_time = wt.parse::<u64>().unwrap();
+
+        } else {
+            watcher_time = MINIMUM_WATCHER_TIME;
+        }
+
+        let watch: bool = matches.get_flag("watch");
+
+        let fast_draft: bool = matches.get_flag("fast-draft");
+
+        compilation_configuration.set_fast_draft(fast_draft);
+
         match matches.subcommand() {
             Some(("dossier", compile_dossier_matches)) => {
-
-                let mut compilation_configuration = CompilationConfiguration::default();
-                
-                if let Some(format) = compile_dossier_matches.get_one::<String>("format") {
-                    
-                    let format = OutputFormat::from_str(format)?;
-
-                    compilation_configuration.set_format(format);
-                }
 
                 if let Some(input_path) = compile_dossier_matches.get_one::<String>("input-dossier-path") {
                                         
@@ -312,28 +368,39 @@ impl NmdCli {
                     compilation_configuration.set_documents_subset_to_compile(Some(subset));
                 }
 
-                let watcher_time: u64;
-
-                if let Some(wt) = compile_dossier_matches.get_one::<String>("watcher-time") {
-                                        
-                    watcher_time = wt.parse::<u64>().unwrap();
-
-                } else {
-                    watcher_time = MINIMUM_WATCHER_TIME;
-                }
-
-                let watch: bool = compile_dossier_matches.get_flag("watch");
-
-                let fast_draft: bool = compile_dossier_matches.get_flag("fast-draft");
-
-                compilation_configuration.set_fast_draft(fast_draft);
-
                 if watch {
-                    return Ok(Compiler::watch_compile(compilation_configuration, watcher_time)?)
+                    return Ok(Compiler::watch_compile_dossier(compilation_configuration, watcher_time)?)
                 } else {
                     return Ok(Compiler::compile_dossier(compilation_configuration)?)
                 }
 
+            },
+
+            Some(("file", compile_dossier_matches)) => {
+
+                if let Some(input_path) = compile_dossier_matches.get_one::<String>("input-file-path") {
+                                        
+                    let input_path = PathBuf::from(input_path);
+
+                    compilation_configuration.set_input_location(input_path);
+                }
+
+                if let Some(output_path) = compile_dossier_matches.get_one::<String>("output-file-path") {
+                    
+                    let output_path = PathBuf::from(output_path);
+
+                    compilation_configuration.set_output_location(output_path);
+
+                } else {
+
+                    compilation_configuration.set_output_location(compilation_configuration.input_location().clone());
+                }
+
+                if watch {
+                    return Ok(Compiler::watch_compile_file(compilation_configuration, watcher_time)?)
+                } else {
+                    return Ok(Compiler::compile_file(compilation_configuration)?)
+                }
             },
 
             _ => unreachable!()

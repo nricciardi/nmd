@@ -1,6 +1,8 @@
+use std::path::PathBuf;
+
 use thiserror::Error;
 
-use crate::resource::ResourceError;
+use crate::resource::{Resource, ResourceError};
 
 use self::{html_assembler::HtmlAssembler, assembler_configuration::AssemblerConfiguration};
 
@@ -37,7 +39,8 @@ pub trait Assembler {
     fn assemble_dossier(&self, /*codex: &Codex,*/ dossier: &Dossier) -> Result<Artifact, AssemblerError>;
 
     /// Assemble document in only one `String`
-    fn assemble_document(&self, document: &Document) -> Result<String, AssemblerError> {        // TODO: change return type
+    fn assemble_document_into_string(&self, document: &Document) -> Result<String, AssemblerError> {
+
         let mut result = String::new();
 
         for paragraph in document.preamble() {
@@ -47,6 +50,7 @@ pub trait Assembler {
                 result.push_str(&parsed_content.parsed_content());
 
             } else {
+
                 return Err(AssemblerError::ParsedContentNotFound)
             }
         }
@@ -58,6 +62,7 @@ pub trait Assembler {
                 result.push_str(&parsed_content.parsed_content());
 
             } else {
+
                 return Err(AssemblerError::ParsedContentNotFound)
             }
 
@@ -67,12 +72,23 @@ pub trait Assembler {
                     result.push_str(&parsed_content.parsed_content());
     
                 } else {
+
                     return Err(AssemblerError::ParsedContentNotFound)
                 }
             }
         }
 
         Ok(result)
+
+    }
+
+    fn assemble_document(&self, output_path: PathBuf, document: &Document) -> Result<Artifact, AssemblerError> {
+
+        let mut artifact = Artifact::new(output_path)?;
+        
+        artifact.content_mut().write(&self.assemble_document_into_string(document)?)?;
+
+        Ok(artifact)
     }
 }
 

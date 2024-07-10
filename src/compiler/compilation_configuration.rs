@@ -2,9 +2,9 @@ use std::{collections::HashSet, path::PathBuf};
 
 use getset::{CopyGetters, Getters, MutGetters, Setters};
 
-use crate::resource::text_reference::TextReferenceMap;
+use crate::resource::text_reference::{TextReferenceMap};
 
-use super::{bibliography::Bibliography, codex::{codex_configuration::CodexConfiguration, Codex}, dossier::dossier_configuration::DossierConfiguration, output_format::OutputFormat, parsing::parsing_configuration::ParsingConfiguration};
+use super::{bibliography::Bibliography, codex::{codex_configuration::CodexConfiguration, Codex}, dossier::dossier_configuration::DossierConfiguration, output_format::OutputFormat, parsing::parsing_configuration::ParsingConfiguration, theme::Theme};
 
 
 
@@ -50,6 +50,9 @@ pub struct CompilationConfiguration {
     
     #[getset(get = "pub", set = "pub")]
     bibliography: Option<Bibliography>,
+
+    #[getset(get = "pub", set = "pub")]
+    theme: Option<Theme>,
 }
 
 impl CompilationConfiguration {
@@ -106,6 +109,48 @@ impl CompilationConfiguration {
         if self.bibliography().is_none() {
             self.set_bibliography(Some(Bibliography::from(dossier_configuration.bibliography())));
         }
+
+        if self.theme().is_none() {
+            self.set_theme(Some(dossier_configuration.style().theme().clone()));
+        }
+    }
+
+    pub fn fill_with_default(&mut self) {
+        if self.embed_local_image().is_none() {
+            self.set_embed_local_image(Some(true));
+        }
+
+        if self.embed_remote_image().is_none() {
+            self.set_embed_remote_image(Some(false));
+        }
+
+        if self.compress_embed_image().is_none() {
+            self.set_compress_embed_image(Some(false));
+        }
+
+        if self.use_remote_addons().is_none() {
+            self.set_use_remote_addons(Some(false));
+        }
+
+        if self.parallelization().is_none() {
+            self.set_parallelization(Some(true));
+        }
+
+        if self.strict_image_src_check().is_none() {
+            self.set_strict_image_src_check(Some(true));
+        }
+
+        if self.references().is_none() {
+            self.set_references(Some(TextReferenceMap::default()));
+        }
+
+        if self.bibliography().is_none() {
+            self.set_bibliography(None);
+        }
+
+        if self.theme().is_none() {
+            self.set_theme(Some(Theme::default()));
+        }
     }
 }
 
@@ -125,6 +170,7 @@ impl Default for CompilationConfiguration {
             references: None,
             documents_subset_to_compile: None,
             bibliography: None,
+            theme: None,
         }
     }
 }

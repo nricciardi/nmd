@@ -1,8 +1,9 @@
 pub mod artifact_assets;
+pub mod artifacts_collection;
 
 use std::path::PathBuf;
 
-use getset::{Getters, Setters};
+use getset::{Getters, MutGetters, Setters};
 use rayon::iter::{IntoParallelRefMutIterator, ParallelIterator};
 use thiserror::Error;
 
@@ -17,7 +18,7 @@ use super::dumpable::{Dumpable, DumpError};
 #[derive(Error, Debug)]
 pub enum ArtifactError {
 
-    #[error("the output path must be an existing directory")]
+    #[error("the output path must be an existing directory because artifact can contain more than one file")]
     OutputPathNotDir,
 
     #[error(transparent)]
@@ -25,48 +26,24 @@ pub enum ArtifactError {
 }
 
 
-/// Final compilation result
-#[derive(Debug, Getters, Setters)]
+
+#[derive(Debug, Clone, Getters, MutGetters, Setters)]
 pub struct Artifact {
 
     #[getset(get = "pub", set = "pub")]
-    assets: Option<ArtifactAssets>,
+    output_path: PathBuf,
 
-    #[getset(get = "pub", set = "pub")]
-    documents: Vec<CachedDiskResource>,
-
-    #[getset(get = "pub", set = "pub")]
-    output_path: PathBuf
+    #[getset(get = "pub", get_mut = "pub", set = "pub")]
+    content: CachedDiskResource,
 }
 
-
-#[allow(dead_code)]
 impl Artifact {
-
     pub fn new(output_path: PathBuf) -> Result<Self, ArtifactError> {
 
-        if !output_path.is_dir() {
-            return Err(ArtifactError::OutputPathNotDir)
-        }
-
         Ok(Self {
-            assets: Option::None,
-            documents: Vec::new(),
+            content: CachedDiskResource::try_from(output_path.clone())?,
             output_path
         })
-    }
-
-    pub fn add_document(&mut self, document_name: &String, document_content: &String) -> Result<(), ArtifactError> {
-
-        let final_location = self.output_path.join(document_name);
-
-        let mut document = CachedDiskResource::try_from(final_location)?;
-
-        document.set_cached_content(document_content);
-
-        self.documents.push(document);
-
-        Ok(())
     }
 }
 
@@ -75,17 +52,7 @@ impl Dumpable for Artifact {
 
         log::info!("dump artifact...",);
 
-        let error = self.documents.par_iter_mut().map(|document| {
-
-            log::info!("dumping document in {:?}", document.location());
-
-            document.dump_cached_content()
-        })
-        .find_any(|result| result.is_err());
-
-        if let Some(error) = error {
-            return Err(DumpError::ResourceError(error.err().unwrap()));
-        }
+        self.content.dump_cached_content();
 
         Ok(())
     }

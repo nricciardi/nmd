@@ -1,6 +1,5 @@
 use std::fs;
 use std::sync::{RwLock, RwLockReadGuard};
-use std::thread::panicking;
 use std::{path::PathBuf, sync::Arc};
 
 use build_html::{Container, Html, HtmlContainer};
@@ -12,7 +11,6 @@ use url::Url;
 use crate::compiler::codex::modifier::standard_paragraph_modifier::StandardParagraphModifier;
 use crate::compiler::codex::modifier::ModifierIdentifier;
 use crate::compiler::codex::Codex;
-use crate::compiler::dossier;
 use crate::compiler::parser::Parser;
 use crate::compiler::parsing::parsing_configuration::ParsingConfiguration;
 use crate::compiler::parsing::parsing_error::ParsingError;
@@ -76,6 +74,7 @@ impl HtmlImageRule {
         panic!("unsupported image modifier identifier");
     }
 
+    /// Build html image tag with `<figcaption>` and style
     fn build_html_img(src: &str, alt: Option<&String>, caption: Option<&String>, id: Option<ResourceReference>, img_classes: Vec<&str>, style: Option<String>) -> String {
 
         let id_attr: String;
@@ -221,10 +220,11 @@ impl HtmlImageRule {
                     let document_name = parsing_configuration.metadata().document_name().as_ref().unwrap();
 
                     if let Some(id) = captures.get(2) {
+
                         let id = ResourceReference::of_internal_from_without_sharp(id.as_str(), Some(document_name)).unwrap();
 
                         let mut image: ImageResource = ImageResource::new(PathBuf::from(src.as_str()), Some(parsed_label.parsed_content()), Some(label.as_str().to_string()))
-                                                                        .elaborating_relative_path(parsing_configuration.input_location())
+                                                                        .elaborating_relative_path_as_dossier_assets(parsing_configuration.input_location())
                                                                         .inferring_mime_type()
                                                                         .unwrap();
 
@@ -235,7 +235,7 @@ impl HtmlImageRule {
                         let id = ResourceReference::of(label.as_str(), Some(document_name)).unwrap();
 
                         let mut image: ImageResource = ImageResource::new(PathBuf::from(src.as_str()), Some(parsed_label.parsed_content()), Some(label.as_str().to_string()))
-                                                            .elaborating_relative_path(parsing_configuration.input_location())
+                                                            .elaborating_relative_path_as_dossier_assets(parsing_configuration.input_location())
                                                             .inferring_mime_type()
                                                             .unwrap();
 
@@ -283,7 +283,7 @@ impl HtmlImageRule {
             }
 
             let mut image = ImageResource::new(PathBuf::from(src.as_str()), None, None)
-                                                            .elaborating_relative_path(parsing_configuration.input_location())
+                                                            .elaborating_relative_path_as_dossier_assets(parsing_configuration.input_location())
                                                             .inferring_mime_type()
                                                             .unwrap();
 
