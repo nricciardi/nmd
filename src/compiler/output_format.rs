@@ -9,10 +9,18 @@ pub enum OutputFormatError {
 }
 
 /// Set of supported formats
-#[derive(PartialEq, Debug, Default)]
+#[derive(PartialEq, Debug, Default, Clone)]
 pub enum OutputFormat {
     #[default]
     Html
+}
+
+impl OutputFormat {
+    pub fn get_extension(&self) -> String {
+        match self {
+            OutputFormat::Html => String::from("html"),
+        }
+    } 
 }
 
 impl FromStr for OutputFormat {
@@ -24,14 +32,6 @@ impl FromStr for OutputFormat {
             "html" => Ok(Self::Html),
             
             _ => Err(OutputFormatError::Unsupported(String::from(format))),
-        }
-    }
-}
-
-impl Clone for OutputFormat {
-    fn clone(&self) -> Self {
-        match self {
-            Self::Html => Self::Html,
         }
     }
 }

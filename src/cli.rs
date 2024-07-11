@@ -83,6 +83,12 @@ impl NmdCli {
                                     .default_value("html")
                                 )
                                 .arg(
+                                    Arg::new("force-output")
+                                    .long("force")
+                                    .help("force output if destination not exists")
+                                    .action(ArgAction::SetTrue)
+                                )
+                                .arg(
                                     Arg::new("theme")
                                         .short('m')
                                         .long("theme")
@@ -109,6 +115,12 @@ impl NmdCli {
                                     .long("fast-draft")
                                     .help("fast draft instead of complete compilation")
                                     .action(ArgAction::SetTrue)
+                                )
+                                .arg(
+                                    Arg::new("style-file")
+                                    .long("style-file")
+                                    .help("add style file")
+                                    .action(ArgAction::Append)
                                 )
                                 .subcommand(
                                     Command::new("dossier")
@@ -333,6 +345,12 @@ impl NmdCli {
 
         compilation_configuration.set_fast_draft(fast_draft);
 
+        compilation_configuration.set_force_output(matches.get_flag("force-output"));
+
+        if let Some(styles) = matches.get_many::<String>("style-file") {
+            compilation_configuration.set_styles_raw_path(styles.map(|s| s.clone()).collect());
+        }
+
         match matches.subcommand() {
             Some(("dossier", compile_dossier_matches)) => {
 
@@ -393,7 +411,7 @@ impl NmdCli {
 
                 } else {
 
-                    compilation_configuration.set_output_location(compilation_configuration.input_location().clone());
+                    compilation_configuration.set_output_location(compilation_configuration.input_location().parent().unwrap().to_path_buf());
                 }
 
                 if watch {

@@ -121,7 +121,7 @@ impl HtmlImageRule {
     }
 
     fn build_embed_remote_img(image: &mut ImageResource, id: Option<ResourceReference>, img_classes: Vec<&str>, figure_style: Option<String>, parsing_configuration: &RwLockReadGuard<ParsingConfiguration>) -> Result<String, ParsingError> {
-        todo!()
+        unimplemented!("embed remote image will be added in a next version")
     }
 
     fn build_embed_local_img(image: &mut ImageResource, id: Option<ResourceReference>, img_classes: Vec<&str>, figure_style: Option<String>, parsing_configuration: &RwLockReadGuard<ParsingConfiguration>) -> Result<String, ParsingError> {

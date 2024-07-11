@@ -67,14 +67,15 @@ impl ParsingRule for HtmlExtendedBlockQuoteRule {
             tag_body.push_str(c.as_str());
         }
 
-        tag_body = DOUBLE_NEW_LINE_REGEX.replace_all(&tag_body, "<br>").to_string();
+        let tag_body = text_utility::replace(&tag_body, &ESCAPE_HTML);
+        let tag_body = DOUBLE_NEW_LINE_REGEX.replace_all(&tag_body, "<br>").to_string();
 
         let outcome = ParsingOutcome::new(vec![
             ParsingOutcomePart::Fixed { content: format!(r#"
                 <div class="focus-quote-block focus-quote-block-{}">
                 <div class="focus-quote-block-title focus-quote-block-{}-title"></div>
                 <div class="focus-quote-block-description focus-quote-block-{}-description">"#, quote_type, quote_type, quote_type) },
-            ParsingOutcomePart::Mutable { content: text_utility::replace(&tag_body, &ESCAPE_HTML) },
+            ParsingOutcomePart::Mutable { content: tag_body },
             ParsingOutcomePart::Fixed { content: String::from("</div></div>") }
         ]);
 

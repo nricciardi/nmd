@@ -12,6 +12,21 @@ pub struct DiskResource {
     location: PathBuf
 }
 
+impl DiskResource {
+    pub fn new(location: PathBuf) -> Result<Self, ResourceError> {
+
+        Self::try_from(location)
+    }
+
+    pub fn create_parents_dir(&self) -> Result<(), ResourceError> {
+
+        let prefix = self.location.parent().unwrap();
+        std::fs::create_dir_all(prefix)?;
+
+        Ok(())
+    }
+}
+
 impl FromStr for DiskResource {
     type Err = ResourceError;
 
@@ -48,15 +63,6 @@ impl TryFrom<PathBuf> for DiskResource {
         } else {
             Err(ResourceError::InvalidResource)
         }
-    }
-}
-
-
-#[allow(dead_code)]
-impl DiskResource {
-    fn new(location: PathBuf) -> Result<Self, ResourceError> {
-
-        Self::try_from(location)
     }
 }
 

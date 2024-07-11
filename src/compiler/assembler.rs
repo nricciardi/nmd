@@ -6,7 +6,7 @@ use crate::resource::{Resource, ResourceError};
 
 use self::{html_assembler::HtmlAssembler, assembler_configuration::AssemblerConfiguration};
 
-use super::{artifact::{Artifact, ArtifactError}, dossier::{Document, Dossier}, output_format::OutputFormat, parsing::parsing_error::ParsingError};
+use super::{artifact::{Artifact, ArtifactError}, bibliography::Bibliography, dossier::{Document, Dossier}, output_format::OutputFormat, parsing::parsing_error::ParsingError, table_of_contents::TableOfContents};
 
 pub mod html_assembler;
 pub mod assembler_configuration;
@@ -36,10 +36,9 @@ pub trait Assembler {
 
     fn set_configuration(&mut self, configuration: AssemblerConfiguration);
 
-    fn assemble_dossier(&self, /*codex: &Codex,*/ dossier: &Dossier) -> Result<Artifact, AssemblerError>;
+    fn assemble_dossier(&self, dossier: &Dossier) -> Result<Artifact, AssemblerError>;
 
-    /// Assemble document in only one `String`
-    fn assemble_document_into_string(&self, document: &Document) -> Result<String, AssemblerError> {
+    fn assemble_document(&self, document: &Document) -> Result<Artifact, AssemblerError> {
 
         let mut result = String::new();
 
@@ -78,17 +77,12 @@ pub trait Assembler {
             }
         }
 
-        Ok(result)
+        Ok(Artifact::new(result))
 
     }
 
-    fn assemble_document(&self, output_path: PathBuf, document: &Document) -> Result<Artifact, AssemblerError> {
-
-        let mut artifact = Artifact::new(output_path)?;
-        
-        artifact.content_mut().write(&self.assemble_document_into_string(document)?)?;
-
-        Ok(artifact)
+    fn assemble_document_standalone(&self, page_title: &String, styles_references: Option<&Vec<String>>, toc: Option<&TableOfContents>, bibliography: Option<&Bibliography>, document: &Document) -> Result<Artifact, AssemblerError> {
+        self.assemble_document(document)
     }
 }
 

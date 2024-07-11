@@ -1,18 +1,15 @@
 pub mod artifact_assets;
 pub mod artifacts_collection;
 
-use std::path::PathBuf;
+use std::fmt::Display;
 
-use getset::{Getters, MutGetters, Setters};
-use rayon::iter::{IntoParallelRefMutIterator, ParallelIterator};
+use getset::{CopyGetters, Getters, MutGetters, Setters};
 use thiserror::Error;
 
 
-use crate::resource::{cached_disk_resource::CachedDiskResource, Resource, ResourceError};
+use crate::resource::{disk_resource::DiskResource, Resource, ResourceError};
 
-use self::artifact_assets::ArtifactAssets;
-
-use super::dumpable::{Dumpable, DumpError};
+use super::dumpable::{DumpConfiguration, DumpError, Dumpable};
 
 
 #[derive(Error, Debug)]
@@ -25,35 +22,49 @@ pub enum ArtifactError {
     ResourceError(#[from] ResourceError)
 }
 
+pub type ArtifactContent = String;
 
-
-#[derive(Debug, Clone, Getters, MutGetters, Setters)]
+#[derive(Debug, Clone, Getters, MutGetters, CopyGetters, Setters)]
 pub struct Artifact {
 
-    #[getset(get = "pub", set = "pub")]
-    output_path: PathBuf,
-
     #[getset(get = "pub", get_mut = "pub", set = "pub")]
-    content: CachedDiskResource,
+    content: ArtifactContent,
 }
 
 impl Artifact {
-    pub fn new(output_path: PathBuf) -> Result<Self, ArtifactError> {
+    pub fn new(content: ArtifactContent) -> Self {
 
-        Ok(Self {
-            content: CachedDiskResource::try_from(output_path.clone())?,
-            output_path
-        })
+        Self {
+            content
+        }
+    }
+}
+
+impl Display for Artifact {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(&self.content)
     }
 }
 
 impl Dumpable for Artifact {
-    fn dump(&mut self) -> Result<(), DumpError> {
+    fn dump(&mut self, configuration: &DumpConfiguration) -> Result<(), DumpError> {
 
-        log::info!("dump artifact...",);
+        log::info!("dump artifact in {:?}", configuration.output_path());
 
-        self.content.dump_cached_content();
+        let mut disk_resource = DiskResource::try_from(configuration.output_path().clone())?;
+
+        if configuration.force_dump() {
+            disk_resource.create_parents_dir()?;
+        }
+
+        disk_resource.write(&self.content)?;
 
         Ok(())
+    }
+}
+
+impl Into<String> for Artifact {
+    fn into(self) -> String {
+        self.content
     }
 }

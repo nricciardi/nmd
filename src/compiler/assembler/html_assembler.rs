@@ -1,9 +1,9 @@
-use std::{path::PathBuf, str::FromStr, sync::{Arc, Mutex}};
+use std::str::FromStr;
 
 use build_html::{HtmlPage, HtmlContainer, Html, Container};
 use rayon::iter::{IndexedParallelIterator, IntoParallelRefIterator, ParallelIterator};
 
-use crate::{compiler::{artifact::Artifact, dossier::{document::chapter::chapter_tag::ChapterTagKey, Document, Dossier}, parsable::parsed_content_accessor::ParsedContentAccessor, theme::Theme}, resource::{disk_resource, dynamic_resource::DynamicResource, remote_resource, Resource, ResourceError}, utility::file_utility};
+use crate::{compiler::{artifact::Artifact, bibliography::Bibliography, dossier::{document::chapter::chapter_tag::ChapterTagKey, Document, Dossier}, table_of_contents::TableOfContents, theme::Theme}, resource::{dynamic_resource::DynamicResource, Resource, ResourceError}};
 
 use super::{Assembler, AssemblerError, assembler_configuration::AssemblerConfiguration};
 
@@ -19,7 +19,7 @@ impl HtmlAssembler {
     }
 
 
-    fn apply_remote_addons(&self, mut page: HtmlPage) -> HtmlPage {
+    fn apply_standard_remote_addons(&self, mut page: HtmlPage) -> HtmlPage {
         // add code block js/css
         match self.configuration.theme() {
             Theme::Light => {
@@ -83,7 +83,7 @@ impl HtmlAssembler {
         page
     }
 
-    fn apply_local_addons(&self, mut page: HtmlPage) -> HtmlPage {
+    fn apply_standard_local_addons(&self, mut page: HtmlPage) -> HtmlPage {
 
         page.add_style(include_str!("html_assembler/emoji/emoji.min.css"));
         
@@ -118,41 +118,9 @@ impl HtmlAssembler {
 
         page
     }
-}
 
-impl Assembler for HtmlAssembler {
+    fn apply_theme_style(&self, mut page: HtmlPage) -> HtmlPage {
 
-    fn set_configuration(&mut self, configuration: AssemblerConfiguration) {
-        self.configuration = configuration
-    }
-
-    fn assemble_dossier(&self, dossier: &Dossier) -> Result<Artifact, AssemblerError> {
-                        
-        if dossier.documents().is_empty() {
-            return Err(AssemblerError::TooFewElements("there are no documents".to_string()))
-        }
-
-        let dossier_name = file_utility::build_output_file_name(dossier.name(), Some("html"));
-        let mut output = self.configuration.output_location().clone();
-
-        if output.is_dir() {
-            output = output.join(dossier_name);
-        }
-
-        let mut artifact = Artifact::new(output)?;
-
-        let mut page = HtmlPage::new()
-                                .with_title(dossier.name())
-                                .with_meta(vec![("charset", "utf-8")]);
-
-        if self.configuration.use_remote_addons() {
-            page = self.apply_remote_addons(page);
-            
-        } else {
-            page = self.apply_local_addons(page);
-        }
-
-        // apply embedded styles
         match self.configuration.theme() {
             Theme::Light => page.add_style(include_str!("html_assembler/default_style/light_theme.css")),
             Theme::Dark => page.add_style(include_str!("html_assembler/default_style/dark_theme.css")),
@@ -161,9 +129,10 @@ impl Assembler for HtmlAssembler {
             Theme::None => todo!(),
         }
 
-        let styles_references = dossier.configuration().style().styles_references();
-        log::info!("appending {} custom styles", styles_references.len());
+        page
+    }
 
+    fn apply_styles(&self, mut page: HtmlPage, styles_references: &Vec<String>) -> Result<HtmlPage, AssemblerError> {
         for ref style_ref in styles_references {
 
             log::info!("appending style (reference): {:?}", style_ref);
@@ -181,6 +150,50 @@ impl Assembler for HtmlAssembler {
             }
         }
 
+        Ok(page)
+    }
+
+    fn create_default_html_page(&self, page_title: &String, styles_references: &Vec<String>) -> Result<HtmlPage, AssemblerError> {
+
+        let mut page = HtmlPage::new()
+                                    .with_title(page_title)
+                                    .with_meta(vec![("charset", "utf-8")]);
+
+        if self.configuration.use_remote_addons() {
+        page = self.apply_standard_remote_addons(page);
+
+        } else {
+        page = self.apply_standard_local_addons(page);
+        }
+
+        page = self.apply_theme_style(page);
+
+        page = self.apply_styles(page, &styles_references)?;
+
+        Ok(page)
+    }
+}
+
+impl Assembler for HtmlAssembler {
+
+    fn set_configuration(&mut self, configuration: AssemblerConfiguration) {
+        self.configuration = configuration
+    }
+
+    fn assemble_dossier(&self, dossier: &Dossier) -> Result<Artifact, AssemblerError> {
+                        
+        if dossier.documents().is_empty() {
+            return Err(AssemblerError::TooFewElements("there are no documents".to_string()))
+        }
+
+        let mut styles_references = dossier.configuration().style().styles_references();
+        log::info!("appending {} custom styles", styles_references.len());
+
+        let mut other_styles = self.configuration.styles_raw_path().clone();
+        styles_references.append(&mut other_styles);
+
+        let mut page = self.create_default_html_page(dossier.name(), &styles_references)?;
+        
         if let Some(toc) = dossier.table_of_contents() {
             if let Some(parsed_toc) = toc.parsed_content() {
                 page.add_raw(parsed_toc.parsed_content());
@@ -189,10 +202,10 @@ impl Assembler for HtmlAssembler {
 
         if self.configuration.parallelization() {
 
-            let mut assembled_documents: Vec<Result<String, AssemblerError>> = Vec::new();
+            let mut assembled_documents: Vec<Result<Artifact, AssemblerError>> = Vec::new();
 
             dossier.documents().par_iter().map(|document| {
-                self.assemble_document_into_string(document)
+                self.assemble_document(document)
             }).collect_into_vec(&mut assembled_documents);
 
             for assembled_document in assembled_documents {
@@ -212,7 +225,7 @@ impl Assembler for HtmlAssembler {
                                                 .with_attributes(vec![
                                                     ("class", "document")
                                                 ])
-                                                .with_raw(self.assemble_document_into_string(document)?);
+                                                .with_raw(self.assemble_document(document)?);
     
                 page.add_container(section);
             }
@@ -224,12 +237,12 @@ impl Assembler for HtmlAssembler {
             }
         }
 
-        artifact.content_mut().write(&page.to_html_string())?;
+        let artifact = Artifact::new(page.to_html_string());
 
         Ok(artifact)
     }
     
-    fn assemble_document_into_string(&self, document: &Document) -> Result<String, AssemblerError> {
+    fn assemble_document(&self, document: &Document) -> Result<Artifact, AssemblerError> {
         let mut result = String::new();
 
         for paragraph in document.preamble() {
@@ -297,7 +310,27 @@ impl Assembler for HtmlAssembler {
             result.push_str(div_chapter.with_raw(div_chapter_content).to_html_string().as_str());
         }
 
-        Ok(result)
+        Ok(Artifact::new(result))
+    }
+
+    fn assemble_document_standalone(&self, page_title: &String, styles_references: Option<&Vec<String>>, toc: Option<&TableOfContents>, bibliography: Option<&Bibliography>, document: &Document) -> Result<Artifact, AssemblerError> {
+        let mut page = self.create_default_html_page(page_title, styles_references.unwrap_or(&Vec::new()))?;
+
+        if let Some(toc) = toc {
+            if let Some(parsed_toc) = toc.parsed_content() {
+                page.add_raw(parsed_toc.parsed_content());
+            }
+        }
+
+        page.add_raw(Into::<String>::into(self.assemble_document(document)?));
+
+        if let Some(bib) = bibliography {
+            if let Some(parsed_bib) = bib.parsed_content() {
+                page.add_raw(parsed_bib.parsed_content());
+            }
+        }
+
+        Ok(Artifact::new(page.to_html_string()))
     }
 
     fn configuration(&self) -> &AssemblerConfiguration {

@@ -152,7 +152,7 @@ nmd dossier -p dossier/input/path reset [ -p ]
 Compile a dossier in `html`:
 
 ```shell
-nmd compile dossier -f html -i dossier/input/path -o artifact/output/path
+nmd compile -f html dossier -i dossier/input/path -o artifact/output/path
 ```
 
 If you watch dossier files and compile them if anything changes, you should use watcher mode (`-w` option).

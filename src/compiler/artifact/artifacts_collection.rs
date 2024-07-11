@@ -54,23 +54,23 @@ impl ArtifactsCollection {
     // }
 }
 
-impl Dumpable for ArtifactsCollection {
-    fn dump(&mut self) -> Result<(), DumpError> {
+// impl Dumpable for ArtifactsCollection {
+//     fn dump(&mut self) -> Result<(), DumpError> {
 
-        log::info!("dump artifacts collection...",);
+//         log::info!("dump artifacts collection...",);
 
-        let error = self.artifacts.par_iter_mut().map(|artifact| {
+//         let error = self.artifacts.par_iter_mut().map(|artifact| {
 
-            log::info!("dumping artifact in {:?}", artifact.output_path());
+//             log::info!("dumping artifact in {:?}", artifact.output_path());
 
-            artifact.dump()
-        })
-        .find_any(|result| result.is_err());
+//             artifact.dump()
+//         })
+//         .find_any(|result| result.is_err());
 
-        if let Some(error) = error {
-            return Err(error.err().unwrap());
-        }
+//         if let Some(error) = error {
+//             return Err(error.err().unwrap());
+//         }
 
-        Ok(())
-    }
-}
+//         Ok(())
+//     }
+// }

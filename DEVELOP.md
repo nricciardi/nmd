@@ -53,14 +53,14 @@
 - [ ] Linkify (convert URL-like strings in links)
 - [x] Fast draft (prevent to parse time consuming parts)
 - [ ] Dynamics addons (e.g. katex iff math is used)
-- [x] Watcher mode
+- [ ] Watcher mode for single file compilation
 - [ ] Split CLI lib from compiler
 - [ ] Compile only modified chapters in watcher mode
 - [x] Compile only a subset of documents
 - [ ] Paper format support (A3, A5, ...)
 - [x] MD to NMD converter
 - [x] Include all .nmd file in running directory as default option in dossier configuration
-- [ ] Compile single files
+- [x] Compile single files
 - [ ] Table of contents with page numbers
 - [ ] Cover page
 - [ ] VS Code extension (https://dev.to/salesforceeng/how-to-build-a-vs-code-extension-for-markdown-preview-using-remark-processor-1169)

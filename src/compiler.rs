@@ -16,11 +16,12 @@ pub mod bibliography;
 use std::{sync::{mpsc::{channel, RecvError}, Arc, RwLock}, thread, time::{Instant, SystemTime}};
 
 use dossier::{dossier_configuration::DossierConfiguration, Document, Dossier};
+use dumpable::DumpConfiguration;
 use notify::{RecursiveMode, Watcher};
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use theme::Theme;
 use thiserror::Error;
-use crate::{compiler::{dumpable::{DumpError, Dumpable}, loader::Loader, parsable::Parsable}, constants::{DOSSIER_CONFIGURATION_JSON_FILE_NAME, DOSSIER_CONFIGURATION_YAML_FILE_NAME}};
+use crate::{compiler::{dumpable::{DumpError, Dumpable}, loader::Loader, parsable::Parsable}, constants::{DOSSIER_CONFIGURATION_JSON_FILE_NAME, DOSSIER_CONFIGURATION_YAML_FILE_NAME}, utility::file_utility};
 use self::{assembler::{assembler_configuration::AssemblerConfiguration, AssemblerError}, compilation_configuration::CompilationConfiguration, loader::LoadError, parsing::parsing_error::ParsingError};
 
 
@@ -110,7 +111,6 @@ impl Compiler {
 
         dossier.parse(compilation_configuration.format(), Arc::clone(&codex), Arc::new(RwLock::new(parsing_configuration)), Arc::new(None))?;
 
-        assembler_configuration.set_output_location(compilation_configuration.output_location().clone());
         assembler_configuration.set_theme(dossier_theme);
 
         log::info!("assembling...");
@@ -123,7 +123,18 @@ impl Compiler {
 
         log::info!("end to assembly (assembly time {} ms)", assembly_time.elapsed().as_millis());
 
-        artifact.dump()?;
+        let mut output_location = compilation_configuration.output_location().clone();
+
+        if output_location.is_dir() {
+            output_location = output_location.join(file_utility::build_output_file_name(
+                &dossier.name(),
+            Some(&compilation_configuration.format().get_extension())
+            ));
+        }
+
+        let dump_configuration = DumpConfiguration::new(output_location, compilation_configuration.force_output());
+
+        artifact.dump(&dump_configuration)?;
 
         log::info!("end to compile dossier (compile time: {} ms)", compile_start.elapsed().as_millis());
 
@@ -285,20 +296,31 @@ impl Compiler {
 
         document.parse(compilation_configuration.format(), Arc::clone(&codex), Arc::new(RwLock::new(parsing_configuration)), Arc::new(None))?;
 
-        assembler_configuration.set_output_location(compilation_configuration.output_location().clone());
         assembler_configuration.set_theme(compilation_configuration.theme().clone().unwrap_or(Theme::default()));
 
         log::info!("assembling...");
+
+
+        let mut output_location = compilation_configuration.output_location().clone();
+
+        if output_location.is_dir() {
+            output_location = output_location.join(file_utility::build_output_file_name(
+                compilation_configuration.input_location().file_stem().unwrap().to_string_lossy().to_string().as_str(),
+            Some(&compilation_configuration.format().get_extension())
+            ));
+        }
 
         let assembly_time = Instant::now();
 
         let assembler = assembler::from(compilation_configuration.format().clone(), assembler_configuration);
 
-        let mut artifact = assembler.assemble_document(compilation_configuration.output_location().clone(), &document)?;
+        let mut artifact = assembler.assemble_document_standalone(&output_location.file_name().unwrap().to_string_lossy().to_string(), Some(compilation_configuration.styles_raw_path()), None, None, &document)?;
 
         log::info!("end to assembly (assembly time {} ms)", assembly_time.elapsed().as_millis());
 
-        artifact.dump()?;
+        let dump_configuration = DumpConfiguration::new(output_location, compilation_configuration.force_output());
+
+        artifact.dump(&dump_configuration)?;
 
         log::info!("end to compile dossier (compile time: {} ms)", compile_start.elapsed().as_millis());
 
@@ -306,7 +328,7 @@ impl Compiler {
     }
 
     pub fn watch_compile_file(compilation_configuration: CompilationConfiguration, min_elapsed_time_between_events_in_secs: u64) -> Result<(), CompilationError> {
-        todo!()
+        unimplemented!("watch compile file will be added in a next version")
     }
 
 }

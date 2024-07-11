@@ -1,14 +1,9 @@
-use std::{ffi::OsStr, path::PathBuf};
-
 use getset::{CopyGetters, Getters, Setters};
 
-use crate::compiler::{dossier::dossier_configuration::{self, DossierConfiguration}, theme::Theme};
+use crate::compiler::{dossier::dossier_configuration::DossierConfiguration, theme::Theme};
 
 #[derive(Debug, Getters, CopyGetters, Setters)]
 pub struct AssemblerConfiguration {
-
-    #[getset(get = "pub", set = "pub")]
-    output_location: PathBuf,
 
     #[getset(get = "pub", set = "pub")]
     theme: Theme,
@@ -19,16 +14,18 @@ pub struct AssemblerConfiguration {
     #[getset(get_copy = "pub", set = "pub")]
     parallelization: bool,
 
+    #[getset(get = "pub", set = "pub")]
+    styles_raw_path: Vec<String>,
 }
 
 impl AssemblerConfiguration {
     
-    pub fn new(output_location: PathBuf, theme: Theme, use_remote_addons: bool, parallelization: bool) -> Self {
+    pub fn new(theme: Theme, use_remote_addons: bool, parallelization: bool) -> Self {
         Self {
-            output_location,
             theme,
             use_remote_addons,
-            parallelization
+            parallelization,
+            styles_raw_path: Vec::new(),
         }
     }
 }
@@ -36,10 +33,10 @@ impl AssemblerConfiguration {
 impl Default for AssemblerConfiguration {
     fn default() -> Self {
         Self {
-            output_location: Default::default(),
             theme: Theme::default(),
             use_remote_addons: false,
-            parallelization: false
+            parallelization: false,
+            styles_raw_path: Vec::new(),
         }
     }
 }

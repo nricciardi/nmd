@@ -22,6 +22,9 @@ pub struct CompilationConfiguration {
     output_location: PathBuf,
 
     #[getset(get_copy = "pub", set = "pub")]
+    force_output: bool,
+
+    #[getset(get_copy = "pub", set = "pub")]
     fast_draft: bool,
 
     #[getset(get = "pub", set = "pub")]
@@ -53,6 +56,9 @@ pub struct CompilationConfiguration {
 
     #[getset(get = "pub", set = "pub")]
     theme: Option<Theme>,
+
+    #[getset(get = "pub", set = "pub")]
+    styles_raw_path: Vec<String>,
 }
 
 impl CompilationConfiguration {
@@ -161,6 +167,7 @@ impl Default for CompilationConfiguration {
             input_location: PathBuf::from("."),
             output_location: PathBuf::from("."),
             fast_draft: false,
+            force_output: false,
             embed_local_image: None,
             embed_remote_image: None,
             compress_embed_image: None,
@@ -171,6 +178,7 @@ impl Default for CompilationConfiguration {
             documents_subset_to_compile: None,
             bibliography: None,
             theme: None,
+            styles_raw_path: Vec::new()
         }
     }
 }
