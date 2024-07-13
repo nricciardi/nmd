@@ -5,7 +5,7 @@
 **New way to write in markdown**
 
 [![License](https://img.shields.io/badge/license-GPL3-green.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v0.34.0-blue.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-v0.35.0-blue.svg)](CHANGELOG.md)
 
 NMD stands for **New MarkDown**, or for friends, *Nicola MarkDown* (if Stephen Bourne can name a shell, why can't I name mine NMD?)
 
@@ -17,6 +17,7 @@ NMD stands for **New MarkDown**, or for friends, *Nicola MarkDown* (if Stephen B
       - [Order with Integrated Dossiers](#order-with-integrated-dossiers)
       - [Predefined Styles and Customization](#predefined-styles-and-customization)
       - [Cool Factor](#cool-factor)
+  - [NMD x VS Code](#nmd-x-vs-code)
   - [Getting Started](#getting-started)
     - [TL;DR](#tldr)
     - [Installation](#installation)
@@ -76,6 +77,12 @@ Keep your documents organized with integrated "dossiers" for more intuitive and 
 #### Cool Factor
 
 Why stick to Markdown when you can be cool using **NMD**?
+
+
+## NMD x VS Code
+
+You can use the official [NMD x VS Code](https://github.com/nricciardi/nmd-vscode) extension!
+
 
 ## Getting Started
 

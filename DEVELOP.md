@@ -49,7 +49,7 @@
 - [x] Dark style
 - [ ] Run code
 - [ ] Video
-- [ ] Scientific style
+- [x] Scientific style
 - [ ] Linkify (convert URL-like strings in links)
 - [x] Fast draft (prevent to parse time consuming parts)
 - [ ] Dynamics addons (e.g. katex iff math is used)
