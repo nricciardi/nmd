@@ -91,6 +91,8 @@ Do you want **migrate from Markdown to New Markdown** easily and quickly? Read [
 ### TL;DR
 
 ```shell
+cargo install nmd
+
 nmd generate dossier -p dossier/input/path -f -w
 
 nmd dossier -p dossier/input/path add -d new-document.nmd
@@ -100,11 +102,11 @@ nmd compile dossier -i dossier/input/path
 
 ### Installation
 
-To install NMD, follow these steps:
+You can install NMD using Cargo or downloading last release from Github.
 
-1. Download the last release based on your operating system
-2. Extract files
-3. Run `nmd` execution file
+```shell
+cargo install nmd
+```
 
 ### NMD CLI
 
