@@ -20,6 +20,12 @@ emoji: :alien:
 
 text between quote
 
+|table heading 1|table heading 2|
+|---|---|
+|table body 1| table body 2|
+|---|
+||table footer|
+
 > Simple
 > multiline
 > quote

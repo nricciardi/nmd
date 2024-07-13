@@ -5,7 +5,7 @@ use std::{collections::HashMap, path::PathBuf};
 
 use getset::{CopyGetters, Getters, MutGetters, Setters};
 
-use crate::{compiler::{bibliography::Bibliography, compilation_configuration::CompilationConfiguration}, resource::text_reference::TextReferenceMap};
+use crate::{compiler::{bibliography::Bibliography, compilation_configuration::CompilationConfiguration, theme::Theme}, resource::text_reference::TextReferenceMap};
 
 use self::list_bullet_configuration_record::ListBulletConfigurationRecord;
 
@@ -62,6 +62,9 @@ pub struct ParsingConfiguration {
 
     #[getset(get = "pub", set = "pub")]
     bibliography: Option<Bibliography>,
+
+    #[getset(get = "pub", set = "pub")]
+    theme: Theme,
 }
 
 impl ParsingConfiguration {
@@ -69,7 +72,8 @@ impl ParsingConfiguration {
     pub fn new(input_location: PathBuf, output_location: PathBuf, embed_local_image: bool, embed_remote_image: bool, 
                 compress_embed_image: bool, strict_image_src_check: bool, metadata: ParsingMetadata, excluded_modifiers: ModifiersBucket, 
                 parallelization: bool, list_bullets_configuration: Vec<ListBulletConfigurationRecord>, strict_list_check: bool, 
-                strict_focus_block_check: bool, references: TextReferenceMap, fast_draft: bool, bibliography: Option<Bibliography>,) -> Self {
+                strict_focus_block_check: bool, references: TextReferenceMap, fast_draft: bool, bibliography: Option<Bibliography>,
+                theme: Theme, ) -> Self {
 
         Self {
             input_location,
@@ -86,7 +90,8 @@ impl ParsingConfiguration {
             strict_focus_block_check,
             references,
             fast_draft,
-            bibliography
+            bibliography,
+            theme,
         }
     }
 }
@@ -109,6 +114,7 @@ impl Default for ParsingConfiguration {
             references: HashMap::new(),
             fast_draft: false,
             bibliography: None,
+            theme: Theme::default(),
         }
     }
 }
@@ -128,6 +134,7 @@ impl From<CompilationConfiguration> for ParsingConfiguration {
             references: compilation_configuration.references().clone().unwrap(),
             fast_draft: compilation_configuration.fast_draft(),
             bibliography: compilation_configuration.bibliography().clone(),
+            theme: compilation_configuration.theme().as_ref().unwrap_or(&Theme::default()).clone(),
             
             ..Default::default()
         }

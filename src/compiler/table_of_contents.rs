@@ -75,7 +75,7 @@ impl TableOfContents {
 
             if let Some(id) = heading.resource_reference() {
 
-                outcome.add_fixed_part(format!(r#"<a href="{}">"#, id.build()));
+                outcome.add_fixed_part(format!(r#"<a href="{}" class="link">"#, id.build()));
             
             } else {
                 log::warn!("heading {} does not have a valid id", heading.title())
