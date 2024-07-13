@@ -11,6 +11,7 @@ use std::path::PathBuf;
 
 use dossier_configuration_bibliography::DossierConfigurationBibliography;
 use dossier_configuration_table_of_contents::DossierConfigurationTableOfContents;
+use getset::{Getters, Setters};
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use serde::{Deserialize, Serialize};
 use log;
@@ -27,9 +28,10 @@ use self::{dossier_configuration_compilation::DossierConfigurationCompilation, d
 
 
 
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize, Getters, Setters)]
 pub struct DossierConfiguration {
     #[serde(default = "default_name")]
+    #[getset(get = "pub", set = "pub")]
     name: String,
 
     #[serde(rename(serialize = "toc", deserialize = "toc"), default = "default_toc")]
@@ -122,10 +124,6 @@ impl DossierConfiguration {
 
     pub fn append_raw_document_path(&mut self, raw_document_path: String) -> () {
         self.raw_documents_paths.push(raw_document_path)
-    }
-
-    pub fn name(&self) -> &String {
-        &self.name
     }
 
     pub fn style(&self) -> &DossierConfigurationStyle {

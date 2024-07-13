@@ -102,16 +102,16 @@ impl Compiler {
 
         let dossier_theme = dossier_configuration.style().theme().clone();
         
-        log::info!("parsing...");
+        log::info!("parsing using theme: {}", parsing_configuration.theme());
         log::debug!("parsing configuration:\n{:#?}\n", parsing_configuration);
         
         if parsing_configuration.fast_draft() {
-            log::info!("fast draft!")
+            log::info!("fast draft mode on!")
         }
 
         dossier.parse(compilation_configuration.format(), Arc::clone(&codex), Arc::new(RwLock::new(parsing_configuration)), Arc::new(None))?;
 
-        assembler_configuration.set_theme(dossier_theme);
+        assembler_configuration.set_theme(compilation_configuration.theme().as_ref().unwrap_or(&Theme::default()).clone());
 
         log::info!("assembling...");
 
@@ -285,11 +285,11 @@ impl Compiler {
 
         let mut assembler_configuration = AssemblerConfiguration::default();
         
-        log::info!("parsing...");
+        log::info!("parsing using theme: {}", parsing_configuration.theme());
         log::debug!("parsing configuration:\n{:#?}\n", parsing_configuration);
         
         if parsing_configuration.fast_draft() {
-            log::info!("fast draft!")
+            log::info!("fast draft mode on!")
         }
 
         let codex = Arc::new(codex);

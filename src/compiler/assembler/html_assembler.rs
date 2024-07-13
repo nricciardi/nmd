@@ -22,9 +22,8 @@ impl HtmlAssembler {
     fn apply_standard_remote_addons(&self, mut page: HtmlPage) -> HtmlPage {
         // add code block js/css
         match self.configuration.theme() {
-            Theme::Light => {
+            Theme::Light | Theme::HighContrast | Theme::None => {
                 page = page
-
                     .with_script_link_attr("https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js", [
                         ("crossorigin", "anonymous"),
                     ])
@@ -37,7 +36,6 @@ impl HtmlAssembler {
             },
             Theme::Dark => {
                 page = page
-
                     .with_script_link_attr("https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js", [
                         ("crossorigin", "anonymous"),
                     ])
@@ -47,13 +45,32 @@ impl HtmlAssembler {
                     .with_head_link("https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-okaidia.css", "stylesheet")
                     .with_head_link("https://emoji-css.afeld.me/emoji.css", "stylesheet");
             },
-            Theme::Scientific => todo!(),
-            Theme::Vintage => todo!(),
-            Theme::None => todo!(),
+            Theme::Scientific => {
+                page = page
+                    .with_script_link_attr("https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js", [
+                        ("crossorigin", "anonymous"),
+                    ])
+                    .with_script_link_attr("https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js", [
+                        ("crossorigin", "anonymous"),
+                    ])
+                    .with_head_link("https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-coy.css", "stylesheet")
+                    .with_head_link("https://emoji-css.afeld.me/emoji.css", "stylesheet");
+            },
+            Theme::Vintage => {
+                page = page
+                    .with_script_link_attr("https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js", [
+                        ("crossorigin", "anonymous"),
+                    ])
+                    .with_script_link_attr("https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js", [
+                        ("crossorigin", "anonymous"),
+                    ])
+                    .with_head_link("https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-solarizedlight.css", "stylesheet")
+                    .with_head_link("https://emoji-css.afeld.me/emoji.css", "stylesheet");
+            }
         };
 
+        // add math block js/css
         page = page
-                // add math block js/css
                 .with_head_link_attr("https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css", "stylesheet", [
                     ("integrity", "sha384-n8MVd4RsNIU0tAv4ct0nTaAbDJwPJzDEaqSD1odI+WdtXRGWt2kTvGFasHpSy3SV"),
                     ("crossorigin", "anonymous")
@@ -103,17 +120,22 @@ impl HtmlAssembler {
 
         // add code block js/css                        
         match self.configuration.theme() {
-            Theme::Light => {
-                page.add_style(include_str!("html_assembler/code_block/light_theme/prismjs.min.css"));
-                page.add_script_literal(include_str!("html_assembler/code_block/light_theme/prismjs.min.js"));
+            Theme::Light | Theme::HighContrast | Theme::None => {
+                page.add_style(include_str!("html_assembler/code_block/light_theme/prismjs.css"));
+                page.add_script_literal(include_str!("html_assembler/code_block/light_theme/prismjs.js"));
             },
             Theme::Dark => {
-                page.add_style(include_str!("html_assembler/code_block/dark_theme/prismjs.min.css"));
-                page.add_script_literal(include_str!("html_assembler/code_block/dark_theme/prismjs.min.js"));
+                page.add_style(include_str!("html_assembler/code_block/dark_theme/prismjs.css"));
+                page.add_script_literal(include_str!("html_assembler/code_block/dark_theme/prismjs.js"));
             },
-            Theme::Scientific => todo!(),
-            Theme::Vintage => todo!(),
-            Theme::None => todo!(),
+            Theme::Scientific => {
+                page.add_style(include_str!("html_assembler/code_block/scientific_theme/prismjs.css"));
+                page.add_script_literal(include_str!("html_assembler/code_block/scientific_theme/prismjs.js"));
+            },
+            Theme::Vintage => {
+                page.add_style(include_str!("html_assembler/code_block/vintage_theme/prismjs.css"));
+                page.add_script_literal(include_str!("html_assembler/code_block/vintage_theme/prismjs.js"));
+            },
         };
 
         page
@@ -124,9 +146,13 @@ impl HtmlAssembler {
         match self.configuration.theme() {
             Theme::Light => page.add_style(include_str!("html_assembler/default_style/light_theme.css")),
             Theme::Dark => page.add_style(include_str!("html_assembler/default_style/dark_theme.css")),
-            Theme::Scientific => todo!(),
-            Theme::Vintage => todo!(),
-            Theme::None => todo!(),
+            Theme::Scientific => page.add_style(include_str!("html_assembler/default_style/scientific_theme.css")),
+            Theme::Vintage => page.add_style(include_str!("html_assembler/default_style/vintage_theme.css")),
+            Theme::HighContrast => {
+                page.add_style(include_str!("html_assembler/default_style/light_theme.css"));
+                page.add_style(include_str!("html_assembler/default_style/high_contrast_theme.css"));
+            },
+            Theme::None => ()       // nothing,
         }
 
         page

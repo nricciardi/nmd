@@ -117,6 +117,8 @@ nmd generate dossier -p dossier/input/path -f -w
 
 The Git support is planned, but not implemented yet. You can only add `.gitkeep` files in assets directories using `-k`.
 
+`-n` permits to specify dossier name.
+
 ##### Markdown to New Markdown
 
 You can easily convert a standard Markdown file in a New Markdown dossier using `--from-md <md-file-path>` option. 
@@ -163,7 +165,13 @@ Watcher mode compile dossier if any change is captured. Changes are captured onl
 
 `-s <document1> -s <documentN>` to compile only a subset of documents in dossier configuration list.
 
+`-m` permits to specify compilation theme:
 
+- `light`
+- `dark`
+- `vintage`
+- `scientific`
+- `none`
 
 ## Develop
 

@@ -354,8 +354,7 @@ body {
 }
 
 .table-footer {
-    /* TODO: work-around to fix build_html missed tfoot */
-    /*display: table-footer-group;*/
+    display: table-footer-group;
 }
 
 .table-cell, .table-empty-cell {

@@ -1,0 +1,399 @@
+:root {
+    --body-margin-top: 2cm;
+    --body-margin-right: 2cm;
+    --body-margin-bottom: 2cm;
+    --body-margin-left: 2cm;
+}
+
+/* Reset CSS */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body, h1, h2, h3, p, ul, li {
+    margin: 0;
+    padding: 0;
+}
+
+/* PAGE */
+
+body {
+    font-family: "Times New Roman", serif;
+    font-size: 12pt;
+    margin: var(--body-margin-top) var(--body-margin-right) var(--body-margin-bottom) var(--body-margin-left);
+    background-color: #ffffff;
+    overflow-x: hidden;
+    color: #333333;
+}
+
+@media print {
+    body {
+        margin: 2cm;
+        background-color: white;
+    }
+}
+
+@page:right {
+    @bottom-center {
+        content: counter(page);
+    }
+}
+
+.paragraph {
+    line-height: 1.5;
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+    text-align: justify;
+    padding-left: 0.25em;
+}
+
+.page-break {
+    page-break-after: always;
+}
+
+/* HEADINGS */
+
+.heading-1, .heading-2, .heading-3, .heading-4, .heading-5, .heading-6 {
+    font-weight: bold;
+    font-family: "Times New Roman", serif;
+    margin-top: 0.75em;
+    margin-bottom: 0.5em;
+    line-height: 1.25;
+    page-break-after: avoid;
+}
+
+.heading-1 {
+    font-size: 2em;
+    margin-top: 5vh;
+    padding-bottom: 0.3em;
+    border-bottom: 1px solid #000000;
+    page-break-before: always;
+}
+
+@media print {
+    .heading-1 {
+        margin-top: 0;
+        padding-bottom: 0.3em;
+        border-bottom: 1px solid #000000;
+        page-break-before: always;
+    }
+}
+
+.heading-2 {
+    font-size: 1.75em;
+    padding-bottom: 0.3em;
+    border-bottom: 1px solid #000000;
+}
+
+.heading-3 {
+    font-size: 1.5em;
+}
+
+.heading-4 {
+    font-size: 1.25em;
+}
+
+.heading-5 {
+    font-size: 1.1em;
+}
+
+.heading-6 {
+    font-size: 1em;
+}
+
+/* EMBEDDED STYLE */
+
+.abridged-embedded-style {
+    border-radius: 5%;
+}
+
+/* CHECKBOX */
+
+.checkbox {
+    width: 15px;
+    height: 15px;
+    border: 1px solid #888888;
+    border-radius: 2px;
+    background-color: #ffffff;
+}
+
+.checkbox-checked::before {
+    content: '\2713';
+    font-size: 16px;
+    color: #000000;
+    display: block;
+    text-align: center;
+    line-height: 15px;
+}
+
+/* IMAGE */
+
+.figure {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.image {
+    max-width: 100%;
+    height: auto;
+    margin-bottom: 10px; /* Add bottom space between the image and the caption */
+}
+
+.image-caption {
+    width: 100%;
+}
+
+/* LIST */
+
+.list {
+    list-style-type: none;
+    padding: 0;
+    page-break-inside: avoid;
+}
+
+.list-item-indentation {
+    padding-left: 2vw;
+}
+
+.list-item-bullet {
+    display: inline-block;
+    margin-right: 0.5vw;
+    font-size: large;
+    width: 0.5em;
+}
+
+/* FOCUS BLOCK */
+
+.focus-block, .focus-quote-block {
+    padding: 16px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    font-size: 1.05em;
+    page-break-inside: avoid;
+}
+
+.focus-block-quote, .focus-quote-block-quote {
+    background-color: #f9f9f9;
+    border-left: 4px solid #aaa;
+    display: block;
+    font-style: italic;
+    font-family: Georgia, "Times New Roman", Times, serif;
+    font-size: 1.25em;
+}
+
+.focus-block-note, .focus-quote-block-note {
+    background-color: #edf4fe;
+    border-left: 4px solid #1a73e8;
+    color: #1354a8;
+}
+
+.focus-block-tip, .focus-quote-block-tip {
+    background-color: #eafbea;
+    border-left: 4px solid #34a853;
+    color: #24753a;
+}
+
+.focus-block-important, .focus-quote-block-important {
+    background-color: #f1edf9;
+    border-left: 4px solid #8957e5;
+    color: #6b45b1;
+}
+
+.focus-block-warning, .focus-quote-block-warning {
+    background-color: #fff8e5;
+    border-left: 4px solid #d79b00;
+    color: #b17f02;
+}
+
+.focus-block-caution, .focus-quote-block-caution {
+    background-color: #fff3f4;
+    border-left: 4px solid #d93025;
+    color: #8b1e16;
+}
+
+/* BOOKMARK */
+
+.bookmark, .abridged-bookmark {
+    width: 100%;
+    height: 10vh;
+    background-color: #f3efcb;
+    border-radius: 1%;
+    color: #333;
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 999;
+    padding: 0 1em;
+    page-break-inside: avoid;
+}
+
+.bookmark-title, .abridged-bookmark-title {
+    font-size: large;
+    font-weight: bold;
+}
+
+.bookmark-title::after, .abridged-bookmark-title::after {
+    margin-left: 1vw;
+    content: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="%23521616" class="bi bi-bookmark-fill" viewBox="0 0 16 16"><path d="M2 2v13.5a.5.5 0 0 0 .74.439L8 13.069l5.26 2.87A.5.5 0 0 0 14 15.5V2a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2"/></svg>');
+}
+
+/* .TODO */
+
+.todo {
+    width: 100%;
+    height: 10vh;
+    background-color: #fae8c7;
+    border-radius: 1%;
+    color: #333;
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 999;
+    padding: 0 1em;
+    page-break-inside: avoid;
+}
+
+.todo-title::before {
+    content: "TODO";
+    font-size: large;
+    font-weight: bold;
+    color: #835602;
+}
+
+.todo-title::after {
+    margin-left: 1vw;
+    content: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="%235e3f04" class="bi bi-pencil-square" viewBox="0 0 16 16"><path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/><path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"/></svg>');
+}
+
+/* TABLES */
+
+.table {
+    width: 90%;
+    border-collapse: collapse;
+    margin: 5%;
+}
+
+.table-cell, .table-empty-cell {
+    padding: 8px;
+    border: 1px solid #ddd;
+}
+
+.table-header .table-cell {
+    font-weight: bold;
+    background-color: #f2f2f2;
+}
+
+.table-footer .table-cell {
+    font-weight: bold;
+    background-color: #f9f9f9;
+}
+
+.table-right-cell {
+    text-align: right;
+}
+
+.table-center-cell {
+    text-align: center;
+}
+
+.table-left-cell {
+    text-align: left;
+}
+
+
+/* TABLE OF CONTENTS */
+
+.toc-title {
+    font-size: 24pt;
+    font-weight: bold;
+    margin-bottom: 14pt;
+}
+
+.toc-body {
+    list-style-type: none;
+    padding: 0;
+}
+
+.toc-item-indentation {
+    padding-left: 20px;
+}
+
+.toc-item-bullet::before {
+    content: "-";
+}
+
+/* BIBLIOGRAPHY */
+
+.bibliography-title {
+    font-size: 24pt;
+    font-weight: bold;
+    margin-bottom: 14pt;
+}
+
+.bibliography-body {
+    list-style-type: none;
+    padding: 0;
+}
+
+.bibliography-item {
+    margin: 10pt 0 0 10pt;
+    font-size: 12pt;
+}
+
+.bibliography-item-title {
+    font-size: 14pt;
+    font-style: italic;
+    margin-left: 10px;
+    margin-bottom: 5pt;
+}
+
+.bibliography-item-title::before,
+.bibliography-item-title::after {
+    content: '"';
+}
+
+.bibliography-item-authors {
+    font-size: 16pt;
+    margin-left: 20px;
+}
+
+.bibliography-item-url {
+    text-decoration: underline;
+    margin-left: 20px;
+}
+
+.bibliography-item-description {
+    margin-left: 20px;
+}
+
+.bibliography-item-year {
+    margin-left: 20px;
+}
+
+.cite {
+    text-decoration: none;
+    color: black;
+}
+
+.cite::before {
+    content: '[';
+    margin-left: 2px;
+    margin-right: 1px;
+}
+
+.cite::after {
+    content: ']';
+    margin-right: 2px;
+    margin-left: 1px;
+}
+
+
