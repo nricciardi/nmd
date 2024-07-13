@@ -94,6 +94,10 @@ impl Generator {
             dossier_configuration = DossierConfiguration::default().with_files_in_dir(configuration.path())?;
         }
 
+        if let Some(name) = configuration.name() {
+            dossier_configuration.set_name(name.clone());
+        }
+
         if configuration.welcome() {
 
             let mut welcome_document = DiskResource::try_from(configuration.path().join(WELCOME_FILE_NAME))?;

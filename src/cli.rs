@@ -223,6 +223,13 @@ impl NmdCli {
                                                 .help("generate NMD dossier from Markdown file")
                                                 .action(ArgAction::Set)
                                         )
+                                        .arg(
+                                            Arg::new("name")
+                                                .long("name")
+                                                .short('n')
+                                                .help("set dossier name")
+                                                .action(ArgAction::Set)
+                                        )
 
                                 )
                 )
@@ -430,6 +437,11 @@ impl NmdCli {
             Some(("dossier", generate_dossier_matches)) => {
                 
                 let mut generator_configuration = GeneratorConfiguration::default();
+
+                if let Some(name) = generate_dossier_matches.get_one::<String>("name") {
+                     
+                    generator_configuration.set_name(Some(name.clone()));
+                }
 
                 if let Some(input_path) = generate_dossier_matches.get_one::<String>("path") {
                      

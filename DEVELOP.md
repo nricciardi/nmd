@@ -45,8 +45,8 @@
 - [ ] embed_remote_image
 - [ ] Possibility to use a different dossier configuration name
 - [ ] PDF compile format
-- [ ] Vintage style (typewriter)
-- [ ] Dark style
+- [x] Vintage style (typewriter)
+- [x] Dark style
 - [ ] Run code
 - [ ] Video
 - [ ] Scientific style
