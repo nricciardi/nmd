@@ -49,9 +49,11 @@ impl Display for Artifact {
 impl Dumpable for Artifact {
     fn dump(&mut self, configuration: &DumpConfiguration) -> Result<(), DumpError> {
 
-        log::info!("dump artifact in {:?}", configuration.output_path());
+        let path = configuration.output_path().clone();
 
-        let mut disk_resource = DiskResource::try_from(configuration.output_path().clone())?;
+        log::info!("dump artifact in {:?}", path);
+
+        let mut disk_resource = DiskResource::try_from(path)?;
 
         if configuration.force_dump() {
             disk_resource.create_parents_dir()?;

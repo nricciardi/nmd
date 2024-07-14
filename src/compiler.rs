@@ -300,7 +300,6 @@ impl Compiler {
 
         log::info!("assembling...");
 
-
         let mut output_location = compilation_configuration.output_location().clone();
 
         if output_location.is_dir() {

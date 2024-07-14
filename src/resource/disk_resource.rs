@@ -21,7 +21,11 @@ impl DiskResource {
     pub fn create_parents_dir(&self) -> Result<(), ResourceError> {
 
         let prefix = self.location.parent().unwrap();
-        std::fs::create_dir_all(prefix)?;
+
+        if !prefix.exists() {
+
+            std::fs::create_dir_all(prefix)?;
+        }
 
         Ok(())
     }
