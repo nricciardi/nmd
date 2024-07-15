@@ -9,7 +9,7 @@ use rayon::slice::ParallelSliceMut;
 use regex::Regex;
 use thiserror::Error;
 
-use crate::compiler::codex::modifier::constants::NEW_LINE;
+use crate::compiler::codex::modifier::constants::{INCOMPATIBLE_CHAPTER_HEADING_REGEX, NEW_LINE};
 use crate::compiler::codex::modifier::standard_chapter_modifier::StandardChapterModifier;
 use crate::resource::disk_resource::DiskResource;
 use crate::resource::{Resource, ResourceError};
@@ -82,6 +82,15 @@ impl Loader {
         log::debug!("start to find chapter borders in document '{}'", document_name);
 
         // usize: chapter start/end position
+        let mut incompatible_chapter_heading_borders: Vec<(usize, usize)> = Vec::new();
+
+        INCOMPATIBLE_CHAPTER_HEADING_REGEX.iter().for_each(|regex| {            // TODO: par_iter
+            regex.find_iter(&content).for_each(|m| {
+                incompatible_chapter_heading_borders.push((m.start(), m.end()));
+            });
+        });
+
+        // usize: chapter start/end position
         // String: chapter heading + options found
         let mut chapter_borders: Vec<(usize, usize, String)> = Vec::new();
 
@@ -107,6 +116,16 @@ impl Loader {
 
                 if let Some(p) = overlap_chapter {     // => overlap
                     log::debug!("discarded chapter:\n{}\nbecause there is an overlap between {} and {} using pattern {:?}:\n{:#?}\n", m.as_str(), start, end, modifier_pattern, p);
+                    return
+                }
+
+                let not_heading = incompatible_chapter_heading_borders.par_iter().find_any(|border| {
+                    (border.0 <= start && border.1 >= start) ||
+                    (border.0 <= end && border.1 >= end)
+                });
+
+                if let Some(p) = not_heading {     // => overlap
+                    log::debug!("discarded chapter:\n{}\nbecause there is in an incompatible slice between {} and {} ({:#?})", m.as_str(), start, end, p);
                     return
                 }
 
@@ -272,6 +291,8 @@ impl Loader {
                     log::debug!("paragraph discarded because empty");
                     return;
                 }
+
+                let matched_str = matched_str.replace(&(*TRIPLE_NEW_LINES), &(*DOUBLE_NEW_LINES));
 
                 let paragraph = Paragraph::new(matched_str, paragraph_modifier.identifier().clone());
 

@@ -102,7 +102,7 @@ impl StandardParagraphModifier {
         match *self {
             Self::Image => format!(r"!\[([^\]]*)\](?:{})?\(([^)]+)\)(?:\{{(.*)\}})?", IDENTIFIER_PATTERN),
             Self::CommonParagraph => String::from(r#"(?s:(.*?))"#),
-            Self::CodeBlock => format!(r"```(\w+){}+(.*?){}+```", NEW_LINE, NEW_LINE),
+            Self::CodeBlock => format!(r"```\s?(\w+){}+(?s:(.*?)){}+```", NEW_LINE, NEW_LINE),
             Self::MathBlock => String::from(r#"\$\$((?s:.+?))\$\$"#),
             Self::ListItem => format!(r#"(?m:^([\t ]*)(-\[\]|-\[ \]|-\[x\]|-\[X\]|-|->|\||\*|\+|--|\d[\.)]?|[a-zA-Z]{{1,8}}[\.)]|&[^;]+;) (.*){}?)"#, NEW_LINE),
             Self::List => format!(r#"((?:{}+)+)"#, Self::ListItem.modifier_pattern()),
@@ -111,7 +111,7 @@ impl StandardParagraphModifier {
             Self::LineBreakDash => String::from(r"(?m:^-{3,})"),
             Self::LineBreakStar => String::from(r"(?m:^\*{3,})"),
             Self::LineBreakPlus => String::from(r"(?m:^\+{3,})"),
-            Self::FocusBlock => format!(r":::\s(\w+){}(?s:(.*?)){}:::", NEW_LINE, NEW_LINE),
+            Self::FocusBlock => format!(r":::\s?(\w+){}(?s:(.*?)){}:::", NEW_LINE, NEW_LINE),
             Self::AbridgedEmbeddedParagraphStyle => String::from(r"\[\[(?sx:(.*?))\]\]\{(.*?)(?s:;(.*?)(?:;(.*?))?)?\}"),
             Self::AbridgedEmbeddedParagraphStyleWithId => format!(r"\[\[(?sx:(.*?))\]\]{}?{}{}?\{{(.*?)(?s:;(.*?)(?:;(.*?))?)?\}}", NEW_LINE, IDENTIFIER_PATTERN, NEW_LINE),
             Self::ParagraphIdentifier => format!(r"\[\[(?sx:(.*?))\]\]{}?{}", NEW_LINE, IDENTIFIER_PATTERN),

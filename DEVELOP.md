@@ -2,6 +2,11 @@
 
 ### Features in Progress for current version
 
+- [ ] Compile only modified chapters in watcher mode
+- [ ] Web server to refresh compiled output
+
+### Features done
+
 - [x] Use file name instead of absolute path in dossier configuration
 - [x] Other sections in dossier configuration to manage all options
 - [x] Local math (no CDN)
@@ -55,7 +60,6 @@
 - [ ] Dynamics addons (e.g. katex iff math is used)
 - [ ] Watcher mode for single file compilation
 - [ ] Split CLI lib from compiler
-- [ ] Compile only modified chapters in watcher mode
 - [x] Compile only a subset of documents
 - [ ] Paper format support (A3, A5, ...)
 - [x] MD to NMD converter
