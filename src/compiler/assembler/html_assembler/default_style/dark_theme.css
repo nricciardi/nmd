@@ -172,6 +172,7 @@ body {
 .list {
     list-style-type: none;
     padding: 0;
+    margin: 0 1vw 0 3.5vw;
 
     page-break-inside: avoid;
 }

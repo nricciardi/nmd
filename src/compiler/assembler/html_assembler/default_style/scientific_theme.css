@@ -153,6 +153,7 @@ body {
     list-style-type: none;
     padding: 0;
     page-break-inside: avoid;
+    margin: 0 1vw 0 3.5vw;
 }
 
 .list-item-indentation {
