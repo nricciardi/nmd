@@ -43,7 +43,23 @@ impl TableOfContents {
         }
     }
 
-    fn standard_html_parse(&mut self, plain: bool, codex: Arc<Codex>, parsing_configuration: Arc<RwLock<ParsingConfiguration>>, parsing_configuration_overlay: Arc<Option<ParsingConfigurationOverLay>>) -> Result<(), ParsingError> {
+    fn min_headers_lv(&self) -> Option<u32> {
+        let mut m: Option<u32> = None;
+
+        for h in &self.headings {
+            
+            if m.is_none() {
+                m = Some(h.level());
+                continue;
+            }
+            
+            m = Some(m.unwrap().min(h.level()));
+        }
+
+        m
+    }
+
+    fn standard_html_parse(&mut self, codex: Arc<Codex>, parsing_configuration: Arc<RwLock<ParsingConfiguration>>, parsing_configuration_overlay: Arc<Option<ParsingConfigurationOverLay>>) -> Result<(), ParsingError> {
         
         let mut outcome = ParsingOutcome::new_empty();
 
@@ -57,17 +73,26 @@ impl TableOfContents {
 
         for heading in &self.headings {
 
-            let heading_lv: usize = heading.level() as usize;
+            let heading_lv: u32 = heading.level();
 
-            if heading_lv > self.maximum_heading_level {
+            if heading_lv > self.maximum_heading_level as u32 {
                 continue;
             }
 
             outcome.add_fixed_part(String::from(r#"<li class="toc-item">"#));
 
-            if !plain {
+            if !self.plain {
 
-                outcome.add_fixed_part(TOC_INDENTATION.repeat(heading_lv));
+                let min_heading_lv = self.min_headers_lv();
+
+                if let Some(m) = min_heading_lv {
+
+                    outcome.add_fixed_part(TOC_INDENTATION.repeat((heading_lv - m) as usize));
+
+                } else {
+                    outcome.add_fixed_part(TOC_INDENTATION.repeat(heading_lv as usize));
+
+                }
             }
 
             outcome.add_fixed_part(r#"<span class="toc-item-bullet">"#.to_string());
@@ -108,6 +133,11 @@ impl TableOfContents {
 impl Parsable for TableOfContents {
     fn standard_parse(&mut self, format: &OutputFormat, codex: Arc<Codex>, parsing_configuration: Arc<RwLock<ParsingConfiguration>>, parsing_configuration_overlay: Arc<Option<ParsingConfigurationOverLay>>) -> Result<(), ParsingError> {
         
+        if self.headings.is_empty() {
+            
+            return Ok(());
+        }
+
         if self.page_numbers {
             log::error!("table of contents with page numbers not already usable...");
 
@@ -115,13 +145,7 @@ impl Parsable for TableOfContents {
         }
         
         match format {
-            OutputFormat::Html => {
-                if self.plain {
-                    return self.standard_html_parse(true, Arc::clone(&codex), Arc::clone(&parsing_configuration), Arc::clone(&parsing_configuration_overlay))
-                } else {
-                    return self.standard_html_parse(false, Arc::clone(&codex), Arc::clone(&parsing_configuration), Arc::clone(&parsing_configuration_overlay)) 
-                }
-            },
+            OutputFormat::Html => self.standard_html_parse(Arc::clone(&codex), Arc::clone(&parsing_configuration), Arc::clone(&parsing_configuration_overlay)),
         }
     }
 }

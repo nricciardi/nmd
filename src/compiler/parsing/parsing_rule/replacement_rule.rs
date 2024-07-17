@@ -1,7 +1,7 @@
 use std::fmt::Debug;
 use std::sync::{Arc, RwLock};
 
-use getset::{Getters, Setters};
+use getset::{CopyGetters, Getters, MutGetters, Setters};
 use log;
 use regex::{Captures, Regex, Replacer};
 
@@ -16,11 +16,23 @@ use crate::utility::text_utility;
 use super::ParsingRule;
 
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Getters, CopyGetters, MutGetters, Setters)]
 pub struct ReplacementRuleReplacerPart<R: Replacer> {
+
+    #[getset(get = "pub", get_mut = "pub", set = "pub")]
     replacer: R,
+
+    #[getset(get = "pub", set = "pub")]
     fixed: bool,
-    references_at: Vec<usize>
+
+    #[getset(get = "pub", set = "pub")]
+    references_at: Vec<usize>,
+
+    #[getset(get = "pub", set = "pub")]
+    post_replacing: Option<Vec<(Regex, String)>>,
+
+    #[getset(get = "pub", set = "pub")]
+    reference_at: Option<usize>,
 }
 
 impl<R: Replacer> ReplacementRuleReplacerPart<R> {
@@ -29,7 +41,9 @@ impl<R: Replacer> ReplacementRuleReplacerPart<R> {
         Self {
             replacer,
             fixed: true,
-            references_at: Vec::new()
+            references_at: Vec::new(),
+            post_replacing: None,
+            reference_at: None,
         }
     }
 
@@ -37,7 +51,9 @@ impl<R: Replacer> ReplacementRuleReplacerPart<R> {
         Self {
             replacer,
             fixed: false,
-            references_at: Vec::new()
+            references_at: Vec::new(),
+            post_replacing: None,
+            reference_at: None,
         }
     }
 
@@ -47,23 +63,12 @@ impl<R: Replacer> ReplacementRuleReplacerPart<R> {
         self
     }
 
-    pub fn replacer(&self) -> &R {
-        &self.replacer
-    }
+    pub fn with_post_replacing(mut self, post_replacing: Option<Vec<(Regex, String)>>) -> Self {
+        self.set_post_replacing(post_replacing);
 
-    pub fn replacer_mut(&mut self) -> &mut R {
-        &mut self.replacer
-    }
-
-    pub fn set_replacer(&mut self, r: R) {
-        self.replacer = r
-    }
-
-    pub fn references_at(&self) -> &Vec<usize> {
-        &self.references_at
+        self
     }
 }
-
 
 
 /// Rule to replace a NMD text based on a specific pattern matching rule
@@ -76,17 +81,11 @@ pub struct ReplacementRule<R: Replacer> {
     #[getset(set)]
     search_pattern_regex: Regex,
 
-    #[getset(get = "pub", set)]
+    #[getset(get = "pub", set = "pub")]
     replacer_parts: Vec<ReplacementRuleReplacerPart<R>>,
 
-    #[getset(get = "pub", set)]
+    #[getset(get = "pub", set = "pub")]
     newline_fix_pattern: Option<String>,
-
-    #[getset(get = "pub", set)]
-    reference_at: Option<usize>,
-
-    #[getset(get = "pub", set)]
-    pre_replacing: Option<Vec<(Regex, String)>>,
 }
 
 impl<R: Replacer> ReplacementRule<R> {
@@ -101,20 +100,11 @@ impl<R: Replacer> ReplacementRule<R> {
             search_pattern: searching_pattern,
             replacer_parts: replacers,
             newline_fix_pattern: None,
-            reference_at: None,
-            pre_replacing: None,
         }
     }
 
     pub fn with_newline_fix(mut self, pattern: String) -> Self {
         self.newline_fix_pattern = Some(pattern);
-
-        self
-    }
-
-    pub fn with_pre_replacing(mut self, pre_replacing: Vec<(Regex, String)>) -> Self {
-
-        self.set_pre_replacing(Some(pre_replacing));
 
         self
     }
@@ -131,7 +121,7 @@ impl ParsingRule for ReplacementRule<String> {
     /// Parse the content using internal search and replacement pattern
     fn standard_parse(&self, content: &str, _codex: &Codex, parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError> {
 
-        log::debug!("parsing:\n{}\nusing '{}'->'{:?}' (newline fix: {}, id_at: {:?})", content, self.search_pattern(), self.replacer_parts, self.newline_fix_pattern.is_some(), self.reference_at);
+        log::debug!("parsing:\n{}\nusing '{}'->'{:?}'", content, self.search_pattern(), self.replacer_parts);
 
         let mut outcome = ParsingOutcome::new_empty();
         let mut last_match = 0;
@@ -172,26 +162,21 @@ impl ParsingRule for ReplacementRule<String> {
             for replacer in replacers {
                 let parsed_content = self.search_pattern_regex.replace_all(matched_content.as_str(), replacer.replacer());
 
+                let mut parsed_content = parsed_content.to_string();
+
+                if let Some(post_replacing) = replacer.post_replacing() {
+                    parsed_content = text_utility::replace(&parsed_content, post_replacing);
+                }
+                
                 if replacer.fixed {
 
-                    outcome.add_fixed_part(parsed_content.to_string());
+                    outcome.add_fixed_part(parsed_content);
     
                 } else {
-
-                    let pc: String;
-
-                    if let Some(r) = &self.pre_replacing {
-
-                        pc = text_utility::replace(&parsed_content.to_string(), r);
-
-                    } else {
-                        pc = parsed_content.to_string();
-                    }
     
-                    outcome.add_mutable_part(pc);
+                    outcome.add_mutable_part(parsed_content);
                 }
-            }
-            
+            }   
         }
 
         if last_match < content.len() {
@@ -238,7 +223,7 @@ where F: 'static + Sync + Send + Fn(&Captures) -> String {
     /// Parse the content using internal search and replacement pattern
     fn standard_parse(&self, content: &str, _codex: &Codex, _parsing_configuration: Arc<RwLock<ParsingConfiguration>>) -> Result<ParsingOutcome, ParsingError> {
 
-        log::debug!("parsing:\n{}\nusing '{}' (newline fix: {}, id_at: {:?})", content, self.search_pattern(), self.newline_fix_pattern.is_some(), self.reference_at);
+        log::debug!("parsing:\n{}\nusing '{}'", content, self.search_pattern());
 
 
         let mut outcome = ParsingOutcome::new_empty();

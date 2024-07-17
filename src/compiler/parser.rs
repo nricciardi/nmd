@@ -96,7 +96,7 @@ impl Parser {
                 let matches = text_rule.find_iter(&content_part.content());
 
                 if matches.len() == 0 {
-                    log::debug!("'{}' => no matches with {:#?}", content_part.content(), text_rule);
+                    log::debug!("'{}' => no matches with {:?}", content_part.content(), text_rule);
                     
                     no_match_fn();
                     continue;
@@ -189,7 +189,7 @@ impl Parser {
 
         if let Some(paragraph_rule) = paragraph_rule {
 
-            log::debug!("paragraph rule {:#?} is found, it is about to be applied to parse paragraph", paragraph_rule);
+            log::debug!("paragraph rule {:?} is found, it is about to be applied to parse paragraph", paragraph_rule);
 
             outcome = paragraph_rule.parse(&paragraph.content(), codex, Arc::clone(&parsing_configuration))?;
 
