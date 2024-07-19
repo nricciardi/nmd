@@ -39,13 +39,12 @@ impl Preview for HtmlPreview {
 
     async fn start(&mut self) -> Result<(), PreviewError> {
 
-        log::info!("html preview will be running on port: {}", PREVIEW_PORT);
-
         let src = self.src.clone();
 
         let original_log_max_level = log::max_level();
 
-        log::set_max_level(log::LevelFilter::Warn);
+        // TODO:
+        // log::set_max_level(log::LevelFilter::Warn);
 
         let server = rocket::build()
             .mount("/", FileServer::from(src))
@@ -57,15 +56,12 @@ impl Preview for HtmlPreview {
         log::set_max_level(original_log_max_level);
 
         self.server_thread_handle = Some(tokio::spawn(async {
-            server.launch().await
+
+            log::info!("html preview will be running on port: {}", PREVIEW_PORT);
+
+            server.launch().await       // TODO: do not start
         }));
-
-        // if let Err(e) = res {
-        //     log::error!("error occurs during web server startup: {}", e.to_string());
-
-        //     return Err(PreviewError::HtmlPreviewError(HtmlPreviewError::WebServerStartError(e)))
-        // }
-
+        
         Ok(())
     }
 
@@ -85,8 +81,21 @@ impl Preview for HtmlPreview {
     
     async fn stop(&mut self) -> Result<(), PreviewError> {
         
-        // self.server_thread_handle.unwrap().await?;
-        
+        if let Some(j) = self.server_thread_handle.take() {
+            let r = j.await?;
+
+            if let Ok(rocket) = r {
+                rocket.shutdown().await;
+            } else {
+
+                let err = r.err().unwrap();
+
+                log::error!("error occurs: {}", err);
+
+                return Err(PreviewError::HtmlPreviewError(HtmlPreviewError::WebServerStartError(err)));
+            }
+        }
+
         log::info!("html preview stop");
 
         Ok(())
