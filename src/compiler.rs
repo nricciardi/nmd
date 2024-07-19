@@ -12,15 +12,21 @@ pub mod parsable;
 pub mod parsing;
 pub mod table_of_contents;
 pub mod bibliography;
+pub mod preview;
+pub mod watcher;
 
-use std::{sync::{mpsc::{channel, RecvError}, Arc, RwLock}, thread, time::{Instant, SystemTime}};
+use std::sync::RwLock;
+use std::{sync::Arc, time::Instant};
 
 use dossier::{dossier_configuration::DossierConfiguration, Document, Dossier};
 use dumpable::DumpConfiguration;
-use notify::{RecursiveMode, Watcher};
+use preview::{html_preview::HtmlPreview, Preview, PreviewError};
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use theme::Theme;
 use thiserror::Error;
+use tokio::task::{spawn_blocking, JoinHandle};
+use tokio::sync::RwLock as TokioRwLock;
+use watcher::{NmdWatcher, WatcherError};
 use crate::{compiler::{dumpable::{DumpError, Dumpable}, loader::Loader, parsable::Parsable}, constants::{DOSSIER_CONFIGURATION_JSON_FILE_NAME, DOSSIER_CONFIGURATION_YAML_FILE_NAME}, utility::file_utility};
 use self::{assembler::{assembler_configuration::AssemblerConfiguration, AssemblerError}, compilation_configuration::CompilationConfiguration, loader::LoadError, parsing::parsing_error::ParsingError};
 
@@ -44,10 +50,10 @@ pub enum CompilationError {
     DumpError(#[from] DumpError),
 
     #[error(transparent)]
-    WatcherError(#[from] notify::Error),
+    PreviewError(#[from] PreviewError),
 
     #[error(transparent)]
-    WatcherChannelError(#[from] RecvError),
+    WatcherError(#[from] WatcherError),
 }
 
 pub struct Compiler {
@@ -111,7 +117,7 @@ impl Compiler {
 
         dossier.parse(compilation_configuration.format(), Arc::clone(&codex), Arc::new(RwLock::new(parsing_configuration)), Arc::new(None))?;
 
-        assembler_configuration.set_theme(compilation_configuration.theme().as_ref().unwrap_or(&Theme::default()).clone());
+        assembler_configuration.set_theme(compilation_configuration.theme().as_ref().unwrap_or(&dossier_theme).clone());
 
         log::info!("assembling...");
 
@@ -144,113 +150,150 @@ impl Compiler {
     /// Watch filesystem and compile dossier if any changes occur
     /// 
     /// - min_elapsed_time_between_events_in_secs is the minimum time interval between two compilation
-    pub fn watch_compile_dossier(compilation_configuration: CompilationConfiguration, min_elapsed_time_between_events_in_secs: u64) -> Result<(), CompilationError> {
+    pub async fn watch_compile_dossier(compilation_configuration: CompilationConfiguration, min_elapsed_time_between_events_in_secs: u64) -> Result<(), CompilationError> {
 
-        let (tx, rx) = channel();
+        let preview: HtmlPreview = HtmlPreview::new(compilation_configuration.output_location().clone());
 
-        let mut watcher = notify::recommended_watcher(move |res| {
-            tx.send(res).unwrap();
-        })?;
+        let preview = Arc::new(TokioRwLock::new(preview));
 
-        watcher.watch(compilation_configuration.input_location(), RecursiveMode::Recursive)?;
+        let input_location_abs = compilation_configuration.input_location().canonicalize().unwrap(); 
 
-        log::info!("watch mode ON: any modification to the dossier files will cause immediate recompilation");
-        log::info!("press CTRL + C to terminate");
+        let compilation_configuration = Arc::new(TokioRwLock::new(compilation_configuration));
 
-        let mut last_event_time = SystemTime::now();
+        let mut watcher = NmdWatcher::new(
+            min_elapsed_time_between_events_in_secs,
+            &input_location_abs,
+            Box::new(|| {
 
-        loop {
-            match rx.recv() {
-                Ok(res) => {
+                let preview = Arc::clone(&preview);
 
+                Box::pin(async move {
+                    let res = preview.write().await.start().await;
+    
+                    if let Err(e) = res {
+                        log::error!("error occurs during preview start: {}", e);
+    
+                        return Err(WatcherError::PreviewError(e));
+                    }
+    
+                    Ok(())
+                })
+            }),
+            Box::new(|event| {
+
+                let input_location_abs = input_location_abs.clone();
+
+                Box::pin(async move {
+
+                    if event.paths.contains(&input_location_abs.join(DOSSIER_CONFIGURATION_YAML_FILE_NAME)) ||
+                        event.paths.contains(&input_location_abs.join(DOSSIER_CONFIGURATION_JSON_FILE_NAME)) {
+    
+                        log::info!("recompilation needed");
+                        return Ok(true)
+                    }
+    
+                    Ok(false)
+                })
+            }),
+            Box::new(|event| {
+
+                let compilation_configuration = Arc::clone(&compilation_configuration);
+
+                let input_location_abs = input_location_abs.clone();
+
+                Box::pin(async move {
 
                     let original_log_max_level = log::max_level();
 
                     log::set_max_level(log::LevelFilter::Warn);
 
-                    let dc = DossierConfiguration::try_from(compilation_configuration.input_location());
+                    let dc = DossierConfiguration::try_from(compilation_configuration.read().await.input_location());
 
                     log::set_max_level(original_log_max_level);
 
                     if let Err(err) = dc {
                         log::error!("error during dossier configuration loading: {}", err);
-                        continue;
+
+                        return Ok(false)
                     }
 
                     let dc = dc.unwrap();
 
                     let mut relative_paths_to_monitoring = dc.raw_documents_paths().clone();
-                    relative_paths_to_monitoring.push(String::from(DOSSIER_CONFIGURATION_YAML_FILE_NAME));
-                    relative_paths_to_monitoring.push(String::from(DOSSIER_CONFIGURATION_JSON_FILE_NAME));
                     relative_paths_to_monitoring.push(String::from("assets/"));
 
                     let relative_paths_to_monitoring = Arc::new(relative_paths_to_monitoring);
 
-                    let input_location_abs = compilation_configuration.input_location().canonicalize().unwrap(); 
+                    if let Some(_) = event.paths.par_iter().find_any(|path| {
+        
+                        let path = path.strip_prefix(input_location_abs.clone());
 
-                    match res {
+                        if let Ok(path) = path {
+                            let matched = relative_paths_to_monitoring.par_iter().find_any(|rptm| {
+                                log::debug!("{:?} contains {:?} -> {}", *rptm, path.to_string_lossy().to_string().as_str(), rptm.contains(path.to_string_lossy().to_string().as_str()));
+                                
+                                rptm.contains(path.to_string_lossy().to_string().as_str())
+                            });
 
-                        Ok(event) => {
-                            log::debug!("new event from watcher: {:?}", event);
-                            log::debug!("change detected on file(s): {:?}", event.paths);
+                            return matched.is_some()
+                        }
 
-                            let event_time = SystemTime::now();
+                        false
+                    }) {
+                        log::info!("recompilation needed");
 
-                            let elapsed_time = event_time.duration_since(last_event_time).unwrap();
-                            
-                            if elapsed_time.as_secs() < min_elapsed_time_between_events_in_secs {
-                                log::info!("change detected, but minimum elapsed time not satisfied ({}/{} s)", elapsed_time.as_secs(), min_elapsed_time_between_events_in_secs);
-                                continue;
+                        return Ok(true)
+
+
+                    } else {
+                        log::info!("recompilation not needed");
+
+                        return Ok(false)
+                    }
+                })
+            }),
+            Box::new(|| {
+                Box::pin({
+
+                    let compilation_configuration = Arc::clone(&compilation_configuration);
+                    let preview = Arc::clone(&preview);
+
+                    async move {
+                        let compilation_result = Self::compile_dossier(compilation_configuration.read().await.clone());
+        
+                        match compilation_result {
+                            Ok(_) => {
+        
+                                log::info!("compilation OK");
+        
+                                // TODO
+                                preview.write().await.update().await?;
+        
+                                return Ok(())
+                            },
+                            Err(err) => {
+                                log::error!("error during compilation: {:?}", err);
+        
+                                return Err(WatcherError::ElaborationError(err.to_string()))
                             }
-
-                            last_event_time = event_time;
-    
-                            if let Some(_) = event.paths.par_iter().find_any(|path| {
-    
-                                let path = path.strip_prefix(input_location_abs.clone());
-
-                                if let Ok(path) = path {
-                                    let matched = relative_paths_to_monitoring.par_iter().find_any(|rptm| {
-                                        log::debug!("{:?} contains {:?} -> {}", *rptm, path.to_string_lossy().to_string().as_str(), rptm.contains(path.to_string_lossy().to_string().as_str()));
-                                        
-                                        rptm.contains(path.to_string_lossy().to_string().as_str())
-                                    });
-
-                                    return matched.is_some()
-                                }
-
-                                false
-                            }) {
-                                log::info!("recompilation needed");
-
-                                let compilation_configuration = compilation_configuration.clone();
-    
-                                let _thread_res = thread::spawn(|| {
-                                    let compilation_result = Self::compile_dossier(compilation_configuration);
-    
-                                    match compilation_result {
-                                        Ok(_) => log::info!("compilation OK"),
-                                        Err(err) => log::error!("error during compilation: {:?}", err)
-                                    }
-                                });
-    
-                            } else {
-                                log::info!("recompilation not needed");
-                            }
-                            
-                        },
-                        Err(err) => {
-                            log::error!("watch error: {:?}", err);
-                            return Err(CompilationError::WatcherError(err))
                         }
                     }
-                },
-                Err(err) => {
-                    log::error!("watch channel error: {:?}", err);
-                    return Err(CompilationError::WatcherChannelError(err))
-                },
-            }
-        }        
+                })
+            }),
+        )?;
+
+        log::info!("watch mode ON: any modification to the dossier files will cause immediate recompilation");
+        log::info!("press CTRL + C to terminate");
+        
+        watcher.start().await?;
+
+        preview.write().await.render().await?;
+
+        log::info!("stop watching...");
+
+        preview.write().await.stop().await?;
+
+        Ok(())
         
     }
 

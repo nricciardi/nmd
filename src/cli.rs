@@ -280,7 +280,7 @@ impl NmdCli {
         }
     }
 
-    pub fn parse(self) -> Result<(), NmdCliError> {
+    pub async fn serve(self) -> Result<(), NmdCliError> {
 
         let matches = self.cli.get_matches();
 
@@ -291,13 +291,13 @@ impl NmdCli {
             Self::set_logger(log_level);
         }
 
-        let result = match matches.subcommand() {
+        let result: Result<(), NmdCliError> = match matches.subcommand() {
 
-            Some(("compile", compile_matches)) => Self::handle_compile_command(&compile_matches),
+            Some(("compile", compile_matches)) => Self::handle_compile_command(&compile_matches).await,
 
-            Some(("generate", generate_matches)) => Self::handle_generate_command(&generate_matches),
+            Some(("generate", generate_matches)) => Self::handle_generate_command(&generate_matches).await,
 
-            Some(("dossier", dossier_matches)) => Self::handle_dossier_command(&dossier_matches),
+            Some(("dossier", dossier_matches)) => Self::handle_dossier_command(&dossier_matches).await,
 
             _ => unreachable!()
         };
@@ -318,7 +318,7 @@ impl NmdCli {
             .unwrap();
     }
 
-    fn handle_compile_command(matches: &ArgMatches) -> Result<(), NmdCliError> {
+    async fn handle_compile_command(matches: &ArgMatches) -> Result<(), NmdCliError> {
 
         let mut compilation_configuration = CompilationConfiguration::default();
                 
@@ -394,7 +394,7 @@ impl NmdCli {
                 }
 
                 if watch {
-                    return Ok(Compiler::watch_compile_dossier(compilation_configuration, watcher_time)?)
+                    return Ok(Compiler::watch_compile_dossier(compilation_configuration, watcher_time).await?)
                 } else {
                     return Ok(Compiler::compile_dossier(compilation_configuration)?)
                 }
@@ -432,7 +432,7 @@ impl NmdCli {
         }
     }
 
-    fn handle_generate_command(matches: &ArgMatches) -> Result<(), NmdCliError> {
+    async fn handle_generate_command(matches: &ArgMatches) -> Result<(), NmdCliError> {
         match matches.subcommand() {
             Some(("dossier", generate_dossier_matches)) => {
                 
@@ -478,7 +478,7 @@ impl NmdCli {
         }
     }
 
-    fn handle_dossier_command(matches: &ArgMatches) -> Result<(), NmdCliError> {
+    async fn handle_dossier_command(matches: &ArgMatches) -> Result<(), NmdCliError> {
 
         let dossier_path: Option<PathBuf>;
 

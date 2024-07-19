@@ -1,10 +1,11 @@
+use tokio;
 use nmd::cli::{NmdCli, NmdCliError};
 
 
-
-fn main() -> Result<(), NmdCliError> {
+#[tokio::main]
+async fn main() -> Result<(), NmdCliError> {
 
     let cli = NmdCli::new();
 
-    cli.parse()
+    cli.serve().await
 }
