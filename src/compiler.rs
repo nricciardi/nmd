@@ -121,6 +121,8 @@ impl Compiler {
         dossier.parse(compilation_configuration.format(), Arc::clone(&codex), Arc::new(RwLock::new(parsing_configuration)), Arc::new(None))?;
 
         assembler_configuration.set_theme(compilation_configuration.theme().as_ref().unwrap_or(&dossier_theme).clone());
+        assembler_configuration.set_preview(compilation_configuration.preview());
+        assembler_configuration.set_watching(compilation_configuration.watching());
 
         log::info!("assembling...");
 
@@ -395,6 +397,8 @@ impl Compiler {
         document.parse(compilation_configuration.format(), Arc::clone(&codex), Arc::new(RwLock::new(parsing_configuration)), Arc::new(None))?;
 
         assembler_configuration.set_theme(compilation_configuration.theme().clone().unwrap_or(Theme::default()));
+        assembler_configuration.set_preview(compilation_configuration.preview());
+        assembler_configuration.set_watching(compilation_configuration.watching());
 
         log::info!("assembling...");
 

@@ -5,7 +5,7 @@ use std::{collections::HashMap, path::PathBuf};
 
 use getset::{CopyGetters, Getters, MutGetters, Setters};
 
-use crate::{compiler::{bibliography::Bibliography, compilation_configuration::CompilationConfiguration, theme::Theme}, resource::text_reference::TextReferenceMap};
+use crate::{compiler::{bibliography::Bibliography, compilation_configuration::{CompilableResourceType, CompilationConfiguration}, theme::Theme}, resource::text_reference::TextReferenceMap};
 
 use self::list_bullet_configuration_record::ListBulletConfigurationRecord;
 
@@ -65,6 +65,15 @@ pub struct ParsingConfiguration {
 
     #[getset(get = "pub", set = "pub")]
     theme: Theme,
+
+    #[getset(get = "pub", set = "pub")]
+    resource_type: CompilableResourceType,
+
+    #[getset(get_copy = "pub", set = "pub")]
+    preview: bool,
+
+    #[getset(get_copy = "pub", set = "pub")]
+    watching: bool,
 }
 
 impl ParsingConfiguration {
@@ -73,7 +82,7 @@ impl ParsingConfiguration {
                 compress_embed_image: bool, strict_image_src_check: bool, metadata: ParsingMetadata, excluded_modifiers: ModifiersBucket, 
                 parallelization: bool, list_bullets_configuration: Vec<ListBulletConfigurationRecord>, strict_list_check: bool, 
                 strict_focus_block_check: bool, references: TextReferenceMap, fast_draft: bool, bibliography: Option<Bibliography>,
-                theme: Theme, ) -> Self {
+                theme: Theme, resource_type: CompilableResourceType, preview: bool, watching: bool,) -> Self {
 
         Self {
             input_location,
@@ -92,6 +101,9 @@ impl ParsingConfiguration {
             fast_draft,
             bibliography,
             theme,
+            resource_type,
+            preview,
+            watching,
         }
     }
 }
@@ -115,6 +127,9 @@ impl Default for ParsingConfiguration {
             fast_draft: false,
             bibliography: None,
             theme: Theme::default(),
+            resource_type: CompilableResourceType::default(),
+            preview: false,
+            watching: false,
         }
     }
 }
@@ -135,6 +150,9 @@ impl From<CompilationConfiguration> for ParsingConfiguration {
             fast_draft: compilation_configuration.fast_draft(),
             bibliography: compilation_configuration.bibliography().clone(),
             theme: compilation_configuration.theme().as_ref().unwrap_or(&Theme::default()).clone(),
+            resource_type: compilation_configuration.resource_type().clone(),
+            preview: compilation_configuration.preview().clone(),
+            watching: compilation_configuration.watching().clone(), 
             
             ..Default::default()
         }

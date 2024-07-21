@@ -179,6 +179,13 @@ impl HtmlAssembler {
         Ok(page)
     }
 
+    fn apply_check_preview_update_script(&self, mut page: HtmlPage) -> Result<HtmlPage, AssemblerError> {
+
+        page.add_script_literal(include_str!("html_assembler/check_preview_updates.js"));
+
+        Ok(page)
+    }
+
     fn create_default_html_page(&self, page_title: &String, styles_references: &Vec<String>) -> Result<HtmlPage, AssemblerError> {
 
         let mut page = HtmlPage::new()
@@ -195,6 +202,13 @@ impl HtmlAssembler {
         page = self.apply_theme_style(page);
 
         page = self.apply_styles(page, &styles_references)?;
+
+        if self.configuration.preview() {
+
+            log::info!("applying specific script to support preview reloading");
+
+            page = self.apply_check_preview_update_script(page)?;
+        }
 
         Ok(page)
     }

@@ -71,6 +71,12 @@ pub struct CompilationConfiguration {
 
     #[getset(get = "pub", set = "pub")]
     resource_type: CompilableResourceType,
+
+    #[getset(get_copy = "pub", set = "pub")]
+    preview: bool,
+
+    #[getset(get_copy = "pub", set = "pub")]
+    watching: bool,
 }
 
 impl CompilationConfiguration {
@@ -191,6 +197,8 @@ impl Default for CompilationConfiguration {
             theme: None,
             styles_raw_path: Vec::new(),
             resource_type: CompilableResourceType::default(),
+            preview: false,
+            watching: false,
         }
     }
 }

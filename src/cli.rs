@@ -324,6 +324,14 @@ impl NmdCli {
 
         let there_is_preview = matches.get_flag("preview");
 
+        compilation_configuration.set_preview(there_is_preview);
+
+        if there_is_preview {
+
+            assert!(compilation_configuration.format().eq(&OutputFormat::Html));        // there is only HtmlPreview
+            
+        }
+
         // INPUT & OUTPUT PATHs
         if let Some(input_path) = matches.get_one::<String>("input-path") {
                                         
@@ -424,6 +432,8 @@ impl NmdCli {
 
         let watch: bool = matches.get_flag("watch");
 
+        compilation_configuration.set_watching(watch);
+
         
         // FAST DRAFT, FORCE, STYLEs
         let fast_draft: bool = matches.get_flag("fast-draft");
@@ -492,7 +502,7 @@ impl NmdCli {
             CompilableResourceType::File => {
 
                 if watch {
-                    
+
                     compilation_handle = tokio::spawn(async move {
                         Compiler::watch_compile_file(compilation_configuration, watcher_time).await
                     });
