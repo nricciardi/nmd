@@ -153,11 +153,7 @@ impl Compiler {
     /// Watch filesystem and compile dossier if any changes occur
     /// 
     /// - min_elapsed_time_between_events_in_secs is the minimum time interval between two compilation
-    pub async fn watch_compile_dossier(compilation_configuration: CompilationConfiguration, min_elapsed_time_between_events_in_secs: u64) -> Result<(), CompilationError> {
-
-        let preview: HtmlPreview = HtmlPreview::new(compilation_configuration.output_location().clone());
-
-        let preview = Arc::new(TokioRwLock::new(preview));
+    pub async fn watch_compile_dossier(compilation_configuration: CompilationConfiguration, min_elapsed_time_between_events_in_secs: u64, preview: Option<Arc<TokioRwLock<HtmlPreview>>>) -> Result<(), CompilationError> {
 
         let input_location_abs = Arc::new(compilation_configuration.input_location().canonicalize().unwrap()); 
 
@@ -167,21 +163,28 @@ impl Compiler {
             min_elapsed_time_between_events_in_secs,
             &input_location_abs,
             Box::new({
-                let preview = Arc::clone(&preview);
+
+                let preview = preview.clone();
 
                 move || {
 
-                    let preview = Arc::clone(&preview);
+                    let preview = preview.clone();
 
                     log::info!("start watching...");
 
                     Box::pin(async move {
-                        let res = preview.write().await.start().await;
-    
-                        if let Err(e) = res {
-                            log::error!("error occurs during preview start: {}", e);
-                            return Err(WatcherError::PreviewError(e));
+
+                        if let Some(preview) = preview {
+
+                            let preview = Arc::clone(&preview);
+
+                            tokio::spawn(async move {
+
+                                preview.write().await.render().await
+
+                            }).await??;
                         }
+
                         Ok(())
                     })
                 }
@@ -272,25 +275,34 @@ impl Compiler {
                 }
             }),
             Box::new({
-                let preview = Arc::clone(&preview);
                 let compilation_configuration = Arc::clone(&compilation_configuration);
+
+                // let preview = Arc::clone(&preview);
+                let preview = preview.clone();
 
                 move || {
                     Box::pin({
     
                         let compilation_configuration = Arc::clone(&compilation_configuration);
-                        let preview = Arc::clone(&preview);
+                        let preview = preview.clone();
     
                         async move {
                             let compilation_result = Self::compile_dossier(compilation_configuration.read().await.clone());
             
+                            let preview = preview.clone();
+
                             match compilation_result {
                                 Ok(_) => {
             
                                     log::info!("compilation OK");
-            
+                                    
                                     // TODO
-                                    preview.write().await.update().await?;
+                                    if let Some(preview) = preview {
+
+                                        tokio::spawn(async move {
+                                            preview.write().await.update().await
+                                        }).await??;
+                                    }
             
                                     return Ok(())
                                 },
@@ -318,8 +330,6 @@ impl Compiler {
         watcher_join_handle.await??;
 
         log::info!("stop watching...");
-
-        preview.write().await.stop().await?;
 
         Ok(())
         

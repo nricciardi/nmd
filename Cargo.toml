@@ -38,7 +38,7 @@ simple_logger = "4.3.3"
 thiserror = "1.0.50"
 url = "2.5.0"
 tokio = { version = "1", features = ["full"] }
-rocket = "0.5.1"
+warp = "0.3"
 
 [profile.profiling]
 inherits = "release"

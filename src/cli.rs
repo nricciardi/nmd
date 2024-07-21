@@ -1,9 +1,12 @@
-
-
 use std::collections::HashSet;
+use std::sync::Arc;
+use tokio::sync::RwLock as TokioRwLock;
 use std::{path::PathBuf, str::FromStr};
 
 use clap::{Arg, ArgAction, ArgMatches, Command};
+use tokio::task::{JoinError, JoinHandle};
+use crate::compiler::preview::html_preview::HtmlPreview;
+use crate::compiler::preview::{Preview, PreviewError};
 use crate::compiler::theme::{Theme, ThemeError};
 use crate::compiler::Compiler;
 use crate::compiler::{output_format::OutputFormatError, CompilationError};
@@ -43,6 +46,12 @@ pub enum NmdCliError {
 
     #[error(transparent)]
     DossierManagerError(#[from] DossierManagerError),
+
+    #[error(transparent)]
+    PreviewError(#[from] PreviewError),
+
+    #[error(transparent)]
+    JoinError(#[from] JoinError),
 }
 
 
@@ -90,7 +99,7 @@ impl NmdCli {
                                 )
                                 .arg(
                                     Arg::new("theme")
-                                        .short('m')
+                                        .short('t')
                                         .long("theme")
                                         .help("set theme")
                                         .action(ArgAction::Set)
@@ -105,10 +114,16 @@ impl NmdCli {
                                 )
                                 .arg(
                                     Arg::new("watcher-time")
-                                        .short('t')
                                         .long("watcher-time")
                                         .help("set minimum watcher time interval")
                                         .action(ArgAction::Set)
+                                )
+                                .arg(
+                                    Arg::new("preview")
+                                        .short('p')
+                                        .long("preview")
+                                        .help("show preview")
+                                        .action(ArgAction::SetTrue)
                                 )
                                 .arg(
                                     Arg::new("fast-draft")
@@ -348,6 +363,32 @@ impl NmdCli {
 
         let watch: bool = matches.get_flag("watch");
 
+        let preview: Option<Arc<TokioRwLock<HtmlPreview>>>;
+        let preview_start_handle: Option<JoinHandle<Result<(), PreviewError>>>;
+
+        if matches.get_flag("preview") {
+            let p = HtmlPreview::new(compilation_configuration.output_location().clone());
+
+            let p = Arc::new(TokioRwLock::new(p));
+
+            let handle = tokio::spawn({
+
+                let p = Arc::clone(&p);
+
+                async move {
+                    p.write().await.start().await
+                }
+            });
+
+            preview = Some(p);
+            preview_start_handle = Some(handle);
+        
+        } else {
+
+            preview = None;
+            preview_start_handle = None;
+        }
+
         let fast_draft: bool = matches.get_flag("fast-draft");
 
         compilation_configuration.set_fast_draft(fast_draft);
@@ -358,7 +399,7 @@ impl NmdCli {
             compilation_configuration.set_styles_raw_path(styles.map(|s| s.clone()).collect());
         }
 
-        match matches.subcommand() {
+        let subcommand_res: Result<(), NmdCliError> = match matches.subcommand() {
             Some(("dossier", compile_dossier_matches)) => {
 
                 if let Some(input_path) = compile_dossier_matches.get_one::<String>("input-dossier-path") {
@@ -393,12 +434,40 @@ impl NmdCli {
                     compilation_configuration.set_documents_subset_to_compile(Some(subset));
                 }
 
-                if watch {
-                    return Ok(Compiler::watch_compile_dossier(compilation_configuration, watcher_time).await?)
-                } else {
-                    return Ok(Compiler::compile_dossier(compilation_configuration)?)
+                // wait preview startup
+                if let Some(handle) = preview_start_handle {
+                    handle.await??;
                 }
 
+                let compilation_handle;
+
+                if watch {
+                    compilation_handle = tokio::spawn({
+
+                        let preview = preview.clone();
+
+                        async move {
+                            Compiler::watch_compile_dossier(compilation_configuration, watcher_time, preview).await
+                        }
+                    });
+
+                } else {
+                    
+                    Compiler::compile_dossier(compilation_configuration)?;
+
+                    if let Some(p) = preview {
+
+                        tokio::spawn(async move {
+                            p.write().await.render().await
+                        }).await??;
+                    }
+
+                    return Ok(())
+                }
+
+                compilation_handle.await??;
+
+                Ok(())
             },
 
             Some(("file", compile_dossier_matches)) => {
@@ -429,7 +498,13 @@ impl NmdCli {
             },
 
             _ => unreachable!()
+        };
+
+        if let Some(preview) = preview {
+            preview.write().await.stop().await?;
         }
+
+        subcommand_res
     }
 
     async fn handle_generate_command(matches: &ArgMatches) -> Result<(), NmdCliError> {

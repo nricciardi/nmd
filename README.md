@@ -166,15 +166,13 @@ Compile a dossier in `html`:
 nmd compile -f html dossier -i dossier/input/path -o artifact/output/path
 ```
 
-If you watch dossier files and compile them if anything changes, you should use watcher mode (`-w` option).
-
-Watcher mode compile dossier if any change is captured. Changes are captured only if a minimum time is elapsed. To set minimum time use `-t` option.
+If you watch dossier files and compile them if anything changes, you should use watcher mode (`-w` option). Watcher mode compile dossier if any change is captured. Changes are captured only if a minimum time is elapsed. To set minimum time use `--watcher-time` option.
 
 `--fast-draft` to create a fast draft of dossier, generally compiler takes less time to generate it.
 
 `-s <document1> -s <documentN>` to compile only a subset of documents in dossier configuration list.
 
-`-m` permits to specify compilation theme:
+`-t` permits to specify compilation theme:
 
 - `light`
 - `dark`

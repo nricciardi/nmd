@@ -1,16 +1,13 @@
 use std::path::PathBuf;
 use getset::{Getters, Setters};
-use rocket::{config::Shutdown, fs::FileServer, Ignite, Rocket};
 use thiserror::Error;
-use tokio::task::JoinHandle;
+use tokio::{fs::File, io::AsyncReadExt, task::JoinHandle};
+use warp::Filter;
 
 use super::{Preview, PreviewError};
 
 #[derive(Error, Debug)]
 pub enum HtmlPreviewError {
-
-    #[error(transparent)]
-    WebServerStartError(#[from] rocket::Error),
 }
 
 
@@ -23,7 +20,7 @@ pub struct HtmlPreview {
     #[getset(get = "pub", set = "pub")]
     src: PathBuf,
 
-    server_thread_handle: Option<JoinHandle<Result<Rocket<Ignite>, rocket::Error>>>
+    server_thread_handle: Option<JoinHandle<()>>
 }
 
 impl HtmlPreview {
@@ -46,21 +43,35 @@ impl Preview for HtmlPreview {
         // TODO:
         // log::set_max_level(log::LevelFilter::Warn);
 
-        let server = rocket::build()
-            .mount("/", FileServer::from(src))
-            .configure(rocket::Config {
-                port: PREVIEW_PORT,
-                ..rocket::Config::default()
+        // let server = rocket::build()
+        //     .mount("/", FileServer::from(src))
+        //     .configure(rocket::Config {
+        //         port: PREVIEW_PORT,
+        //         ..rocket::Config::default()
+        //     });
+
+        self.server_thread_handle = Some(tokio::spawn(async move {
+
+            let preview_route = warp::path::end()
+            .and_then(move || {
+                let src = src.clone();
+
+                log::info!("serving preview...");
+
+                serve_preview(src)
             });
+    
+            log::info!("html preview will be running local (127.0.0.1) on port: {}", PREVIEW_PORT);
 
-        log::set_max_level(original_log_max_level);
-
-        self.server_thread_handle = Some(tokio::spawn(async {
-
-            log::info!("html preview will be running on port: {}", PREVIEW_PORT);
-
-            server.launch().await       // TODO: do not start
+            warp::serve(preview_route)
+            .run(([127, 0, 0, 1], PREVIEW_PORT))
+            .await
         }));
+
+        // log::set_max_level(original_log_max_level);
+
+        // self.server_thread_handle = Some(tokio::spawn(async {
+        // }));
         
         Ok(())
     }
@@ -82,22 +93,32 @@ impl Preview for HtmlPreview {
     async fn stop(&mut self) -> Result<(), PreviewError> {
         
         if let Some(j) = self.server_thread_handle.take() {
-            let r = j.await?;
-
-            if let Ok(rocket) = r {
-                rocket.shutdown().await;
-            } else {
-
-                let err = r.err().unwrap();
-
-                log::error!("error occurs: {}", err);
-
-                return Err(PreviewError::HtmlPreviewError(HtmlPreviewError::WebServerStartError(err)));
-            }
+            j.await?;
         }
 
         log::info!("html preview stop");
 
         Ok(())
     }
+}
+
+async fn serve_preview(file_path: PathBuf) -> Result<impl warp::Reply, warp::Rejection> {
+
+    let mut file = File::open(file_path.clone()).await.map_err(|err| {
+
+        log::error!("error occurs during preview file opening: {} ({:?})", err.to_string(), file_path);
+
+        warp::reject()
+    })?;
+
+    let mut contents = String::new();
+
+    file.read_to_string(&mut contents).await.map_err(|err| {
+
+        log::error!("error occurs during preview file reading: {} ({:?})", err.to_string(), file_path);
+
+        warp::reject()
+    })?;
+
+    Ok(warp::reply::html(contents))
 }

@@ -48,7 +48,7 @@ pub struct NmdWatcher<'a> {
 
     elaborate_fn: ElaborateFn<'a>,
 
-    min_elapsed_time_between_events_in_secs: u64
+    min_elapsed_time_between_events_in_secs: u64,
 }
 
 impl<'a> NmdWatcher<'a> {
