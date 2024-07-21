@@ -66,7 +66,7 @@ impl Compiler {
 
     /// Standard dossier compilation based on CompilationConfiguration.
     /// It loads, parses and dumps dossier
-    pub fn compile_dossier(mut compilation_configuration: CompilationConfiguration) -> Result<(), CompilationError> {
+    pub async fn compile_dossier(mut compilation_configuration: CompilationConfiguration) -> Result<(), CompilationError> {
 
         log::info!("start to compile dossier");
 
@@ -165,27 +165,42 @@ impl Compiler {
             Box::new({
 
                 let preview = preview.clone();
+                let compilation_configuration = Arc::clone(&compilation_configuration);
 
                 move || {
 
-                    let preview = preview.clone();
+                    let compilation_configuration = Arc::clone(&compilation_configuration);
 
-                    log::info!("start watching...");
+                    let preview = preview.clone();
 
                     Box::pin(async move {
 
-                        if let Some(preview) = preview {
+                        let compilation_result = tokio::spawn(async move {
+                            Self::compile_dossier(compilation_configuration.read().await.clone()).await
+                        });
 
-                            let preview = Arc::clone(&preview);
+                        match compilation_result.await {
+                            Ok(_) => {
+        
+                                log::info!("compilation OK");
 
-                            tokio::spawn(async move {
+                                log::info!("start watching...");
+                                
+                                if let Some(preview) = preview {
 
-                                preview.write().await.render().await
-
-                            }).await??;
+                                    tokio::spawn(async move {
+                                        preview.write().await.render().await
+                                    }).await??;
+                                }
+        
+                                return Ok(())
+                            },
+                            Err(err) => {
+                                log::error!("error during compilation: {:?}", err);
+        
+                                return Err(WatcherError::ElaborationError(err.to_string()))
+                            }
                         }
-
-                        Ok(())
                     })
                 }
             }),
@@ -287,11 +302,13 @@ impl Compiler {
                         let preview = preview.clone();
     
                         async move {
-                            let compilation_result = Self::compile_dossier(compilation_configuration.read().await.clone());
+                            let compilation_result = tokio::spawn(async move {
+                                Self::compile_dossier(compilation_configuration.read().await.clone()).await
+                            });
             
                             let preview = preview.clone();
 
-                            match compilation_result {
+                            match compilation_result.await {
                                 Ok(_) => {
             
                                     log::info!("compilation OK");
@@ -337,7 +354,7 @@ impl Compiler {
 
     /// Standard file compilation based on CompilationConfiguration.
     /// It loads, parses and dumps dossier
-    pub fn compile_file(mut compilation_configuration: CompilationConfiguration) -> Result<(), CompilationError> {
+    pub async fn compile_file(mut compilation_configuration: CompilationConfiguration) -> Result<(), CompilationError> {
 
         log::info!("start to compile dossier");
 
@@ -381,14 +398,7 @@ impl Compiler {
 
         log::info!("assembling...");
 
-        let mut output_location = compilation_configuration.output_location().clone();
-
-        if output_location.is_dir() {
-            output_location = output_location.join(file_utility::build_output_file_name(
-                compilation_configuration.input_location().file_stem().unwrap().to_string_lossy().to_string().as_str(),
-            Some(&compilation_configuration.format().get_extension())
-            ));
-        }
+        let output_location = compilation_configuration.output_location().clone();
 
         let assembly_time = Instant::now();
 
@@ -407,7 +417,7 @@ impl Compiler {
         Ok(())
     }
 
-    pub fn watch_compile_file(compilation_configuration: CompilationConfiguration, min_elapsed_time_between_events_in_secs: u64) -> Result<(), CompilationError> {
+    pub async fn watch_compile_file(compilation_configuration: CompilationConfiguration, min_elapsed_time_between_events_in_secs: u64) -> Result<(), CompilationError> {
         unimplemented!("watch compile file will be added in a next version")
     }
 
@@ -420,8 +430,8 @@ mod test {
 
     use super::*;
 
-    #[test]
-    fn compile_dossier() {
+    #[tokio::test]
+    async fn compile_dossier() {
 
         let project_directory = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
         let dossier_dir = "nmd-test-dossier-1";
@@ -429,9 +439,8 @@ mod test {
 
         assert!(nmd_dossier_path.is_dir());
 
-        let compilation_configuration = CompilationConfiguration::new(output_format::OutputFormat::Html, nmd_dossier_path.clone(), nmd_dossier_path.clone());
+        let compilation_configuration = CompilationConfiguration::new(nmd_dossier_path.clone(), nmd_dossier_path.clone());
 
-        Compiler::compile_dossier(compilation_configuration).unwrap()
+        Compiler::compile_dossier(compilation_configuration).await.unwrap();
     }
-
 }

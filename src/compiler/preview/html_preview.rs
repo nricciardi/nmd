@@ -40,15 +40,7 @@ impl Preview for HtmlPreview {
 
         let original_log_max_level = log::max_level();
 
-        // TODO:
-        // log::set_max_level(log::LevelFilter::Warn);
-
-        // let server = rocket::build()
-        //     .mount("/", FileServer::from(src))
-        //     .configure(rocket::Config {
-        //         port: PREVIEW_PORT,
-        //         ..rocket::Config::default()
-        //     });
+        log::set_max_level(log::LevelFilter::Warn);
 
         self.server_thread_handle = Some(tokio::spawn(async move {
 
@@ -61,17 +53,14 @@ impl Preview for HtmlPreview {
                 serve_preview(src)
             });
     
-            log::info!("html preview will be running local (127.0.0.1) on port: {}", PREVIEW_PORT);
+            log::info!("html preview will be running on: http://127.0.0.1:{}", PREVIEW_PORT);
 
             warp::serve(preview_route)
             .run(([127, 0, 0, 1], PREVIEW_PORT))
             .await
         }));
 
-        // log::set_max_level(original_log_max_level);
-
-        // self.server_thread_handle = Some(tokio::spawn(async {
-        // }));
+        log::set_max_level(original_log_max_level);
         
         Ok(())
     }

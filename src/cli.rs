@@ -1,10 +1,12 @@
 use std::collections::HashSet;
 use std::sync::Arc;
+use tokio::join;
 use tokio::sync::RwLock as TokioRwLock;
 use std::{path::PathBuf, str::FromStr};
 
 use clap::{Arg, ArgAction, ArgMatches, Command};
 use tokio::task::{JoinError, JoinHandle};
+use crate::compiler::compilation_configuration::CompilableResourceType;
 use crate::compiler::preview::html_preview::HtmlPreview;
 use crate::compiler::preview::{Preview, PreviewError};
 use crate::compiler::theme::{Theme, ThemeError};
@@ -13,6 +15,7 @@ use crate::compiler::{output_format::OutputFormatError, CompilationError};
 use crate::constants::{MINIMUM_WATCHER_TIME, VERSION};
 use crate::dossier_manager::{dossier_manager_configuration::DossierManagerConfiguration, DossierManager, DossierManagerError};
 use crate::generator::{generator_configuration::GeneratorConfiguration, Generator};
+use crate::utility::file_utility;
 use log::{LevelFilter, ParseLevelError};
 use crate::resource::ResourceError;
 use thiserror::Error;
@@ -79,9 +82,9 @@ impl NmdCli {
                 )
                 .subcommand(
                     Command::new("compile")
-                                .about("Compile an NMD resource")
+                                .about("Compile an NMD file or dossier")
                                 .short_flag('c')
-                                .subcommand_required(true)
+                                .subcommand_required(false)
                                 .arg(
                                     Arg::new("format")
                                     .short('f')
@@ -137,56 +140,30 @@ impl NmdCli {
                                     .help("add style file")
                                     .action(ArgAction::Append)
                                 )
-                                .subcommand(
-                                    Command::new("dossier")
-                                        .about("Compile NMD dossier")
-                                        .arg(
-                                            Arg::new("input-dossier-path")
-                                            .short('i')
-                                            .long("input-dossier-path")
-                                            .help("input dossier path")
-                                            .action(ArgAction::Set)
-                                            .num_args(1)
-                                            .default_value(".")
+                                .arg(
+                                    Arg::new("input-path")
+                                    .short('i')
+                                    .long("input-path")
+                                    .help("input path")
+                                    .action(ArgAction::Set)
+                                    .num_args(1)
+                                    .default_value(".")
 
-                                        )
-                                        .arg(
-                                            Arg::new("output-directory-path")
-                                            .short('o')
-                                            .long("output-directory-path")
-                                            .help("output directory path")
-                                            .action(ArgAction::Set)
-                                            .num_args(1)
-                                        )
-                                        .arg(
-                                            Arg::new("documents-subset")
-                                            .short('s')
-                                            .long("documents-subset")
-                                            .help("compile only a documents subset")
-                                            .action(ArgAction::Append)
-                                        )
                                 )
-                                .subcommand(
-                                    Command::new("file")
-                                        .about("Compile single NMD file")
-                                        .arg(
-                                            Arg::new("input-file-path")
-                                            .short('i')
-                                            .long("input-file-path")
-                                            .help("input file path")
-                                            .action(ArgAction::Set)
-                                            .num_args(1)
-                                            .default_value(".")
-
-                                        )
-                                        .arg(
-                                            Arg::new("output-file-path")
-                                            .short('o')
-                                            .long("output-file-path")
-                                            .help("output file path")
-                                            .action(ArgAction::Set)
-                                            .num_args(1)
-                                        )
+                                .arg(
+                                    Arg::new("output-path")
+                                    .short('o')
+                                    .long("output-path")
+                                    .help("output path")
+                                    .action(ArgAction::Set)
+                                    .num_args(1)
+                                )
+                                .arg(
+                                    Arg::new("documents-subset")
+                                    .short('s')
+                                    .long("documents-subset")
+                                    .help("compile only a documents subset")
+                                    .action(ArgAction::Append)
                                 )
                 )
                 .subcommand(
@@ -336,7 +313,8 @@ impl NmdCli {
     async fn handle_compile_command(matches: &ArgMatches) -> Result<(), NmdCliError> {
 
         let mut compilation_configuration = CompilationConfiguration::default();
-                
+
+        // FORMAT
         if let Some(format) = matches.get_one::<String>("format") {
                     
             let format = OutputFormat::from_str(format)?;
@@ -344,29 +322,66 @@ impl NmdCli {
             compilation_configuration.set_format(format);
         }
 
-        if let Some(theme) = matches.get_one::<String>("theme") {
-                    
-            let theme = Theme::from_str(theme)?;
+        let there_is_preview = matches.get_flag("preview");
 
-            compilation_configuration.set_theme(Some(theme));
+        // INPUT & OUTPUT PATHs
+        if let Some(input_path) = matches.get_one::<String>("input-path") {
+                                        
+            let input_path = PathBuf::from(input_path);
+
+            if input_path.is_dir() {
+
+                compilation_configuration.set_resource_type(CompilableResourceType::Dossier);
+            
+            } else {
+
+                compilation_configuration.set_resource_type(CompilableResourceType::File);
+            }
+
+            compilation_configuration.set_input_location(input_path);
         }
 
-        let watcher_time: u64;
+        if let Some(output_path) = matches.get_one::<String>("output-path") {
+                    
+            let output_path = PathBuf::from(output_path);
 
-        if let Some(wt) = matches.get_one::<String>("watcher-time") {
-                                
-            watcher_time = wt.parse::<u64>().unwrap();
+            compilation_configuration.set_output_location(output_path);
 
         } else {
-            watcher_time = MINIMUM_WATCHER_TIME;
+            
+            match compilation_configuration.resource_type() {
+                CompilableResourceType::Dossier => {
+
+                    compilation_configuration.set_output_location(compilation_configuration.input_location().clone());      // could be a dir or a file
+
+                    if there_is_preview && compilation_configuration.output_location().is_dir() {
+
+                        compilation_configuration.set_output_location(compilation_configuration.output_location().join(file_utility::build_output_file_name(
+                            "nmd-dossier-preview",
+                            Some(&compilation_configuration.format().get_extension())
+                        )));
+                    }
+                },
+                CompilableResourceType::File => {
+
+                    compilation_configuration.set_output_location(compilation_configuration.input_location().clone());      // could be a dir or a file
+
+                    if compilation_configuration.output_location().is_dir() {
+                        compilation_configuration.set_output_location(compilation_configuration.output_location().join(file_utility::build_output_file_name(
+                            compilation_configuration.input_location().file_stem().unwrap().to_string_lossy().to_string().as_str(),
+                        Some(&compilation_configuration.format().get_extension())
+                        )));
+                    }
+                },
+                CompilableResourceType::Unknown => (),
+            }
         }
 
-        let watch: bool = matches.get_flag("watch");
-
+        // PREVIEW
         let preview: Option<Arc<TokioRwLock<HtmlPreview>>>;
         let preview_start_handle: Option<JoinHandle<Result<(), PreviewError>>>;
 
-        if matches.get_flag("preview") {
+        if there_is_preview {
             let p = HtmlPreview::new(compilation_configuration.output_location().clone());
 
             let p = Arc::new(TokioRwLock::new(p));
@@ -388,7 +403,29 @@ impl NmdCli {
             preview = None;
             preview_start_handle = None;
         }
+        
+        if let Some(theme) = matches.get_one::<String>("theme") {
+                    
+            let theme = Theme::from_str(theme)?;
 
+            compilation_configuration.set_theme(Some(theme));
+        }
+
+        // WATCHER
+        let watcher_time: u64;
+
+        if let Some(wt) = matches.get_one::<String>("watcher-time") {
+                                
+            watcher_time = wt.parse::<u64>().unwrap();
+
+        } else {
+            watcher_time = MINIMUM_WATCHER_TIME;
+        }
+
+        let watch: bool = matches.get_flag("watch");
+
+        
+        // FAST DRAFT, FORCE, STYLEs
         let fast_draft: bool = matches.get_flag("fast-draft");
 
         compilation_configuration.set_fast_draft(fast_draft);
@@ -399,47 +436,32 @@ impl NmdCli {
             compilation_configuration.set_styles_raw_path(styles.map(|s| s.clone()).collect());
         }
 
-        let subcommand_res: Result<(), NmdCliError> = match matches.subcommand() {
-            Some(("dossier", compile_dossier_matches)) => {
-
-                if let Some(input_path) = compile_dossier_matches.get_one::<String>("input-dossier-path") {
-                                        
-                    let input_path = PathBuf::from(input_path);
-
-                    compilation_configuration.set_input_location(input_path);
-                }
-
-                if let Some(output_path) = compile_dossier_matches.get_one::<String>("output-directory-path") {
+        // DOCUMENT SUBSET (only if dossier)
+        if let Some(documents_subset) = matches.get_many::<String>("documents-subset") {
                     
-                    let output_path = PathBuf::from(output_path);
+            if documents_subset.len() < 1 {
+                return Err(NmdCliError::MoreThanOneValue("documents-subset".to_string()));
+            }
 
-                    compilation_configuration.set_output_location(output_path);
+            let mut subset: HashSet<String> = HashSet::new();
+            for file_name in documents_subset {
+                subset.insert(file_name.clone());
+            }
 
-                } else {
+            compilation_configuration.set_documents_subset_to_compile(Some(subset));
+        }
 
-                    compilation_configuration.set_output_location(compilation_configuration.input_location().clone());
-                }
+        // wait preview startup
+        if let Some(handle) = preview_start_handle {
+            handle.await??;
+        }
 
-                if let Some(documents_subset) = compile_dossier_matches.get_many::<String>("documents-subset") {
-                    
-                    if documents_subset.len() < 1 {
-                        return Err(NmdCliError::MoreThanOneValue("documents-subset".to_string()));
-                    }
+        let compilation_handle;
 
-                    let mut subset: HashSet<String> = HashSet::new();
-                    for file_name in documents_subset {
-                        subset.insert(file_name.clone());
-                    }
+        // TODO compilare
 
-                    compilation_configuration.set_documents_subset_to_compile(Some(subset));
-                }
-
-                // wait preview startup
-                if let Some(handle) = preview_start_handle {
-                    handle.await??;
-                }
-
-                let compilation_handle;
+        match compilation_configuration.resource_type() {
+            CompilableResourceType::Dossier => {
 
                 if watch {
                     compilation_handle = tokio::spawn({
@@ -453,58 +475,55 @@ impl NmdCli {
 
                 } else {
                     
-                    Compiler::compile_dossier(compilation_configuration)?;
+                    compilation_handle = tokio::spawn(async {
 
-                    if let Some(p) = preview {
+                        Compiler::compile_dossier(compilation_configuration).await
+                    });
+
+                    if let Some(p) = preview.clone() {
 
                         tokio::spawn(async move {
                             p.write().await.render().await
                         }).await??;
                     }
-
-                    return Ok(())
                 }
 
-                compilation_handle.await??;
-
-                Ok(())
             },
-
-            Some(("file", compile_dossier_matches)) => {
-
-                if let Some(input_path) = compile_dossier_matches.get_one::<String>("input-file-path") {
-                                        
-                    let input_path = PathBuf::from(input_path);
-
-                    compilation_configuration.set_input_location(input_path);
-                }
-
-                if let Some(output_path) = compile_dossier_matches.get_one::<String>("output-file-path") {
-                    
-                    let output_path = PathBuf::from(output_path);
-
-                    compilation_configuration.set_output_location(output_path);
-
-                } else {
-
-                    compilation_configuration.set_output_location(compilation_configuration.input_location().parent().unwrap().to_path_buf());
-                }
+            CompilableResourceType::File => {
 
                 if watch {
-                    return Ok(Compiler::watch_compile_file(compilation_configuration, watcher_time)?)
+                    
+                    compilation_handle = tokio::spawn(async move {
+                        Compiler::watch_compile_file(compilation_configuration, watcher_time).await
+                    });
+
                 } else {
-                    return Ok(Compiler::compile_file(compilation_configuration)?)
+
+                    compilation_handle = tokio::spawn(async {
+                        Compiler::compile_file(compilation_configuration).await
+                    });
+
+                    if let Some(p) = preview.clone() {
+
+                        tokio::spawn(async move {
+                            p.write().await.render().await
+                        }).await??;
+                    }
                 }
             },
 
-            _ => unreachable!()
-        };
+            CompilableResourceType::Unknown => return Err(NmdCliError::ResourceError(ResourceError::InvalidResourceVerbose("resource is a dossier nor file".to_string()))),
+        }
+
+        
+        // TODO: join
+        compilation_handle.await??;
 
         if let Some(preview) = preview {
             preview.write().await.stop().await?;
         }
 
-        subcommand_res
+        Ok(())
     }
 
     async fn handle_generate_command(matches: &ArgMatches) -> Result<(), NmdCliError> {

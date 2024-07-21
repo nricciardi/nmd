@@ -26,8 +26,7 @@ NMD stands for **New MarkDown**, or for friends, *Nicola MarkDown* (if Stephen B
         - [Markdown to New Markdown](#markdown-to-new-markdown)
         - [Add a new document](#add-a-new-document)
         - [Reset dossier configuration](#reset-dossier-configuration)
-      - [Compile dossier](#compile-dossier)
-        - [HTML](#html)
+      - [Compile](#compile)
   - [Develop](#develop)
   - [NMD Syntax](#nmd-syntax)
   - [Author](#author)
@@ -156,29 +155,36 @@ nmd dossier -p dossier/input/path reset [ -p ]
 
 `-p` reset flag to preserve documents list.
 
-#### Compile dossier
+#### Compile
 
-##### HTML
+You can compile a dossier or a single file through `compile` command.
 
-Compile a dossier in `html`:
+The only mandatory option is the input path. It can be a path to a directory (dossier) or a file.
 
 ```shell
-nmd compile -f html dossier -i dossier/input/path -o artifact/output/path
+nmd compile -i input/path
 ```
 
-If you watch dossier files and compile them if anything changes, you should use watcher mode (`-w` option). Watcher mode compile dossier if any change is captured. Changes are captured only if a minimum time is elapsed. To set minimum time use `--watcher-time` option.
-
-`--fast-draft` to create a fast draft of dossier, generally compiler takes less time to generate it.
-
-`-s <document1> -s <documentN>` to compile only a subset of documents in dossier configuration list.
-
-`-t` permits to specify compilation theme:
+`compile` command has a lot of options. You could specify the output format using `-f <format>` (e.g. `html`, which is the default), the output path with `-o <output-path>` or the theme using `-t <theme>`. The available themes are:
 
 - `light`
 - `dark`
 - `vintage`
 - `scientific`
 - `none`
+
+
+```shell
+nmd compile -f html dossier -i dossier/input/path -o artifact/output/path
+```
+
+Moreover, if you watch dossier files and compile them if something changes, you should use watcher mode (`-w` option). Watcher mode compile dossier if any change is captured. Changes are captured only if a minimum time is elapsed. To set minimum time use `--watcher-time` option.
+
+`--fast-draft` to create a fast draft of dossier, generally compiler takes less time to generate it.
+
+`-s <document1> -s <documentN>` to compile only a subset of documents in dossier configuration list.
+
+In the end, if you are writing in NMD and you want a preview, you could compile with `-p` option. `-p` renders a preview in a web server on `127.0.0.1:1234`  
 
 ## Develop
 

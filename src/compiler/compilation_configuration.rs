@@ -2,10 +2,19 @@ use std::{collections::HashSet, path::PathBuf};
 
 use getset::{CopyGetters, Getters, MutGetters, Setters};
 
-use crate::resource::text_reference::{TextReferenceMap};
+use crate::resource::text_reference::TextReferenceMap;
 
 use super::{bibliography::Bibliography, codex::{codex_configuration::CodexConfiguration, Codex}, dossier::dossier_configuration::DossierConfiguration, output_format::OutputFormat, parsing::parsing_configuration::ParsingConfiguration, theme::Theme};
 
+
+#[derive(Debug, Clone, Default, PartialEq, Eq, PartialOrd, Ord)]
+pub enum CompilableResourceType {
+    Dossier,
+    File,
+
+    #[default]
+    Unknown
+}
 
 
 /// Struct which contains all information about possible compilation options. It is used to wrap specific user requests for compilation 
@@ -59,12 +68,14 @@ pub struct CompilationConfiguration {
 
     #[getset(get = "pub", set = "pub")]
     styles_raw_path: Vec<String>,
+
+    #[getset(get = "pub", set = "pub")]
+    resource_type: CompilableResourceType,
 }
 
 impl CompilationConfiguration {
-    pub fn new(format: OutputFormat, input_location: PathBuf, output_location: PathBuf) -> Self {
+    pub fn new(input_location: PathBuf, output_location: PathBuf) -> Self {
         CompilationConfiguration {
-            format,
             input_location,
             output_location,
 
@@ -178,7 +189,8 @@ impl Default for CompilationConfiguration {
             documents_subset_to_compile: None,
             bibliography: None,
             theme: None,
-            styles_raw_path: Vec::new()
+            styles_raw_path: Vec::new(),
+            resource_type: CompilableResourceType::default(),
         }
     }
 }
