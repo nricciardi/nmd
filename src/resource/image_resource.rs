@@ -64,6 +64,13 @@ impl ImageResource {
 
     /// Elaborate `src` path if it is relative appending if it doesn't exist dossier `assets` directory
     pub fn elaborating_relative_path_as_dossier_assets(mut self, base_location: &PathBuf) -> Self {
+
+        let mut base_location: PathBuf = base_location.clone();
+
+        if !base_location.is_dir() {
+            base_location = PathBuf::from(base_location.parent().unwrap());
+        }
+
         if self.src().is_relative() {
 
             self.set_src(base_location.join(self.src()));

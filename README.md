@@ -5,7 +5,7 @@
 **New way to write in markdown**
 
 [![License](https://img.shields.io/badge/license-GPL3-green.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v0.36.0-blue.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-v0.36.1-blue.svg)](CHANGELOG.md)
 
 NMD stands for **New MarkDown**, or for friends, *Nicola MarkDown* (if Stephen Bourne can name a shell, why can't I name mine NMD?)
 
@@ -44,7 +44,7 @@ NMD is full compatible with CommonMark standard.
 
 #### Performance
 
-Being developed in Rust, NMD has incredible performance. In single thread mode, NMD is 10 times faster than the compiler for VS Code, while in multi thread mode it is **20 times faster**!
+Being developed in Rust, NMD has incredible performance. In single thread mode, NMD is 2 times faster than the compiler for VS Code, while in multi thread mode it is up to **10 times faster**, but having more features as more modifiers, integrated table of content and bibliography!
 
 #### Extended Syntax
 
@@ -182,9 +182,13 @@ Moreover, if you watch dossier files and compile them if something changes, you 
 
 `--fast-draft` to create a fast draft of dossier, generally compiler takes less time to generate it.
 
+`--parallelization` to parallelize work (default is single thread).
+
 `-s <document1> -s <documentN>` to compile only a subset of documents in dossier configuration list.
 
 In the end, if you are writing in NMD and you want a preview, you could compile with `-p` option. `-p` renders a preview in a web server on `127.0.0.1:1234` (`--preview-scraping-interval <interval>` to set client scraping interval in *milliseconds*).
+
+`--embed-local-image`, `--embed-remote-image`, `--strict-image-src-check` and `--embed-local-image` to manage images parsing.
 
 ## Develop
 

@@ -234,10 +234,15 @@ impl HtmlImageRule {
 
                         let id = ResourceReference::of(label.as_str(), Some(document_name)).unwrap();
 
-                        let mut image: ImageResource = ImageResource::new(PathBuf::from(src.as_str()), Some(parsed_label.parsed_content()), Some(label.as_str().to_string()))
+                        let image = ImageResource::new(PathBuf::from(src.as_str()), Some(parsed_label.parsed_content()), Some(label.as_str().to_string()))
                                                             .elaborating_relative_path_as_dossier_assets(parsing_configuration.input_location())
-                                                            .inferring_mime_type()
-                                                            .unwrap();
+                                                            .inferring_mime_type();
+                        
+                        if let Err(err) = &image {
+                            log::error!("error occurs during image '{}' loading: {}", src.as_str(), err.to_string());
+                        }
+
+                        let mut image = image.unwrap();
 
                         return Self::build_img_from_parsing_configuration(&mut image, Some(id), vec!["image"], style, &parsing_configuration).unwrap();
  

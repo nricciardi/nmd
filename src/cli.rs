@@ -1,3 +1,4 @@
+use core::panic;
 use std::collections::HashSet;
 use std::num::ParseIntError;
 use std::sync::Arc;
@@ -175,6 +176,36 @@ impl NmdCli {
                                     .long("documents-subset")
                                     .help("compile only a documents subset")
                                     .action(ArgAction::Append)
+                                )
+                                .arg(
+                                    Arg::new("parallelization")
+                                    .long("parallelization")
+                                    .help("set parallelization")
+                                    .action(ArgAction::SetTrue)
+                                )
+                                .arg(
+                                    Arg::new("embed-local-image")
+                                    .long("embed-local-image")
+                                    .help("set embed local image")
+                                    .action(ArgAction::SetTrue)
+                                )
+                                .arg(
+                                    Arg::new("embed-remote-image")
+                                    .long("embed-remote-image")
+                                    .help("set embed remote image")
+                                    .action(ArgAction::SetTrue)
+                                )
+                                .arg(
+                                    Arg::new("compress-embed-image")
+                                    .long("compress-embed-image")
+                                    .help("set compress embed image")
+                                    .action(ArgAction::SetTrue)
+                                )
+                                .arg(
+                                    Arg::new("strict-image-src-check")
+                                    .long("strict-image-src-check")
+                                    .help("set strict image source check")
+                                    .action(ArgAction::SetTrue)
                                 )
                 )
                 .subcommand(
@@ -383,14 +414,24 @@ impl NmdCli {
                 },
                 CompilableResourceType::File => {
 
-                    compilation_configuration.set_output_location(compilation_configuration.input_location().clone());      // could be a dir or a file
+                    let mut output_path = compilation_configuration.input_location().clone();
 
-                    if compilation_configuration.output_location().is_dir() {
-                        compilation_configuration.set_output_location(compilation_configuration.output_location().join(file_utility::build_output_file_name(
-                            compilation_configuration.input_location().file_stem().unwrap().to_string_lossy().to_string().as_str(),
+                    if output_path.is_dir() {
+                        
+                        output_path = output_path.join(file_utility::build_output_file_name(
+                            output_path.file_stem().unwrap().to_string_lossy().to_string().as_str(),
                         Some(&compilation_configuration.format().get_extension())
-                        )));
+                        ));
+
+                    } else {
+
+                        output_path = output_path.parent().unwrap().join(file_utility::build_output_file_name(
+                            output_path.file_stem().unwrap().to_string_lossy().to_string().as_str(),
+                        Some(&compilation_configuration.format().get_extension())
+                        ));
                     }
+
+                    compilation_configuration.set_output_location(output_path);
                 },
                 CompilableResourceType::Unknown => (),
             }
@@ -466,6 +507,28 @@ impl NmdCli {
 
         if let Some(styles) = matches.get_many::<String>("style-file") {
             compilation_configuration.set_styles_raw_path(styles.map(|s| s.clone()).collect());
+        }
+
+        // PARALLELIZATION
+        if matches.get_flag("parallelization") {
+            compilation_configuration.set_parallelization(Some(true));
+        }
+
+        // IMAGEs
+        if matches.get_flag("embed-local-image") {
+            compilation_configuration.set_embed_local_image(Some(true));
+        }
+
+        if matches.get_flag("embed-remote-image") {
+            compilation_configuration.set_embed_remote_image(Some(true));
+        }
+
+        if matches.get_flag("compress-embed-image") {
+            compilation_configuration.set_compress_embed_image(Some(true));
+        }
+        
+        if matches.get_flag("strict-image-src-check") {
+            compilation_configuration.set_strict_image_src_check(Some(true));
         }
 
         // DOCUMENT SUBSET (only if dossier)

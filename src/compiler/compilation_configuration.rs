@@ -140,7 +140,7 @@ impl CompilationConfiguration {
 
     pub fn fill_with_default(&mut self) {
         if self.embed_local_image().is_none() {
-            self.set_embed_local_image(Some(true));
+            self.set_embed_local_image(Some(false));
         }
 
         if self.embed_remote_image().is_none() {
@@ -156,7 +156,7 @@ impl CompilationConfiguration {
         }
 
         if self.parallelization().is_none() {
-            self.set_parallelization(Some(true));
+            self.set_parallelization(Some(false));
         }
 
         if self.strict_image_src_check().is_none() {

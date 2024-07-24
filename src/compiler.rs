@@ -83,7 +83,7 @@ impl Compiler {
 
         let loading_start = Instant::now();
 
-        log::info!("compilation configuration (this will override dossier compilation configuration):\n\n{:#?}\n", compilation_configuration);
+        log::debug!("compilation configuration (this will override dossier compilation configuration):\n\n{:#?}\n", compilation_configuration);
 
         let codex = Arc::new(compilation_configuration.codex());
 
@@ -160,6 +160,8 @@ impl Compiler {
         }
 
         dossier.parse(compilation_configuration.format(), Arc::clone(&codex), Arc::new(RwLock::new(parsing_configuration)), Arc::new(parsing_configuration_overlay))?;
+
+        log::info!("dossier parsed in {} ms", compilation_start.elapsed().as_millis());
 
         assembler_configuration.set_theme(compilation_configuration.theme().as_ref().unwrap_or(&dossier_theme).clone());
         assembler_configuration.set_preview(compilation_configuration.preview());
@@ -483,9 +485,9 @@ impl Compiler {
 
         log::info!("start to compile dossier");
 
-        let compile_start = Instant::now();
+        let compilation_start = Instant::now();
 
-        log::info!("compilation configuration (this will override dossier compilation configuration):\n\n{:#?}\n", compilation_configuration);
+        log::debug!("compilation configuration (this will override dossier compilation configuration):\n\n{:#?}\n", compilation_configuration);
 
         let codex = compilation_configuration.codex();
 
@@ -493,7 +495,7 @@ impl Compiler {
 
         let mut document: Document = loader.load_document_from_path(&codex, compilation_configuration.input_location())?;
 
-        log::info!("document loaded in {} ms", compile_start.elapsed().as_millis());
+        log::info!("document loaded in {} ms", compilation_start.elapsed().as_millis());
 
         compilation_configuration.fill_with_default();
 
@@ -519,6 +521,8 @@ impl Compiler {
 
         document.parse(compilation_configuration.format(), Arc::clone(&codex), Arc::new(RwLock::new(parsing_configuration)), Arc::new(None))?;
 
+        log::info!("document parsed in {} ms", compilation_start.elapsed().as_millis());
+
         assembler_configuration.set_theme(compilation_configuration.theme().clone().unwrap_or(Theme::default()));
         assembler_configuration.set_preview(compilation_configuration.preview());
         assembler_configuration.set_watching(compilation_configuration.watching());
@@ -539,7 +543,7 @@ impl Compiler {
 
         artifact.dump(&dump_configuration)?;
 
-        log::info!("end to compile dossier (compile time: {} ms)", compile_start.elapsed().as_millis());
+        log::info!("end to compile dossier (compile time: {} ms)", compilation_start.elapsed().as_millis());
 
         Ok(())
     }
