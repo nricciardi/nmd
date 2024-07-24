@@ -1,7 +1,7 @@
 use std::{collections::HashSet, future::Future, path::PathBuf, pin::Pin, sync::mpsc::{channel, Receiver, RecvError, Sender}, time::SystemTime};
 
-use getset::{CopyGetters, Getters, MutGetters, Setters};
-use notify::{Error, Event, INotifyWatcher, RecursiveMode, Watcher};
+use getset::{Getters, Setters};
+use notify::{Error, Event, RecursiveMode, Watcher};
 use thiserror::Error;
 use tokio::task::JoinError;
 
@@ -34,7 +34,6 @@ pub type ElaborateFn<'a> = Box<dyn Fn(HashSet<PathBuf>) -> Pin<Box<dyn Future<Ou
 
 #[derive(Getters, Setters)]
 pub struct NmdWatcher<'a> {
-    watcher: INotifyWatcher,
 
     tx: Sender<Result<Event, Error>>,
 
@@ -68,7 +67,6 @@ impl<'a> NmdWatcher<'a> {
 
         let s = Self {
             min_elapsed_time_between_events_in_secs,
-            watcher,
             tx,
             rx,
             on_start_fn,
