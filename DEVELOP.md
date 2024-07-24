@@ -67,5 +67,6 @@ nothing
 - [x] Include all .nmd file in running directory as default option in dossier configuration
 - [x] Compile single files
 - [ ] Table of contents with page numbers
+- [ ] Select position of ToC and Bibliography
 - [ ] Cover page
 - [ ] VS Code extension (https://dev.to/salesforceeng/how-to-build-a-vs-code-extension-for-markdown-preview-using-remark-processor-1169)

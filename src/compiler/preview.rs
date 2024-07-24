@@ -21,11 +21,11 @@ pub enum PreviewError {
 
 pub trait Preview {
 
-    async fn start(&mut self) -> Result<(), PreviewError>;
+    fn start(&mut self) -> impl std::future::Future<Output = Result<(), PreviewError>> + Send;
     
-    async fn render(&mut self) -> Result<(), PreviewError>;
+    fn render(&mut self) -> impl std::future::Future<Output = Result<(), PreviewError>> + Send;
 
-    async fn update(&mut self) -> Result<(), PreviewError>;
+    fn update(&mut self) -> impl std::future::Future<Output = Result<(), PreviewError>> + Send;
 
-    async fn stop(&mut self) -> Result<(), PreviewError>;
+    fn stop(&mut self) -> impl std::future::Future<Output = Result<(), PreviewError>> + Send;
 }
