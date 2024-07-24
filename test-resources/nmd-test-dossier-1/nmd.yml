@@ -71,6 +71,6 @@ compilation:
   embed_remote_image: true
   compress_embed_image: false
   strict_image_src_check: true
-  parallelization: true
+  parallelization: false
   use_remote_addons: false
   strict_list_check: false

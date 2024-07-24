@@ -4,7 +4,8 @@ preamble
 
 # title 1
 
-paragraph 1
+
+paragraph 1.
 
 TODO
 
@@ -19,7 +20,6 @@ emoji: :alien:
 > Simple quote
 
 text between quote
-
 
 |table heading 1|table heading 2|
 |---|---|

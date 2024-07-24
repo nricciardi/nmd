@@ -45,7 +45,7 @@ impl Parsable for Heading {
 
         let document_name = pc.metadata().document_name().as_ref().unwrap();
 
-        let id = ResourceReference::of_internal_from_without_sharp(&self.title, Some(&document_name))?;
+        let id: ResourceReference = ResourceReference::of_internal_from_without_sharp(&self.title, Some(&document_name))?;
 
         let parsed_title = Parser::parse_text(&codex, &self.title, Arc::clone(&parsing_configuration), parsing_configuration_overlay)?;
 

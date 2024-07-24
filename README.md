@@ -184,7 +184,7 @@ Moreover, if you watch dossier files and compile them if something changes, you 
 
 `-s <document1> -s <documentN>` to compile only a subset of documents in dossier configuration list.
 
-In the end, if you are writing in NMD and you want a preview, you could compile with `-p` option. `-p` renders a preview in a web server on `127.0.0.1:1234`  
+In the end, if you are writing in NMD and you want a preview, you could compile with `-p` option. `-p` renders a preview in a web server on `127.0.0.1:1234` (`--preview-scraping-interval <interval>` to set client scraping interval in *milliseconds*).
 
 ## Develop
 

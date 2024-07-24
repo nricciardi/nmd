@@ -10,11 +10,11 @@ use super::{output_format::OutputFormat, parsing::{parsing_configuration::{parsi
 pub trait Parsable {
 
     /// Standard parse, using complete rules
-    fn standard_parse(&mut self, format: &OutputFormat,  codex: Arc<Codex>, parsing_configuration: Arc<RwLock<ParsingConfiguration>>,
+    fn standard_parse(&mut self, format: &OutputFormat, codex: Arc<Codex>, parsing_configuration: Arc<RwLock<ParsingConfiguration>>,
         parsing_configuration_overlay: Arc<Option<ParsingConfigurationOverLay>>) -> Result<(), ParsingError>;
 
     /// Fast parse, reduce parsing time, but its result is incomplete
-    fn fast_parse(&mut self, format: &OutputFormat,  codex: Arc<Codex>, parsing_configuration: Arc<RwLock<ParsingConfiguration>>,
+    fn fast_parse(&mut self, format: &OutputFormat, codex: Arc<Codex>, parsing_configuration: Arc<RwLock<ParsingConfiguration>>,
         parsing_configuration_overlay: Arc<Option<ParsingConfigurationOverLay>>) -> Result<(), ParsingError> {
             self.standard_parse(format, codex, parsing_configuration, parsing_configuration_overlay)
     }

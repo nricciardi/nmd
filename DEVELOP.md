@@ -2,8 +2,7 @@
 
 ### Features in Progress for current version
 
-- [ ] Compile only modified chapters in watcher mode
-- [ ] Web server to refresh compiled output
+nothing
 
 ### Features done
 
@@ -41,6 +40,8 @@
 - [x] Reference
 - [x] Table of contents without page numbers
 - [x] Bibliography
+- [x] Compile only modified chapters in watcher mode
+- [x] Web server to refresh compiled output
 
 ### Planned Features
 

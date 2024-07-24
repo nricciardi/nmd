@@ -61,6 +61,15 @@ impl Dossier {
     pub fn name(&self) -> &String {
         self.configuration.name()
     }
+
+    /// replace document by name if it is found
+    pub fn replace_document(&mut self, document_name: &str, new_document: Document) {
+        let index = self.documents.iter().position(|document| document.name().eq(document_name));
+
+        if let Some(index) = index {
+            self.documents[index] = new_document;
+        }
+    }
 }
 
 
@@ -70,13 +79,35 @@ impl Parsable for Dossier {
 
         let parallelization = parsing_configuration.read().unwrap().parallelization();
 
-        log::info!("parse dossier {} with {} document(s) (parallelization: {})", self.name(), self.documents().len(), parallelization);
+        log::info!("parse dossier {} with ({} documents, parallelization: {})", self.name(), self.documents().len(), parallelization);
 
         parsing_configuration.write().unwrap().metadata_mut().set_dossier_name(Some(self.name().clone()));
 
         if parallelization {
 
             let maybe_fails = self.documents.par_iter_mut()
+                .filter(|document| {
+
+                    if parsing_configuration.read().unwrap().fast_draft() {
+                        let pco = parsing_configuration_overlay.clone();
+    
+                        if let Some(pco) = pco.as_ref() {
+    
+                            if let Some(subset) = pco.parse_only_documents() {
+
+                                let skip = !subset.contains(document.name());
+            
+                                if skip {
+                                    log::info!("document {} parsing is skipped", document.name());
+                                }
+
+                                return !skip;
+                            }
+                        }
+                    }
+
+                    true
+                })
                 .map(|document| {
 
                     let parse_time = Instant::now();
@@ -98,6 +129,29 @@ impl Parsable for Dossier {
             
         } else {
             let maybe_fails = self.documents.iter_mut()
+                .filter(|document| {
+
+                    if parsing_configuration.read().unwrap().fast_draft() {
+                        let pco = parsing_configuration_overlay.clone();
+
+                        if let Some(pco) = pco.as_ref() {
+
+                            if let Some(subset) = pco.parse_only_documents() {
+            
+                                
+                                let skip = !subset.contains(document.name());
+            
+                                if skip {
+                                    log::info!("document {} parsing is skipped", document.name());
+                                }
+
+                                return !skip;            
+                            }
+                        }
+                    }
+
+                    true
+                })
                 .map(|document| {
                     let parse_time = Instant::now();
 

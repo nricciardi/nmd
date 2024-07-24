@@ -1,4 +1,4 @@
-use std::{future::Future, path::PathBuf, pin::Pin, sync::mpsc::{channel, Receiver, RecvError, Sender}, time::SystemTime};
+use std::{collections::HashSet, future::Future, path::PathBuf, pin::Pin, sync::mpsc::{channel, Receiver, RecvError, Sender}, time::SystemTime};
 
 use getset::{CopyGetters, Getters, MutGetters, Setters};
 use notify::{Error, Event, INotifyWatcher, RecursiveMode, Watcher};
@@ -29,7 +29,7 @@ pub enum WatcherError {
 
 pub type CheckIfElaborateFn<'a> = Box<dyn FnMut(Event) -> Pin<Box<dyn Future<Output = Result<bool, WatcherError>> + Send>> + Send + Sync + 'a>;
 pub type OnStartFn<'a> = Box<dyn Fn() -> Pin<Box<dyn Future<Output = Result<(), WatcherError>> + Send>> + Send + Sync + 'a>;
-pub type ElaborateFn<'a> = Box<dyn Fn() -> Pin<Box<dyn Future<Output = Result<(), WatcherError>> + Send>> + Send + Sync + 'a>;
+pub type ElaborateFn<'a> = Box<dyn Fn(HashSet<PathBuf>) -> Pin<Box<dyn Future<Output = Result<(), WatcherError>> + Send>> + Send + Sync + 'a>;
 
 
 #[derive(Getters, Setters)]
@@ -84,6 +84,8 @@ impl<'a> NmdWatcher<'a> {
 
         let mut last_event_time = SystemTime::now();
 
+        let mut paths_change_detection_from_last_elaboration: HashSet<PathBuf> = HashSet::new(); 
+
         (self.on_start_fn)().await?;
         
         loop {
@@ -97,9 +99,13 @@ impl<'a> NmdWatcher<'a> {
                             log::debug!("new event from watcher: {:?}", event);
                             log::debug!("change detected on file(s): {:?}", event.paths);
 
+                            event.clone().paths.iter().for_each(|path| {
+                                paths_change_detection_from_last_elaboration.insert(path.clone());
+                            });
+
                             if (self.check_if_elaborate_skipping_timeout_fn)(event.clone()).await? {
 
-                                (self.elaborate_fn)().await?;
+                                (self.elaborate_fn)(paths_change_detection_from_last_elaboration.clone()).await?;
 
                                 continue;
                             }
@@ -115,7 +121,7 @@ impl<'a> NmdWatcher<'a> {
                             }
 
                             if (self.check_if_elaborate_fn)(event).await? {
-                                (self.elaborate_fn)().await?;
+                                (self.elaborate_fn)(paths_change_detection_from_last_elaboration.clone()).await?;
 
                                 last_event_time = event_time;
                                 

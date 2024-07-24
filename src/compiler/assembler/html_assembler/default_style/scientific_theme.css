@@ -162,9 +162,13 @@ body {
 
 .list-item-bullet {
     display: inline-block;
-    margin-right: 0.5vw;
-    font-size: large;
+    margin-right: 1vw;
+    font-size: medium;
     width: 0.5em;
+}
+
+.list-item-bullet > .checkbox {
+    margin-right: 1.3vw;
 }
 
 /* FOCUS BLOCK */

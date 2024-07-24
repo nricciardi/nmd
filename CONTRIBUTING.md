@@ -1,3 +1,1 @@
-Work in progress...
-
-Please contact me or open an issue.
+You should use issues!

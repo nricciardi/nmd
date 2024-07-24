@@ -15,16 +15,21 @@ pub mod bibliography;
 pub mod preview;
 pub mod watcher;
 
+use std::collections::HashSet;
+use std::path::{self, PathBuf};
 use std::sync::RwLock;
 use std::{sync::Arc, time::Instant};
 
 use dossier::{dossier_configuration::DossierConfiguration, Document, Dossier};
 use dumpable::DumpConfiguration;
+use parsing::parsing_configuration::parsing_configuration_overlay::ParsingConfigurationOverLay;
+use preview::html_preview::PREVIEW_URL;
 use preview::{html_preview::HtmlPreview, Preview, PreviewError};
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use theme::Theme;
 use thiserror::Error;
-use tokio::task::{spawn_blocking, JoinError, JoinHandle};
+use tokio::join;
+use tokio::task::{JoinError, JoinSet};
 use tokio::sync::RwLock as TokioRwLock;
 use watcher::{NmdWatcher, WatcherError};
 use crate::{compiler::{dumpable::{DumpError, Dumpable}, loader::Loader, parsable::Parsable}, constants::{DOSSIER_CONFIGURATION_JSON_FILE_NAME, DOSSIER_CONFIGURATION_YAML_FILE_NAME}, utility::file_utility};
@@ -66,17 +71,23 @@ impl Compiler {
 
     /// Standard dossier compilation based on CompilationConfiguration.
     /// It loads, parses and dumps dossier
-    pub async fn compile_dossier(mut compilation_configuration: CompilationConfiguration) -> Result<(), CompilationError> {
+    pub async fn load_and_compile_dossier(compilation_configuration: CompilationConfiguration) -> Result<(), CompilationError> {
 
-        log::info!("start to compile dossier");
+        let mut dossier = Self::load_dossier(&compilation_configuration).await?;
 
-        let compile_start = Instant::now();
+        Self::compile_dossier(compilation_configuration, &mut dossier).await
+    }
+
+    async fn load_dossier(compilation_configuration: &CompilationConfiguration) -> Result<Dossier, CompilationError> {
+        log::info!("start to load dossier");
+
+        let loading_start = Instant::now();
 
         log::info!("compilation configuration (this will override dossier compilation configuration):\n\n{:#?}\n", compilation_configuration);
 
         let codex = Arc::new(compilation_configuration.codex());
 
-        let mut dossier: Dossier;
+        let dossier: Dossier;
 
         let loader = Loader::new();
 
@@ -89,8 +100,23 @@ impl Compiler {
             dossier = loader.load_dossier_from_path_buf(&codex, compilation_configuration.input_location())?;
         }
 
-        log::info!("dossier loaded in {} ms", compile_start.elapsed().as_millis());
+        log::info!("dossier loaded in {} ms", loading_start.elapsed().as_millis());
 
+        Ok(dossier)
+    }
+
+    async fn compile_dossier(compilation_configuration: CompilationConfiguration, dossier: &mut Dossier) -> Result<(), CompilationError> {
+        Self::compile_dossier_parsing_subset(compilation_configuration, dossier, None).await
+    }
+
+    async fn compile_dossier_parsing_subset(mut compilation_configuration: CompilationConfiguration, dossier: &mut Dossier, subset_documents_to_parse: Option<HashSet<String>>) -> Result<(), CompilationError> {
+        
+        log::info!("start to compile dossier");
+
+        let compilation_start = Instant::now();
+
+        let codex = Arc::new(compilation_configuration.codex());
+        
         let dossier_configuration = dossier.configuration();
 
         compilation_configuration.merge_dossier_configuration(dossier_configuration);
@@ -118,7 +144,22 @@ impl Compiler {
             log::info!("fast draft mode on!")
         }
 
-        dossier.parse(compilation_configuration.format(), Arc::clone(&codex), Arc::new(RwLock::new(parsing_configuration)), Arc::new(None))?;
+        let parsing_configuration_overlay: Option<ParsingConfigurationOverLay>;
+
+        if let Some(subset) = subset_documents_to_parse {
+
+            let mut pco = ParsingConfigurationOverLay::default();
+
+            pco.set_parse_only_documents(Some(subset));
+
+            parsing_configuration_overlay = Some(pco);
+
+        } else {
+
+            parsing_configuration_overlay = None;
+        }
+
+        dossier.parse(compilation_configuration.format(), Arc::clone(&codex), Arc::new(RwLock::new(parsing_configuration)), Arc::new(parsing_configuration_overlay))?;
 
         assembler_configuration.set_theme(compilation_configuration.theme().as_ref().unwrap_or(&dossier_theme).clone());
         assembler_configuration.set_preview(compilation_configuration.preview());
@@ -147,7 +188,7 @@ impl Compiler {
 
         artifact.dump(&dump_configuration)?;
 
-        log::info!("end to compile dossier (compile time: {} ms)", compile_start.elapsed().as_millis());
+        log::info!("end to compile dossier (compile time: {} ms)", compilation_start.elapsed().as_millis());
 
         Ok(())
     }
@@ -159,7 +200,15 @@ impl Compiler {
 
         let input_location_abs = Arc::new(compilation_configuration.input_location().canonicalize().unwrap()); 
 
-        let compilation_configuration = Arc::new(TokioRwLock::new(compilation_configuration));
+        let cc = compilation_configuration;
+        let compilation_configuration = Arc::new(TokioRwLock::new(cc.clone()));
+
+        let dossier = Arc::new(TokioRwLock::new(Self::load_dossier(&cc).await?));
+        
+        println!("\n\n");
+        log::info!("watch mode ON: modification to the dossier files will cause recompilation");
+        log::info!("press CTRL + C to terminate");
+        println!("\n\n");
 
         let mut watcher = NmdWatcher::new(
             min_elapsed_time_between_events_in_secs,
@@ -168,6 +217,7 @@ impl Compiler {
 
                 let preview = preview.clone();
                 let compilation_configuration = Arc::clone(&compilation_configuration);
+                let dossier = dossier.clone();
 
                 move || {
 
@@ -175,10 +225,12 @@ impl Compiler {
 
                     let preview = preview.clone();
 
+                    let dossier = dossier.clone();
+
                     Box::pin(async move {
 
                         let compilation_result = tokio::spawn(async move {
-                            Self::compile_dossier(compilation_configuration.read().await.clone()).await
+                            Self::compile_dossier(compilation_configuration.read().await.clone(), &mut (*dossier.write().await)).await
                         });
 
                         match compilation_result.await {
@@ -297,15 +349,86 @@ impl Compiler {
                 // let preview = Arc::clone(&preview);
                 let preview = preview.clone();
 
-                move || {
+                move |paths| {
                     Box::pin({
     
                         let compilation_configuration = Arc::clone(&compilation_configuration);
                         let preview = preview.clone();
+                        let dossier = dossier.clone();
     
                         async move {
+
+                            let documents_to_parse: Option<HashSet<String>>;        // None => all documents
+
+                            // check if nmd.yml or nmd.json is changed => load whole dossier
+                            if paths.iter()
+                                    .map(|p| p.file_name())
+                                    .filter(|f| f.is_some())
+                                    .map(|f| f.unwrap().to_string_lossy().to_string())
+                                    .find(|f| f.eq(DOSSIER_CONFIGURATION_YAML_FILE_NAME))
+                                    .is_some() {
+
+                                documents_to_parse = None;
+
+                                match Self::load_dossier(&*compilation_configuration.clone().read().await).await {
+                                    Ok(d) => *dossier.write().await = d,
+                                    Err(err) => return Err(WatcherError::ElaborationError(err.to_string())),
+                                }
+
+                            } else {        // load dossier partially
+                                let codex = Arc::new(compilation_configuration.read().await.codex());
+
+                                let mut dtp: HashSet<String> = HashSet::new();
+
+                                let mut document_read_handles = JoinSet::new();
+                                for path in &paths {
+
+                                    if dossier.read().await.configuration().raw_documents_paths().par_iter().find_any(|raw_path| {
+                                        let document_path = PathBuf::from(raw_path);
+
+                                        if let Some(document_name) = document_path.file_name() {
+
+                                            if let Some(file_name) = path.file_name() {
+                                                return document_name.eq(file_name);
+                                            }
+                                        }
+
+                                        false
+                                    }).is_some() {
+
+                                        let path = path.clone();
+                                        let codex = codex.clone();
+    
+                                        document_read_handles.spawn(async move {
+    
+                                            let loader = Loader::new();
+    
+                                            let document = loader.load_document_from_path(&codex, &path);
+
+                                            document
+                                        });
+                                    }
+                                }
+
+                                while let Some(document_read_res) = document_read_handles.join_next().await {
+                                    if let Ok(document) = document_read_res? {
+
+                                        let name = document.name().clone();
+
+                                        let res = dossier.write().await.replace_document(&name, document);
+
+                                        dtp.insert(name);
+
+                                        res
+                                    }
+                                }
+
+                                documents_to_parse = Some(dtp);
+                            }
+
                             let compilation_result = tokio::spawn(async move {
-                                Self::compile_dossier(compilation_configuration.read().await.clone()).await
+
+                                Self::compile_dossier_parsing_subset(compilation_configuration.read().await.clone(), &mut *dossier.write().await, documents_to_parse).await
                             });
             
                             let preview = preview.clone();
@@ -315,7 +438,6 @@ impl Compiler {
             
                                     log::info!("compilation OK");
                                     
-                                    // TODO
                                     if let Some(preview) = preview {
 
                                         tokio::spawn(async move {
@@ -323,6 +445,10 @@ impl Compiler {
                                         }).await??;
                                     }
             
+                                    println!("\n\n");
+                                    log::info!("preview is available on {}", PREVIEW_URL);
+                                    println!("\n\n");
+
                                     return Ok(())
                                 },
                                 Err(err) => {
@@ -336,9 +462,6 @@ impl Compiler {
                 }
             }),
         )?;
-
-        log::info!("watch mode ON: any modification to the dossier files will cause immediate recompilation");
-        log::info!("press CTRL + C to terminate");
 
         let watcher_join_handle = tokio::spawn(async move {
         
@@ -356,7 +479,7 @@ impl Compiler {
 
     /// Standard file compilation based on CompilationConfiguration.
     /// It loads, parses and dumps dossier
-    pub async fn compile_file(mut compilation_configuration: CompilationConfiguration) -> Result<(), CompilationError> {
+    pub async fn load_and_compile_file(mut compilation_configuration: CompilationConfiguration) -> Result<(), CompilationError> {
 
         log::info!("start to compile dossier");
 
@@ -445,6 +568,6 @@ mod test {
 
         let compilation_configuration = CompilationConfiguration::new(nmd_dossier_path.clone(), nmd_dossier_path.clone());
 
-        Compiler::compile_dossier(compilation_configuration).await.unwrap();
+        Compiler::load_and_compile_dossier(compilation_configuration).await.unwrap();
     }
 }

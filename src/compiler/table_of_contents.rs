@@ -103,7 +103,7 @@ impl TableOfContents {
                 outcome.add_fixed_part(format!(r#"<a href="{}" class="link">"#, id.build()));
             
             } else {
-                log::warn!("heading {} does not have a valid id", heading.title())
+                log::warn!("heading '{}' does not have a valid id", heading.title())
             }
 
             outcome.append_parsing_outcome(&mut Parser::parse_text(&codex, &heading.title(), Arc::clone(&parsing_configuration), Arc::clone(&parsing_configuration_overlay))?);

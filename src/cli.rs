@@ -1,4 +1,5 @@
 use std::collections::HashSet;
+use std::num::ParseIntError;
 use std::sync::Arc;
 use tokio::join;
 use tokio::sync::RwLock as TokioRwLock;
@@ -55,6 +56,9 @@ pub enum NmdCliError {
 
     #[error(transparent)]
     JoinError(#[from] JoinError),
+
+    #[error(transparent)]
+    ParseIntError(#[from] ParseIntError),
 }
 
 
@@ -127,6 +131,13 @@ impl NmdCli {
                                         .long("preview")
                                         .help("show preview")
                                         .action(ArgAction::SetTrue)
+                                )
+                                .arg(
+                                    Arg::new("preview-scraping-interval")
+                                        .long("preview-scraping-interval")
+                                        .help("set preview scraping interval")
+                                        .required(false)
+                                        .action(ArgAction::Set)
                                 )
                                 .arg(
                                     Arg::new("fast-draft")
@@ -390,7 +401,18 @@ impl NmdCli {
         let preview_start_handle: Option<JoinHandle<Result<(), PreviewError>>>;
 
         if there_is_preview {
-            let p = HtmlPreview::new(compilation_configuration.output_location().clone());
+
+            let scraping_interval: Option<u32>; 
+            
+            if let Some(interval) = matches.get_one::<String>("preview-scraping-interval") {
+
+                scraping_interval = Some(interval.clone().parse::<u32>()?);
+
+            } else {
+                scraping_interval = None;
+            }
+
+            let p = HtmlPreview::new(compilation_configuration.output_location().clone(), scraping_interval);
 
             let p = Arc::new(TokioRwLock::new(p));
 
@@ -468,8 +490,6 @@ impl NmdCli {
 
         let compilation_handle;
 
-        // TODO compilare
-
         match compilation_configuration.resource_type() {
             CompilableResourceType::Dossier => {
 
@@ -487,7 +507,7 @@ impl NmdCli {
                     
                     compilation_handle = tokio::spawn(async {
 
-                        Compiler::compile_dossier(compilation_configuration).await
+                        Compiler::load_and_compile_dossier(compilation_configuration).await
                     });
 
                     if let Some(p) = preview.clone() {
@@ -510,7 +530,7 @@ impl NmdCli {
                 } else {
 
                     compilation_handle = tokio::spawn(async {
-                        Compiler::compile_file(compilation_configuration).await
+                        Compiler::load_and_compile_file(compilation_configuration).await
                     });
 
                     if let Some(p) = preview.clone() {
@@ -525,12 +545,10 @@ impl NmdCli {
             CompilableResourceType::Unknown => return Err(NmdCliError::ResourceError(ResourceError::InvalidResourceVerbose("resource is a dossier nor file".to_string()))),
         }
 
-        
-        // TODO: join
         compilation_handle.await??;
 
         if let Some(preview) = preview {
-            preview.write().await.stop().await?;
+            preview.write().await.stop().await?;       // need Ctrl + C to terminate
         }
 
         Ok(())
