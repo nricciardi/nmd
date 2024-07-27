@@ -543,7 +543,7 @@ impl Compiler {
 
         artifact.dump(&dump_configuration)?;
 
-        log::info!("end to compile dossier (compile time: {} ms)", compilation_start.elapsed().as_millis());
+        log::info!("end to compile document (compile time: {} ms)", compilation_start.elapsed().as_millis());
 
         Ok(())
     }
