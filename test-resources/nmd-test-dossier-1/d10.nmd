@@ -1,0 +1,15 @@
+# title
+@key value
+@key
+@style color:red
+@class class
+
+%aphib%
+
+this is \** a test to show star ** issue **.
+
+*test
+test*
+
+&ref1&
+

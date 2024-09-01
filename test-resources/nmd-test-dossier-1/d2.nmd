@@ -1,0 +1,48 @@
+# image
+
+!!:space-between:[[
+:start:![(wikipedia-logo.png)]#image-7{{width:70%}}
+![Wikipedia is **awesome**](./assets/images/wikipedia-logo.png){{width:45%;margin:0;heigh:25vh;}}
+]]
+
+
+![(wikipedia-logo.png)]#image-7{{width:70%}}
+
+![Wikipedia](./assets/images/wikipedia-logo.png){{width:45%;margin:0;}}
+
+
+
+![Wikipedia](./assets/images/wikipedia-logo.png)
+
+![Infer Wikipedia image](wikipedia-logo.png)
+
+![JPG image](jpg.jpg)
+
+
+
+![(./assets/images/wikipedia-logo.png)]
+
+![(wikipedia-logo.png)]
+
+![(jpg.jpg)]
+
+
+
+![Wikipedia]#image-1(./assets/images/wikipedia-logo.png)
+
+![Infer Wikipedia image]#image-2(wikipedia-logo.png)
+
+![JPG image]#image-3(jpg.jpg)
+
+
+
+![(./assets/images/wikipedia-logo.png)]#image-4
+
+![(wikipedia-logo.png)]#image-5
+
+![(jpg.jpg)]#image-6
+
+
+![external image](https://en.wikipedia.org/static/images/icons/wikipedia.png)
+
+![(https://en.wikipedia.org/static/images/icons/wikipedia.png)]

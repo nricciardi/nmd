@@ -1,0 +1,191 @@
+
+preamble
+
+
+# title 1
+
+
+paragraph 1
+
+TODO
+
+**bold text**, __bold text__, _italic text_, *italic text*, ~~strikethrough~~, ++underlined++
+
+this is a *nested italic, ++underlined, **bold**++ text*.
+
+emoji: :alien:
+
+^superscript^ normal text
+
+~subscript~ normal text
+
+> Simple quote
+
+text between quote
+
+|table heading 1|table heading 2|
+|---|---|
+|table body 1| table body 2|
+|---|
+||table footer|
+[caption]
+
+> Single line quote.
+
+> Simple
+> multiline
+> quote
+
+> Simple
+> multiline
+> quote
+>
+> with 2 paragraphs
+
+### block quotes
+
+> [!NOTE]
+> Simple
+> multiline
+> quote
+
+> [!WARNING]
+> Simple
+> multiline
+> quote
+>
+> with 2 paragraphs.
+
+
+==highlight==
+
+## title 2
+
+paragraph 2a.
+
+---
+
+
+not line break ---
+
+paragraph 2b.
+
+### Title 3
+
+paragraph
+2c.
+multi
+line
+.
+
+#### Title 4
+
+Lorem ipsum dolor sit amet consectetur adipisicing elit. Maxime mollitia,
+molestiae quas vel sint commodi repudiandae consequuntur voluptatum laborum
+numquam blanditiis harum quisquam eius sed odit fugiat iusto fuga praesentium
+optio, eaque rerum! Provident similique accusantium nemo autem. Veritatis
+obcaecati tenetur iure eius earum ut molestias architecto voluptate aliquam
+nihil, eveniet aliquid culpa officia aut! Impedit sit sunt quaerat, odit,
+tenetur error, harum nesciunt ipsum debitis quas aliquid. Reprehenderit,
+quia. Quo neque error repudiandae fuga? Ipsa laudantium molestias eos 
+sapiente officiis modi at sunt excepturi expedita sint? Sed quibusdam
+recusandae alias error harum maxime adipisci amet laborum. Perspiciatis 
+minima nesciunt dolorem! Officiis iure rerum voluptates a cumque velit 
+
+Lorem ipsum dolor sit amet consectetur adipisicing elit. Maxime mollitia,
+molestiae quas vel sint commodi repudiandae consequuntur voluptatum laborum
+numquam blanditiis harum quisquam eius sed odit fugiat iusto fuga praesentium
+optio, eaque rerum! Provident similique accusantium nemo autem. Veritatis
+obcaecati tenetur iure eius earum ut molestias architecto voluptate aliquam
+nihil, eveniet aliquid culpa officia aut! Impedit sit sunt quaerat, odit,
+tenetur error, harum nesciunt ipsum debitis quas aliquid. Reprehenderit,
+quia. Quo neque error repudiandae fuga? Ipsa laudantium molestias eos 
+sapiente officiis modi at sunt excepturi expedita sint? Sed quibusdam
+recusandae alias error harum maxime adipisci amet laborum. Perspiciatis 
+minima nesciunt dolorem! Officiis iure rerum voluptates a cumque velit 
+
+Lorem ipsum dolor sit amet consectetur adipisicing elit. Maxime mollitia,
+molestiae quas vel sint commodi repudiandae consequuntur voluptatum laborum
+numquam blanditiis harum quisquam eius sed odit fugiat iusto fuga praesentium
+optio, eaque rerum! Provident similique accusantium nemo autem. Veritatis
+obcaecati tenetur iure eius earum ut molestias architecto voluptate aliquam
+nihil, eveniet aliquid culpa officia aut! Impedit sit sunt quaerat, odit,
+
+@[todo](this is a todo)
+
+tenetur error, harum nesciunt ipsum debitis quas aliquid. Reprehenderit,
+quia. Quo neque error repudiandae fuga? Ipsa laudantium molestias eos 
+sapiente officiis modi at sunt excepturi expedita sint? Sed quibusdam
+recusandae alias error harum maxime adipisci amet laborum. Perspiciatis 
+minima nesciunt dolorem! Officiis iure rerum voluptates a cumque velit 
+
+Lorem ipsum dolor sit amet consectetur adipisicing elit. Maxime mollitia,
+molestiae quas vel sint commodi repudiandae consequuntur voluptatum laborum
+
+::: tip
+You should use NMD!!!
+:::
+
+numquam blanditiis harum quisquam eius sed odit fugiat iusto fuga praesentium
+optio, eaque rerum! Provident similique accusantium nemo autem. Veritatis
+obcaecati tenetur iure eius earum ut molestias architecto voluptate aliquam
+nihil, eveniet aliquid culpa officia aut! Impedit sit sunt quaerat, odit,
+tenetur error, harum nesciunt ipsum debitis quas aliquid. Reprehenderit,
+quia. Quo neque error repudiandae fuga? Ipsa laudantium molestias eos
+sapiente officiis modi at sunt excepturi expedita sint? Sed quibusdam
+
+::: warning
+Before read the doc!
+:::
+
+sapiente officiis modi at sunt excepturi expedita sint? Sed quibusdam
+recusandae alias error harum maxime adipisci amet laborum. Perspiciatis 
+minima nesciunt dolorem! Officiis iure rerum voluptates a cumque velit 
+
+# title 1
+
+::: quote
+new
+warning
+
+multiline
+:::
+
+> [!TIP]
+>
+> new quote
+
+::: tip
+new
+warning
+
+multiline
+:::
+
+::: note
+new
+warning
+
+multiline
+:::
+
+::: important
+new
+warning
+
+multiline
+:::
+
+::: warning
+new
+warning
+
+multiline
+:::
+
+::: caution
+new
+warning
+
+multiline
+:::

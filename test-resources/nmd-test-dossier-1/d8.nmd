@@ -1,0 +1,14 @@
+# title for link
+
+
+
+Link to [title](d8.nmd#title-for-link)
+
+Link to [title (infer)](#title-for-link)
+
+Link to other [document chapter (image)](d2.nmd#image)
+
+Link to [url](https://github.com/nricciardi/nmd)
+
+Link to [url with #](https://github.com/nricciardi/nmd?tab=readme-ov-file#nmd-syntax)
+

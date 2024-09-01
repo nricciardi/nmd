@@ -1,0 +1,64 @@
+name: New Dossier
+raw_documents_paths:
+- ./welcome.nmd
+style:
+  theme: Light
+  addons: []
+  list_bullets_configuration:
+  - from: '|'
+    to: '&#8205;'
+    indentation_level: 0
+    strict_indentation: false
+  - from: '-'
+    to: '&bull;'
+    indentation_level: 0
+    strict_indentation: true
+  - from: '-'
+    to: '&#9702;'
+    indentation_level: 1
+    strict_indentation: true
+  - from: '-'
+    to: '&#8211;'
+    indentation_level: 2
+    strict_indentation: false
+  - from: '*'
+    to: '&bull;'
+    indentation_level: 0
+    strict_indentation: false
+  - from: +
+    to: '&#9702;'
+    indentation_level: 0
+    strict_indentation: false
+  - from: ->
+    to: '&#9654;'
+    indentation_level: 0
+    strict_indentation: false
+  - from: --
+    to: '&#8211;'
+    indentation_level: 0
+    strict_indentation: false
+  - from: -[]
+    to: ':checkbox:'
+    indentation_level: 0
+    strict_indentation: false
+  - from: -[ ]
+    to: ':checkbox:'
+    indentation_level: 0
+    strict_indentation: false
+  - from: -[x]
+    to: ':checkbox-checked:'
+    indentation_level: 0
+    strict_indentation: false
+  - from: -[X]
+    to: ':checkbox-checked:'
+    indentation_level: 0
+    strict_indentation: false
+metadata: {}
+compilation:
+  embed_local_image: true
+  embed_remote_image: true
+  compress_embed_image: true
+  strict_image_src_check: true
+  parallelization: true
+  use_remote_addons: false
+  strict_list_check: false

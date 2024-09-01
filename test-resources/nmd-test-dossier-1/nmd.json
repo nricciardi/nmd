@@ -1,0 +1,19 @@
+{
+    "documents": [
+        "path/to/d1.nmd",
+        "path/to/d2.md",
+        "path/to/d3.nmd"
+    ],
+    "styles": [
+        "path/to/style1",
+        "path/to/style2",
+        "path/to/style3"
+    ],
+    "metadata": {
+        "name": "artifact-name",
+        "authors": [
+            "a1",
+            "a2"
+        ]
+    }
+}
