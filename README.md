@@ -11,7 +11,7 @@
 NMD stands for **New MarkDown**, or for friends, *Nicola MarkDown* (if Stephen Bourne can name a shell, why can't I name mine NMD?)
 
 > [!IMPORTANT]
-> **TL;DR**: download [last NMD CLI tool](#nmd-command-line-interface).
+> **TL;DR**: download [last NMD CLI tool](#nmd-cli).
 
 ## Overview
 
