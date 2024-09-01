@@ -6,7 +6,7 @@
 
 # New MarkDown
 
-**New way to write in markdown**
+**New way to write markdown**
 
 NMD stands for **New MarkDown**, or for friends, *Nicola MarkDown* (if Stephen Bourne can name a shell, why can't I name mine NMD?)
 
