@@ -88,6 +88,9 @@ You can install NMD using Cargo or downloading last release from Github.
 cargo install nmd
 ```
 
+> [!IMPORTANT]
+> In some cases, in Linux, you should install `libssl-dev` thought `apt`
+
 ### Commands
 
 #### Generate a new dossier
