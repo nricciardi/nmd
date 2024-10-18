@@ -8,14 +8,19 @@ $$
 \int_0^{+\infty} \, x^2 \; dx
 $$
 
-a$$
+$$
 a + b =
 $$
 $$
 b + a
 $$
 
-```ciao
-code ```
-code
-```
+Some text
+
+$$
+\int_0^{+\infty} \, x^2 \; dx
+$$
+Hidden paragraph
+$$
+\int_0^{+\infty} \, x^2 \; dx
+$$

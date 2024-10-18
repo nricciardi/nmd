@@ -1,7 +1,7 @@
 name: New Dossier
 toc:
   title: Table of contents
-  include_in_output: true
+  include_in_output: false
   page_numbers: false
   plain: false
   maximum_heading_level: 4
@@ -81,7 +81,7 @@ compilation:
   embed_remote_image: false
   compress_embed_image: false
   strict_image_src_check: true
-  parallelization: true
+  parallelization: false
   use_remote_addons: false
   strict_list_check: false
   strict_greek_letters_check: true
