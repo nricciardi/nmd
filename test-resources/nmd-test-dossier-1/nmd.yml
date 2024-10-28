@@ -6,6 +6,7 @@ toc:
   plain: false
   maximum_heading_level: 4
 documents:
+- ./d0.nmd
 - ./d1.nmd
 - ./d2.nmd
 - ./d3.nmd
