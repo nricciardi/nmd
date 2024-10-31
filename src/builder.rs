@@ -6,7 +6,8 @@ mod constants;
 use std::{borrow::Borrow, collections::HashSet, path::PathBuf, sync::Arc, time::Instant};
 use builder_configuration::BuilderConfiguration;
 use builder_error::BuilderError;
-use nmd_core::{assembler::{html_assembler::{html_assembler_configuration::HtmlAssemblerConfiguration, HtmlAssembler}, Assembler}, compiler::{compilation_configuration::compilation_configuration_overlay::CompilationConfigurationOverLay, Compiler}, constants::{DOSSIER_CONFIGURATION_JSON_FILE_NAME, DOSSIER_CONFIGURATION_YAML_FILE_NAME}, dossier::{dossier_configuration::DossierConfiguration, Document, Dossier}, dumpable::{DumpConfiguration, Dumpable}, loader::{loader_configuration::{LoaderConfiguration, LoaderConfigurationOverLay}, Loader}, output_format::OutputFormat, theme::Theme, utility::{file_utility, nmd_unique_identifier::assign_nuid_to_document_paragraphs}};
+use nmd_core::dossier::Dossier;
+use nmd_core::load::{LoadConfiguration, LoadConfigurationOverLay};
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use tokio::{sync::RwLock as TokioRwLock, task::JoinSet};
 use crate::preview::{html_preview::PREVIEW_URL, Preview};
@@ -26,10 +27,10 @@ impl Builder {
 
         let loading_start = Instant::now();
 
-        let mut loader_configuration = LoaderConfiguration::default();
+        let mut loader_configuration = LoadConfiguration::default();
         loader_configuration.set_input_location(builder_configuration.input_location().clone());
 
-        let loader_configuration_overlay = LoaderConfigurationOverLay::default();
+        let loader_configuration_overlay = LoadConfigurationOverLay::default();
 
         let mut dossier: Dossier;
 
@@ -368,7 +369,7 @@ impl Builder {
         
                                             document_read_handles.spawn(async move {
         
-                                                let document = Loader::load_document_from_path(&path, &codex, &LoaderConfiguration::default(), LoaderConfigurationOverLay::default());
+                                                let document = Loader::load_document_from_path(&path, &codex, &LoadConfiguration::default(), LoadConfigurationOverLay::default());
     
                                                 document
                                             });
@@ -453,7 +454,7 @@ impl Builder {
 
         let codex = builder_configuration.codex();
 
-        let mut document: Document = Loader::load_document_from_path(builder_configuration.input_location(), &codex, &LoaderConfiguration::default(), LoaderConfigurationOverLay::default())?;
+        let mut document: Document = Loader::load_document_from_path(builder_configuration.input_location(), &codex, &LoadConfiguration::default(), LoadConfigurationOverLay::default())?;
 
         if let Some(with_nuid) = builder_configuration.nuid() {
             if with_nuid {

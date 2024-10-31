@@ -3,7 +3,7 @@ use std::io::{stdout, Write};
 use std::num::ParseIntError;
 use std::ops::Deref;
 use std::sync::Arc;
-use nmd_core::compiler::compilation_configuration::CompilableResourceType;
+use nmd_core::compilation::compilation_configuration::CompilableResourceType;
 use nmd_core::output_format::{OutputFormat, OutputFormatError};
 use nmd_core::resource::ResourceError;
 use nmd_core::theme::{Theme, ThemeError};
