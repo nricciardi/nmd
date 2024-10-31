@@ -1,1 +1,22 @@
-[abridged style]{;;Garamond} text [abridged style]{blue;gray}
+::: quote
+new
+warning
+
+multiline
+:::
+
+some text
+
+::: quote
+new
+warning
+
+multiline
+:::
+::: quote
+new
+warning
+
+multiline
+:::
+some text
