@@ -2,7 +2,7 @@ pub mod generator_configuration;
 
 
 use std::{collections::HashMap, fs, path::PathBuf};
-use nmd_core::{constants::DOSSIER_CONFIGURATION_YAML_FILE_NAME, dossier::{self, dossier_configuration::DossierConfiguration}, resource::{disk_resource::DiskResource, Resource, ResourceError}, utility::file_utility::{self, read_file_content}};
+use nmd_core::{codex::modifier::constants::NEW_LINE_PATTERN, constants::DOSSIER_CONFIGURATION_YAML_FILE_NAME, dossier::{self, dossier_configuration::DossierConfiguration}, resource::{disk_resource::DiskResource, Resource, ResourceError}, utility::file_utility::{self, read_file_content}};
 use once_cell::sync::Lazy;
 use regex::Regex;
 use crate::dossier_manager::{dossier_manager_configuration::DossierManagerConfiguration, DossierManager};
@@ -174,7 +174,7 @@ impl Generator {
 
             }
 
-            current_nmd_file_content.push_str(&format!("{}{}", line, NEW_LINE));
+            current_nmd_file_content.push_str(&format!("{}{}", line, NEW_LINE_PATTERN));
             
         }
         
