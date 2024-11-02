@@ -1,6 +1,6 @@
 use std::{collections::HashSet, path::PathBuf};
 use getset::{CopyGetters, Getters, MutGetters, Setters};
-use nmd_core::{bibliography::Bibliography, codex::Codex, compiler::compilation_configuration::{CompilableResourceType, CompilationConfiguration}, dossier::dossier_configuration::DossierConfiguration, output_format::OutputFormat, resource::text_reference::TextReferenceMap, theme::Theme};
+use nmd_core::{bibliography::Bibliography, codex::Codex, compilation::compilation_configuration::{CompilableResourceType, CompilationConfiguration}, dossier::dossier_configuration::DossierConfiguration, output_format::OutputFormat, resource::text_reference::TextReferenceMap, theme::Theme};
 
 
 /// Struct which contains all information about possible compilation options. It is used to wrap specific user requests for compilation 

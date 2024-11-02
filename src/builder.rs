@@ -6,8 +6,20 @@ mod constants;
 use std::{borrow::Borrow, collections::HashSet, path::PathBuf, sync::Arc, time::Instant};
 use builder_configuration::BuilderConfiguration;
 use builder_error::BuilderError;
+use nmd_core::artifact::Artifact;
+use nmd_core::assembler::assembler_configuration::AssemblerConfiguration;
+use nmd_core::compilation::compilable::Compilable;
+use nmd_core::compilation::compilation_configuration::compilation_configuration_overlay::CompilationConfigurationOverLay;
+use nmd_core::constants::{DOSSIER_CONFIGURATION_JSON_FILE_NAME, DOSSIER_CONFIGURATION_YAML_FILE_NAME};
+use nmd_core::dossier::document::Document;
+use nmd_core::dossier::dossier_configuration::DossierConfiguration;
 use nmd_core::dossier::Dossier;
+use nmd_core::dumpable::{DumpConfiguration, Dumpable};
 use nmd_core::load::{LoadConfiguration, LoadConfigurationOverLay};
+use nmd_core::output_format::OutputFormat;
+use nmd_core::theme::Theme;
+use nmd_core::utility::file_utility;
+use nmd_core::utility::nmd_unique_identifier::assign_nuid_to_document_paragraphs;
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use tokio::{sync::RwLock as TokioRwLock, task::JoinSet};
 use crate::preview::{html_preview::PREVIEW_URL, Preview};
@@ -36,11 +48,11 @@ impl Builder {
 
         if let Some(dstc) = builder_configuration.documents_subset_to_compile() {
 
-            dossier = Loader::load_dossier_from_path_buf_only_documents(builder_configuration.input_location(), &dstc, &builder_configuration.codex(), &loader_configuration, loader_configuration_overlay)?;
+            dossier = Dossier::load_dossier_from_path_buf_only_documents(builder_configuration.input_location(), &dstc, &builder_configuration.codex(), &loader_configuration, loader_configuration_overlay)?;
 
         } else {
 
-            dossier = Loader::load_dossier_from_path_buf(builder_configuration.input_location(), &builder_configuration.codex(), &loader_configuration, loader_configuration_overlay)?;
+            dossier = Dossier::load_dossier_from_path_buf(builder_configuration.input_location(), &builder_configuration.codex(), &loader_configuration, loader_configuration_overlay)?;
         }
 
         if let Some(with_nuid) = builder_configuration.nuid() {
@@ -87,22 +99,11 @@ impl Builder {
 
         let mut compilation_configuration_overlay = CompilationConfigurationOverLay::default();
 
-        if let Some(subset) = subset_documents_to_parse {
+        let assembler_configuration: AssemblerConfiguration = match builder_configuration.format() {
 
-            compilation_configuration_overlay.set_compile_only_documents(Some(subset));
-        }
-
-        Compiler::compile_dossier(dossier, builder_configuration.format(), &builder_configuration.codex(), &compilation_configuration, compilation_configuration_overlay)?;
-
-        log::info!("dossier compiled in {} ms", compilation_start.elapsed().as_millis());
-
-        log::info!("assembling...");
-
-        let assembly_time = Instant::now();
-
-        let mut artifact = match builder_configuration.format() {
             OutputFormat::Html => {
-                let mut assembler_configuration = HtmlAssemblerConfiguration::from(dossier.configuration().clone());
+
+                let mut assembler_configuration = AssemblerConfiguration::from(dossier.configuration());
 
                 if let Some(t) = builder_configuration.theme().as_ref() {
                 
@@ -121,12 +122,23 @@ impl Builder {
                         }
                     }
                 }
-
-                HtmlAssembler::assemble_dossier(&dossier, &assembler_configuration)?
+                
+                assembler_configuration
             },
         };
 
-        log::info!("end to assembly (assembly time {} ms)", assembly_time.elapsed().as_millis());
+        compilation_configuration_overlay.set_assembler_configuration(assembler_configuration);
+
+        if let Some(subset) = subset_documents_to_parse {
+
+            compilation_configuration_overlay.set_compile_only_documents(Some(subset));
+        }
+
+        let compiled_dossier = dossier.compile(builder_configuration.format(), &builder_configuration.codex(), &compilation_configuration, compilation_configuration_overlay)?;
+
+        log::info!("dossier compiled in {} ms", compilation_start.elapsed().as_millis());
+
+        log::info!("dumping...");
 
         let mut output_location = compilation_configuration.output_location().clone();
 
@@ -141,6 +153,8 @@ impl Builder {
                                                         output_location,
                                                         builder_configuration.force_output().unwrap_or(false)
                                                     );
+
+        let mut artifact = Artifact::from(compiled_dossier.content());
 
         artifact.dump(&dump_configuration)?;
 
@@ -369,7 +383,7 @@ impl Builder {
         
                                             document_read_handles.spawn(async move {
         
-                                                let document = Loader::load_document_from_path(&path, &codex, &LoadConfiguration::default(), LoadConfigurationOverLay::default());
+                                                let document = Document::load_document_from_path(&path, &codex, &LoadConfiguration::default(), LoadConfigurationOverLay::default());
     
                                                 document
                                             });
@@ -454,7 +468,7 @@ impl Builder {
 
         let codex = builder_configuration.codex();
 
-        let mut document: Document = Loader::load_document_from_path(builder_configuration.input_location(), &codex, &LoadConfiguration::default(), LoadConfigurationOverLay::default())?;
+        let mut document: Document = Document::load_document_from_path(builder_configuration.input_location(), &codex, &LoadConfiguration::default(), LoadConfigurationOverLay::default())?;
 
         if let Some(with_nuid) = builder_configuration.nuid() {
             if with_nuid {
@@ -494,20 +508,12 @@ impl Builder {
             log::info!("fast draft mode on!")
         }
 
-        Compiler::compile_document(&mut document, builder_configuration.format(), &builder_configuration.codex(), &compilation_configuration, CompilationConfigurationOverLay::default())?;
+        let mut compilation_configuration_overlay = CompilationConfigurationOverLay::default();
 
-        log::info!("document compiled in {} ms", build_start.elapsed().as_millis());
-
-        log::info!("assembling...");
-
-        let output_location = builder_configuration.output_location().clone();
-
-        let assembly_time = Instant::now();
-
-        let mut artifact = match builder_configuration.format() {
+        let assembler_configuration = match builder_configuration.format() {
             OutputFormat::Html => {
 
-                let mut assembler_configuration = HtmlAssemblerConfiguration::default();
+                let mut assembler_configuration = AssemblerConfiguration::default();
 
                 assembler_configuration.set_theme(builder_configuration.theme().clone().unwrap_or(Theme::default()));
 
@@ -517,13 +523,23 @@ impl Builder {
                     }
                 }
 
-                HtmlAssembler::assemble_document_standalone(&document, &output_location.file_stem().unwrap().to_string_lossy().to_string(), None, None, &assembler_configuration)?
+                assembler_configuration
             },
         };
 
-        log::info!("end to assembly (assembly time {} ms)", assembly_time.elapsed().as_millis());
+        compilation_configuration_overlay.set_assembler_configuration(assembler_configuration);
+
+        let compiled_document = document.compile(builder_configuration.format(), &builder_configuration.codex(), &compilation_configuration, compilation_configuration_overlay)?;
+
+        log::info!("document compiled in {} ms", build_start.elapsed().as_millis());
+
+        log::info!("dumping...");
+
+        let output_location = builder_configuration.output_location().clone();
 
         let dump_configuration = DumpConfiguration::new(output_location, builder_configuration.force_output().unwrap_or(false));
+
+        let mut artifact = Artifact::from(compiled_document.content());
 
         artifact.dump(&dump_configuration)?;
 

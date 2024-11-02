@@ -1,4 +1,4 @@
-use nmd_core::{assembler::AssemblerError, compiler::compilation_error::CompilationError, dumpable::DumpError, loader::LoadError};
+use nmd_core::{assembler::AssemblerError, compilation::compilation_error::CompilationError, dumpable::DumpError, load::LoadError};
 use thiserror::Error;
 use tokio::task::JoinError;
 
