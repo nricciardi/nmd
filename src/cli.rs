@@ -231,6 +231,7 @@ impl NmdCli {
                     Command::new("generate")
                         .about("Generate a new NMD resource")
                         .short_flag('g')
+                        .alias("new")
                         .subcommand_required(true)
                                 .subcommand(
                                     Command::new("dossier")

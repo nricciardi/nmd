@@ -1,22 +1,22 @@
-::: quote
-new
-warning
 
-multiline
-:::
+#- title inferred as 1
 
-some text
+# title 1
 
-::: quote
-new
-warning
+#+ title 2
 
-multiline
-:::
-::: quote
-new
-warning
+#+ title 3
 
-multiline
-:::
-some text2
+#- title 2
+
+
+### title 3
+
+#= title 3
+
+#+ title 4
+
+#- title 3
+
+#- title 2
+
