@@ -396,6 +396,7 @@ impl NmdCli {
     fn set_logger(log_level: LevelFilter) {
 
         SimpleLogger::new()
+            .without_timestamps()
             .with_level(log_level)
             .init()
             .unwrap();
