@@ -39,20 +39,25 @@ impl Builder {
 
         let loading_start = Instant::now();
 
-        let mut loader_configuration = LoadConfiguration::default();
-        loader_configuration.set_input_location(builder_configuration.input_location().clone());
+        let mut load_configuration = LoadConfiguration::default();
+        load_configuration.set_input_location(builder_configuration.input_location().clone());
 
-        let loader_configuration_overlay = LoadConfigurationOverLay::default();
+        if let Some(p) = builder_configuration.parallelization() {
+
+            load_configuration.set_parallelization(*p);
+        }
+
+        let load_configuration_overlay = LoadConfigurationOverLay::default();
 
         let mut dossier: Dossier;
 
         if let Some(dstc) = builder_configuration.documents_subset_to_compile() {
 
-            dossier = Dossier::load_dossier_from_path_buf_only_documents(builder_configuration.input_location(), &dstc, &builder_configuration.codex(), &loader_configuration, loader_configuration_overlay)?;
+            dossier = Dossier::load_dossier_from_path_buf_only_documents(builder_configuration.input_location(), &dstc, &builder_configuration.codex(), &load_configuration, load_configuration_overlay)?;
 
         } else {
 
-            dossier = Dossier::load_dossier_from_path_buf(builder_configuration.input_location(), &builder_configuration.codex(), &loader_configuration, loader_configuration_overlay)?;
+            dossier = Dossier::load_dossier_from_path_buf(builder_configuration.input_location(), &builder_configuration.codex(), &load_configuration, load_configuration_overlay)?;
         }
 
         if let Some(with_nuid) = builder_configuration.nuid() {
@@ -466,9 +471,16 @@ impl Builder {
 
         let build_start = Instant::now();
 
+        let mut load_configuration = LoadConfiguration::default();
+
+        if let Some(p) = builder_configuration.parallelization() {
+
+            load_configuration.set_parallelization(*p);
+        }
+
         let codex = builder_configuration.codex();
 
-        let mut document: Document = Document::load_document_from_path(builder_configuration.input_location(), &codex, &LoadConfiguration::default(), LoadConfigurationOverLay::default())?;
+        let mut document: Document = Document::load_document_from_path(builder_configuration.input_location(), &codex, &load_configuration, LoadConfigurationOverLay::default())?;
 
         if let Some(with_nuid) = builder_configuration.nuid() {
             if with_nuid {
