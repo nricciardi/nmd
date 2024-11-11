@@ -117,14 +117,9 @@ impl Builder {
         
                 if let Some(there_is_preview) = builder_configuration.preview() {
                     if there_is_preview {
-                        if let Some(watch_mode) = builder_configuration.watching() {
-                            if watch_mode {
-        
-                                assembler_configuration.external_scripts_mut()
-                                                            .push(include_str!("preview/check_preview_updates.js").to_string())
-        
-                            }
-                        }
+
+                        assembler_configuration.external_scripts_mut()
+                                                    .push(include_str!("preview/check_preview_updates.js").to_string());
                     }
                 }
                 
