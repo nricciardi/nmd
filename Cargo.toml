@@ -1,6 +1,6 @@
 [package]
 name = "nmd"
-version = "1.4.1"
+version = "1.4.2"
 authors = ["Nicola Ricciardi"]
 edition = "2021"
 description = "Official NMD CLI and compiler"

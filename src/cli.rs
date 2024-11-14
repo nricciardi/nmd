@@ -87,7 +87,7 @@ impl NmdCli {
 
         let cli: Command = Command::new("nmd")
                 .about("Official NMD command line interface")
-                .version(VERSION)
+                .version(VERSION.unwrap_or("unknown"))
                 .subcommand_required(true)
                 .arg_required_else_help(true)
                 .arg(
